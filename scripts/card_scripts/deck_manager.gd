@@ -8,11 +8,12 @@ var discard_pile: Array[CardData] = []
 # 初始化牌库
 func initialize_deck(starting_deck: Array[CardData]):
 	draw_pile = starting_deck.duplicate()
-	draw_pile.shuffle()
 	
 	# 你的规则：卡牌数少于 10 张，补充低级卡
 	if draw_pile.size() < 10:
 		fill_with_basic_cards(10 - draw_pile.size())
+		
+	draw_pile.shuffle()
 
 # 抽牌
 func draw_cards(amount: int):
@@ -54,7 +55,7 @@ func reshuffle_discard_into_draw():
 	discard_pile.clear()
 	draw_pile.shuffle()
 
-# 补充基础卡牌（你的特殊规则）
+# 补充基础卡牌
 func fill_with_basic_cards(amount: int):
 	for i in range(amount):
 		var basic_card = CardData.new()
