@@ -10,7 +10,7 @@ func initialize_deck(starting_deck: Array[CardData]):
 	draw_pile = starting_deck.duplicate()
 	draw_pile.shuffle()
 	
-	# 你的规则：卡牌数少于 10 张（每回合5张*2），补充低级卡
+	# 你的规则：卡牌数少于 10 张，补充低级卡
 	if draw_pile.size() < 10:
 		fill_with_basic_cards(10 - draw_pile.size())
 
@@ -27,6 +27,8 @@ func draw_cards(amount: int):
 		var card = draw_pile.pop_back()
 		hand.append(card)
 	print("抽了牌。当前手牌数：", hand.size())
+	#调试打印所有卡牌
+	print_all_card()
 
 # 打出卡牌
 func play_card(card: CardData, target):
@@ -44,9 +46,6 @@ func discard_hand():
 	discard_pile.append_array(hand)
 	hand.clear()
 	print("回合结束，手牌已清空进入弃牌堆。")
-	#print("弃牌堆:",discard_pile)
-	#print("手牌:",hand)
-	#print("摸牌堆:",draw_pile)
 
 # 洗牌逻辑
 func reshuffle_discard_into_draw():
@@ -62,3 +61,27 @@ func fill_with_basic_cards(amount: int):
 		basic_card.card_name = "填充卡牌测试001" # 这里最好加载你预设的基础卡 Resource
 		basic_card.energy_cost = 10
 		draw_pile.append(basic_card)
+
+# 调试用print卡牌
+func print_all_card():
+	print_hand()
+	print_draw_pile()
+	print_discard_pile()
+
+func print_hand():
+	var names: Array[String] = []
+	for card in hand:
+		names.append(card.card_name)
+	print("【手牌】(", hand.size(), "张): ", names)
+	
+func print_draw_pile():
+	var names: Array[String] = []
+	for card in draw_pile:
+		names.append(card.card_name)
+	print("【抽牌堆】(", draw_pile.size(), "张): ", names)
+	
+func print_discard_pile():
+	var names: Array[String] = []
+	for card in discard_pile:
+		names.append(card.card_name)
+	print("【弃牌堆】(", discard_pile.size(), "张): ", names)

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://16qrp6486xaj"]
+
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://scripts/card_scripts/card_data.gd" id="1_6i14m"]
+
+[resource]
+script = ExtResource("1_6i14m")
+card_name = "测试卡牌3"
+energy_cost = 30
+damage_amount = 30
+description = "测试卡牌3"
+metadata/_custom_type_script = "uid://bejho62d28qir"

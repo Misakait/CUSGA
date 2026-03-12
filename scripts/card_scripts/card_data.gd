@@ -2,7 +2,7 @@ extends Resource
 class_name CardData
 
 enum CardType { SKILL, TALENT, SUMMON, EQUIPMENT, ITEM }
-enum Element { NONE, METAL, WOOD, WATER, FIRE, EARTH } # 金木水火土
+enum Element { NONE, METAL, WOOD, WATER, FIRE, EARTH }
 
 @export var card_name: String = "卡牌基类"
 @export var type: CardType = CardType.SKILL
@@ -13,6 +13,7 @@ enum Element { NONE, METAL, WOOD, WATER, FIRE, EARTH } # 金木水火土
 
 # 执行卡牌效果的方法
 func apply_effect(target):
+	print("打出了一张卡牌："+card_name)
 	if damage_amount > 0:
 		target.take_damage(damage_amount)
 		print("对目标造成了 ", damage_amount, " 点伤害")

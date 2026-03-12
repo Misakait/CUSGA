@@ -1,15 +1,15 @@
 extends Node
 
-@onready var deck_manager = $DeckManager # 假设DeckManager是子节点
+@onready var deck_manager = $DeckManager
+
+@export var starting_deck: Array[CardData] ##初始携带的卡组
 
 var player_energy: int = 100
 const MAX_ENERGY: int = 100
 
 func _ready():
-	# 模拟开局，传入一些卡牌
-	var initial_deck: Array[CardData] = []
-	# 这里可以添加几个新建的 CardData 进去测试
-	deck_manager.initialize_deck(initial_deck)
+	#初始化卡牌
+	deck_manager.initialize_deck(starting_deck)
 	
 	start_player_turn()
 
