@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dk15nbphlvt8t"]
+
+[ext_resource type="Script" uid="uid://d0ltsey5svvgs" path="res://scripts/battle_scripts/battle_manager.gd" id="1_ckntb"]
+[ext_resource type="Script" uid="uid://chbi747pg2cok" path="res://scripts/card_scripts/deck_manager.gd" id="2_ychmy"]
+
+[node name="Battle" type="Node2D" unique_id=1622409558]
+script = ExtResource("1_ckntb")
+
+[node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
+script = ExtResource("2_ychmy")
