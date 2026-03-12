@@ -5,11 +5,6 @@ extends Node2D
 @export var map_len_x: int
 @export var map_len_y: int
 
-@export_group("Scene")
-@export var forest_scene: PackedScene
-@export var cave_scene: PackedScene
-@export var farm_scene: PackedScene
-
 var max_dis_from_home: int
 var max_dis_from_home_point: Array = [1,1]
 
@@ -45,20 +40,9 @@ func dfs_create_map(start_point: Array, dis: int):
 	for change: int in range(0, 4):
 		var now_x = start_point[0] + change_x[change]
 		var now_y = start_point[1] + change_y[change]
-		#上右下左
+		#上下左右
 		if if_create(now_x, now_y):
-			var name: String = create_what()
-			map[now_x][now_y] = name
-			
-			var new_scene: Node2D
-			if name == "forest":
-				new_scene = forest_scene.instantiate()
-			elif name == "cave":
-				new_scene = cave_scene.instantiate()
-			elif name == "farm":
-				new_scene = farm_scene.instantiate()
-			add_child(new_scene)
-			
+			map[now_x][now_y] = create_what()
 			dfs_create_map([now_x,now_y], dis+1)
 	
 	#查看每次生成地图顺序
@@ -71,7 +55,7 @@ func dfs_create_map(start_point: Array, dis: int):
 func if_create(x: int, y: int):
 	
 	if x >= 0 && y >= 0 && x <= map_len_x && y <= map_len_y && map[x][y] == "void":
-		if randi() % 4 == 0 && map_types_ref.get_map_count_now() > 0:
+		if randi() % 2 == 0 && map_types_ref.get_map_count_now() > 0:
 			return true
 	
 	return false
@@ -82,7 +66,7 @@ func create_what():
 		
 		var name: String = map_types_ref.map_type_index[randi_range(0, map_types_ref.map_type.size() - 1)]
 			
-		if map_types_ref.map_type_now[name] > 0:
+		if map_types_ref.map_type_now[name] != 0:
 			map_types_ref.map_type_now[name] -= 1
 			return name
 	
