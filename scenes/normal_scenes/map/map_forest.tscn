@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://cipeemv3aravd"]
+
+[ext_resource type="Script" uid="uid://bj2pjtvk57laq" path="res://scripts/normal_scripts/map/map_scene/map_forest.gd" id="1_hhwsk"]
+[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_ki23j"]
+
+[node name="MapForest" type="Node2D" unique_id=1363229682]
+
+[node name="map_forest" type="Node2D" parent="." unique_id=715413852]
+script = ExtResource("1_hhwsk")
+
+[node name="go_left" type="Sprite2D" parent="map_forest" unique_id=2128249899]
+position = Vector2(81, 358)
+texture = ExtResource("2_ki23j")
+
+[node name="Label" type="Label" parent="map_forest/go_left" unique_id=472231589]
+offset_left = -26.0
+offset_top = -84.0
+offset_right = 14.0
+offset_bottom = -61.0
+text = "left"
+
+[node name="go_right" type="Sprite2D" parent="map_forest" unique_id=1788211841]
+position = Vector2(1055, 346)
+texture = ExtResource("2_ki23j")
+
+[node name="Label" type="Label" parent="map_forest/go_right" unique_id=118668961]
+offset_left = -26.0
+offset_top = -84.0
+offset_right = 14.0
+offset_bottom = -61.0
+text = "right"
+
+[node name="go_up" type="Sprite2D" parent="map_forest" unique_id=301348299]
+position = Vector2(560, 92)
+texture = ExtResource("2_ki23j")
+
+[node name="Label" type="Label" parent="map_forest/go_up" unique_id=167989806]
+offset_left = -26.0
+offset_top = -84.0
+offset_right = 14.0
+offset_bottom = -61.0
+text = "up"
+
+[node name="go_down" type="Sprite2D" parent="map_forest" unique_id=2059110792]
+position = Vector2(576, 576)
+texture = ExtResource("2_ki23j")
+
+[node name="Label" type="Label" parent="map_forest/go_down" unique_id=1379272863]
+offset_left = -26.0
+offset_top = -84.0
+offset_right = 14.0
+offset_bottom = -61.0
+text = "down"
+
+[node name="Button" type="Button" parent="map_forest" unique_id=1938567851]
+offset_left = 75.0
+offset_top = 122.0
+offset_right = 211.0
+offset_bottom = 258.0
+icon = ExtResource("2_ki23j")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=676843440]
+position = Vector2(585, 310)
+texture = ExtResource("2_ki23j")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=2117419292]
+offset_left = -26.0
+offset_top = -84.0
+offset_right = 14.0
+offset_bottom = -61.0
+text = "forest"

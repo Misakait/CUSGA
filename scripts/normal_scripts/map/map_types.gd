@@ -30,7 +30,6 @@ func _ready() -> void:
 		map_type_index[cnt] = key
 		cnt += 1
 	
-	cnt = 0
 	for key: String in map_type_special.keys():
 		map_type_now_special[key] = map_type_special[key]
 		map_type_index_special[cnt] = key

@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://11nrdtrdm5ce"]
+
+[ext_resource type="Script" uid="uid://b83txabcw48go" path="res://scripts/normal_scripts/map/map_scene/map_cave.gd" id="1_i20qx"]
+[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_5y1gq"]
+
+[node name="MapCave" type="Node2D" unique_id=285410096]
+
+[node name="map_cave" type="Node2D" parent="." unique_id=1109140467]
+script = ExtResource("1_i20qx")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1430113554]
+position = Vector2(309, 202)
+texture = ExtResource("2_5y1gq")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=1881332440]
+offset_left = -26.0
+offset_top = -84.0
+offset_right = 14.0
+offset_bottom = -61.0
+text = "cave"
