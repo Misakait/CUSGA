@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://4a2ijvrcxnqe"]
+
+[ext_resource type="Script" uid="uid://dws6rrh6ssw8x" path="res://scripts/map_scripts/map_son_scripts/map_cave.gd" id="1_bcv0o"]
+
+[node name="MapCave" type="Node2D" unique_id=1617305974]
+script = ExtResource("1_bcv0o")

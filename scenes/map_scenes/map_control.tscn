@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://55q6p6bk1ll7"]
+
+[ext_resource type="Script" uid="uid://b15u1xn7eb0qd" path="res://scripts/map_scripts/map_types.gd" id="1_03uaa"]
+[ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_2r3ie"]
+[ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
+[ext_resource type="Script" uid="uid://6hb45wq2pclx" path="res://scripts/map_scripts/map_road.gd" id="4_a7gbl"]
+[ext_resource type="Script" uid="uid://d6q8i3s5c07j" path="res://scripts/map_scripts/map_button.gd" id="5_vtfeq"]
+[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="6_2263r"]
+
+[node name="MapControl" type="Node2D" unique_id=223958387]
+
+[node name="MapTypes" type="Node2D" parent="." unique_id=1539142152]
+script = ExtResource("1_03uaa")
+forest_count = 6
+cave_count = 5
+farm_count = 4
+boss_room_count = 1
+
+[node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
+script = ExtResource("2_2r3ie")
+map_len_x = 5
+map_len_y = 5
+
+[node name="MapButton" type="Node2D" parent="." unique_id=276347947]
+script = ExtResource("5_vtfeq")
+
+[node name="UpButton" type="Sprite2D" parent="MapButton" unique_id=621745549]
+position = Vector2(540, 80)
+texture = ExtResource("6_2263r")
+
+[node name="UpButton" type="LinkButton" parent="MapButton/UpButton" unique_id=46749410]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -64.0
+offset_right = -64.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RightButton" type="Sprite2D" parent="MapButton" unique_id=629088341]
+position = Vector2(1080, 300)
+texture = ExtResource("6_2263r")
+
+[node name="RightButton" type="LinkButton" parent="MapButton/RightButton" unique_id=664217329]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -64.0
+offset_right = -64.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DownButton" type="Sprite2D" parent="MapButton" unique_id=1992184109]
+position = Vector2(540, 560)
+texture = ExtResource("6_2263r")
+
+[node name="DownButton" type="LinkButton" parent="MapButton/DownButton" unique_id=1973347690]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -64.0
+offset_right = -64.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="LeftButton" type="Sprite2D" parent="MapButton" unique_id=438457492]
+position = Vector2(80, 300)
+texture = ExtResource("6_2263r")
+
+[node name="LeftButton" type="LinkButton" parent="MapButton/LeftButton" unique_id=2014586588]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -64.0
+offset_right = -64.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="MapInstantiator" type="Node2D" parent="." unique_id=950670003]
+script = ExtResource("3_2r3ie")
+
+[node name="MapRoad" type="Node2D" parent="." unique_id=1306542682]
+script = ExtResource("4_a7gbl")
+home_road = "res://scenes/map_scenes/map_son_scenes/map_home.tscn"
+forest_road = "res://scenes/map_scenes/map_son_scenes/map_forest.tscn"
+cave_road = "res://scenes/map_scenes/map_son_scenes/map_cave.tscn"
+farm_road = "res://scenes/map_scenes/map_son_scenes/map_farm.tscn"
+boss_room_road = "res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn"
+
+[connection signal="pressed" from="MapButton/UpButton/UpButton" to="MapButton" method="_on_up_button_pressed"]
+[connection signal="pressed" from="MapButton/RightButton/RightButton" to="MapButton" method="_on_right_button_pressed"]
+[connection signal="pressed" from="MapButton/DownButton/DownButton" to="MapButton" method="_on_down_button_pressed"]
+[connection signal="pressed" from="MapButton/LeftButton/LeftButton" to="MapButton" method="_on_left_button_pressed"]

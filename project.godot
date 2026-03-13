@@ -14,10 +14,6 @@ config/name="CUSGA"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
-[autoload]
-
-MapControl="*uid://55q6p6bk1ll7"
-
 [dotnet]
 
 project/assembly_name="CUSGA"

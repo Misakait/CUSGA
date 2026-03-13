@@ -49,7 +49,7 @@ func get_map_count_now():
 func get_map_count_now_special():
 	var total_cnt = 0
 	
-	#获取可当前地图总数量
+	#获取可当前特殊地图总数量
 	for cnt: int in map_type_now_special.values():
 		total_cnt += cnt
 		

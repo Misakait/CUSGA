@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://7wdqj8cp2mmy"]
+
+[ext_resource type="Script" uid="uid://kjhecly1fr3j" path="res://scripts/map_scripts/map_son_scripts/map_farm.gd" id="1_oain7"]
+
+[node name="MapFarm" type="Node2D" unique_id=1640719016]
+script = ExtResource("1_oain7")
