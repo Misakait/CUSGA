@@ -20,6 +20,8 @@ var percent_road_now: int = 10;
 
 func _ready() -> void:
 	
+	randomize()
+	
 	#初始化
 	for y: int in range(map_len_y + 1):
 		var row: Array = []
@@ -29,7 +31,8 @@ func _ready() -> void:
 	map[1][1] = "home"
 	
 	while map_types_ref.get_map_count_now() > 0:
-		percent_road_now -= 1
+		#按逻辑讲，当percent_road_now=1，那么就不会再while循环了，因为房间100%生成
+		percent_road_now = max(1,percent_road_now)
 		dfs_create_map(max_dis_from_home_point, max_dis_from_home, 4)
 		
 	map[max_dis_from_home_point[0]][max_dis_from_home_point[1]] = "boss_room"
