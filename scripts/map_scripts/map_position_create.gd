@@ -5,7 +5,7 @@ extends Node2D
 @export var map_len_x: int
 @export var map_len_y: int
 
-var max_dis_from_home: int
+var max_dis_from_home: int = 0
 var max_dis_from_home_point: Array = [1,1]
 
 #记录房间之间的链接{vector2i : [1,1,1,1]}
@@ -14,6 +14,9 @@ var scene_to_scene: Dictionary
 var map: Array
 var change_x: Array = [-1,0,1,0]
 var change_y: Array = [0,1,0,-1]
+
+var percent_road: int = 10;
+var percent_road_now: int = 10;
 
 func _ready() -> void:
 	
@@ -26,7 +29,9 @@ func _ready() -> void:
 	map[1][1] = "home"
 	
 	while map_types_ref.get_map_count_now() > 0:
-		dfs_create_map(max_dis_from_home_point, max_dis_from_home)
+		percent_road_now -= 1
+		dfs_create_map(max_dis_from_home_point, max_dis_from_home, 4)
+		
 	map[max_dis_from_home_point[0]][max_dis_from_home_point[1]] = "boss_room"
 	
 	
@@ -43,7 +48,7 @@ func _ready() -> void:
 	#print(map_types_ref.map_type_now)
 
 #构建二维数组地图
-func dfs_create_map(start_point: Array, dis: int, last_scene_come_here_by: int = 3):
+func dfs_create_map(start_point: Array, dis: int, last_scene_come_here_by: int):
 	
 	var scene_connect: Array = [0,0,0,0]
 	
@@ -57,8 +62,6 @@ func dfs_create_map(start_point: Array, dis: int, last_scene_come_here_by: int =
 			scene_connect[0] = 1
 		3:
 			scene_connect[1] = 1
-		4:
-			print("这是第一个房间")
 		_:
 			print("游戏出问题了")
 	
@@ -89,9 +92,8 @@ func dfs_create_map(start_point: Array, dis: int, last_scene_come_here_by: int =
 #是否创建场景
 func if_create(x: int, y: int):
 	if x >= 0 && y >= 0 && x <= map_len_x && y <= map_len_y && map[x][y] == "void":
-		if randi() % 2 == 0 && map_types_ref.get_map_count_now() > 0:
+		if randi() % percent_road_now == 0 && map_types_ref.get_map_count_now() > 0:
 			return true
-	
 	return false
 
 #创建什么场景
@@ -100,7 +102,6 @@ func create_what():
 		
 		var randi_num = randi_range(0, map_types_ref.map_type.size() - 1)
 		var scene_name: String = map_types_ref.map_type_index[randi_num]
-		
 		if map_types_ref.map_type_now[scene_name] != 0:
 			map_types_ref.map_type_now[scene_name] -= 1
 			return scene_name

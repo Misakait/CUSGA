@@ -25,8 +25,17 @@ map_len_y = 5
 script = ExtResource("5_vtfeq")
 
 [node name="UpButton" type="Sprite2D" parent="MapButton" unique_id=621745549]
+modulate = Color(0, 0, 0, 1)
 position = Vector2(540, 80)
 texture = ExtResource("6_2263r")
+
+[node name="Label" type="Label" parent="MapButton/UpButton" unique_id=618818774]
+offset_left = -32.0
+offset_top = 63.0
+offset_right = 16.0
+offset_bottom = 86.0
+theme_override_colors/font_color = Color(18.892002, 18.892002, 18.892002, 1)
+text = "往北走"
 
 [node name="UpButton" type="LinkButton" parent="MapButton/UpButton" unique_id=46749410]
 anchors_preset = 15
@@ -40,6 +49,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="RightButton" type="Sprite2D" parent="MapButton" unique_id=629088341]
+modulate = Color(0, 0, 0, 1)
 position = Vector2(1080, 300)
 texture = ExtResource("6_2263r")
 
@@ -54,7 +64,15 @@ offset_bottom = -64.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="RichTextLabel" type="RichTextLabel" parent="MapButton/RightButton" unique_id=1632619317]
+offset_left = -27.0
+offset_top = -91.0
+offset_right = 40.0
+offset_bottom = -51.0
+text = "往东走"
+
 [node name="DownButton" type="Sprite2D" parent="MapButton" unique_id=1992184109]
+modulate = Color(0, 0, 0, 1)
 position = Vector2(540, 560)
 texture = ExtResource("6_2263r")
 
@@ -70,7 +88,15 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
+[node name="Label" type="Label" parent="MapButton/DownButton" unique_id=912938047]
+offset_left = -25.0
+offset_top = -90.0
+offset_right = 15.0
+offset_bottom = -67.0
+text = "往南走"
+
 [node name="LeftButton" type="Sprite2D" parent="MapButton" unique_id=438457492]
+modulate = Color(0, 0, 0, 1)
 position = Vector2(80, 300)
 texture = ExtResource("6_2263r")
 
@@ -85,6 +111,26 @@ offset_bottom = -64.0
 grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="MapButton/LeftButton" unique_id=1293644864]
+offset_left = -25.0
+offset_top = -93.0
+offset_right = 15.0
+offset_bottom = -70.0
+text = "往西走"
+
+[node name="Label" type="Label" parent="MapButton" unique_id=1881193908]
+offset_left = 907.0
+offset_top = 288.0
+offset_right = 955.0
+offset_bottom = 311.0
+text = "你处在"
+
+[node name="Label2" type="Label" parent="MapButton" unique_id=2054102133]
+offset_left = 174.0
+offset_top = 197.0
+offset_right = 942.0
+offset_bottom = 458.0
 
 [node name="MapInstantiator" type="Node2D" parent="." unique_id=950670003]
 script = ExtResource("3_2r3ie")

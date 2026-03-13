@@ -16,6 +16,14 @@ func _ready() -> void:
 	
 func update_scene_button(position: Vector2i):
 	
+	#画地图
+	get_node("Label").text = "你处在" + str(position)
+	get_node("Label2").text = ""
+	for row in map_position_create.map:
+		for col in row:
+			get_node("Label2").text += "%-20s" % col 
+		get_node("Label2").text += '\n'
+	
 	#更新自身位置
 	current_position = position
 	posx = position.x

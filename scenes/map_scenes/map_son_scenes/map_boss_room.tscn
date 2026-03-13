@@ -1,3 +1,6 @@
 [gd_scene format=3 uid="uid://bpd2bncemempm"]
 
+[ext_resource type="Script" uid="uid://ly8agrcpxa1o" path="res://scripts/map_scripts/map_son_scripts/map_boss_room.gd" id="1_fplxy"]
+
 [node name="MapBossRoom" type="Node2D" unique_id=2063223928]
+script = ExtResource("1_fplxy")
