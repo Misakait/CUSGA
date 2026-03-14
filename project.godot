@@ -14,6 +14,10 @@ config/name="CUSGA"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GlobalEventBus="*uid://f4acdsbh24f4"
+
 [display]
 
 window/size/viewport_width=1280
