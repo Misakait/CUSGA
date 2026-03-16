@@ -32,7 +32,7 @@ func _ready() -> void:
 	
 	while map_types_ref.get_map_count_now() > 0:
 		#按逻辑讲，当percent_road_now=1，那么就不会再while循环了，因为房间100%生成
-		percent_road_now = max(1,percent_road_now)
+		percent_road_now = max(1,percent_road_now -1)
 		dfs_create_map(max_dis_from_home_point, max_dis_from_home, 4)
 		
 	map[max_dis_from_home_point[0]][max_dis_from_home_point[1]] = "boss_room"

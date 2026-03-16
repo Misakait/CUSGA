@@ -3,10 +3,10 @@ namespace CUSGA.core.constants;
 
 public enum ElementType
 {
-    None = 0,
-    Wood = 1,
-    Metal = 2,
-    Water = 3,
-    Earth = 4,
-    Fire = 5
+	None = 0,
+	Wood = 1,
+	Metal = 2,
+	Water = 3,
+	Earth = 4,
+	Fire = 5
 }
