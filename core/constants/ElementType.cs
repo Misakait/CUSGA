@@ -1,4 +1,5 @@
 using System;
+namespace CUSGA.core.constants;
 
 public enum ElementType
 {

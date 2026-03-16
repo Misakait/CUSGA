@@ -1,3 +1,4 @@
+using CUSGA.core.constants;
 namespace CUSGA.core.interfaces;
 
 public interface IDamageable
