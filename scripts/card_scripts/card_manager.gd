@@ -42,6 +42,7 @@ func finish_drag():
 	var card_slot_found = raycast_check_for_card_slot()
 	if  card_slot_found and not card_slot_found.card_in_slot:
 		card_being_dragged.position = card_slot_found.position
+		#若不想让卡牌嵌入卡槽后不可移动，注释掉下两行代码
 		card_being_dragged.get_node("Area2D/CollisionShape2D").disabled = true
 		card_slot_found.card_in_slot = true
 	card_being_dragged = null
