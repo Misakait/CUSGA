@@ -10,6 +10,7 @@ public partial class Player : CharacterBody2D
     private HealthComponent _health;
     private SatietyComponent _satiety;
     private EnergyComponent _energy;
+    private Node _globalEventBus;
 
     public override void _Ready()
     {
@@ -20,6 +21,8 @@ public partial class Player : CharacterBody2D
 
         _satiety.Depleted += OnSatietyDepleted;
         _health.Depleted += OnPlayerDied;
+
+        _globalEventBus = GetNode<Node>("/root/GlobalEventBus");
     }
 
     private void OnSatietyDepleted()
@@ -31,6 +34,7 @@ public partial class Player : CharacterBody2D
 
     private void OnPlayerDied()
     {
+        _globalEventBus.EmitSignal("player_died");
         GD.Print("主角死亡，游戏结束！");
     }
 
