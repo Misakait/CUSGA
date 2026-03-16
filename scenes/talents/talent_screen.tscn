@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://ddyp7h04g6e3l"]
+
+[ext_resource type="Script" uid="uid://cd1qff3m6jtji" path="res://scenes/talents/TalentManager.cs" id="1_wtvrj"]
+[ext_resource type="PackedScene" uid="uid://dmywehu7v1ws0" path="res://scenes/talents/talent_card.tscn" id="2_tcet3"]
+
+[node name="TalentScreen" type="CanvasLayer" unique_id=729571503 node_paths=PackedStringArray("CardsContainer")]
+script = ExtResource("1_wtvrj")
+CardScenePrefab = ExtResource("2_tcet3")
+CardsContainer = NodePath("HBoxContainer")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1951482409]
+offset_right = 40.0
+offset_bottom = 40.0

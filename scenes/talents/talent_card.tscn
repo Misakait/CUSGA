@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://dmywehu7v1ws0"]
+
+[ext_resource type="Script" uid="uid://d3ikkr68dicjb" path="res://scenes/talents/TalentCard.cs" id="1_gbhmy"]
+
+[node name="TalentCard" type="Control" unique_id=1580236051 node_paths=PackedStringArray("_titleLabel", "_descLabel", "_clickArea", "_texture")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_gbhmy")
+_titleLabel = NodePath("TitleText")
+_descLabel = NodePath("DescText")
+_clickArea = NodePath("ClickArea")
+_texture = NodePath("Texture")
+
+[node name="Texture" type="TextureRect" parent="." unique_id=2055842717]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TitleText" type="Label" parent="." unique_id=120511698]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="DescText" type="RichTextLabel" parent="." unique_id=509413876]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ClickArea" type="Button" parent="." unique_id=1754040120]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
