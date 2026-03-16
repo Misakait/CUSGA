@@ -17,3 +17,6 @@ texture = ExtResource("2_dyote")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=572066935]
 shape = SubResource("RectangleShape2D_2kac4")
+
+[connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
+[connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]

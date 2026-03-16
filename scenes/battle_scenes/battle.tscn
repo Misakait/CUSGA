@@ -12,7 +12,6 @@
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
 starting_deck = Array[ExtResource("2_nm17m")]([ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("5_76lap")])
-card_scene = ExtResource("6_qw51t")
 
 [node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
 script = ExtResource("2_ychmy")

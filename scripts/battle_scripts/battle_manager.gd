@@ -40,15 +40,15 @@ func end_player_turn():
 #刷新UI
 func update_hand_ui():
 	return
-	# 1. 先清空当前手牌区已有的UI节点
-	for child in hand_ui.get_children():
-		child.queue_free()
-		
-	# 2. 根据DeckManager里的实际手牌，生成新的UI
-	for card_data in deck_manager.hand:
-		# 实例化卡牌UI场景
-		var card_instance = card_scene.instantiate() as Card
-		# 把它加到HBoxContainer里
-		hand_ui.add_child(card_instance)
-		# 把数据传进去，让UI显示对应名字和数值
-		card_instance.setup(card_data)
+	## 1. 先清空当前手牌区已有的UI节点
+	#for child in hand_ui.get_children():
+		#child.queue_free()
+		#
+	## 2. 根据DeckManager里的实际手牌，生成新的UI
+	#for card_data in deck_manager.hand:
+		## 实例化卡牌UI场景
+		#var card_instance = card_scene.instantiate() as Card
+		## 把它加到HBoxContainer里
+		#hand_ui.add_child(card_instance)
+		## 把数据传进去，让UI显示对应名字和数值
+		#card_instance.setup(card_data)
