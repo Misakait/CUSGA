@@ -1,3 +1,21 @@
 [gd_scene format=3 uid="uid://disdd0mnwhfht"]
 
+[ext_resource type="Script" uid="uid://bey47463nebp6" path="res://entities/player.cs" id="1_d8qmr"]
+[ext_resource type="Script" uid="uid://coyiavqkkmsgv" path="res://entities/components/EnergyComponent.cs" id="2_k3sny"]
+[ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
+[ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]
+
 [node name="Player" type="CharacterBody2D" unique_id=1686256351]
+script = ExtResource("1_d8qmr")
+
+[node name="EnergyComponent" type="Node" parent="." unique_id=163488888]
+script = ExtResource("2_k3sny")
+metadata/_custom_type_script = "uid://coyiavqkkmsgv"
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1633011625]
+script = ExtResource("3_shuw1")
+metadata/_custom_type_script = "uid://d4gp22cg5vjro"
+
+[node name="SatietyComponent" type="Node" parent="." unique_id=170925398]
+script = ExtResource("4_b744r")
+metadata/_custom_type_script = "uid://vhrfbyuub4pr"

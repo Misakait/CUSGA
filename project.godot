@@ -24,7 +24,8 @@ resources_spreadsheet_view/freeze_first_column=true
 [application]
 
 config/name="CUSGA"
-config/features=PackedStringArray("4.6", "Forward Plus")
+run/main_scene="uid://disdd0mnwhfht"
+config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -43,7 +44,7 @@ project/assembly_name="CUSGA"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/resources_spreadsheet_view/plugin.cfg")
+enabled=PackedStringArray()
 
 [physics]
 
