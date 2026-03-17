@@ -1,5 +1,5 @@
 extends Resource
-class_name CardData
+class_name SkillCardData
 
 enum CardType { SKILL, TALENT, SUMMON, EQUIPMENT, ITEM }
 enum Element { NONE, METAL, WOOD, WATER, FIRE, EARTH }

@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dejj5ququif3b"]
-
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://scripts/card_scripts/card_data.gd" id="1_dg8pm"]
-
-[resource]
-script = ExtResource("1_dg8pm")
-card_name = "测试卡牌1"
-description = "测试卡牌1，并且这里是卡牌的效果描述。"
-metadata/_custom_type_script = "uid://bejho62d28qir"

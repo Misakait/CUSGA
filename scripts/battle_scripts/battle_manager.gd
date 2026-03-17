@@ -3,7 +3,7 @@ extends Node
 @onready var deck_manager = $DeckManager
 @onready var hand_ui = $HandUI
 
-@export var starting_deck: Array[CardData] ##初始携带的卡组
+@export var starting_deck: Array[SkillCardData] ##初始携带的卡组
 @export var card_scene: PackedScene 
 
 var player_energy: int = 100

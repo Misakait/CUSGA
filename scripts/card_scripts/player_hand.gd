@@ -15,7 +15,7 @@ func _ready() -> void:
 	for i in range(HAND_COUNT):
 		var new_card = card_scene.instantiate()
 		$"../CardManager".add_child(new_card)
-		new_card.name = "Card"
+		new_card.name = "Card" #方便调试
 		add_card_to_hand(new_card)
 
 func add_card_to_hand(card):
