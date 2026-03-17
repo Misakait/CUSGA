@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://6hb45wq2pclx" path="res://scripts/map_scripts/map_road.gd" id="4_a7gbl"]
 [ext_resource type="Script" uid="uid://d6q8i3s5c07j" path="res://scripts/map_scripts/map_button.gd" id="5_vtfeq"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="6_2263r"]
+[ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
 
@@ -119,19 +120,6 @@ offset_right = 15.0
 offset_bottom = -70.0
 text = "往西走"
 
-[node name="Label" type="Label" parent="MapButton" unique_id=1881193908]
-offset_left = 907.0
-offset_top = 288.0
-offset_right = 955.0
-offset_bottom = 311.0
-text = "你处在"
-
-[node name="Label2" type="Label" parent="MapButton" unique_id=2054102133]
-offset_left = 174.0
-offset_top = 197.0
-offset_right = 942.0
-offset_bottom = 458.0
-
 [node name="MapInstantiator" type="Node2D" parent="." unique_id=950670003]
 script = ExtResource("3_2r3ie")
 
@@ -142,6 +130,12 @@ forest_road = "res://scenes/map_scenes/map_son_scenes/map_forest.tscn"
 cave_road = "res://scenes/map_scenes/map_son_scenes/map_cave.tscn"
 farm_road = "res://scenes/map_scenes/map_son_scenes/map_farm.tscn"
 boss_room_road = "res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn"
+
+[node name="MapLittle" type="Node2D" parent="." unique_id=1178223658]
+position = Vector2(30, 30)
+script = ExtResource("7_aulaq")
+cell_pic = "res://scenes/map_scenes/little_map_cell.tscn"
+bridge_pic = "res://scenes/map_scenes/little_map_bridge.tscn"
 
 [connection signal="pressed" from="MapButton/UpButton/UpButton" to="MapButton" method="_on_up_button_pressed"]
 [connection signal="pressed" from="MapButton/RightButton/RightButton" to="MapButton" method="_on_right_button_pressed"]

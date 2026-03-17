@@ -33,6 +33,7 @@ func _ready() -> void:
 	while map_types_ref.get_map_count_now() > 0:
 		#按逻辑讲，当percent_road_now=1，那么就不会再while循环了，因为房间100%生成
 		percent_road_now = max(1,percent_road_now -1)
+		print(percent_road_now)
 		dfs_create_map(max_dis_from_home_point, max_dis_from_home, 4)
 		
 	map[max_dis_from_home_point[0]][max_dis_from_home_point[1]] = "boss_room"
@@ -42,13 +43,6 @@ func _ready() -> void:
 	#显示地图
 	for index_x in map.size():
 		print(map[index_x])
-	
-	#显示相连场景
-	#for index_x in scene_to_scene.keys():
-	#	print(scene_to_scene[index_x])
-	
-	#显示剩余可创建地图数
-	#print(map_types_ref.map_type_now)
 
 #构建二维数组地图
 func dfs_create_map(start_point: Array, dis: int, last_scene_come_here_by: int):

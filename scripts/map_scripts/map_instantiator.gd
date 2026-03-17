@@ -26,7 +26,7 @@ func create_map():
 
 func load_scene_at(position: Vector2i):
 	
-	print("你目前在",position)
+	#print("你目前在",position)
 	
 	if current_scene:
 		remove_child(current_scene)
