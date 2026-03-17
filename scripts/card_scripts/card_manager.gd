@@ -6,10 +6,12 @@ const COLLISION_MASK_CARD_SLOT = 2
 var screen_size
 var card_being_dragged:Node2D
 var is_hovering_on_card:bool
+var player_hand_referencd #玩家手牌引用
 var drag_offset: Vector2 # 用于记录拖拽偏移量
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
+	player_hand_referencd = $"../PlayerHand"
 
 func _process(delta: float) -> void:
 	if card_being_dragged:
@@ -41,10 +43,14 @@ func finish_drag():
 	card_being_dragged.scale = Vector2(1.05, 1.05)
 	var card_slot_found = raycast_check_for_card_slot()
 	if  card_slot_found and not card_slot_found.card_in_slot:
+		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 		card_being_dragged.position = card_slot_found.position
 		#若不想让卡牌嵌入卡槽后不可移动，注释掉下两行代码
 		card_being_dragged.get_node("Area2D/CollisionShape2D").disabled = true
 		card_slot_found.card_in_slot = true
+	else:#如果拖动后没进入卡槽，则回到玩家手中
+		player_hand_referencd.add_card_to_hand(card_being_dragged)
+		
 	card_being_dragged = null
 
 func connect_card_signals(card):
@@ -90,7 +96,11 @@ func raycast_check_for_card():
 func raycast_check_for_card_slot():
 	var space_state = get_world_2d().direct_space_state
 	var parameters = PhysicsPointQueryParameters2D.new()
-	parameters.position = get_global_mouse_position()
+	
+	#将鼠标改为卡牌中心，即卡牌中心进入框内即可放入卡槽
+	parameters.position = card_being_dragged.global_position 
+	#parameters.position = get_global_mouse_position()
+	
 	parameters.collide_with_areas = true
 	parameters.collision_mask = COLLISION_MASK_CARD_SLOT
 	var result = space_state.intersect_point(parameters)

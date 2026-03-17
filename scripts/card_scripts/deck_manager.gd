@@ -1,15 +1,15 @@
 extends Node
 class_name DeckManager
 
-var draw_pile: Array[CardData] = []
-var hand: Array[CardData] = []
-var discard_pile: Array[CardData] = []
+var draw_pile: Array[SkillCardData] = []
+var hand: Array[SkillCardData] = []
+var discard_pile: Array[SkillCardData] = []
 
 # 初始化牌库
-func initialize_deck(starting_deck: Array[CardData]):
+func initialize_deck(starting_deck: Array[SkillCardData]):
 	draw_pile = starting_deck.duplicate()
 	
-	# 你的规则：卡牌数少于 10 张，补充低级卡
+	# 规则：卡牌数少于 10 张，补充低级卡
 	if draw_pile.size() < 10:
 		fill_with_basic_cards(10 - draw_pile.size())
 		
@@ -32,7 +32,7 @@ func draw_cards(amount: int):
 	print_all_card()
 
 # 打出卡牌
-func play_card(card: CardData, target):
+func play_card(card: SkillCardData, target):
 	if not card in hand: return
 	
 	# 执行卡牌效果
@@ -58,7 +58,7 @@ func reshuffle_discard_into_draw():
 # 补充基础卡牌
 func fill_with_basic_cards(amount: int):
 	for i in range(amount):
-		var basic_card = CardData.new()
+		var basic_card = SkillCardData.new()
 		basic_card.card_name = "填充卡牌测试001" # 这里最好加载你预设的基础卡 Resource
 		basic_card.energy_cost = 10
 		draw_pile.append(basic_card)

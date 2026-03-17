@@ -3,6 +3,8 @@ extends Node2D
 signal hovered
 signal hovered_off
 
+var hand_position #手牌位置
+
 #该节点必须挂载在CardManager下！
 func _ready() -> void:
 	get_parent().connect_card_signals(self)
