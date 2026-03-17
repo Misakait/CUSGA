@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://b7aonbvjs5goj"]
+
+[ext_resource type="Texture2D" uid="uid://c21fa3dxxuy42" path="res://res/image/white_background.png" id="1_4yh4u"]
+
+[node name="LittleMapMe" type="Node2D" unique_id=1874857299]
+
+[node name="Cell" type="Sprite2D" parent="." unique_id=1342095633]
+modulate = Color(18.892157, 18.892157, 18.892157, 1)
+scale = Vector2(0.025, 0.04)
+texture = ExtResource("1_4yh4u")

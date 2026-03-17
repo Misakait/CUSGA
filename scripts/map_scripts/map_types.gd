@@ -12,6 +12,8 @@ var map_type_now_special: Dictionary[String , int]
 var map_type_index: Dictionary[int , String]
 var map_type_index_special: Dictionary[int , String]
 
+var map_type_total_cnt: int
+
 func _ready() -> void:
 	
 	map_type = {
@@ -35,7 +37,8 @@ func _ready() -> void:
 		map_type_now_special[key] = map_type_special[key]
 		map_type_index_special[cnt] = key
 		cnt += 1
-	
+		
+	map_type_total_cnt = get_map_count_now()
 
 func get_map_count_now():
 	var total_cnt = 0
