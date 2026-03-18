@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://disdd0mnwhfht"]
 
-[ext_resource type="Script" uid="uid://bey47463nebp6" path="res://entities/player.cs" id="1_d8qmr"]
+[ext_resource type="Script" uid="uid://dke2t2x325k63" path="res://entities/Player.cs" id="1_d8qmr"]
 [ext_resource type="Script" uid="uid://coyiavqkkmsgv" path="res://entities/components/EnergyComponent.cs" id="2_k3sny"]
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
 [ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]

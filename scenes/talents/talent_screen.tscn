@@ -2,12 +2,17 @@
 
 [ext_resource type="Script" uid="uid://cd1qff3m6jtji" path="res://scenes/talents/TalentManager.cs" id="1_wtvrj"]
 [ext_resource type="PackedScene" uid="uid://dmywehu7v1ws0" path="res://scenes/talents/talent_card.tscn" id="2_tcet3"]
+[ext_resource type="Resource" uid="uid://ikutx0xgqtxt" path="res://resources/talents/test_card.tres" id="2_xb6ne"]
 
 [node name="TalentScreen" type="CanvasLayer" unique_id=729571503 node_paths=PackedStringArray("CardsContainer")]
+process_mode = 3
 script = ExtResource("1_wtvrj")
+AllTalentsPool = Array[Object]([ExtResource("2_xb6ne")])
 CardScenePrefab = ExtResource("2_tcet3")
 CardsContainer = NodePath("HBoxContainer")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1951482409]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 114.0
+offset_top = 95.0
+offset_right = 733.0
+offset_bottom = 390.0

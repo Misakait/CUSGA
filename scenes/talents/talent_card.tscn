@@ -3,10 +3,12 @@
 [ext_resource type="Script" uid="uid://d3ikkr68dicjb" path="res://scenes/talents/TalentCard.cs" id="1_gbhmy"]
 
 [node name="TalentCard" type="Control" unique_id=1580236051 node_paths=PackedStringArray("_titleLabel", "_descLabel", "_clickArea", "_texture")]
+custom_minimum_size = Vector2(300, 400)
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 286.0
+offset_bottom = 393.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_gbhmy")
 _titleLabel = NodePath("TitleText")
 _descLabel = NodePath("DescText")
@@ -14,21 +16,31 @@ _clickArea = NodePath("ClickArea")
 _texture = NodePath("Texture")
 
 [node name="Texture" type="TextureRect" parent="." unique_id=2055842717]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TitleText" type="Label" parent="." unique_id=120511698]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 83.0
+offset_top = 44.0
+offset_right = 241.0
+offset_bottom = 137.0
 
 [node name="DescText" type="RichTextLabel" parent="." unique_id=509413876]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 98.0
+offset_top = 132.0
+offset_right = 211.0
+offset_bottom = 172.0
 
 [node name="ClickArea" type="Button" parent="." unique_id=1754040120]
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+offset_right = 286.0
+offset_bottom = 387.0
