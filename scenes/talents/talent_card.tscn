@@ -1,10 +1,11 @@
 [gd_scene format=3 uid="uid://dmywehu7v1ws0"]
 
-[ext_resource type="Script" uid="uid://d3ikkr68dicjb" path="res://scenes/talents/TalentCard.cs" id="1_gbhmy"]
+[ext_resource type="Script" uid="uid://d3ikkr68dicjb" path="res://resources/talents/TalentCard.cs" id="1_gbhmy"]
 
 [node name="TalentCard" type="Control" unique_id=1580236051 node_paths=PackedStringArray("_titleLabel", "_descLabel", "_clickArea", "_texture")]
 custom_minimum_size = Vector2(300, 400)
 layout_mode = 3
+anchors_preset = 0
 offset_right = 286.0
 offset_bottom = 393.0
 grow_horizontal = 2

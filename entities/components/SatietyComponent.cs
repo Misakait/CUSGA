@@ -4,6 +4,6 @@ using System;
 namespace CUSGA.entities.components;
 
 [GlobalClass]
-public partial class SatietyComponent : StatComponentBase
+public partial class SatietyComponent : VitalComponentBase
 {
 }

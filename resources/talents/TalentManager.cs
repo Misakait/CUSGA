@@ -11,7 +11,6 @@ public partial class TalentManager : CanvasLayer
     [Export] public PackedScene CardScenePrefab;
     [Export] public HBoxContainer CardsContainer;
 
-    public event Action<TalentData> OnTalentAcquired;
     private readonly Random _random = new();
     private List<TalentData> _availableTalents = [];
 
@@ -41,7 +40,9 @@ public partial class TalentManager : CanvasLayer
         GD.Print($"玩家选择了天赋：{selectedTalent.TalentName}");
         // 从牌堆移除此牌
         _availableTalents.Remove(selectedTalent);
-        OnTalentAcquired?.Invoke(selectedTalent);
+
+        Node gameEvents = GetNode<Node>("/root/GameEventBus");
+        gameEvents.EmitSignal("on_player_acquired_talent", selectedTalent);
 
         Hide();
         GetTree().Paused = false;

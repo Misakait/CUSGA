@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://coyiavqkkmsgv" path="res://entities/components/EnergyComponent.cs" id="2_k3sny"]
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
 [ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]
+[ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="5_k3sny"]
 
 [node name="Player" type="CharacterBody2D" unique_id=1686256351]
 script = ExtResource("1_d8qmr")
@@ -19,3 +20,6 @@ metadata/_custom_type_script = "uid://d4gp22cg5vjro"
 [node name="SatietyComponent" type="Node" parent="." unique_id=170925398]
 script = ExtResource("4_b744r")
 metadata/_custom_type_script = "uid://vhrfbyuub4pr"
+
+[node name="AttributeComponent" type="Node" parent="." unique_id=943467577]
+script = ExtResource("5_k3sny")
