@@ -15,6 +15,8 @@ var scene_to_scene: Dictionary
 var map_arr: Array
 #搜索顺序
 var map_search_arr: Array
+var map_point_has_search: Dictionary
+
 var map: Array
 
 func _ready() -> void:
@@ -33,7 +35,7 @@ func _ready() -> void:
 		scene_to_scene[Vector2i(1,1)] = [0,0,0,0]
 		bfs_create_map(max_dis_from_home_point)
 	
-	map_search_arr = []
+	map_search_arr = [[1,1]]
 	bfs_search([1,1])
 	map[max_dis_from_home_point[0]][max_dis_from_home_point[1]] = "boss_room"
 	
@@ -212,7 +214,15 @@ func bfs_search(start_point: Array):
 					_:
 						print("如果你看到这个,说明map_position_create出错了")
 			id += 1
-	map_search_arr.append_array(new_search_arr)
-	max_dis_from_home += 1
-	max_dis_from_home_point = map_search_arr.front()
+	
+	for point in new_search_arr:
+		if !map_point_has_search.has(point):
+			map_search_arr.append(point)
+			map_point_has_search[point] = 1
+	
+	if !map_search_arr.is_empty():
+		max_dis_from_home += 1
+		max_dis_from_home_point = map_search_arr.back()
+		print(map_search_arr)
+		bfs_search(max_dis_from_home_point)
 	
