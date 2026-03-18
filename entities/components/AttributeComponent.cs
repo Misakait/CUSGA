@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using CUSGA.core.attributes;
 using CUSGA.core;
+using CUSGA.resources.stats;
 namespace CUSGA.entities.components;
 
 public partial class AttributeComponent : Node
 {
+    [Export] public StartingStats InitialData;
     // 当前拥有的可用技能点
     public int AvailablePoints { get; private set; } = 0;
 
@@ -18,11 +20,11 @@ public partial class AttributeComponent : Node
     public override void _Ready()
     {
         // 在这里初始化主角的初始面板（这里的数据未来可以通过 Resource 配置文件传入以实现彻底解耦）
-        _attributes.Add(AttributeType.PhysAtk, new core.attributes.Attribute(AttributeType.PhysAtk, "物理攻击", 10f, 2.5f)); // 1点+2.5物攻
-        _attributes.Add(AttributeType.PhysDef, new core.attributes.Attribute(AttributeType.PhysDef, "物理抗性", 5f, 1.0f));
-        _attributes.Add(AttributeType.MagPower, new core.attributes.Attribute(AttributeType.MagPower, "法术强度", 10f, 3.0f));
-        _attributes.Add(AttributeType.MagResist, new core.attributes.Attribute(AttributeType.MagResist, "法术抗性", 5f, 1.0f));
-        _attributes.Add(AttributeType.Speed, new core.attributes.Attribute(AttributeType.Speed, "速度", 100f, 5.0f));
+        _attributes.Add(AttributeType.PhysAtk, new core.attributes.Attribute(AttributeType.PhysAtk, "物理攻击", InitialData.BasePhysAtk, InitialData.PhysAtkGrowth));
+        _attributes.Add(AttributeType.PhysDef, new core.attributes.Attribute(AttributeType.PhysDef, "物理抗性", InitialData.BasePhysDef, InitialData.PhysDefGrowth));
+        _attributes.Add(AttributeType.MagPower, new core.attributes.Attribute(AttributeType.MagPower, "法术强度", InitialData.BaseMagPower, InitialData.MagPowerGrowth));
+        _attributes.Add(AttributeType.MagResist, new core.attributes.Attribute(AttributeType.MagResist, "法术抗性", InitialData.BaseMagResist, InitialData.MagResistGrowth));
+        _attributes.Add(AttributeType.Speed, new core.attributes.Attribute(AttributeType.Speed, "速度", InitialData.BaseSpeed, InitialData.SpeedGrowth));
     }
 
     public core.attributes.Attribute GetAttribute(AttributeType type)

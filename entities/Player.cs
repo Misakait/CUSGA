@@ -12,6 +12,7 @@ public partial class Player : CharacterBody2D
     private HealthComponent _health;
     private SatietyComponent _satiety;
     private EnergyComponent _energy;
+    private AttributeComponent _attribute;
     private Node _globalEventBus;
     public HashSet<StringName> ActiveTalentTags { get; private set; } = [];
 
@@ -20,7 +21,7 @@ public partial class Player : CharacterBody2D
         _health = GetNode<HealthComponent>("HealthComponent");
         _satiety = GetNode<SatietyComponent>("SatietyComponent");
         _energy = GetNode<EnergyComponent>("EnergyComponent");
-
+        _attribute = GetNode<AttributeComponent>("AttributeComponent");
 
         _satiety.Depleted += OnSatietyDepleted;
         _health.Depleted += OnPlayerDied;
@@ -66,7 +67,7 @@ public partial class Player : CharacterBody2D
         {
             _health.Depleted -= OnPlayerDied;
         }
-        
+
         if (_globalEventBus != null)
         {
             _globalEventBus.Disconnect("on_player_acquired_talent", Callable.From<TalentData>(AbsorbTalent));
