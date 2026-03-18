@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TalentData" format=3 uid="uid://ikutx0xgqtxt"]
+
+[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="1_a30gd"]
+[ext_resource type="Script" uid="uid://c7k5rb06txnta" path="res://resources/talents/TalentData.cs" id="1_pf35n"]
+
+[resource]
+script = ExtResource("1_pf35n")
+TalentName = "silver_wolf"
+Description = "desc"
+TalentTexture = ExtResource("1_a30gd")
+metadata/_custom_type_script = "uid://c7k5rb06txnta"
