@@ -6,17 +6,17 @@ using CUSGA.core.constants;
 namespace CUSGA.entities.components;
 
 [GlobalClass]
-public partial class HealthComponent : StatComponentBase, IDamageable
+public partial class HealthComponent : VitalComponentBase, IDamageable
 {
-	// 血量专属信号：受伤带属性
-	[Signal]
-	public delegate void DamageTakenEventHandler(int amount, int elementType);
 
-	public void TakeDamage(int amount, ElementType elementType)
-	{
-		if (_currentValue <= 0) return;
-		EmitSignal(SignalName.DamageTaken, amount, (int)elementType);
-		Subtract(amount);
-	}
+    [Signal]
+    public delegate void DamageTakenEventHandler(int amount, int elementType);
+
+    public void TakeDamage(int amount, ElementType elementType)
+    {
+        if (_currentValue <= 0) return;
+        EmitSignal(SignalName.DamageTaken, amount, (int)elementType);
+        Subtract(amount);
+    }
 
 }
