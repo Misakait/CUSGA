@@ -39,9 +39,6 @@ func _ready() -> void:
 	bfs_search([1,1])
 	map[max_dis_from_home_point[0]][max_dis_from_home_point[1]] = "boss_room"
 	
-	for key in scene_to_scene.keys():
-		print(key," ",scene_to_scene[key])
-	
 	#显示地图
 	for index_x in map.size():
 		print(map[index_x])
@@ -78,12 +75,14 @@ func choose_create_position(start_point: Array):
 	if cnt > map_types_ref.map_type_total_cnt:
 		cnt = map_types_ref.map_type_total_cnt
 		
-	if cnt == 0:
+	if cnt <= 0:
 		return
 		
 	#这个场景衍生个多少场景
 	var num = randi_range(1,cnt)
 	map_types_ref.map_type_total_cnt -= num
+	print(start_point," ",num)
+	print(map_types_ref.map_type_total_cnt)
 	
 	for scene_id in range(0,num):
 		var choose_position: int = 0
@@ -111,6 +110,7 @@ func choose_create_position(start_point: Array):
 				if if_create(new_pos):
 					map_arr.append([new_x,new_y])
 				else:
+					map_types_ref.map_type_total_cnt += 1
 					continue
 				
 				scene_to_scene[new_start_point][0] = 1
@@ -126,6 +126,7 @@ func choose_create_position(start_point: Array):
 				if if_create(new_pos):
 					map_arr.append([new_x,new_y])
 				else:
+					map_types_ref.map_type_total_cnt += 1
 					continue
 				
 				scene_to_scene[new_start_point][1] = 1
@@ -141,6 +142,7 @@ func choose_create_position(start_point: Array):
 				if if_create(new_pos):
 					map_arr.append([new_x,new_y])
 				else:
+					map_types_ref.map_type_total_cnt += 1
 					continue
 				
 				scene_to_scene[new_start_point][2] = 1
@@ -156,6 +158,7 @@ func choose_create_position(start_point: Array):
 				if if_create(new_pos):
 					map_arr.append([new_x,new_y])
 				else:
+					map_types_ref.map_type_total_cnt += 1
 					continue
 				
 				scene_to_scene[new_start_point][3] = 1
@@ -223,6 +226,5 @@ func bfs_search(start_point: Array):
 	if !map_search_arr.is_empty():
 		max_dis_from_home += 1
 		max_dis_from_home_point = map_search_arr.back()
-		print(map_search_arr)
 		bfs_search(max_dis_from_home_point)
 	
