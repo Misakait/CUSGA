@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://6hb45wq2pclx" path="res://scripts/map_scripts/map_road.gd" id="4_a7gbl"]
 [ext_resource type="Script" uid="uid://d6q8i3s5c07j" path="res://scripts/map_scripts/map_button.gd" id="5_vtfeq"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="6_2263r"]
-[ext_resource type="Script" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
+[ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
 
