@@ -1,10 +1,14 @@
 [gd_scene format=3 uid="uid://disdd0mnwhfht"]
 
-[ext_resource type="Script" uid="uid://dke2t2x325k63" path="res://entities/Player.cs" id="1_d8qmr"]
+[ext_resource type="Script" uid="uid://85mcqhxvtxvs" path="res://entities/Player.cs" id="1_d8qmr"]
 [ext_resource type="Script" uid="uid://coyiavqkkmsgv" path="res://entities/components/EnergyComponent.cs" id="2_k3sny"]
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
 [ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]
 [ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="5_k3sny"]
+[ext_resource type="Script" uid="uid://l0wa2cwb0txu" path="res://entities/components/TagComponent.cs" id="6_shuw1"]
+[ext_resource type="Script" uid="uid://dh3lwksrhok2a" path="res://entities/components/EquipmentComponent.cs" id="7_b744r"]
+[ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_j2xde"]
+[ext_resource type="Script" uid="uid://b6xm5gace8x5h" path="res://entities/components/CraftingComponent.cs" id="9_v0ulg"]
 
 [node name="Player" type="CharacterBody2D" unique_id=1686256351]
 script = ExtResource("1_d8qmr")
@@ -23,3 +27,15 @@ metadata/_custom_type_script = "uid://vhrfbyuub4pr"
 
 [node name="AttributeComponent" type="Node" parent="." unique_id=943467577]
 script = ExtResource("5_k3sny")
+
+[node name="TagComponent" type="Node" parent="." unique_id=310653204]
+script = ExtResource("6_shuw1")
+
+[node name="EquipmentComponent" type="Node" parent="." unique_id=1818373124]
+script = ExtResource("7_b744r")
+
+[node name="InventoryComponent" type="Node" parent="." unique_id=2086060361]
+script = ExtResource("8_j2xde")
+
+[node name="CraftingComponent" type="Node" parent="." unique_id=666731952]
+script = ExtResource("9_v0ulg")

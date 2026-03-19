@@ -5,8 +5,8 @@ namespace CUSGA.resources.talents;
 [GlobalClass]
 public partial class TalentData : Resource
 {
-    [Export] public string TalentName { get; set; }
-    [Export(PropertyHint.MultilineText)] public string Description { get; set; }
-    [Export] public Texture2D TalentTexture { get; set; }
-    [Export] public Godot.Collections.Array<TalentEffect> Effects { get; set; }
+	[Export] public string TalentName { get; set; }
+	[Export(PropertyHint.MultilineText)] public string Description { get; set; }
+	[Export] public Texture2D TalentTexture { get; set; }
+	[Export] public Godot.Collections.Array<TalentEffect> Effects { get; set; }
 }

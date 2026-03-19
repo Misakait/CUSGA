@@ -5,7 +5,6 @@ namespace CUSGA.components;
 
 public partial class CraftingComponent : Node
 {
-    // 背包组件（我还没做）
     private InventoryComponent _inventory;
 
     public override void _Ready()

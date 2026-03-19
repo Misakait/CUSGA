@@ -11,7 +11,7 @@ public partial class TagTalentEffect : TalentEffect
     {
         if (TagToGrant != null && !TagToGrant.IsEmpty)
         {
-            targetPlayer.ActiveTalentTags.Add(TagToGrant);
+            targetPlayer.TagComponent.AddTag(TagToGrant);
             GD.Print($"玩家获得了特殊机制词条：{TagToGrant}");
         }
     }

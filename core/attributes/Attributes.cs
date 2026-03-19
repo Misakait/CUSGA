@@ -44,4 +44,9 @@ public class Attribute(AttributeType type, string displayName, float baseValue, 
         BonusValue += amount;
         OnAttributeChanged?.Invoke(this);
     }
+    public void RemoveBonus(float amount)
+    {
+        BonusValue -= amount;
+        OnAttributeChanged?.Invoke(this);
+    }
 }
