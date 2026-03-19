@@ -12,7 +12,7 @@ public partial class AttributeComponent : Node
     // 当前拥有的可用技能点
     public int AvailablePoints { get; private set; } = 0;
 
-    private Dictionary<AttributeType, core.attributes.Attribute> _attributes = [];
+    private readonly Dictionary<AttributeType, core.attributes.Attribute> _attributes = [];
 
     // 当可用点数变化时通知 UI
     public event Action<int> OnAvailablePointsChanged;
