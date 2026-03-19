@@ -21,16 +21,14 @@ func _ready() -> void:
 	map = map_position_create.map
 	s2s = map_position_create.scene_to_scene
 	
-	build_little_map()
+	build_little_map(1,1)
 	change_this_cell_color(1,1)
 	
 	
-func build_little_map():
-	for x in map.size():
-		for y in map[x].size():
-			if map[x][y] != "void":
-				build_this_cell(x,y)
-				build_this_bridge(x,y)
+func build_little_map(x: int, y: int):
+		if map[x][y] != "void":
+			build_this_cell(x,y)
+			build_this_bridge(x,y)
 
 # 建立房间
 func build_this_cell(x: int, y: int):

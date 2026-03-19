@@ -83,6 +83,7 @@ func check_these_button(the_scene: int):
 #上按钮
 func _on_up_button_pressed() -> void:
 	#print("你点我干什么，我是上")
+	map_little.build_little_map(posx-1, posy)
 	map_little.change_this_cell_color(posx-1, posy)
 	map_little.return_this_cell_color(posx, posy)
 	#注意：load_scene_at会改变当前posx与posy的值
@@ -91,6 +92,7 @@ func _on_up_button_pressed() -> void:
 #右按钮
 func _on_right_button_pressed() -> void:
 	#print("卧槽，我是右")
+	map_little.build_little_map(posx, posy+1)
 	map_little.change_this_cell_color(posx, posy+1)
 	map_little.return_this_cell_color(posx, posy)
 	#注意：load_scene_at会改变当前posx与posy的值
@@ -99,6 +101,7 @@ func _on_right_button_pressed() -> void:
 #下按钮
 func _on_down_button_pressed() -> void:
 	#print("点我点我，我是下")
+	map_little.build_little_map(posx+1, posy)
 	map_little.change_this_cell_color(posx+1, posy)
 	map_little.return_this_cell_color(posx, posy)
 	#注意：load_scene_at会改变当前posx与posy的值
@@ -107,6 +110,7 @@ func _on_down_button_pressed() -> void:
 #左按钮
 func _on_left_button_pressed() -> void:
 	#print("我tm的是左啊")
+	map_little.build_little_map(posx, posy-1)
 	map_little.change_this_cell_color(posx, posy-1)
 	map_little.return_this_cell_color(posx, posy)
 	#注意：load_scene_at会改变当前posx与posy的值
