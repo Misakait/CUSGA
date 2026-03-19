@@ -1,21 +1,24 @@
 [gd_scene format=3 uid="uid://cbruma8ubj7lv"]
 
-[ext_resource type="Texture2D" uid="uid://byeyhp0dvayvt" path="res://res/image/character_card_base.png" id="1_c5u2c"]
 [ext_resource type="Script" uid="uid://cxrvy4dp5urht" path="res://scripts/card_scripts/card_slot.gd" id="1_e7mht"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_e7mht"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugqx"]
-size = Vector2(154, 204)
+size = Vector2(150, 210)
 
 [node name="CardSlot" type="Node2D" unique_id=1623300953]
 script = ExtResource("1_e7mht")
 
 [node name="CardSlotImage" type="Sprite2D" parent="." unique_id=2092587844]
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("1_c5u2c")
+modulate = Color(0, 0, 0, 1)
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_e7mht")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1387787371]
 collision_layer = 2
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=737652140]
+position = Vector2(4.371122e-08, 3.8146973e-06)
+rotation = 1.5707964
 shape = SubResource("RectangleShape2D_sugqx")
