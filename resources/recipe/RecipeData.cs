@@ -1,5 +1,6 @@
 using Godot;
 using Godot.Collections;
+using CUSGA.resources.item;
 
 namespace CUSGA.resources.crafting;
 
@@ -7,24 +8,24 @@ namespace CUSGA.resources.crafting;
 [GlobalClass]
 public partial class CraftingIngredient : Resource
 {
-    // 需要的物品
-    [Export] public ItemData RequiredItem { get; set; }
-    // 需要的个数
-    [Export] public int Amount { get; set; } = 1;
+	// 需要的物品
+	[Export] public ItemData RequiredItem { get; set; }
+	// 需要的个数
+	[Export] public int Amount { get; set; } = 1;
 }
 
 // 定义完整的合成配方图纸
 [GlobalClass]
 public partial class CraftingRecipe : Resource
 {
-    [Export] public string RecipeName { get; set; }
+	[Export] public string RecipeName { get; set; }
 
-    // 需要耗费的所有材料列表
-    [Export] public Array<CraftingIngredient> Inputs { get; set; } = [];
+	// 需要耗费的所有材料列表
+	[Export] public Array<CraftingIngredient> Inputs { get; set; } = [];
 
-    // 输出的物品
-    [Export] public ItemData OutputItem { get; set; }
+	// 输出的物品
+	[Export] public ItemData OutputItem { get; set; }
 
-    // 输出数量
-    [Export] public int OutputAmount { get; set; } = 1;
+	// 输出数量
+	[Export] public int OutputAmount { get; set; } = 1;
 }
