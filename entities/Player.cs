@@ -13,8 +13,9 @@ public partial class Player : CharacterBody2D
     private SatietyComponent _satiety;
     private EnergyComponent _energy;
     private AttributeComponent _attribute;
+    public TagComponent TagComponent { get; private set; }
+
     private Node _globalEventBus;
-    public HashSet<StringName> ActiveTalentTags { get; private set; } = [];
 
     public override void _Ready()
     {
@@ -22,6 +23,7 @@ public partial class Player : CharacterBody2D
         _satiety = GetNode<SatietyComponent>("SatietyComponent");
         _energy = GetNode<EnergyComponent>("EnergyComponent");
         _attribute = GetNode<AttributeComponent>("AttributeComponent");
+        TagComponent = GetNode<TagComponent>("TagComponent");
 
         _satiety.Depleted += OnSatietyDepleted;
         _health.Depleted += OnPlayerDied;
