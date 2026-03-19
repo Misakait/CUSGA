@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using CUSGA.core.constants;
-using CUSGA.resources.equipment;
+using CUSGA.resources.item.equipment;
 using CUSGA.entities.components;
 using CUSGA.entities;
 

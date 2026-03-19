@@ -1,7 +1,7 @@
 using Godot;
 using CUSGA.core.attributes;
 
-namespace CUSGA.resources.equipment;
+namespace CUSGA.resources.item.equipment;
 
 [GlobalClass]
 public partial class SetBonusTier : Resource

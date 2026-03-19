@@ -1,7 +1,7 @@
 using CUSGA.core.constants;
 using Godot;
 
-namespace CUSGA.resources.equipment;
+namespace CUSGA.resources.item.equipment;
 
 [GlobalClass]
 public partial class EquipmentSetData : Resource

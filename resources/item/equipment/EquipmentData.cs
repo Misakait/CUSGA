@@ -2,15 +2,12 @@ using Godot;
 using Godot.Collections;
 using CUSGA.core.attributes;
 using CUSGA.core.constants;
-
-namespace CUSGA.resources.equipment;
+using CUSGA.resources.item;
+namespace CUSGA.resources.item.equipment;
 
 [GlobalClass]
-public partial class EquipmentData : Resource
+public partial class EquipmentData : ItemData
 {
-    [Export] public string ItemName { get; set; }
-    [Export] public Texture2D Icon { get; set; }
-
     // 允许装备在哪些槽位（斧头可以同时勾选 Axe 和 Weapon）
     [Export] public Array<EquipmentSlot> ValidSlots { get; set; } = [];
 
@@ -22,4 +19,9 @@ public partial class EquipmentData : Resource
 
     // 提供的行为标签
     [Export] public Array<StringName> GrantedTags { get; set; } = [];
+
+    public EquipmentData()
+    {
+        MaxStackSize = 1;
+    }
 }
