@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://rukl64pxxdie"]
+
+[node name="SlotUI" type="PanelContainer" unique_id=1951712606]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1051414403]
+layout_mode = 2
+
+[node name="ItemIcon" type="TextureRect" parent="MarginContainer" unique_id=2056117677]
+layout_mode = 2
+
+[node name="AmountLabel" type="Label" parent="MarginContainer" unique_id=455454641]
+layout_mode = 2
