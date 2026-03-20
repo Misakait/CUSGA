@@ -1,24 +1,25 @@
 extends Node2D
 
-const HAND_COUNT = 12 #生成的手牌数量
+const HAND_COUNT = 12 #调试用的生成的手牌数量
 const CARD_SCENE_PATH = "uid://b3l5aai61f7g6"
 const CARD_WIDTH = 200 #卡牌宽度，影响卡牌间隔
 const HAND_Y_POSITION = 580 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
 const ROW_SPACING_Y = 80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
 
-var player_hand = [] #玩家手牌
+var player_hand: Array[SkillCardData] = [] #玩家手牌
 var center_screen_x
 
 func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
 
-	var card_scene = preload(CARD_SCENE_PATH)
-	for i in range(HAND_COUNT):
-		var new_card = card_scene.instantiate()
-		$"../CardManager".add_child(new_card)
-		new_card.name = "Card" #方便调试
-		add_card_to_hand(new_card)
+	##调试用的开局生成手牌
+	#var card_scene = preload(CARD_SCENE_PATH)
+	#for i in range(HAND_COUNT):
+		#var new_card = card_scene.instantiate()
+		#$"../CardManager".add_child(new_card)
+		#new_card.name = "Card" #方便调试
+		#add_card_to_hand(new_card)
 
 func add_card_to_hand(card):
 	if card not in player_hand:

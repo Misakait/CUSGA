@@ -2,8 +2,11 @@ extends Node
 class_name DeckManager
 
 var draw_pile: Array[SkillCardData] = []
-var hand: Array[SkillCardData] = []
+var hand: Array[SkillCardData]
 var discard_pile: Array[SkillCardData] = []
+
+func _ready() -> void:
+	hand = $"../PlayerHand".player_hand
 
 # 初始化牌库
 func initialize_deck(starting_deck: Array[SkillCardData]):
