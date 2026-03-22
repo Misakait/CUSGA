@@ -6,20 +6,21 @@ namespace CUSGA.core.autoloads;
 
 public partial class EncounterManager : Node
 {
-    private TimeSystem _timeSystem;
+    public static EncounterManager Instance { get; private set; }
     [Export] public Array<GatheringEncounterRule> GatheringRules { get; set; } = [];
     [Export] public PackedScene Monster { get; set; }
     private const float nightModifier = 6.0f;
     private const float originSpawnChance = 0.05f;
 
+
     public override void _Ready()
     {
-        _timeSystem = GetNode<TimeSystem>("/root/TimeSystem");
+        Instance = this;
     }
 
     public void OnPlayerGatheringComplete(StringName resourceTag, Node resourceNode)
     {
-        float dayNightModifier = _timeSystem.IsNight ? nightModifier : 1.0f;
+        float dayNightModifier = TimeSystem.Instance.IsNight ? nightModifier : 1.0f;
         float spawnChance = originSpawnChance * dayNightModifier;
 
         if (GD.Randf() <= spawnChance)
