@@ -4,6 +4,7 @@ signal hovered
 signal hovered_off
 
 var hand_position #手牌位置
+var card_data:SkillCardData
 
 #该节点必须挂载在CardManager下！
 func _ready() -> void:
@@ -12,7 +13,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-func init_card_data(card_data):
+func init_card_data(the_card_data):
+	card_data = the_card_data
 	$CardName.text = card_data.card_name
 	$CardDescription.text = card_data.description
 	$CardCost.text = str(card_data.energy_cost)
