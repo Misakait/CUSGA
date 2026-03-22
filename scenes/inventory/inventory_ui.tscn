@@ -1,15 +1,22 @@
 [gd_scene format=3 uid="uid://re28ypfb6pn7"]
 
+[ext_resource type="Script" uid="uid://dvb7fv6n3opp4" path="res://core/ui/InventoryUI.cs" id="1_qedko"]
+
 [node name="InventoryUI" type="Control" unique_id=1703104203]
+custom_minimum_size = Vector2(500, 300)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 506.0
+offset_bottom = 289.0
+script = ExtResource("1_qedko")
 
 [node name="MainPanel" type="PanelContainer" parent="." unique_id=2030953398]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MainPanel" unique_id=1119776265]
 layout_mode = 2
@@ -18,16 +25,23 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="title" type="Label" parent="MainPanel/VBoxContainer/TitleBar" unique_id=237112284]
+custom_minimum_size = Vector2(470, 0)
 layout_mode = 2
 
 [node name="CloseButton" type="Button" parent="MainPanel/VBoxContainer/TitleBar" unique_id=1997663957]
+custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MainPanel/VBoxContainer" unique_id=74073306]
+custom_minimum_size = Vector2(0, 270)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="MarginContainer" type="MarginContainer" parent="MainPanel/VBoxContainer/ScrollContainer" unique_id=2117164804]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="SlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ScrollContainer/MarginContainer" unique_id=376297983]
+unique_name_in_owner = true
 layout_mode = 2
