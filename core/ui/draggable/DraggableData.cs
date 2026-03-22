@@ -4,7 +4,7 @@ using CUSGA.core.inventory;
 
 namespace CUSGA.core.ui.draggable;
 
-public class DraggableData
+public partial class DraggableData : RefCounted
 {
     // 这个快递数据包是从哪个系统来的
     public StringName SourceSystem { get; set; } = TagConsts.SystemInventory;
