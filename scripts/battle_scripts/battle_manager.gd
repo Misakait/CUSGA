@@ -7,6 +7,8 @@ extends Node
 @export var card_scene: PackedScene 
 
 var player_energy: int = 100
+var turn_draw_count:int = 5 ##每回合摸牌数
+
 const MAX_ENERGY: int = 100
 
 func _ready():
@@ -17,7 +19,7 @@ func _ready():
 
 func start_player_turn():
 	print("--- 玩家回合开始 ---")
-	deck_manager.draw_cards(5)
+	deck_manager.draw_cards(turn_draw_count)
 
 	#end_player_turn()
 
