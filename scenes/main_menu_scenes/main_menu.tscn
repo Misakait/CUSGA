@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://qwckbjjp11ca"]
+
+[ext_resource type="Script" uid="uid://djfxwyx3sjiob" path="res://scripts/main_menu_scripts/exit_panel.gd" id="1_17cx3"]
+[ext_resource type="Script" uid="uid://bgwfaeq0mm005" path="res://scripts/main_menu_scripts/start_panel.gd" id="1_mh14t"]
+[ext_resource type="Script" uid="uid://cfumu6i2fg3yk" path="res://scripts/main_menu_scripts/settings_panel.gd" id="3_bcsmm"]
+[ext_resource type="Script" uid="uid://c8v8bpqgsv02b" path="res://scripts/main_menu_scripts/menu_manager.gd" id="4_mt8f4"]
+
+[node name="MainMenu" type="Node2D" unique_id=1637248230]
+
+[node name="MenuManager" type="Node" parent="." unique_id=737916461]
+script = ExtResource("4_mt8f4")
+
+[node name="StartPanel" type="Control" parent="MenuManager" unique_id=2009313607]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 53.0
+offset_top = 45.0
+offset_right = 93.0
+offset_bottom = 85.0
+script = ExtResource("1_mh14t")
+
+[node name="StartButton" type="Button" parent="MenuManager/StartPanel" unique_id=929621195]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="SettingsPanel" type="Control" parent="MenuManager" unique_id=1300585704]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 58.0
+offset_top = 1.0
+offset_right = 98.0
+offset_bottom = 41.0
+script = ExtResource("3_bcsmm")
+
+[node name="SettingsButton" type="Button" parent="MenuManager/SettingsPanel" unique_id=470820055]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="ExitPanel" type="Control" parent="MenuManager" unique_id=1571917802]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_17cx3")
+
+[node name="ExitButton" type="Button" parent="MenuManager/ExitPanel" unique_id=235438825]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
