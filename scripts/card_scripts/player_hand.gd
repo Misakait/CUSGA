@@ -12,6 +12,12 @@ const ROW_SPACING_Y = -80   # 两行之间的Y轴垂直间距 (正数往下排�
 var player_hand_card:Array[Node2D] = [] #玩家手牌。
 var center_screen_x
 
+#region 动画部分
+@export_group("动画部分")
+@export var card_to_position_speed:float = 0.2 ##手牌整理至对应位置的速度
+@export var card_discard_speed:float = 0.3 ##卡牌弃置动画速度
+#endregion
+
 func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
 
@@ -33,8 +39,9 @@ func remove_card_from_hand(card):
 	if card in player_hand_card:
 		#print(card.data.name,"被移除了！")
 		player_hand_card.erase(card)
-		card.queue_free()
 		update_hand_positions()
+		#播放弃牌动画
+		play_discard_animation(card)
 
 func update_hand_positions():
 	for i in range(player_hand_card.size()):
@@ -65,4 +72,17 @@ func calculate_card_position(index) -> Vector2:
 
 func animate_card_to_position(card, new_position):
 	var tween = get_tree().create_tween()
-	tween.tween_property(card, "position", new_position, 0.2)
+	tween.tween_property(card, "position", new_position, card_to_position_speed)
+
+# 弃牌动画与销毁
+func play_discard_animation(card: Node2D):
+	# 待定：如果卡牌有 Area2D ，在这里禁用交互，防止飞出时被误触
+	
+	var screen_center = get_viewport_rect().size / 2.0
+	var tween = get_tree().create_tween()
+	
+	tween.set_parallel(true)
+	tween.tween_property(card, "position", screen_center, card_discard_speed).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(card, "modulate:a", 0.0, card_discard_speed)
+	# 动画结束后销毁节点
+	tween.chain().tween_callback(card.queue_free)
