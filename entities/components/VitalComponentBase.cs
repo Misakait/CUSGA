@@ -22,6 +22,13 @@ public partial class VitalComponentBase : Node
         _currentValue = _maxValue;
     }
 
+    public virtual void InitializeMax(int newMaxValue)
+    {
+        _maxValue = newMaxValue;
+        _currentValue = _maxValue;
+        EmitSignal(SignalName.ValueChanged, _currentValue, _maxValue);
+    }
+
     public virtual void Add(int amount)
     {
         _currentValue = Mathf.Min(_currentValue + amount, _maxValue);
