@@ -13,6 +13,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
+func use(target = null):
+	if target:
+		print(name,"被使用，目标为",target)
+	else:
+		print(name,"被使用，没有目标")
+
 func init_card_data(card_data):
 	data = card_data
 	$CardName.text = data.name

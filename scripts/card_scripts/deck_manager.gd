@@ -14,7 +14,7 @@ func _ready() -> void:
 func initialize_deck(starting_deck_data: Array[SkillCardData]):
 	draw_pile_data = starting_deck_data.duplicate()
 	
-	# 规则：卡牌数少于 10 张，补充低级卡
+	# 规则：卡牌数少于 x 张，补充低级卡
 	if draw_pile_data.size() < min_start_cards_count:
 		fill_with_basic_cards(min_start_cards_count - draw_pile_data.size())
 		
@@ -37,15 +37,12 @@ func draw_cards(amount: int):
 	print_all_card()
 
 # 打出卡牌
-func play_card(card: SkillCardData, target):
-	if not card in player_hand.player_hand_card.data: return
-	
+func play_card(card: Node2D, target = null):
 	# 执行卡牌效果
-	card.apply_effect(target)
+	card.use(target)
 	
 	# 从手牌移除，进入弃牌堆
-	#player_hand.player_hand_card.erase(card)
-	#discard_pile_data.append(card)
+	into_discard_pile(card)
 
 # 丢弃所有手牌
 func discard_hand():
@@ -94,5 +91,10 @@ func print_discard_pile():
 	print("【弃牌堆】(", discard_pile_data.size(), "张): ", names)
 
 func discard(card):
+	print(card.data.name,"被弃置")
+	discard_pile_data.append(card.data)
+	player_hand.remove_card_from_hand(card)
+	
+func into_discard_pile(card):
 	discard_pile_data.append(card.data)
 	player_hand.remove_card_from_hand(card)

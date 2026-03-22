@@ -1,5 +1,7 @@
 extends Node2D
 
+@onready var deck_manager = $"../DeckManager"
+
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
 
@@ -43,6 +45,7 @@ func finish_drag():
 	card_being_dragged.scale = Vector2(1.05, 1.05)
 	var card_slot_found = raycast_check_for_card_slot()
 	if  card_slot_found:
+		deck_manager.play_card(card_being_dragged)
 		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 		card_being_dragged.position = card_slot_found.position
 	else:#如果拖动后没进入卡槽，则回到玩家手中
