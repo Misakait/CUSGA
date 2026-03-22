@@ -5,6 +5,7 @@ class_name DeckManager
 
 var draw_pile_data: Array[SkillCardData] = []
 var discard_pile_data: Array[SkillCardData] = []
+var min_start_cards_count:int = 10 #最少卡牌数量，低于该值会被填充基础卡牌
 
 func _ready() -> void:
 	pass
@@ -14,8 +15,8 @@ func initialize_deck(starting_deck_data: Array[SkillCardData]):
 	draw_pile_data = starting_deck_data.duplicate()
 	
 	# 规则：卡牌数少于 10 张，补充低级卡
-	if draw_pile_data.size() < 10:
-		fill_with_basic_cards(10 - draw_pile_data.size())
+	if draw_pile_data.size() < min_start_cards_count:
+		fill_with_basic_cards(min_start_cards_count - draw_pile_data.size())
 		
 	draw_pile_data.shuffle()
 
