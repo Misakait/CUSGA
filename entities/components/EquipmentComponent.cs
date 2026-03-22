@@ -6,7 +6,7 @@ using CUSGA.resources.item.equipment;
 using CUSGA.entities.components;
 using CUSGA.entities;
 
-namespace CUSGA.components;
+namespace CUSGA.entities.components;
 
 public partial class EquipmentComponent : Node
 {
