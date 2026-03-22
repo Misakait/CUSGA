@@ -1,7 +1,7 @@
 extends Node
 
 @onready var map_position = $"../MapPositionCreate"
-@onready var map_road = $"../MapRoad"
+@onready var map_types = $"../MapTypes"
 @onready var map_button = $"../MapButton"
 
 var current_scene: Node2D = null
@@ -13,16 +13,17 @@ var map_scene: Dictionary
 
 func _ready() -> void:
 	#创建地图
-	create_map()
+	
+	create_map_road()
 	load_scene_at(Vector2i(1,1))
 	
-func create_map():
+func create_map_road():
 	var map = map_position.map
 	
 	#创建地图对应的场景路径
 	for x in range(0 , map.size()):
 		for y in range(0 , map[x].size()):
-			map_road_in_map[Vector2i(x,y)] = map_road.from_name_get_road(map[x][y])
+			map_road_in_map[Vector2i(x,y)] = map_types.from_name_get_road(map[x][y])
 
 func load_scene_at(position: Vector2i):
 	

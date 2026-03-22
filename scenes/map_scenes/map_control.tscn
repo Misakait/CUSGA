@@ -4,18 +4,20 @@
 [ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="2_aulaq"]
 [ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
 [ext_resource type="PackedScene" uid="uid://btsikq2ra6c5u" path="res://scenes/map_scenes/map_son_scenes/map_forest.tscn" id="3_4pmc0"]
-[ext_resource type="Script" uid="uid://6hb45wq2pclx" path="res://scripts/map_scripts/map_road.gd" id="4_a7gbl"]
 [ext_resource type="PackedScene" uid="uid://4a2ijvrcxnqe" path="res://scenes/map_scenes/map_son_scenes/map_cave.tscn" id="4_khs5e"]
 [ext_resource type="Script" uid="uid://d6q8i3s5c07j" path="res://scripts/map_scripts/map_button.gd" id="5_vtfeq"]
 [ext_resource type="PackedScene" uid="uid://7wdqj8cp2mmy" path="res://scenes/map_scenes/map_son_scenes/map_farm.tscn" id="5_vuryw"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="6_2263r"]
+[ext_resource type="PackedScene" uid="uid://dwapmnj5huibf" path="res://scenes/map_scenes/map_son_scenes/map_home.tscn" id="6_vuryw"]
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
+[ext_resource type="PackedScene" uid="uid://bpd2bncemempm" path="res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn" id="7_mrmfi"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
 
 [sub_resource type="Resource" id="Resource_4pmc0"]
 script = ExtResource("2_aulaq")
 scene_name = "forest"
 scene_count = 6
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_forest.tscn"
 scene_pkg = ExtResource("3_4pmc0")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
@@ -23,6 +25,7 @@ metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 script = ExtResource("2_aulaq")
 scene_name = "cave"
 scene_count = 5
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_cave.tscn"
 scene_pkg = ExtResource("4_khs5e")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
@@ -30,14 +33,31 @@ metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 script = ExtResource("2_aulaq")
 scene_name = "farm"
 scene_count = 4
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_farm.tscn"
 scene_pkg = ExtResource("5_vuryw")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_1iq7d"]
+script = ExtResource("2_aulaq")
+scene_name = "home"
+scene_count = 1
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_home.tscn"
+scene_pkg = ExtResource("6_vuryw")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_bl6s4"]
+script = ExtResource("2_aulaq")
+scene_name = "boss_room"
+scene_count = 1
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn"
+scene_pkg = ExtResource("7_mrmfi")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
-map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw")])
+map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4")])
 
 [node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("2_2r3ie")
@@ -144,14 +164,6 @@ text = "往西走"
 
 [node name="MapInstantiator" type="Node2D" parent="." unique_id=950670003]
 script = ExtResource("3_2r3ie")
-
-[node name="MapRoad" type="Node2D" parent="." unique_id=1306542682]
-script = ExtResource("4_a7gbl")
-home_road = "res://scenes/map_scenes/map_son_scenes/map_home.tscn"
-forest_road = "res://scenes/map_scenes/map_son_scenes/map_forest.tscn"
-cave_road = "res://scenes/map_scenes/map_son_scenes/map_cave.tscn"
-farm_road = "res://scenes/map_scenes/map_son_scenes/map_farm.tscn"
-boss_room_road = "res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn"
 
 [node name="MapLittle" type="Node2D" parent="." unique_id=1178223658]
 position = Vector2(30, 30)
