@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://b3l5aai61f7g6"]
+[gd_scene format=3 uid="uid://ca8m4rlwkbbvq"]
 
 [ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/card.gd" id="1_2kac4"]
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_v4yo3"]
