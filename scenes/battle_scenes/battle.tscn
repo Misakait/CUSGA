@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dk15nbphlvt8t"]
 
 [ext_resource type="Script" uid="uid://d0ltsey5svvgs" path="res://scripts/battle_scripts/battle_manager.gd" id="1_ckntb"]
-[ext_resource type="PackedScene" uid="uid://ca8m4rlwkbbvq" path="res://scenes/card_scenes/Card.tscn" id="2_76lap"]
+[ext_resource type="PackedScene" uid="uid://b3l5aai61f7g6" path="res://scenes/card_scenes/Card.tscn" id="2_76lap"]
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://scripts/card_scripts/skill_card_data.gd" id="2_nm17m"]
 [ext_resource type="Script" uid="uid://chbi747pg2cok" path="res://scripts/card_scripts/deck_manager.gd" id="2_ychmy"]
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="3_76lap"]
