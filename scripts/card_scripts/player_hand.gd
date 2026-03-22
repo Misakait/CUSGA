@@ -5,9 +5,9 @@ extends Node2D
 
 const CARD_SCENE_PATH = "uid://ca8m4rlwkbbvq"
 const CARD_WIDTH = 200 #卡牌宽度，影响卡牌间隔
-const HAND_Y_POSITION = 580 #第一行卡牌的高度位置
+const HAND_Y_POSITION = 620 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
-const ROW_SPACING_Y = 80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
+const ROW_SPACING_Y = -80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
 
 var player_hand_card:Array[Node2D] = [] #玩家手牌。
 var center_screen_x
