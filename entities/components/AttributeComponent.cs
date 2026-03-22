@@ -6,6 +6,7 @@ using CUSGA.core;
 using CUSGA.resources.stats;
 namespace CUSGA.entities.components;
 
+[GlobalClass]
 public partial class AttributeComponent : Node
 {
     [Export] public StartingStats InitialData;
@@ -19,6 +20,16 @@ public partial class AttributeComponent : Node
 
     public override void _Ready()
     {
+        if (InitialData != null)
+        {
+            InitializeWithData(InitialData);
+        }
+
+    }
+
+    public void InitializeWithData(StartingStats Data)
+    {
+        InitialData = Data;
         _attributes.Add(AttributeType.PhysAtk, new core.attributes.Attribute(AttributeType.PhysAtk, "物理攻击", InitialData.BasePhysAtk, InitialData.PhysAtkGrowth));
         _attributes.Add(AttributeType.PhysDef, new core.attributes.Attribute(AttributeType.PhysDef, "物理抗性", InitialData.BasePhysDef, InitialData.PhysDefGrowth));
         _attributes.Add(AttributeType.MagPower, new core.attributes.Attribute(AttributeType.MagPower, "法术强度", InitialData.BaseMagPower, InitialData.MagPowerGrowth));
