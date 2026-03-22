@@ -15,9 +15,9 @@ func _process(delta: float) -> void:
 
 func init_card_data(card_data):
 	data = card_data
-	$CardName.text = card_data.card_name
+	$CardName.text = card_data.name
 	$CardDescription.text = card_data.description
-	$CardCost.text = str(card_data.energy_cost)
+	$CardCost.text = str(card_data.cost)
 
 func _on_area_2d_mouse_entered() -> void:
 	emit_signal("hovered", self)

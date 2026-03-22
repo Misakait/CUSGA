@@ -19,7 +19,7 @@ func start_player_turn():
 	print("--- 玩家回合开始 ---")
 	deck_manager.draw_cards(5)
 
-	end_player_turn()
+	#end_player_turn()
 
 func end_player_turn():
 	deck_manager.discard_hand()

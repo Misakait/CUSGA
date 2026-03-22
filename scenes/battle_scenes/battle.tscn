@@ -25,13 +25,7 @@ script = ExtResource("8_ptgcx")
 [node name="CardSlots" type="Marker2D" parent="." unique_id=309555572]
 
 [node name="CardSlot" parent="CardSlots" unique_id=1623300953 instance=ExtResource("9_sugqx")]
-position = Vector2(430, 150)
-
-[node name="CardSlot2" parent="CardSlots" unique_id=219062128 instance=ExtResource("9_sugqx")]
-position = Vector2(764, 174)
-
-[node name="CardSlot3" parent="CardSlots" unique_id=35447543 instance=ExtResource("9_sugqx")]
-position = Vector2(1077, 148)
+position = Vector2(641, 169)
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1114505953]
 script = ExtResource("10_navvr")

@@ -4,6 +4,6 @@
 
 [resource]
 script = ExtResource("1_7sme0")
-card_name = "测试卡牌1"
+name = "测试卡牌1"
 description = "测试卡牌1，并且这里是卡牌的效果描述。"
 metadata/_custom_type_script = "uid://bejho62d28qir"

@@ -42,12 +42,9 @@ func start_drag(card):
 func finish_drag():
 	card_being_dragged.scale = Vector2(1.05, 1.05)
 	var card_slot_found = raycast_check_for_card_slot()
-	if  card_slot_found and not card_slot_found.card_in_slot:
+	if  card_slot_found:
 		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 		card_being_dragged.position = card_slot_found.position
-		#若不想让卡牌嵌入卡槽后不可移动，注释掉下两行代码
-		card_being_dragged.get_node("Area2D/CollisionShape2D").disabled = true
-		card_slot_found.card_in_slot = true
 	else:#如果拖动后没进入卡槽，则回到玩家手中
 		player_hand_referencd.add_card_to_hand(card_being_dragged)
 		
