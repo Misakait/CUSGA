@@ -31,7 +31,7 @@ func add_card_to_hand(card):
 
 func remove_card_from_hand(card):
 	if card in player_hand_card:
-		print(card.data.name,"被移除了！")
+		#print(card.data.name,"被移除了！")
 		player_hand_card.erase(card)
 		card.queue_free()
 		update_hand_positions()

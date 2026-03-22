@@ -96,5 +96,6 @@ func discard(card):
 	player_hand.remove_card_from_hand(card)
 	
 func into_discard_pile(card):
+	print(card.data.name,"进入弃牌堆")
 	discard_pile_data.append(card.data)
 	player_hand.remove_card_from_hand(card)

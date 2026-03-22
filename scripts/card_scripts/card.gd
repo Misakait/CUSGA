@@ -15,9 +15,9 @@ func _process(delta: float) -> void:
 
 func use(target = null):
 	if target:
-		print(name,"被使用，目标为",target)
+		print(data.name,"被使用，目标为",target)
 	else:
-		print(name,"被使用，没有目标")
+		print(data.name,"被使用，没有目标")
 
 func init_card_data(card_data):
 	data = card_data
