@@ -31,26 +31,25 @@ func draw_cards(amount: int):
 		
 		var card_data = draw_pile_data.pop_back()
 		player_hand.draw_card_data(card_data)
-	print("抽了牌。当前手牌数：", player_hand.player_hand_data.size())
+	print("抽了牌。当前手牌数：", player_hand.player_hand.size())
 	#调试打印所有卡牌
 	print_all_card()
 
 # 打出卡牌
 func play_card(card: SkillCardData, target):
-	if not card in player_hand.player_hand_data: return
+	if not card in player_hand.player_hand.data: return
 	
 	# 执行卡牌效果
 	card.apply_effect(target)
 	
 	# 从手牌移除，进入弃牌堆
-	player_hand.player_hand_data.erase(card)
+	player_hand.player_hand.erase(card)
 	discard_pile_data.append(card)
 
 # 丢弃所有手牌
 func discard_hand():
-	discard_pile_data.append_array(player_hand.player_hand_data)
-	#player_hand.player_hand_data.clear()
 	for card in player_hand.player_hand.duplicate():
+		discard_pile_data.append(card.data)
 		player_hand.remove_card_from_hand(card)
 	print("回合结束，手牌已清空进入弃牌堆。")
 	print_all_card()
@@ -78,9 +77,9 @@ func print_all_card():
 
 func print_hand():
 	var names: Array[String] = []
-	for card in player_hand.player_hand_data:
-		names.append(card.card_name)
-	print("【手牌】(", player_hand.player_hand_data.size(), "张): ", names)
+	for card in player_hand.player_hand:
+		names.append(card.data.card_name)
+	print("【手牌】(", player_hand.player_hand.size(), "张): ", names)
 	
 func print_draw_pile():
 	var names: Array[String] = []

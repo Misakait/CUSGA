@@ -9,7 +9,6 @@ const HAND_Y_POSITION = 580 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
 const ROW_SPACING_Y = 80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
 
-var player_hand_data: Array[SkillCardData] = [] #玩家手牌数据。
 var player_hand:Array[Node2D] = [] #玩家手牌。
 var center_screen_x
 
@@ -24,9 +23,6 @@ func draw_card_data(card_data):
 	add_card_to_hand(new_card)
 
 func add_card_to_hand(card):
-	#同步手牌数据数组
-	player_hand_data.append(card.card_data)
-	
 	if card not in player_hand:
 		player_hand.insert(0, card)
 		update_hand_positions()
@@ -35,9 +31,6 @@ func add_card_to_hand(card):
 
 func remove_card_from_hand(card):
 	if card in player_hand:
-		#同步手牌数据数组
-		player_hand_data.erase(card.card_data)
-		
 		player_hand.erase(card)
 		card.queue_free()
 		update_hand_positions()
