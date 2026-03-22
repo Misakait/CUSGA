@@ -1,9 +1,10 @@
 using System;
 using CUSGA.resources.item;
+using Godot;
 
 namespace CUSGA.core.inventory;
 
-public class ItemStack
+public partial class ItemStack : RefCounted
 {
     public ItemData Item { get; private set; }
     public int Amount { get; private set; }
