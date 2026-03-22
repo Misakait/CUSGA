@@ -44,14 +44,13 @@ func play_card(card: SkillCardData, target):
 	card.apply_effect(target)
 	
 	# 从手牌移除，进入弃牌堆
-	player_hand.player_hand_card.erase(card)
-	discard_pile_data.append(card)
+	#player_hand.player_hand_card.erase(card)
+	#discard_pile_data.append(card)
 
 # 丢弃所有手牌
 func discard_hand():
 	for card in player_hand.player_hand_card.duplicate():
-		discard_pile_data.append(card.data)
-		player_hand.remove_card_from_hand(card)
+		discard(card)
 	print("回合结束，手牌已清空进入弃牌堆。")
 	print_all_card()
 
@@ -93,3 +92,7 @@ func print_discard_pile():
 	for card in discard_pile_data:
 		names.append(card.name)
 	print("【弃牌堆】(", discard_pile_data.size(), "张): ", names)
+
+func discard(card):
+	discard_pile_data.append(card.data)
+	player_hand.remove_card_from_hand(card)
