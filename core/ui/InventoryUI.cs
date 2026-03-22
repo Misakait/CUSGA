@@ -1,5 +1,5 @@
 using Godot;
-using CUSGA.components;
+using CUSGA.entities.components;
 namespace CUSGA.core.ui;
 
 public partial class InventoryUI : Control
