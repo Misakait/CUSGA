@@ -5,6 +5,7 @@ extends Node2D
 @export var farm_count: int
 @export var boss_room_count: int
 
+
 var map_type: Dictionary[String , int]
 var map_type_special: Dictionary[String , int]
 var map_type_now: Dictionary[String , int]

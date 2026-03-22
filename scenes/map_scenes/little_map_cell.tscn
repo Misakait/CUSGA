@@ -8,12 +8,3 @@
 modulate = Color(18.892157, 18.892157, 18.892157, 1)
 scale = Vector2(0.025, 0.04)
 texture = ExtResource("1_dgj6a")
-
-[node name="Label" type="Label" parent="." unique_id=1209087616]
-self_modulate = Color(0.012617188, 0.012617188, 0.012617188, 1)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "1"

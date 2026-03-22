@@ -8,8 +8,6 @@ extends Node2D
 var offeset_cell: float = 20
 var offeset_bridge: float = 10
 
-var cnt: int = 0
-
 # 位置-场景 的字典 {Vector2i : Node2D}
 var map_scene: Dictionary
 
@@ -35,8 +33,6 @@ func build_this_cell(x: int, y: int):
 	var cell = load(cell_pic)
 	var cell_scene = cell.instantiate()
 	cell_scene.position = Vector2(y * offeset_cell, x * offeset_cell)
-	cell_scene.get_node("Label").text = str(cnt)
-	cnt += 1
 	map_scene[Vector2i(x,y)] = cell_scene
 	add_child(cell_scene)
 

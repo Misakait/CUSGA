@@ -1,11 +1,12 @@
 extends Node2D
 
-@onready var map_types_ref = $"../MapTypes"
+@export var map_types_ref = map_types.new()
 
 @export var map_len_x: int
 @export var map_len_y: int
 
 var count_count: int = 0
+var map_type_total_cnt: int = 0
 
 var max_dis_from_home: int = 0
 var max_dis_from_home_point: Vector2i = Vector2i(1, 1)
@@ -23,7 +24,8 @@ var map: Array = []
 
 func _ready() -> void:
 	randomize()
-	print("实际剩下", map_types_ref.get_map_count_now())
+	
+	map_type_total_cnt = map_types_ref.get_map_count_now()
 	
 	# 初始化二维数组
 	for x in range(map_len_x + 1):
@@ -35,12 +37,10 @@ func _ready() -> void:
 	if map_types_ref.get_map_count_now() > 0:
 		scene_to_scene[Vector2i(1,1)] = [0,0,0,0]
 		bfs_create_map(Vector2i(1,1))
-	print("实际剩下", map_types_ref.get_map_count_now())
 	
 	map_search_arr = [Vector2i(1,1)]
 	bfs_search()
 	
-	print(map[max_dis_from_home_point.x][max_dis_from_home_point.y])
 	map[max_dis_from_home_point.x][max_dis_from_home_point.y] = "boss_room"
 	map[1][1] = "home"
 	
@@ -52,10 +52,7 @@ func _ready() -> void:
 func bfs_create_map(start_point: Vector2i):
 	if map[start_point.x][start_point.y] == "void":
 		map[start_point.x][start_point.y] = create_what()
-		print("第", count_count, "次:")
 		choose_create_position(start_point)
-		print(start_point, " ", map[start_point.x][start_point.y])
-		print("实际剩下： ",map_types_ref.get_map_count_now(), "map_arr: ", map_arr.size())
 	
 	
 	if !map_arr.is_empty():
@@ -82,14 +79,12 @@ func choose_create_position(start_point: Vector2i):
 		
 	count_count += 1
 	
-	if cnt == 0 || map_types_ref.map_type_total_cnt == 0:
+	if cnt == 0 || map_type_total_cnt == 0:
 		return
 	
 	# 限制生成数量，至少 1 个，最多 cnt
-	var num = randi_range(1, min(cnt, map_types_ref.map_type_total_cnt))
-	map_types_ref.map_type_total_cnt -= num
-	
-	print("num:", num, " ", scene_can_go, " cnt=", cnt, "剩下",  map_types_ref.map_type_total_cnt, " 实际剩下", map_types_ref.get_map_count_now())
+	var num = randi_range(1, min(cnt, map_type_total_cnt))
+	map_type_total_cnt -= num
 	
 	# 强制保证每个新房间和父房间双向连接
 	for i in range(num):
@@ -126,7 +121,6 @@ func choose_create_position(start_point: Vector2i):
 			3: # 上
 				scene_to_scene[start_point][3] = 1
 				scene_to_scene[new_pos][1] = 1
-	print( " arr：", map_arr)
 
 func if_create(the_position: Vector2i) -> bool:
 	if the_position.x >= 0 && the_position.x <= map_len_x && the_position.y >= 0 && the_position.y <= map_len_y:
@@ -136,16 +130,16 @@ func if_create(the_position: Vector2i) -> bool:
 	return false
 
 func create_what() -> String:
-	if map_types_ref.map_type_now.size() == 0:
+	if map_types_ref.map_type.size() == 0:
 		return "void"
-	var keys = map_types_ref.map_type_now.keys()
+	var keys = map_types_ref.map_type.keys()
 	var randi_num = randi_range(0, keys.size()-1)
 	var now_name = keys[randi_num]
-	if map_types_ref.map_type_now[now_name] > 0:
-		map_types_ref.map_type_now[now_name] -= 1
+	if map_types_ref.map_type[now_name] > 0:
+		map_types_ref.map_type[now_name] -= 1
 		return now_name
 	else:
-		map_types_ref.map_type_now.erase(now_name)
+		map_types_ref.map_type.erase(now_name)
 		return create_what()
 
 func bfs_search():
