@@ -57,7 +57,7 @@ func discard_hand():
 # 洗牌逻辑
 func reshuffle_discard_into_draw():
 	print("抽牌堆为空，洗切弃牌堆...")
-	draw_pile_data = draw_pile_data.duplicate()
+	draw_pile_data = discard_pile_data.duplicate()
 	discard_pile_data.clear()
 	draw_pile_data.shuffle()
 

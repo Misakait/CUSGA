@@ -24,4 +24,7 @@ func start_player_turn():
 func end_player_turn():
 	deck_manager.discard_hand()
 	print("--- 玩家回合结束 ---")
-	# 然后可以调用 start_enemy_turn() 等等
+	start_player_turn()
+
+func _on_turn_end_pressed() -> void:
+	end_player_turn()
