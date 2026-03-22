@@ -19,7 +19,6 @@ public partial class AttributeComponent : Node
 
     public override void _Ready()
     {
-        // 在这里初始化主角的初始面板（这里的数据未来可以通过 Resource 配置文件传入以实现彻底解耦）
         _attributes.Add(AttributeType.PhysAtk, new core.attributes.Attribute(AttributeType.PhysAtk, "物理攻击", InitialData.BasePhysAtk, InitialData.PhysAtkGrowth));
         _attributes.Add(AttributeType.PhysDef, new core.attributes.Attribute(AttributeType.PhysDef, "物理抗性", InitialData.BasePhysDef, InitialData.PhysDefGrowth));
         _attributes.Add(AttributeType.MagPower, new core.attributes.Attribute(AttributeType.MagPower, "法术强度", InitialData.BaseMagPower, InitialData.MagPowerGrowth));
