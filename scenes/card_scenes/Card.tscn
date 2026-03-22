@@ -20,5 +20,38 @@ texture = ExtResource("2_v4yo3")
 scale = Vector2(3, 3)
 shape = SubResource("RectangleShape2D_2kac4")
 
+[node name="CardName" type="Label" parent="." unique_id=36102632]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.0
+offset_top = -67.5
+offset_right = 39.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardDescription" type="Label" parent="." unique_id=1070513239]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -93.0
+offset_top = -27.0
+offset_right = 91.0
+offset_bottom = 63.0
+grow_horizontal = 2
+grow_vertical = 2
+autowrap_mode = 3
+
+[node name="CardCost" type="Label" parent="." unique_id=822735793]
+offset_left = 48.0
+offset_top = -64.0
+offset_right = 88.0
+offset_bottom = -41.0
+
 [connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
 [connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]

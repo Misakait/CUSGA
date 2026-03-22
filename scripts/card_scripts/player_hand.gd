@@ -1,38 +1,42 @@
 extends Node2D
 
-const HAND_COUNT = 12 #调试用的生成的手牌数量
-const CARD_SCENE_PATH = "uid://b3l5aai61f7g6"
+@onready var card_manager = $"../CardManager"
+@onready var deck_manager = $"../DeckManager"
+
+const CARD_SCENE_PATH = "uid://ca8m4rlwkbbvq"
 const CARD_WIDTH = 200 #卡牌宽度，影响卡牌间隔
 const HAND_Y_POSITION = 580 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
 const ROW_SPACING_Y = 80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
 
-var player_hand_data: Array[SkillCardData] = [] #玩家手牌
+var player_hand_data: Array[SkillCardData] = [] #玩家手牌数据。
+var player_hand:Array[Node2D] = [] #玩家手牌。
 var center_screen_x
 
 func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
 
-	##调试用的开局生成手牌
-	#var card_scene = preload(CARD_SCENE_PATH)
-	#for i in range(HAND_COUNT):
-		#var new_card = card_scene.instantiate()
-		#$"../CardManager".add_child(new_card)
-		#new_card.name = "Card" #方便调试
-		#add_card_to_hand(new_card)
+func draw_card_data(card_data):
+	player_hand_data.append(card_data)
+	
+	var card_scene = preload(CARD_SCENE_PATH)
+	var new_card = card_scene.instantiate()
+	new_card.init_card_data(card_data)
+	card_manager.add_child(new_card)
+	add_card_to_hand(new_card)
 
 func add_card_to_hand(card):
-	if card not in player_hand_data:
-		player_hand_data.insert(0, card)
+	if card not in player_hand:
+		player_hand.insert(0, card)
 		update_hand_positions()
 	else:
 		animate_card_to_position(card, card.hand_position)
 
 func update_hand_positions():
-	for i in range(player_hand_data.size()):
+	for i in range(player_hand.size()):
 		# 直接获取计算好的 Vector2 坐标
 		var new_position = calculate_card_position(i)
-		var card = player_hand_data[i]
+		var card = player_hand[i]
 		card.hand_position = new_position
 		animate_card_to_position(card, new_position)
 
@@ -44,7 +48,7 @@ func calculate_card_position(index) -> Vector2:
 	var col = index % MAX_CARDS_PER_ROW
 	
 	# 计算当前行实际有多少张卡牌（为了让不满一行的卡牌也能居中）
-	var cards_in_current_row = min(MAX_CARDS_PER_ROW, player_hand_data.size() - row * MAX_CARDS_PER_ROW)
+	var cards_in_current_row = min(MAX_CARDS_PER_ROW, player_hand.size() - row * MAX_CARDS_PER_ROW)
 	
 	# 计算 X 坐标：使得当前行的卡牌整体居中
 	var total_width = (cards_in_current_row - 1) * CARD_WIDTH
@@ -60,6 +64,6 @@ func animate_card_to_position(card, new_position):
 	tween.tween_property(card, "position", new_position, 0.1)
 
 func remove_card_from_hand(card):
-	if card in player_hand_data:
-		player_hand_data.erase(card)
+	if card in player_hand:
+		player_hand.erase(card)
 		update_hand_positions()
