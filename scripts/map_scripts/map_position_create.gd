@@ -55,7 +55,6 @@ func bfs_create_map(start_point: Vector2i):
 	if map[start_point.x][start_point.y] == "void":
 		map[start_point.x][start_point.y] = create_what()
 		choose_create_position(start_point)
-		print(start_point," ",scene_to_scene[start_point]," count: ",map_type_total_cnt)
 	
 	if !map_arr.is_empty():
 		var next_point: Vector2i = map_arr.pop_front()
