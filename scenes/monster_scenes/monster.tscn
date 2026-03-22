@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://do46qf017vjha"]
+
+[ext_resource type="Script" uid="uid://bd00gxa6umw42" path="res://entities/monster.cs" id="1_gxfgy"]
+[ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="1_i8hiw"]
+[ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="2_twjs6"]
+[ext_resource type="Script" uid="uid://qp3tco60xl2b" path="res://entities/components/FactionComponent.cs" id="3_tgvxs"]
+
+[node name="Monster" type="CharacterBody2D" unique_id=1411950281]
+script = ExtResource("1_gxfgy")
+
+[node name="Components" type="Node" parent="." unique_id=1744515292]
+
+[node name="TagComponent" type="Node" parent="Components" unique_id=1785885913]
+
+[node name="DropComponent" type="Node" parent="Components" unique_id=1354129390]
+
+[node name="ElementalComponent" type="Node" parent="Components" unique_id=2081169235]
+
+[node name="HealthComponent" type="Node" parent="Components" unique_id=769981606]
+script = ExtResource("1_i8hiw")
+metadata/_custom_type_script = "uid://d4gp22cg5vjro"
+
+[node name="AttributeComponent" type="Node" parent="Components" unique_id=1840972410]
+script = ExtResource("2_twjs6")
+metadata/_custom_type_script = "uid://ckflk2am2hx30"
+
+[node name="FactionComponent" type="Node" parent="Components" unique_id=1986993091]
+script = ExtResource("3_tgvxs")
+metadata/_custom_type_script = "uid://qp3tco60xl2b"
+
+[node name="ModelContainer" type="Node" parent="." unique_id=466557276]
+
+[node name="BehaviorTree" type="Node" parent="." unique_id=1725142876]
