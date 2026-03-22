@@ -4,3 +4,7 @@
 
 [node name="MapCave" type="Node2D" unique_id=1617305974]
 script = ExtResource("1_bcv0o")
+
+[node name="Label" type="Label" parent="." unique_id=1154569752]
+offset_right = 40.0
+offset_bottom = 23.0

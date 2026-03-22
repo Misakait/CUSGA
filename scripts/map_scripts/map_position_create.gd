@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var map_types_ref = map_types.new()
+@onready var map_types_ref = $"../MapTypes"
 
 @export var map_len_x: int
 @export var map_len_y: int
@@ -25,7 +25,7 @@ var map: Array = []
 func _ready() -> void:
 	randomize()
 	
-	map_type_total_cnt = map_types_ref.get_map_count_now()
+	map_type_total_cnt = map_types_ref.get_map_count_now() -1
 	
 	# 初始化二维数组
 	for x in range(map_len_x + 1):
@@ -37,7 +37,9 @@ func _ready() -> void:
 	if map_types_ref.get_map_count_now() > 0:
 		scene_to_scene[Vector2i(1,1)] = [0,0,0,0]
 		bfs_create_map(Vector2i(1,1))
-	
+	else:
+		print("你的地图数量不对啊")
+		
 	map_search_arr = [Vector2i(1,1)]
 	bfs_search()
 	
@@ -53,7 +55,7 @@ func bfs_create_map(start_point: Vector2i):
 	if map[start_point.x][start_point.y] == "void":
 		map[start_point.x][start_point.y] = create_what()
 		choose_create_position(start_point)
-	
+		print(start_point," ",scene_to_scene[start_point]," count: ",map_type_total_cnt)
 	
 	if !map_arr.is_empty():
 		var next_point: Vector2i = map_arr.pop_front()
@@ -130,16 +132,16 @@ func if_create(the_position: Vector2i) -> bool:
 	return false
 
 func create_what() -> String:
-	if map_types_ref.map_type.size() == 0:
+	if map_types_ref.map_cnt.size() == 0:
 		return "void"
-	var keys = map_types_ref.map_type.keys()
+	var keys = map_types_ref.map_cnt.keys()
 	var randi_num = randi_range(0, keys.size()-1)
 	var now_name = keys[randi_num]
-	if map_types_ref.map_type[now_name] > 0:
-		map_types_ref.map_type[now_name] -= 1
+	if map_types_ref.map_cnt[now_name] > 0:
+		map_types_ref.map_cnt[now_name] -= 1
 		return now_name
 	else:
-		map_types_ref.map_type.erase(now_name)
+		map_types_ref.map_cnt.erase(now_name)
 		return create_what()
 
 func bfs_search():

@@ -4,3 +4,7 @@
 
 [node name="MapFarm" type="Node2D" unique_id=1640719016]
 script = ExtResource("1_oain7")
+
+[node name="Label" type="Label" parent="." unique_id=725355864]
+offset_right = 40.0
+offset_bottom = 23.0

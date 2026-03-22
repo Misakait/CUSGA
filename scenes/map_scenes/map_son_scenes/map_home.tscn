@@ -1,3 +1,7 @@
 [gd_scene format=3 uid="uid://dwapmnj5huibf"]
 
 [node name="MapHome" type="Node2D" unique_id=2015149711]
+
+[node name="Label" type="Label" parent="." unique_id=668503587]
+offset_right = 40.0
+offset_bottom = 23.0

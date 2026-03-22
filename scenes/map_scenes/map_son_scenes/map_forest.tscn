@@ -4,3 +4,7 @@
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]
 script = ExtResource("1_0xvl1")
+
+[node name="Label" type="Label" parent="." unique_id=938128314]
+offset_right = 40.0
+offset_bottom = 23.0

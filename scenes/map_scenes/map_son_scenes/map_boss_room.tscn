@@ -4,3 +4,7 @@
 
 [node name="MapBossRoom" type="Node2D" unique_id=2063223928]
 script = ExtResource("1_fplxy")
+
+[node name="Label" type="Label" parent="." unique_id=976613809]
+offset_right = 40.0
+offset_bottom = 23.0

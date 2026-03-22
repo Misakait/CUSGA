@@ -5,6 +5,9 @@ extends Node2D
 @export_dir var cell_pic: String
 @export_dir var bridge_pic: String
 
+@export var if_see_all_little_map: bool = false
+@export var if_show_the_scene: bool = false
+
 var offeset_cell: float = 20
 var offeset_bridge: float = 10
 
@@ -14,19 +17,31 @@ var map_scene: Dictionary
 var map: Array
 var s2s: Dictionary
 
+var cnt: int = 0
 
 func _ready() -> void:
 	map = map_position_create.map
 	s2s = map_position_create.scene_to_scene
 	
+	if if_see_all_little_map == true:
+		build_all_little_map()
 	build_little_map(1,1)
 	change_this_cell_color(1,1)
 	
-	
+func build_all_little_map():
+	for x in map.size():
+		for y in map[x].size():
+			build_little_map(x,y)
+
 func build_little_map(x: int, y: int):
-		if map[x][y] != "void":
+		if map[x][y] != "void" && !map_scene.has(Vector2i(x,y)):
 			build_this_cell(x,y)
 			build_this_bridge(x,y)
+
+func show_the_id(cell_scene):
+	cell_scene.get_node("Label").text = str(cnt)
+	cnt = cnt + 1
+	return cell_scene
 
 # 建立房间
 func build_this_cell(x: int, y: int):
@@ -34,6 +49,10 @@ func build_this_cell(x: int, y: int):
 	var cell_scene = cell.instantiate()
 	cell_scene.position = Vector2(y * offeset_cell, x * offeset_cell)
 	map_scene[Vector2i(x,y)] = cell_scene
+	
+	if if_show_the_scene == true:
+		cell_scene = show_the_id(cell_scene)
+	
 	add_child(cell_scene)
 
 # 连接房间

@@ -8,3 +8,10 @@
 modulate = Color(18.892157, 18.892157, 18.892157, 1)
 scale = Vector2(0.025, 0.04)
 texture = ExtResource("1_dgj6a")
+
+[node name="Label" type="Label" parent="." unique_id=2077005137]
+self_modulate = Color(0.38007212, 0.16975288, 0.16975288, 1)
+offset_left = -7.9999995
+offset_top = -11.999998
+offset_right = 8.0
+offset_bottom = 11.000002

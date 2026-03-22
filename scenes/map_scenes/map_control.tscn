@@ -1,29 +1,48 @@
 [gd_scene format=3 uid="uid://55q6p6bk1ll7"]
 
 [ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_2r3ie"]
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="2_aulaq"]
 [ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
+[ext_resource type="PackedScene" uid="uid://btsikq2ra6c5u" path="res://scenes/map_scenes/map_son_scenes/map_forest.tscn" id="3_4pmc0"]
 [ext_resource type="Script" uid="uid://6hb45wq2pclx" path="res://scripts/map_scripts/map_road.gd" id="4_a7gbl"]
+[ext_resource type="PackedScene" uid="uid://4a2ijvrcxnqe" path="res://scenes/map_scenes/map_son_scenes/map_cave.tscn" id="4_khs5e"]
 [ext_resource type="Script" uid="uid://d6q8i3s5c07j" path="res://scripts/map_scripts/map_button.gd" id="5_vtfeq"]
+[ext_resource type="PackedScene" uid="uid://7wdqj8cp2mmy" path="res://scenes/map_scenes/map_son_scenes/map_farm.tscn" id="5_vuryw"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="6_2263r"]
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
-[ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://resources/map/map_types.gd" id="8_aulaq"]
+[ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
+
+[sub_resource type="Resource" id="Resource_4pmc0"]
+script = ExtResource("2_aulaq")
+scene_name = "forest"
+scene_count = 6
+scene_pkg = ExtResource("3_4pmc0")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_khs5e"]
+script = ExtResource("2_aulaq")
+scene_name = "cave"
+scene_count = 5
+scene_pkg = ExtResource("4_khs5e")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_vuryw"]
+script = ExtResource("2_aulaq")
+scene_name = "farm"
+scene_count = 4
+scene_pkg = ExtResource("5_vuryw")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
 
-[node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952 node_paths=PackedStringArray("map_types_ref")]
+[node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
+script = ExtResource("8_aulaq")
+map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw")])
+
+[node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("2_2r3ie")
-map_types_ref = NodePath("Node2D")
 map_len_x = 5
 map_len_y = 5
-
-[node name="Node2D" type="Node2D" parent="MapPositionCreate" unique_id=498826768]
-script = ExtResource("8_aulaq")
-map_type = Dictionary[String, int]({
-"boss_room": 1,
-"cave": 5,
-"farm": 4,
-"forest": 6
-})
 
 [node name="MapButton" type="Node2D" parent="." unique_id=276347947]
 script = ExtResource("5_vtfeq")
@@ -139,6 +158,8 @@ position = Vector2(30, 30)
 script = ExtResource("7_aulaq")
 cell_pic = "res://scenes/map_scenes/little_map_cell.tscn"
 bridge_pic = "res://scenes/map_scenes/little_map_bridge.tscn"
+if_see_all_little_map = true
+if_show_the_scene = true
 
 [connection signal="pressed" from="MapButton/UpButton/UpButton" to="MapButton" method="_on_up_button_pressed"]
 [connection signal="pressed" from="MapButton/RightButton/RightButton" to="MapButton" method="_on_right_button_pressed"]
