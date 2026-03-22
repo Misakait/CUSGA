@@ -49,8 +49,11 @@ func play_card(card: SkillCardData, target):
 # 丢弃所有手牌
 func discard_hand():
 	discard_pile_data.append_array(player_hand.player_hand_data)
-	player_hand.player_hand_data.clear()
+	#player_hand.player_hand_data.clear()
+	for card in player_hand.player_hand.duplicate():
+		player_hand.remove_card_from_hand(card)
 	print("回合结束，手牌已清空进入弃牌堆。")
+	print_all_card()
 
 # 洗牌逻辑
 func reshuffle_discard_into_draw():

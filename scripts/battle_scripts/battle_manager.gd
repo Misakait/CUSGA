@@ -18,15 +18,7 @@ func _ready():
 func start_player_turn():
 	print("--- 玩家回合开始 ---")
 	deck_manager.draw_cards(5)
-	
-	# 模拟 AI 自动打出第一张手牌测试逻辑
-	#if deck_manager.hand.size() > 0:
-		#var card_to_play = deck_manager.hand[0]
-		#if player_energy >= card_to_play.energy_cost:
-			#print("打出卡牌：", card_to_play.card_name)
-			#player_energy -= card_to_play.energy_cost
-			## deck_manager.play_card(card_to_play, null) # 暂无目标.
-			#
+
 	end_player_turn()
 
 func end_player_turn():

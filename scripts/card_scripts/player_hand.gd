@@ -17,8 +17,6 @@ func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
 
 func draw_card_data(card_data):
-	player_hand_data.append(card_data)
-	
 	var card_scene = preload(CARD_SCENE_PATH)
 	var new_card = card_scene.instantiate()
 	new_card.init_card_data(card_data)
@@ -26,11 +24,23 @@ func draw_card_data(card_data):
 	add_card_to_hand(new_card)
 
 func add_card_to_hand(card):
+	#同步手牌数据数组
+	player_hand_data.append(card.card_data)
+	
 	if card not in player_hand:
 		player_hand.insert(0, card)
 		update_hand_positions()
 	else:
 		animate_card_to_position(card, card.hand_position)
+
+func remove_card_from_hand(card):
+	if card in player_hand:
+		#同步手牌数据数组
+		player_hand_data.erase(card.card_data)
+		
+		player_hand.erase(card)
+		card.queue_free()
+		update_hand_positions()
 
 func update_hand_positions():
 	for i in range(player_hand.size()):
@@ -62,8 +72,3 @@ func calculate_card_position(index) -> Vector2:
 func animate_card_to_position(card, new_position):
 	var tween = get_tree().create_tween()
 	tween.tween_property(card, "position", new_position, 0.1)
-
-func remove_card_from_hand(card):
-	if card in player_hand:
-		player_hand.erase(card)
-		update_hand_positions()
