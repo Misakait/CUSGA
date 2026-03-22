@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using CUSGA.resources.item;
 using CUSGA.core.inventory;
 
-namespace CUSGA.components;
+namespace CUSGA.entities.components;
 
 public partial class InventoryComponent : Node
 {
     [Export] public int Capacity { get; private set; } = 27; // 背包格子数
 
-    private readonly ItemStack[] _slots;
+    private ItemStack[] _slots;
 
-    public InventoryComponent()
+    public override void _Ready()
     {
         // 初始化所有的空箱子
         _slots = new ItemStack[Capacity];

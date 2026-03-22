@@ -1,7 +1,7 @@
 using Godot;
 using CUSGA.core.inventory;
 using CUSGA.core.ui.draggable;
-using CUSGA.components;
+using CUSGA.entities.components;
 using CUSGA.core.constants;
 
 namespace CUSGA.core.ui;

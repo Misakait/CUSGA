@@ -1,7 +1,7 @@
 using Godot;
 using CUSGA.resources.crafting;
 
-namespace CUSGA.components;
+namespace CUSGA.entities.components;
 
 public partial class CraftingComponent : Node
 {

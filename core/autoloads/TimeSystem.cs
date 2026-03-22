@@ -6,6 +6,7 @@ namespace CUSGA.core.autoloads;
 public partial class TimeSystem : Node
 {
 
+    public static TimeSystem Instance { get; private set; }
     // 昼夜更替广播
     [Signal] public delegate void DayNightToggledEventHandler(bool isNight);
 
@@ -19,6 +20,11 @@ public partial class TimeSystem : Node
     private int _currentDay = 1;
 
     public bool IsNight { get; private set; } = false;
+
+    public override void _Ready()
+    {
+        Instance = this;
+    }
 
     public void PassTime(int amount)
     {

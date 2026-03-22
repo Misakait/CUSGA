@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CUSGA.entities.components;
 
-public class TagComponent
+public partial class TagComponent : Node
 {
     private readonly Dictionary<StringName, int> _activeTags = [];
 
