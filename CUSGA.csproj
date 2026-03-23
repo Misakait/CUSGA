@@ -4,4 +4,10 @@
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
+  <Target Name="ConfigureGitHooks" AfterTargets="Build">
+    <Message Importance="High" Text="🔧 正在自动配置 Git 钩子拦截垃圾代码..." />
+    <Exec Command="git config core.hooksPath .githooks"
+          Condition="Exists('$(MSBuildProjectDirectory)\..\.git')"
+          ContinueOnError="true" />
+  </Target>
 </Project>

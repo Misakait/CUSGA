@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo "🔍 开始进行提交前的代码扫描..."
+
+echo "🔨 正在测试编译..."
+dotnet build --no-restore
+if [ $? -ne 0 ]; then
+    echo "❌ 拦截：代码编译失败！请修复后再提交。"
+    exit 1
+fi
+
+
+echo "✅ 扫描通过，允许提交！"
+exit 0
