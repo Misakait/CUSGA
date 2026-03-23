@@ -9,7 +9,7 @@ extends Node
 const MAX_ENERGY: int = 100
 
 var player_energy: int = 100
-var turn_draw_count:int = 12 ##每回合摸牌数
+var turn_draw_count:int = 5 ##每回合摸牌数
 
 func _ready():
 	#初始化摸牌堆

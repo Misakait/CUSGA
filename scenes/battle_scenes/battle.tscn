@@ -8,7 +8,6 @@
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="4_qw51t"]
 [ext_resource type="Resource" uid="uid://dejj5ququif3b" path="res://resources/skill_cards/test_card_1.tres" id="5_76lap"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
-[ext_resource type="PackedScene" uid="uid://rb2llfe4y2xk" path="res://scenes/enemy_scenes/enemy.tscn" id="9_navvr"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
@@ -23,21 +22,6 @@ script = ExtResource("2_ychmy")
 script = ExtResource("8_ptgcx")
 
 [node name="EnemyManager" type="Node2D" parent="." unique_id=538886183]
-
-[node name="Enemy" parent="EnemyManager" unique_id=925797487 instance=ExtResource("9_navvr")]
-position = Vector2(157, 175)
-
-[node name="Enemy2" parent="EnemyManager" unique_id=60542472 instance=ExtResource("9_navvr")]
-position = Vector2(397, 175)
-
-[node name="Enemy3" parent="EnemyManager" unique_id=590798035 instance=ExtResource("9_navvr")]
-position = Vector2(654, 175)
-
-[node name="Enemy4" parent="EnemyManager" unique_id=1644652931 instance=ExtResource("9_navvr")]
-position = Vector2(905, 181)
-
-[node name="Enemy5" parent="EnemyManager" unique_id=1981076322 instance=ExtResource("9_navvr")]
-position = Vector2(1128, 179)
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1114505953]
 script = ExtResource("10_navvr")

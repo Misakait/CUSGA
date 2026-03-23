@@ -1,18 +1,18 @@
 [gd_scene format=3 uid="uid://ca8m4rlwkbbvq"]
 
-[ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/card.gd" id="1_2kac4"]
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_v4yo3"]
+[ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/card.gd" id="1_ucg1j"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_sci0k"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
 size = Vector2(70, 50)
 
 [node name="Card" type="Node2D" unique_id=401739906]
 z_index = 1
-script = ExtResource("1_2kac4")
+script = ExtResource("1_ucg1j")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
 scale = Vector2(1.5, 1.5)
-texture = ExtResource("2_v4yo3")
+texture = ExtResource("2_sci0k")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1777527990]
 
