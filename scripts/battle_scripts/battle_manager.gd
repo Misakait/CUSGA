@@ -19,12 +19,15 @@ func _ready():
 	start_player_turn()
 
 func start_player_turn():
+	control_lock.unlock()
 	print("--- 玩家回合开始 ---")
 	deck_manager.draw_cards(turn_draw_count,false)
 
 func end_player_turn():
+	control_lock.lock()
 	deck_manager.discard_hand()
 	print("--- 玩家回合结束 ---")
+	
 	start_player_turn()
 
 func _on_turn_end_pressed() -> void:
