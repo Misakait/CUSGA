@@ -82,7 +82,6 @@ public partial class Monster : CharacterBody2D
             float targetDefense = 0f;
             float attackerPenetration = 0f;
 
-            // 根据伤害类型，读取对应的护甲/魔抗，以及对应的穿透属性
             if (payload.Type == DamageType.Physical)
             {
                 targetDefense = defenderStats.GetAttribute(AttributeType.PhysDef)?.Value ?? 0f;
