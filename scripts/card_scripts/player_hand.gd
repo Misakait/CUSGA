@@ -21,15 +21,16 @@ var center_screen_x
 func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
 
-func draw_card_data(card_data):
+func draw_card_data(card_data) -> bool:
 	if player_hand_card.size()>=12:
 		print("玩家手牌数达到上限，摸牌失败！")
-		return
+		return false
 	var card_scene = preload(CARD_SCENE_PATH)
 	var new_card = card_scene.instantiate()
 	new_card.init_card_data(card_data)
 	card_manager.add_child(new_card)
 	add_card_to_hand(new_card)
+	return true
 
 func add_card_to_hand(card):
 	if card not in player_hand_card:

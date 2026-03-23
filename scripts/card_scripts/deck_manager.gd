@@ -5,7 +5,7 @@ class_name DeckManager
 
 var draw_pile_data: Array[SkillCardData] = []
 var discard_pile_data: Array[SkillCardData] = []
-var min_start_cards_count:int = 30 #最少卡牌数量，低于该值会被填充基础卡牌
+var min_start_cards_count:int = 20 #最少卡牌数量，低于该值会被填充基础卡牌
 
 #region 动画部分
 @export_group("动画部分")
@@ -35,8 +35,9 @@ func draw_cards(amount: int,need_draw_interval:bool = true):
 			else:
 				reshuffle_discard_into_draw()
 		
-		var card_data = draw_pile_data.pop_back()
-		player_hand.draw_card_data(card_data)
+		var card_data = draw_pile_data.back()
+		if player_hand.draw_card_data(card_data):
+			draw_pile_data.pop_back()
 		if need_draw_interval:
 			await get_tree().create_timer(draw_interval).timeout
 	print("抽了牌。当前手牌数：", player_hand.player_hand_card.size())
