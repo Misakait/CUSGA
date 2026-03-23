@@ -48,7 +48,7 @@ public partial class SlotUI : Panel
     {
         TextureRect previewIcon = new()
         {
-            Texture = _itemStackInThisSlot.Item.Icon,
+            Texture = _itemStackInThisSlot.Item.CardIcon,
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             CustomMinimumSize = new Vector2(64, 64),
             Modulate = new Color(1, 1, 1, 0.8f)
@@ -97,7 +97,7 @@ public partial class SlotUI : Panel
         }
         else
         {
-            icon.Texture = stack.Item.Icon;
+            icon.Texture = stack.Item.CardIcon;
             amountLabel.Text = stack.Amount > 1 ? stack.Amount.ToString() : "";
         }
         icon.Modulate = Colors.White;

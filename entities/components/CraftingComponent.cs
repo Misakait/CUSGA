@@ -44,7 +44,7 @@ public partial class CraftingComponent : Node
         // 发放输出物品
         _inventory.AddItem(recipe.OutputItem, recipe.OutputAmount);
 
-        GD.Print($"成功合成了 {recipe.OutputAmount} 个 {recipe.OutputItem.ItemName}！");
+        GD.Print($"成功合成了 {recipe.OutputAmount} 个 {recipe.OutputItem.CardName}！");
         return true;
     }
 }
