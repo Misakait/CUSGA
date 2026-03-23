@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://djfxwyx3sjiob" path="res://scripts/main_menu_scripts/exit_panel.gd" id="1_17cx3"]
 [ext_resource type="Script" uid="uid://bgwfaeq0mm005" path="res://scripts/main_menu_scripts/start_panel.gd" id="1_mh14t"]
-[ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="2_gdjtc"]
+[ext_resource type="PackedScene" uid="uid://cyk8dcvkk8onm" path="res://scenes/main_menu_scenes/menu_card.tscn" id="2_gdjtc"]
 [ext_resource type="Script" uid="uid://cfumu6i2fg3yk" path="res://scripts/main_menu_scripts/settings_panel.gd" id="3_bcsmm"]
 [ext_resource type="Script" uid="uid://c8v8bpqgsv02b" path="res://scripts/main_menu_scripts/menu_manager.gd" id="4_mt8f4"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
 
-[sub_resource type="Resource" id="Resource_gdjtc"]
+[sub_resource type="Resource" id="Resource_r5auf"]
 script = ExtResource("7_gdjtc")
 metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
@@ -59,18 +59,15 @@ layout_mode = 0
 offset_right = 50.0
 offset_bottom = 123.0
 
-[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1899546123]
+[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112]
 script = ExtResource("6_gdjtc")
-draggable = SubResource("Resource_gdjtc")
+draggable = SubResource("Resource_r5auf")
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(353, 497)
-scale = Vector2(0.23102021, 0.14331971)
+position = Vector2(1144, 507)
 
-[node name="StartCard" parent="MainMenuCardManager" unique_id=148839117 instance=ExtResource("2_gdjtc")]
-position = Vector2(355.99997, 237)
-scale = Vector2(0.48064563, 0.3785759)
+[node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
+position = Vector2(762, 275)
 
-[node name="SettingsCard" parent="MainMenuCardManager" unique_id=48992721 instance=ExtResource("2_gdjtc")]
-position = Vector2(348.00003, 392)
-scale = Vector2(0.32419372, 0.20636111)
+[node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
+position = Vector2(254, 332)
