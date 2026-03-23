@@ -2,6 +2,7 @@ extends Node
 class_name DeckManager
 
 @onready var player_hand = $"../PlayerHand"
+@onready var control_lock = $"../ControlLock"
 
 var draw_pile_data: Array[SkillCardData] = []
 var discard_pile_data: Array[SkillCardData] = []

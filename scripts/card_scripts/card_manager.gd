@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var deck_manager = $"../DeckManager"
+@onready var control_lock = $"../ControlLock"
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2

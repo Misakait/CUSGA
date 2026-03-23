@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var card_manager = $"../CardManager"
 @onready var deck_manager = $"../DeckManager"
+@onready var control_lock = $"../ControlLock"
 
 const CARD_SCENE_PATH = "res://scenes/skill_card_scenes/Card.tscn"
 const CARD_WIDTH = 200 #卡牌宽度，影响卡牌间隔

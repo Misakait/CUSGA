@@ -2,9 +2,10 @@ extends Node
 
 @onready var deck_manager = $DeckManager
 @onready var player_hand = $PlayerHand
+@onready var control_lock = $ControlLock
 
 @export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
-@export var card_scene: PackedScene 
+@export var card_scene: PackedScene
 
 const MAX_ENERGY: int = 100
 
@@ -27,7 +28,11 @@ func end_player_turn():
 	start_player_turn()
 
 func _on_turn_end_pressed() -> void:
+	if control_lock.is_lock:
+		return
 	end_player_turn()
 
 func _on_draw_card_pressed() -> void:
+	if control_lock.is_lock:
+		return
 	deck_manager.draw_cards(3)

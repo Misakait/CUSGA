@@ -2,16 +2,18 @@
 
 [ext_resource type="Script" uid="uid://d0ltsey5svvgs" path="res://scripts/battle_scripts/battle_manager.gd" id="1_ckntb"]
 [ext_resource type="PackedScene" uid="uid://ca8m4rlwkbbvq" path="res://scenes/skill_card_scenes/Card.tscn" id="2_76lap"]
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="2_navvr"]
 [ext_resource type="Script" uid="uid://chbi747pg2cok" path="res://scripts/card_scripts/deck_manager.gd" id="2_ychmy"]
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="3_76lap"]
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="4_qw51t"]
 [ext_resource type="Resource" uid="uid://dejj5ququif3b" path="res://resources/skill_cards/test_card_1.tres" id="5_76lap"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
+[ext_resource type="Script" uid="uid://bxcdktnfciqv1" path="res://scripts/battle_scripts/control_lock.gd" id="9_sugqx"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = [ExtResource("5_76lap"), ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("4_qw51t")]
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("5_76lap"), ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("4_qw51t")])
 card_scene = ExtResource("2_76lap")
 
 [node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
@@ -24,6 +26,9 @@ script = ExtResource("8_ptgcx")
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1114505953]
 script = ExtResource("10_navvr")
+
+[node name="ControlLock" type="Node2D" parent="." unique_id=1188347824]
+script = ExtResource("9_sugqx")
 
 [node name="Button" type="Marker2D" parent="." unique_id=194508577]
 
