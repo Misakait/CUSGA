@@ -42,7 +42,7 @@ offset_top = 321.0
 offset_right = 1229.0
 offset_bottom = 376.0
 theme_override_font_sizes/font_size = 23
-text = "摸一张牌"
+text = "摸牌"
 
 [connection signal="pressed" from="Button/TurnEnd" to="." method="_on_turn_end_pressed"]
 [connection signal="pressed" from="Button/DrawCard" to="." method="_on_draw_card_pressed"]

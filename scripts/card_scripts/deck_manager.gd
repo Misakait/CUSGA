@@ -7,6 +7,11 @@ var draw_pile_data: Array[SkillCardData] = []
 var discard_pile_data: Array[SkillCardData] = []
 var min_start_cards_count:int = 10 #最少卡牌数量，低于该值会被填充基础卡牌
 
+#region 动画部分
+@export_group("动画部分")
+@export var draw_interval:float = 0.2 ##摸牌动画间隔
+#endregion
+
 func _ready() -> void:
 	pass
 
@@ -21,7 +26,7 @@ func initialize_deck(starting_deck_data: Array[SkillCardData]):
 	draw_pile_data.shuffle()
 
 # 抽牌
-func draw_cards(amount: int):
+func draw_cards(amount: int,need_draw_interval:bool = true):
 	for i in range(amount):
 		if draw_pile_data.is_empty():
 			if discard_pile_data.is_empty():
@@ -32,6 +37,8 @@ func draw_cards(amount: int):
 		
 		var card_data = draw_pile_data.pop_back()
 		player_hand.draw_card_data(card_data)
+		if need_draw_interval:
+			await get_tree().create_timer(draw_interval).timeout
 	print("抽了牌。当前手牌数：", player_hand.player_hand_card.size())
 	#调试打印所有卡牌
 	print_all_card()

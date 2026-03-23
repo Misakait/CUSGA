@@ -19,7 +19,7 @@ func _ready():
 
 func start_player_turn():
 	print("--- 玩家回合开始 ---")
-	deck_manager.draw_cards(turn_draw_count)
+	deck_manager.draw_cards(turn_draw_count,false)
 
 	#end_player_turn()
 
@@ -33,4 +33,4 @@ func _on_turn_end_pressed() -> void:
 
 
 func _on_draw_card_pressed() -> void:
-	deck_manager.draw_cards(1)
+	deck_manager.draw_cards(3)
