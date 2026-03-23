@@ -1,18 +1,57 @@
-[gd_scene format=3 uid="uid://cwtu13o7ivvl4"]
+[gd_scene format=3 uid="uid://cyk8dcvkk8onm"]
 
-[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="1_umtdt"]
+[ext_resource type="Script" uid="uid://bqfor6mukto2l" path="res://scripts/normal_compoment/main_menu_card/main_menu_card.gd" id="1_h86l4"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_w33iv"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_r5auf"]
-size = Vector2(310, 410)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
+size = Vector2(70, 50)
 
-[node name="StartCard" type="Sprite2D" unique_id=1486621402]
-scale = Vector2(0.19999999, 0.19756097)
-texture = ExtResource("1_umtdt")
+[node name="Card" type="Node2D" unique_id=401739906]
+z_index = 1
+script = ExtResource("1_h86l4")
 
-[node name="Area2D" type="Area2D" parent="." unique_id=916109110]
-scale = Vector2(1.0000001, 1.0000001)
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_w33iv")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=996016836]
-position = Vector2(0, -4.5776367e-05)
-scale = Vector2(0.99999976, 0.9999998)
-shape = SubResource("RectangleShape2D_r5auf")
+[node name="Area2D" type="Area2D" parent="." unique_id=1777527990]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=572066935]
+scale = Vector2(3, 3)
+shape = SubResource("RectangleShape2D_2kac4")
+
+[node name="CardName" type="Label" parent="." unique_id=36102632]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.0
+offset_top = -67.5
+offset_right = 39.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardDescription" type="Label" parent="." unique_id=1070513239]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -93.0
+offset_top = -27.0
+offset_right = 91.0
+offset_bottom = 63.0
+grow_horizontal = 2
+grow_vertical = 2
+autowrap_mode = 3
+
+[node name="CardCost" type="Label" parent="." unique_id=822735793]
+offset_left = 48.0
+offset_top = -64.0
+offset_right = 88.0
+offset_bottom = -41.0
+
+[connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
+[connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]

@@ -21,5 +21,5 @@ func handle_event(event: InputEvent, target_node) -> void:
 		var screen_size = target_node.get_viewport().size
 		new_pos.x = clamp(new_pos.x, 0, screen_size.x)
 		new_pos.y = clamp(new_pos.y, 0, screen_size.y)
-
+		
 		target_node.global_position = new_pos

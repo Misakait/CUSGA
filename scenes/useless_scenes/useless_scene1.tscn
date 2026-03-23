@@ -1,6 +1,29 @@
 [gd_scene format=3 uid="uid://0t6hvyudjd2g"]
 
 [ext_resource type="Script" uid="uid://bbcxyx60210yg" path="res://scripts/new_script.gd" id="1_d7os1"]
+[ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="2_ttyqr"]
+[ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="3_ys7px"]
+[ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="4_4ujj1"]
+
+[sub_resource type="Resource" id="Resource_u7066"]
+script = ExtResource("3_ys7px")
+metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
 [node name="UselessScene1" type="Node2D" unique_id=1932742709]
 script = ExtResource("1_d7os1")
+
+[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=600060063]
+script = ExtResource("2_ttyqr")
+draggable = SubResource("Resource_u7066")
+
+[node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("4_4ujj1")]
+position = Vector2(353, 497)
+scale = Vector2(0.23102021, 0.14331971)
+
+[node name="StartCard" parent="MainMenuCardManager" unique_id=1215759919 instance=ExtResource("4_4ujj1")]
+position = Vector2(355.99997, 237)
+scale = Vector2(0.48064563, 0.3785759)
+
+[node name="SettingsCard" parent="MainMenuCardManager" unique_id=280584993 instance=ExtResource("4_4ujj1")]
+position = Vector2(348.00003, 392)
+scale = Vector2(0.32419372, 0.20636111)
