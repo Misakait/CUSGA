@@ -21,7 +21,7 @@ script = ExtResource("2_ychmy")
 [node name="CardManager" type="Node2D" parent="." unique_id=768530550]
 script = ExtResource("8_ptgcx")
 
-[node name="EnemyManager" type="Node2D" parent="." unique_id=538886183]
+[node name="MonsterManager" type="Node2D" parent="." unique_id=538886183]
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1114505953]
 script = ExtResource("10_navvr")
@@ -36,4 +36,13 @@ offset_bottom = 456.0
 theme_override_font_sizes/font_size = 23
 text = "结束回合"
 
+[node name="DrawCard" type="Button" parent="Button" unique_id=871572952]
+offset_left = 1112.0
+offset_top = 321.0
+offset_right = 1229.0
+offset_bottom = 376.0
+theme_override_font_sizes/font_size = 23
+text = "摸一张牌"
+
 [connection signal="pressed" from="Button/TurnEnd" to="." method="_on_turn_end_pressed"]
+[connection signal="pressed" from="Button/DrawCard" to="." method="_on_draw_card_pressed"]

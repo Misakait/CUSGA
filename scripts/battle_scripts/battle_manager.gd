@@ -30,3 +30,7 @@ func end_player_turn():
 
 func _on_turn_end_pressed() -> void:
 	end_player_turn()
+
+
+func _on_draw_card_pressed() -> void:
+	deck_manager.draw_cards(1)
