@@ -1,7 +1,7 @@
 using Godot;
 using CUSGA.resources.item;
 
-namespace CUSGA.resources.item.cards;
+namespace CUSGA.resources.item.card;
 
 [GlobalClass]
 public partial class CardItemData : ItemData
