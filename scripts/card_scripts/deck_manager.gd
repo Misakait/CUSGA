@@ -5,7 +5,7 @@ class_name DeckManager
 
 var draw_pile_data: Array[SkillCardData] = []
 var discard_pile_data: Array[SkillCardData] = []
-var min_start_cards_count:int = 10 #最少卡牌数量，低于该值会被填充基础卡牌
+var min_start_cards_count:int = 30 #最少卡牌数量，低于该值会被填充基础卡牌
 
 #region 动画部分
 @export_group("动画部分")

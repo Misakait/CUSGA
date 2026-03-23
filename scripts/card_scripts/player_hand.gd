@@ -22,6 +22,9 @@ func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
 
 func draw_card_data(card_data):
+	if player_hand_card.size()>=12:
+		print("玩家手牌数达到上限，摸牌失败！")
+		return
 	var card_scene = preload(CARD_SCENE_PATH)
 	var new_card = card_scene.instantiate()
 	new_card.init_card_data(card_data)
