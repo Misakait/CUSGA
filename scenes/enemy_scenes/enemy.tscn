@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://rb2llfe4y2xk"]
+
+[ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="1_adu1b"]
+[ext_resource type="Script" uid="uid://y7neumd8p0lc" path="res://scripts/enemy_scripts/enemy.gd" id="1_nqb0c"]
+[ext_resource type="Texture2D" uid="uid://dibw3vo71446y" path="res://res/image/卡牌模板.png" id="2_nqb0c"]
+
+[node name="Enemy" type="Node2D" unique_id=925797487]
+script = ExtResource("1_nqb0c")
+
+[node name="CardSlot" parent="." unique_id=1623300953 instance=ExtResource("1_adu1b")]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1997219270]
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_nqb0c")

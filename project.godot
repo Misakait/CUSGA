@@ -47,6 +47,10 @@ window/vsync/vsync_mode=0
 
 project/assembly_name="CUSGA"
 
+[editor_plugins]
+
+enabled=PackedStringArray()
+
 [layer_names]
 
 2d_physics/layer_1="卡牌"
