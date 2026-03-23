@@ -28,6 +28,7 @@ func initialize_deck(starting_deck_data: Array[SkillCardData]):
 
 # 抽牌
 func draw_cards(amount: int,need_draw_interval:bool = true):
+	control_lock.lock()
 	for i in range(amount):
 		if draw_pile_data.is_empty():
 			if discard_pile_data.is_empty():
@@ -44,6 +45,7 @@ func draw_cards(amount: int,need_draw_interval:bool = true):
 	print("抽了牌。当前手牌数：", player_hand.player_hand_card.size())
 	#调试打印所有卡牌
 	print_all_card()
+	control_lock.unlock()
 
 # 打出卡牌
 func play_card(card: Node2D, target = null):

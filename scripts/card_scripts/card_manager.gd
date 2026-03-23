@@ -27,6 +27,8 @@ func _process(delta: float) -> void:
 		)
 
 func _input(event):
+	if control_lock.is_lock:
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			var card = raycast_check_for_card()
