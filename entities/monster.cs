@@ -63,11 +63,17 @@ public partial class Monster : CharacterBody2D
         // 攻击方增伤
         if (payload.Type == DamageType.Physical)
         {
+            float flatPhysPower = attackerStats.GetAttribute(AttributeType.PhysAtk)?.Value ?? 0f;
+            calculatedDamage += flatPhysPower;
+
             float physBoostPct = attackerStats.GetAttribute(AttributeType.PhysDamageBoost)?.Value ?? 0f;
             calculatedDamage *= (1f + physBoostPct);
         }
         else if (payload.Type == DamageType.Magic)
         {
+            float flatMagPower = attackerStats.GetAttribute(AttributeType.MagPower)?.Value ?? 0f;
+            calculatedDamage += flatMagPower;
+
             float magicBoostPct = attackerStats.GetAttribute(AttributeType.MagicDamageBoost)?.Value ?? 0f;
             calculatedDamage *= (1f + magicBoostPct);
         }
@@ -80,21 +86,18 @@ public partial class Monster : CharacterBody2D
         if (payload.Type != DamageType.Real)
         {
             float targetDefense = 0f;
-            float attackerPenetration = 0f;
 
             if (payload.Type == DamageType.Physical)
             {
                 targetDefense = defenderStats.GetAttribute(AttributeType.PhysDef)?.Value ?? 0f;
-                attackerPenetration = attackerStats.GetAttribute(AttributeType.PhysDef)?.Value ?? 0f;
             }
             else if (payload.Type == DamageType.Magic)
             {
                 targetDefense = defenderStats.GetAttribute(AttributeType.MagResist)?.Value ?? 0f;
-                attackerPenetration = attackerStats.GetAttribute(AttributeType.MagPower)?.Value ?? 0f;
             }
 
-            // 穿透后的最终护甲
-            float finalDefense = Mathf.Max(0, targetDefense - attackerPenetration);
+            // 最终护甲
+            float finalDefense = Mathf.Max(0, targetDefense);
 
             float defenseMultiplier = 100f / (100f + finalDefense);
 
