@@ -21,8 +21,6 @@ func start_player_turn():
 	print("--- 玩家回合开始 ---")
 	deck_manager.draw_cards(turn_draw_count,false)
 
-	#end_player_turn()
-
 func end_player_turn():
 	deck_manager.discard_hand()
 	print("--- 玩家回合结束 ---")
@@ -30,7 +28,6 @@ func end_player_turn():
 
 func _on_turn_end_pressed() -> void:
 	end_player_turn()
-
 
 func _on_draw_card_pressed() -> void:
 	deck_manager.draw_cards(3)

@@ -1,9 +1,12 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://biq5mpj4n1rqp"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://scripts/card_scripts/skill_card_data.gd" id="1_m07cq"]
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://scripts/card_scripts/SkillCardData.cs" id="1_bhrvp"]
 
 [resource]
-script = ExtResource("1_m07cq")
+script = ExtResource("1_bhrvp")
 name = "测试卡牌2"
+element = 3
+cost = 20
+damage = 20
 description = "测试卡牌2，并且这里也是卡牌的效果描述。"
 metadata/_custom_type_script = "uid://bejho62d28qir"
