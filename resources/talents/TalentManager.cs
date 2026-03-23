@@ -1,4 +1,5 @@
 using CUSGA.core.autoloads;
+using CUSGA.core.constants;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ public partial class TalentManager : CanvasLayer
     [Export] public Godot.Collections.Array<TalentData> AllTalentsPool;
     [Export] public PackedScene CardScenePrefab;
     [Export] public HBoxContainer CardsContainer;
-
+    private TimeSystem _timeSystem;
     private readonly Random _random = new();
     private List<TalentData> _availableTalents = [];
 
@@ -18,8 +19,13 @@ public partial class TalentManager : CanvasLayer
     {
         Hide();
         _availableTalents = [.. AllTalentsPool];
-        var timeSystem = GetNode<TimeSystem>("/root/TimeSystem");
-        timeSystem.TalentSelectionTriggered += PopUpTalentSelection;
+        _timeSystem = GetNode<TimeSystem>("/root/TimeSystem");
+        _timeSystem.TalentSelectionTriggered += PopUpTalentSelection;
+    }
+
+    public override void _ExitTree()
+    {
+        _timeSystem.TalentSelectionTriggered -= PopUpTalentSelection;
     }
 
     private void PopUpTalentSelection()
@@ -42,7 +48,7 @@ public partial class TalentManager : CanvasLayer
         _availableTalents.Remove(selectedTalent);
 
         Node gameEvents = GetNode<Node>("/root/GlobalEventBus");
-        gameEvents.EmitSignal("on_player_acquired_talent", selectedTalent);
+        gameEvents.EmitSignal(GDSignals.OnPlayerAcquiredTalent, selectedTalent);
 
         Hide();
         GetTree().Paused = false;

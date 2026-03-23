@@ -5,13 +5,14 @@ using CUSGA.core.constants;
 using CUSGA.resources.item.equipment;
 using CUSGA.entities.components;
 using CUSGA.entities;
+using CUSGA.core.inventory;
 
 namespace CUSGA.entities.components;
 
 public partial class EquipmentComponent : Node
 {
     // 记录每个槽位当前装着什么装备
-    private readonly Dictionary<EquipmentSlot, EquipmentData> _equippedItems = [];
+    private readonly Dictionary<EquipmentSlot, ItemStack> _equippedItems = [];
 
     private AttributeComponent _attributeComponent;
     private TagComponent _tagComponent;
@@ -28,9 +29,10 @@ public partial class EquipmentComponent : Node
         _tagComponent = GetParent().GetNode<TagComponent>("TagComponent");
     }
 
-    public bool Equip(EquipmentData item, EquipmentSlot slot)
+    public bool Equip(ItemStack stack, EquipmentSlot slot)
     {
-        if (!item.ValidSlots.Contains(slot))
+        if (stack.Item is not EquipmentData equipData) return false;
+        if (!equipData.ValidSlots.Contains(slot))
         {
             GD.PrintErr($"这件装备不能放在 {slot} 槽位！");
             return false;
@@ -43,10 +45,10 @@ public partial class EquipmentComponent : Node
         }
 
         // 穿上装备
-        _equippedItems[slot] = item;
+        _equippedItems[slot] = stack;
 
         // 结算属性和标签
-        ApplyItemEffects(item);
+        ApplyItemEffects(stack);
 
         // 检查套装效果
         CheckSetBonuses();
@@ -56,10 +58,10 @@ public partial class EquipmentComponent : Node
 
     public void Unequip(EquipmentSlot slot)
     {
-        if (_equippedItems.TryGetValue(slot, out var item))
+        if (_equippedItems.TryGetValue(slot, out var stack))
         {
             // 扣除属性和标签
-            RemoveItemEffects(item);
+            RemoveItemEffects(stack);
             _equippedItems.Remove(slot);
 
             // 重新检查套装
@@ -67,31 +69,37 @@ public partial class EquipmentComponent : Node
         }
     }
 
-    private void ApplyItemEffects(EquipmentData item)
+    private void ApplyItemEffects(ItemStack stack)
     {
         // 加属性
-        foreach (var bonus in item.AttributeBonuses)
+        foreach (var bonus in stack.RolledAttributes)
         {
             _attributeComponent.GetAttribute(bonus.Key)?.AddBonus(bonus.Value);
         }
         // 加标签
-        foreach (var tag in item.GrantedTags)
+        if (stack.Item is EquipmentData equipData)
         {
-            _tagComponent.AddTag(tag);
+            foreach (var tag in equipData.GrantedTags)
+            {
+                _tagComponent.AddTag(tag);
+            }
         }
     }
 
-    private void RemoveItemEffects(EquipmentData item)
+    private void RemoveItemEffects(ItemStack stack)
     {
         // 扣属性
-        foreach (var bonus in item.AttributeBonuses)
+        foreach (var kvp in stack.RolledAttributes)
         {
-            _attributeComponent.GetAttribute(bonus.Key)?.RemoveBonus(bonus.Value);
+            _attributeComponent.GetAttribute(kvp.Key)?.RemoveBonus(kvp.Value);
         }
         // 删标签
-        foreach (var tag in item.GrantedTags)
+        if (stack.Item is EquipmentData equipData)
         {
-            _tagComponent.RemoveTag(tag);
+            foreach (var tag in equipData.GrantedTags)
+            {
+                _tagComponent.RemoveTag(tag);
+            }
         }
     }
 
@@ -101,11 +109,13 @@ public partial class EquipmentComponent : Node
 
         // 统计当前各套装的件数
         Dictionary<EquipmentSet, int> setCounts = [];
-        foreach (var item in _equippedItems.Values)
+        foreach (var stack in _equippedItems.Values)
         {
-            if (item.SetType == EquipmentSet.None) continue;
-            setCounts.TryAdd(item.SetType, 0);
-            setCounts[item.SetType]++;
+            if (stack.Item is EquipmentData equipData && equipData.SetType != EquipmentSet.None)
+            {
+                setCounts.TryAdd(equipData.SetType, 0);
+                setCounts[equipData.SetType]++;
+            }
         }
 
         // 激活新的套装效果
