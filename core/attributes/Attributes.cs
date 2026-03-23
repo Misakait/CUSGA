@@ -8,7 +8,9 @@ public enum AttributeType
     PhysDef,  // 物抗
     MagPower, // 法强
     MagResist,// 法抗
-    Speed     // 速度
+    Speed,     // 速度
+    PhysDamageBoost, // 物理增伤
+    MagicDamageBoost // 魔法增伤
 }
 
 public class Attribute(AttributeType type, string displayName, float baseValue, float growthPerPoint)
