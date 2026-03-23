@@ -32,9 +32,8 @@ config/icon="res://icon.svg"
 
 GlobalEventBus="*uid://f4acdsbh24f4"
 TimeSystem="*uid://da5qjs7g2tqfs"
-BeehaveGlobalMetrics="*uid://c3ktl6ontsdt7"
-BeehaveGlobalDebugger="*uid://bl3ma400hpvsh"
 EncounterManager="*uid://c8cvyjuxy5m80"
+WeatherManager="*uid://b0l58aislix47"
 
 [display]
 
