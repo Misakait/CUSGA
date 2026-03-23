@@ -4,7 +4,7 @@ extends Node2D
 @onready var deck_manager = $"../DeckManager"
 @onready var control_lock = $"../ControlLock"
 
-const CARD_SCENE_PATH = "res://scenes/skill_card_scenes/Card.tscn"
+const CARD_SCENE_PATH = "res://scenes/skill_card_scenes/SkillCard.tscn"
 const CARD_WIDTH = 200 #卡牌宽度，影响卡牌间隔
 const HAND_Y_POSITION = 620 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
