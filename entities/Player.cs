@@ -13,6 +13,8 @@ public partial class Player : CharacterBody2D
     private SatietyComponent _satiety;
     private EnergyComponent _energy;
     private AttributeComponent _attribute;
+    private InventoryComponent _inventory;
+
     public TagComponent TagComponent { get; private set; }
 
     private Node _globalEventBus;
@@ -29,7 +31,15 @@ public partial class Player : CharacterBody2D
         _health.Depleted += OnPlayerDied;
 
         _globalEventBus = GetNode<Node>("/root/GlobalEventBus");
-        _globalEventBus.Connect("on_player_acquired_talent", Callable.From<TalentData>(AbsorbTalent));
+        _globalEventBus.Connect(GDSignals.OnPlayerAcquiredTalent, Callable.From<TalentData>(AbsorbTalent));
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event.IsActionPressed("toggle_inventory"))
+        {
+            _globalEventBus.EmitSignal(GDSignals.OnInventoryToggled, _inventory);
+        }
     }
 
     private void AbsorbTalent(TalentData newTalent)
