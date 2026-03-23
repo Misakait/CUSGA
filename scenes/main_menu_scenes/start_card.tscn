@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://cwtu13o7ivvl4"]
+
+[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="1_umtdt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_r5auf"]
+size = Vector2(310, 410)
+
+[node name="StartCard" type="Sprite2D" unique_id=1486621402]
+scale = Vector2(0.19999999, 0.19756097)
+texture = ExtResource("1_umtdt")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=916109110]
+scale = Vector2(1.0000001, 1.0000001)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=996016836]
+position = Vector2(0, -4.5776367e-05)
+scale = Vector2(0.99999976, 0.9999998)
+shape = SubResource("RectangleShape2D_r5auf")
