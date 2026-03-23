@@ -3,10 +3,26 @@
 [ext_resource type="Script" uid="uid://bd00gxa6umw42" path="res://entities/monster.cs" id="1_gxfgy"]
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="1_i8hiw"]
 [ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="2_twjs6"]
+[ext_resource type="Texture2D" uid="uid://dibw3vo71446y" path="res://res/image/卡牌模板.png" id="3_1wyrm"]
 [ext_resource type="Script" uid="uid://qp3tco60xl2b" path="res://entities/components/FactionComponent.cs" id="3_tgvxs"]
+[ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
 
-[node name="Monster" type="CharacterBody2D" unique_id=1411950281]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]
+size = Vector2(150, 210)
+
+[node name="Monster" type="Node2D" unique_id=1392813721]
 script = ExtResource("1_gxfgy")
+
+[node name="CardSlot" parent="." unique_id=1623300953 instance=ExtResource("5_ok3rw")]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1606835649]
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("3_1wyrm")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1411665323]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=2045269025]
+shape = SubResource("RectangleShape2D_ooags")
 
 [node name="Components" type="Node" parent="." unique_id=1744515292]
 

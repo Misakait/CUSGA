@@ -16,7 +16,7 @@ func _process(delta: float) -> void:
 
 func use(target = null):
 	if target:
-		print(data.name,"被使用，目标为",target.data.name)
+		print(data.name,"被使用，目标为",target.base_data.MonsterName)
 	else:
 		print(data.name,"被使用，没有目标")
 

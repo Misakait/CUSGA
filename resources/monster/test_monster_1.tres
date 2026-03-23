@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dtnx6pd1ups8n"]
+
+[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_noehs"]
+
+[resource]
+script = ExtResource("1_noehs")
+MonsterName = "测试怪物1"
+MaxHealth = 100
+metadata/_custom_type_script = "uid://dh28trwcjvre6"
