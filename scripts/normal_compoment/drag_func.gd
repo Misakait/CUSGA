@@ -12,16 +12,19 @@ func _input(event):
 		if event.pressed:
 			card = raycast_check_for_card()
 			if card:
-				start_drag(card)
+				start_drag()
 		else:
 			finish_drag()
+			
 	if card:
 		draggable.handle_event(event, card)
 		
-func start_drag(card):
-	pass
+func start_drag():
+	card.start_drag()
 
 func finish_drag():
+	if card != null : 
+		card.finish_drag()
 	card = null
 
 #光线投射，检查并获取鼠标下的卡牌
