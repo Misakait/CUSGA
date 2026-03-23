@@ -1,6 +1,9 @@
 using System;
+using CUSGA.core.attributes;
 using CUSGA.resources.item;
+using CUSGA.resources.item.equipment;
 using Godot;
+using Godot.Collections;
 
 namespace CUSGA.core.inventory;
 
@@ -14,6 +17,32 @@ public partial class ItemStack : RefCounted
     public bool IsEmpty => Item == null || Amount <= 0;
     public bool IsFull => !IsEmpty && Amount >= Item.MaxStackSize;
     public int AvailableSpace => IsEmpty ? 0 : Item.MaxStackSize - Amount;
+    public Dictionary<AttributeType, int> RolledAttributes { get; private set; } = [];
+
+    public void RollRandomStats()
+    {
+        RolledAttributes.Clear();
+
+        // 只有这件物品是装备图纸时，才进行洗炼
+        if (Item is EquipmentData equipData)
+        {
+            foreach (var kvp in equipData.AttributeBonuses)
+            {
+                AttributeType type = kvp.Key;
+                Vector2I range = kvp.Value; // X 是 Min, Y 是 Max
+
+                // 如果 Min 和 Max 一样，说明是固定属性
+                if (Mathf.IsEqualApprox(range.X, range.Y))
+                {
+                    RolledAttributes[type] = range.X;
+                }
+                else
+                {
+                    RolledAttributes[type] = GD.RandRange(range.X, range.Y);
+                }
+            }
+        }
+    }
 
     // 清空格子
     public void Clear()
@@ -41,5 +70,14 @@ public partial class ItemStack : RefCounted
         OnStackChanged?.Invoke(this);
 
         return amount - amountToAdd; // 返回剩了多少没加进去
+    }
+
+    public int GetBonus(AttributeType type)
+    {
+        if (RolledAttributes.TryGetValue(type, out int value))
+        {
+            return value;
+        }
+        return 0;
     }
 }
