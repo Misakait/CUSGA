@@ -4,8 +4,24 @@
 [ext_resource type="Script" uid="uid://bgwfaeq0mm005" path="res://scripts/main_menu_scripts/start_panel.gd" id="1_mh14t"]
 [ext_resource type="Script" uid="uid://cfumu6i2fg3yk" path="res://scripts/main_menu_scripts/settings_panel.gd" id="3_bcsmm"]
 [ext_resource type="Script" uid="uid://c8v8bpqgsv02b" path="res://scripts/main_menu_scripts/menu_manager.gd" id="4_mt8f4"]
+[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="5_d3e2j"]
+[ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
+[ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
+
+[sub_resource type="Resource" id="Resource_gdjtc"]
+script = ExtResource("7_gdjtc")
+metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
 [node name="MainMenu" type="Node2D" unique_id=1637248230]
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1648636307]
+offset_left = 71.0
+offset_top = 30.0
+offset_right = 152.0
+offset_bottom = 91.0
+texture = ExtResource("5_d3e2j")
+script = ExtResource("6_gdjtc")
+draggable = SubResource("Resource_gdjtc")
 
 [node name="MenuManager" type="Node" parent="." unique_id=737916461]
 script = ExtResource("4_mt8f4")
@@ -21,8 +37,10 @@ script = ExtResource("1_mh14t")
 
 [node name="StartButton" type="Button" parent="MenuManager/StartPanel" unique_id=929621195]
 layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+offset_left = 11.0
+offset_top = 10.0
+offset_right = 124.0
+offset_bottom = 68.0
 
 [node name="SettingsPanel" type="Control" parent="MenuManager" unique_id=1300585704]
 layout_mode = 3
@@ -35,8 +53,8 @@ script = ExtResource("3_bcsmm")
 
 [node name="SettingsButton" type="Button" parent="MenuManager/SettingsPanel" unique_id=470820055]
 layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+offset_right = 103.0
+offset_bottom = 36.0
 
 [node name="ExitPanel" type="Control" parent="MenuManager" unique_id=1571917802]
 layout_mode = 3
@@ -47,5 +65,5 @@ script = ExtResource("1_17cx3")
 
 [node name="ExitButton" type="Button" parent="MenuManager/ExitPanel" unique_id=235438825]
 layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+offset_right = 50.0
+offset_bottom = 123.0
