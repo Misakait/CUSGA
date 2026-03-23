@@ -15,4 +15,11 @@ func handle_event(event: InputEvent, target_node) -> void:
 			dragging = false
 	
 	if event is InputEventMouseMotion and dragging:
-		target_node.position = event.position - drag_offset
+		var new_pos = event.position - drag_offset
+		
+		# 获取屏幕大小
+		var screen_size = target_node.get_viewport().size
+		new_pos.x = clamp(new_pos.x, 0, screen_size.x)
+		new_pos.y = clamp(new_pos.y, 0, screen_size.y)
+
+		target_node.global_position = new_pos
