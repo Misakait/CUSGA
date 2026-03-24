@@ -4,9 +4,10 @@
 
 [resource]
 script = ExtResource("1_bhrvp")
-name = "测试卡牌2"
 element = 3
 cost = 20
 damage = 20
-description = "测试卡牌2，并且这里也是卡牌的效果描述。"
+CardId = null
+CardName = "测试卡2"
+Description = "测试卡2的描述"
 metadata/_custom_type_script = "uid://bejho62d28qir"
