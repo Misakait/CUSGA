@@ -15,7 +15,7 @@ var turn_draw_count:int = 5 ##每回合摸牌数
 func _ready():
 	#初始化摸牌堆
 	deck_manager.initialize_deck(starting_deck_data)
-	
+
 	start_player_turn()
 
 func start_player_turn():
@@ -27,7 +27,7 @@ func end_player_turn():
 	control_lock.lock()
 	deck_manager.discard_hand()
 	print("--- 玩家回合结束 ---")
-	
+
 	start_player_turn()
 
 func _on_turn_end_pressed() -> void:

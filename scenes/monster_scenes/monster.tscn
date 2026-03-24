@@ -1,17 +1,42 @@
 [gd_scene format=3 uid="uid://do46qf017vjha"]
 
-[ext_resource type="Script" uid="uid://bd00gxa6umw42" path="res://entities/monster.cs" id="1_gxfgy"]
+[ext_resource type="Script" uid="uid://wl3ajed8xmqo" path="res://entities/Monster.cs" id="1_1wyrm"]
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="1_i8hiw"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="2_gqard"]
 [ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="2_twjs6"]
 [ext_resource type="Texture2D" uid="uid://dibw3vo71446y" path="res://res/image/卡牌模板.png" id="3_1wyrm"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="3_f5jq7"]
 [ext_resource type="Script" uid="uid://qp3tco60xl2b" path="res://entities/components/FactionComponent.cs" id="3_tgvxs"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="4_twqyq"]
+[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
+
+[sub_resource type="Resource" id="Resource_4jp6m"]
+script = ExtResource("2_gqard")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="Resource_bgonl"]
+script = ExtResource("4_twqyq")
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[sub_resource type="PackedScene" id="PackedScene_1lcr1"]
+
+[sub_resource type="Resource" id="Resource_43qb6"]
+script = ExtResource("5_kt6in")
+MonsterName = "kirin"
+InitialAttributes = SubResource("Resource_4jp6m")
+ElementalProperty = 1
+ModelScene = SubResource("PackedScene_1lcr1")
+LootTable = SubResource("Resource_bgonl")
+MaxHealth = 100
+metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]
 size = Vector2(150, 210)
 
 [node name="Monster" type="Node2D" unique_id=1392813721]
-script = ExtResource("1_gxfgy")
+script = ExtResource("1_1wyrm")
+BaseData = SubResource("Resource_43qb6")
 
 [node name="CardSlot" parent="." unique_id=1623300953 instance=ExtResource("5_ok3rw")]
 

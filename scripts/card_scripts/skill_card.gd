@@ -14,16 +14,16 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-func use(target = null):
+func use(target: Monster= null):
 	if target:
-		print(data.name,"被使用，目标为",target.base_data.MonsterName)
+		print(data.CardName,"被使用，目标为",target.BaseData.MonsterName)
 	else:
-		print(data.name,"被使用，没有目标")
+		print(data.CardName,"被使用，没有目标")
 
 func init_card_data(card_data):
 	data = card_data
-	$CardName.text = data.name
-	$CardDescription.text = data.description
+	$CardName.text = data.CardName
+	$CardDescription.text = data.Description
 	$CardCost.text = str(data.cost)
 
 func _on_area_2d_mouse_entered() -> void:

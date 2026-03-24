@@ -19,11 +19,11 @@ func _ready() -> void:
 # 初始化牌库
 func initialize_deck(starting_deck_data: Array[SkillCardData]):
 	draw_pile_data = starting_deck_data.duplicate()
-	
+
 	# 规则：卡牌数少于 x 张，补充低级卡
 	if draw_pile_data.size() < min_start_cards_count:
 		fill_with_basic_cards(min_start_cards_count - draw_pile_data.size())
-		
+
 	draw_pile_data.shuffle()
 
 # 抽牌
@@ -36,7 +36,7 @@ func draw_cards(amount: int,need_draw_interval:bool = true):
 				break
 			else:
 				reshuffle_discard_into_draw()
-		
+
 		var card_data = draw_pile_data.back()
 		if player_hand.draw_card_data(card_data):
 			draw_pile_data.pop_back()
@@ -51,7 +51,7 @@ func draw_cards(amount: int,need_draw_interval:bool = true):
 func play_card(card: Node2D, target = null):
 	# 执行卡牌效果
 	card.use(target)
-	
+
 	# 从手牌移除，进入弃牌堆
 	into_discard_pile(card)
 
@@ -73,7 +73,7 @@ func reshuffle_discard_into_draw():
 func fill_with_basic_cards(amount: int):
 	for i in range(amount):
 		var basic_card = SkillCardData.new()
-		basic_card.name = "填充卡牌测试001" # 这里最好加载你预设的基础卡 Resource
+		basic_card.CardName = "填充卡牌测试001" # 这里最好加载你预设的基础卡 Resource
 		basic_card.cost = 10
 		draw_pile_data.append(basic_card)
 
@@ -86,27 +86,27 @@ func print_all_card():
 func print_hand():
 	var names: Array[String] = []
 	for card in player_hand.player_hand_card:
-		names.append(card.data.name)
+		names.append(card.data.CardName)
 	print("【手牌】(", player_hand.player_hand_card.size(), "张): ", names)
-	
+
 func print_draw_pile():
 	var names: Array[String] = []
 	for card in draw_pile_data:
-		names.append(card.name)
+		names.append(card.CardName)
 	print("【抽牌堆】(", draw_pile_data.size(), "张): ", names)
-	
+
 func print_discard_pile():
 	var names: Array[String] = []
 	for card in discard_pile_data:
-		names.append(card.name)
+		names.append(card.CardName)
 	print("【弃牌堆】(", discard_pile_data.size(), "张): ", names)
 
 func discard(card):
-	print(card.data.name,"被弃置")
+	print(card.data.CardName,"被弃置")
 	discard_pile_data.append(card.data)
 	player_hand.remove_card_from_hand(card)
-	
+
 func into_discard_pile(card):
-	print(card.data.name,"进入弃牌堆")
+	print(card.data.CardName,"进入弃牌堆")
 	discard_pile_data.append(card.data)
 	player_hand.remove_card_from_hand(card)
