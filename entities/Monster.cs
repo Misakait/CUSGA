@@ -18,7 +18,7 @@ public partial class Monster : Node2D
     public AttributeComponent Attributes { get; private set; }
     public FactionComponent Faction { get; private set; }
     public StatusComponent Status { get; private set; }
-    private LootComponent Loot { get; set; }
+    // private LootComponent Loot { get; set; }
 
     public override void _Ready()
     {
@@ -26,7 +26,7 @@ public partial class Monster : Node2D
         Faction = GetNode<FactionComponent>("Components/FactionComponent");
         Health = GetNode<HealthComponent>("Components/HealthComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
-        Loot = GetNode<LootComponent>("Components/LootComponent");
+        // Loot = GetNode<LootComponent>("Components/LootComponent");
         Health.Depleted += HandleDeath;
         if (BaseData != null)
         {
@@ -36,6 +36,7 @@ public partial class Monster : Node2D
 
     private void HandleDeath()
     {
+        // Loot.TriggerDrop(this.GlobalPosition, 0);
         QueueFree();
     }
 
