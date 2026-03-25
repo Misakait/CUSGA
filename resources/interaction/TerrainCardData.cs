@@ -1,6 +1,6 @@
 using Godot;
-
-namespace CUSGA.resources.item.interaction;
+using CUSGA.resources.item;
+namespace CUSGA.resources.interaction;
 
 [GlobalClass]
 public partial class TerrainCardData : BaseCardData

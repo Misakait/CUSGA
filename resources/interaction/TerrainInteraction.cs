@@ -1,7 +1,7 @@
 using Godot;
 using CUSGA.entities;
 
-namespace CUSGA.resources.item.interaction;
+namespace CUSGA.resources.interaction;
 
 [GlobalClass]
 public abstract partial class TerrainInteraction : Resource
