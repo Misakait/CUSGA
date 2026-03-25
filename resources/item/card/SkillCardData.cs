@@ -11,6 +11,11 @@ public partial class SkillCardData : ItemData
     [Export] public int cost = 10;
     [Export] public int damage = 10;
 
+    public SkillCardData()
+	{
+		MaxStackSize = 1;
+	}
+
     // 对应 apply_effect 方法
     public void ApplyEffect(dynamic target)
     {
