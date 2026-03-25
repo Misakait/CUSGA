@@ -11,9 +11,10 @@ public partial class Player : CharacterBody2D
 
     private HealthComponent _health;
     private SatietyComponent _satiety;
-    private EnergyComponent _energy;
+    public EnergyComponent Energy { get; private set; }
     private AttributeComponent _attribute;
     private InventoryComponent _inventory;
+    public StatusComponent Status { get; private set; }
 
     public TagComponent TagComponent { get; private set; }
 
@@ -23,9 +24,10 @@ public partial class Player : CharacterBody2D
     {
         _health = GetNode<HealthComponent>("HealthComponent");
         _satiety = GetNode<SatietyComponent>("SatietyComponent");
-        _energy = GetNode<EnergyComponent>("EnergyComponent");
+        Energy = GetNode<EnergyComponent>("EnergyComponent");
         _attribute = GetNode<AttributeComponent>("AttributeComponent");
         TagComponent = GetNode<TagComponent>("TagComponent");
+        Status = GetNode<StatusComponent>("%StatusComponent");
 
         _satiety.Depleted += OnSatietyDepleted;
         _health.Depleted += OnPlayerDied;

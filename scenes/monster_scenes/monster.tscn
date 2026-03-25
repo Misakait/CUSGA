@@ -10,6 +10,8 @@
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="4_twqyq"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
+[ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="11_f5jq7"]
+[ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
 script = ExtResource("2_gqard")
@@ -51,13 +53,8 @@ shape = SubResource("RectangleShape2D_ooags")
 
 [node name="Components" type="Node" parent="." unique_id=1744515292]
 
-[node name="TagComponent" type="Node" parent="Components" unique_id=1785885913]
-
-[node name="DropComponent" type="Node" parent="Components" unique_id=1354129390]
-
-[node name="ElementalComponent" type="Node" parent="Components" unique_id=2081169235]
-
 [node name="HealthComponent" type="Node" parent="Components" unique_id=769981606]
+unique_name_in_owner = true
 script = ExtResource("1_i8hiw")
 metadata/_custom_type_script = "uid://d4gp22cg5vjro"
 
@@ -69,6 +66,11 @@ metadata/_custom_type_script = "uid://ckflk2am2hx30"
 script = ExtResource("3_tgvxs")
 metadata/_custom_type_script = "uid://qp3tco60xl2b"
 
-[node name="ModelContainer" type="Node" parent="." unique_id=466557276]
+[node name="StatusComponent" type="Node" parent="Components" unique_id=1115103239]
+unique_name_in_owner = true
+script = ExtResource("11_f5jq7")
+metadata/_custom_type_script = "uid://gek5smi6lrcs"
 
-[node name="BehaviorTree" type="Node" parent="." unique_id=1725142876]
+[node name="DamageReceiverComponent" type="Node" parent="Components" unique_id=985048352]
+script = ExtResource("12_twqyq")
+metadata/_custom_type_script = "uid://delpo10ufxcco"

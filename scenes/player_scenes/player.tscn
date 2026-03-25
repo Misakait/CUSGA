@@ -9,6 +9,8 @@
 [ext_resource type="Script" uid="uid://dh3lwksrhok2a" path="res://entities/components/EquipmentComponent.cs" id="7_b744r"]
 [ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_j2xde"]
 [ext_resource type="Script" uid="uid://bji1u6alsgwam" path="res://entities/components/CraftingComponent.cs" id="9_v0ulg"]
+[ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="10_4xp6m"]
+[ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="11_mm880"]
 
 [node name="Player" type="CharacterBody2D" unique_id=1686256351]
 script = ExtResource("1_d8qmr")
@@ -18,6 +20,7 @@ script = ExtResource("2_k3sny")
 metadata/_custom_type_script = "uid://coyiavqkkmsgv"
 
 [node name="HealthComponent" type="Node" parent="." unique_id=1633011625]
+unique_name_in_owner = true
 script = ExtResource("3_shuw1")
 metadata/_custom_type_script = "uid://d4gp22cg5vjro"
 
@@ -39,3 +42,12 @@ script = ExtResource("8_j2xde")
 
 [node name="CraftingComponent" type="Node" parent="." unique_id=666731952]
 script = ExtResource("9_v0ulg")
+
+[node name="StatusComponent" type="Node" parent="." unique_id=27906591]
+unique_name_in_owner = true
+script = ExtResource("10_4xp6m")
+metadata/_custom_type_script = "uid://gek5smi6lrcs"
+
+[node name="DamageReceiverComponent" type="Node" parent="." unique_id=1300626617]
+script = ExtResource("11_mm880")
+metadata/_custom_type_script = "uid://delpo10ufxcco"

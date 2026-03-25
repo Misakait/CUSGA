@@ -13,8 +13,8 @@ public partial class DamageReceiverComponent : Node
         var attackerStats = payload.Source?.GetNodeOrNull<AttributeComponent>("AttributeComponent");
         var defenderStats = GetParent().GetNodeOrNull<AttributeComponent>("AttributeComponent");
 
-        var attackerStatus = payload.Source?.GetNodeOrNull<StatusComponent>("StatusComponent");
-        var defenderStatus = GetParent().GetNodeOrNull<StatusComponent>("StatusComponent");
+        var attackerStatus = payload.Source?.GetNodeOrNull<StatusComponent>("%StatusComponent");
+        var defenderStatus = GetParent().GetNodeOrNull<StatusComponent>("%StatusComponent");
 
         float calculatedDamage = payload.Damage;
 
@@ -80,6 +80,6 @@ public partial class DamageReceiverComponent : Node
         }
 
         int finalDamageInt = Mathf.RoundToInt(calculatedDamage);
-        GetParent().GetNodeOrNull<HealthComponent>("HealthComponent")?.TakeDamage(finalDamageInt, payload.Element);
+        GetParent().GetNodeOrNull<HealthComponent>("%HealthComponent")?.TakeDamage(finalDamageInt, payload.Element);
     }
 }
