@@ -13,34 +13,34 @@ public partial class VitalComponentBase : Node
     public delegate void DepletedEventHandler(); // 归零时触发
 
     [Export]
-    protected int _maxValue = 100;
+    public int MaxValue { get; protected set; } = 100;
 
-    protected int _currentValue;
+    public int CurrentValue { get; protected set; }
 
     public override void _Ready()
     {
-        _currentValue = _maxValue;
+        CurrentValue = MaxValue;
     }
 
     public virtual void InitializeMax(int newMaxValue)
     {
-        _maxValue = newMaxValue;
-        _currentValue = _maxValue;
-        EmitSignal(SignalName.ValueChanged, _currentValue, _maxValue);
+        MaxValue = newMaxValue;
+        CurrentValue = MaxValue;
+        EmitSignal(SignalName.ValueChanged, CurrentValue, MaxValue);
     }
 
     public virtual void Add(int amount)
     {
-        _currentValue = Mathf.Min(_currentValue + amount, _maxValue);
-        EmitSignal(SignalName.ValueChanged, _currentValue, _maxValue);
+        CurrentValue = Mathf.Min(CurrentValue + amount, MaxValue);
+        EmitSignal(SignalName.ValueChanged, CurrentValue, MaxValue);
     }
 
     public virtual void Subtract(int amount)
     {
-        _currentValue = Mathf.Max(_currentValue - amount, 0);
-        EmitSignal(SignalName.ValueChanged, _currentValue, _maxValue);
+        CurrentValue = Mathf.Max(CurrentValue - amount, 0);
+        EmitSignal(SignalName.ValueChanged, CurrentValue, MaxValue);
 
-        if (_currentValue <= 0)
+        if (CurrentValue <= 0)
         {
             EmitSignal(SignalName.Depleted);
         }
