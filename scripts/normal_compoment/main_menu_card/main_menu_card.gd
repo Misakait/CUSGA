@@ -28,11 +28,13 @@ func _ready():
 	drag_scale = sprite2d.scale + drag_scale_offeset
 	
 func _on_area_2d_mouse_entered():
+	z_index = 2
 	if not dragging:
 		hovering = true
 		animate_scale(hover_scale)
 
 func _on_area_2d_mouse_exited():
+	z_index = 1
 	if not dragging:
 		hovering = false
 		animate_scale(normal_scale)
