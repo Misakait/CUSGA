@@ -53,5 +53,7 @@ offset_top = -64.0
 offset_right = 88.0
 offset_bottom = -41.0
 
+[connection signal="card_hovering_me" from="." to="." method="_on_card_hovering_me"]
+[connection signal="card_not_hovering_me" from="." to="." method="_on_card_not_hovering_me"]
 [connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
 [connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]

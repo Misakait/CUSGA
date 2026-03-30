@@ -6,6 +6,7 @@ const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
 
 var card = null
+var hovering_card = null
 
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -49,3 +50,11 @@ func get_card_with_highest_z_index(cards):
 			highest_z_card = current_card
 			highest_z_index = current_card.z_index
 	return highest_z_card
+	
+func _on_hovering_card(that_card):
+	hovering_card = raycast_check_for_card()
+	
+func _on_not_hovering_card(that_card):
+	hovering_card = raycast_check_for_card()
+	if hovering_card:
+		hovering_card._on_area_2d_mouse_entered()
