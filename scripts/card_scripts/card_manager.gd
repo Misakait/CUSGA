@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var deck_manager = $"../DeckManager"
 @onready var control_lock = $"../ControlLock"
+@onready var player_manager = $"../PlayerManager"
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
@@ -25,6 +26,17 @@ func _process(delta: float) -> void:
 			clamp(target_pos.x, 0, screen_size.x),
 			clamp(target_pos.y, 0, screen_size.y)
 		)
+	check_cards_energy()
+
+func check_cards_energy():
+	if control_lock.is_lock:
+		return
+	var pm = player_manager
+	for card in player_hand_referencd.player_hand_card:
+		if pm.energy < card.data.cost:
+			card.lock()
+		else:
+			card.unlock()
 
 func _input(event):
 	if control_lock.is_lock:
@@ -39,6 +51,8 @@ func _input(event):
 				finish_drag()
 
 func start_drag(card):
+	if player_manager.energy < card.data.cost:
+		return
 	card_being_dragged = card
 	# 记录鼠标点击位置与卡牌原点之间的差值
 	drag_offset = card.position - get_global_mouse_position()
@@ -47,7 +61,8 @@ func start_drag(card):
 func finish_drag():
 	card_being_dragged.scale = Vector2(1.05, 1.05)
 	var card_slot_found = raycast_check_for_card_slot()
-	if  card_slot_found:
+	if card_slot_found:
+		$"../PlayerManager".consume_energy(card_being_dragged.data.cost)
 		deck_manager.play_card(card_being_dragged,card_slot_found.get_parent())
 		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 		#card_being_dragged.position = card_slot_found.position

@@ -3,6 +3,7 @@ extends Node
 @onready var deck_manager = $DeckManager
 @onready var player_hand = $PlayerHand
 @onready var control_lock = $ControlLock
+@onready var player_manager = $PlayerManager
 
 @export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
 @export var card_scene: PackedScene

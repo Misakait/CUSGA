@@ -16,6 +16,11 @@ func lose_hp(amount:int):
 	
 func recover_energy(amount:int):
 	energy = min(energy + amount, max_energy)
+	refresh_energy()
 	
 func consume_energy(amount:int):
 	energy = max(energy - amount, 0)
+	refresh_energy()
+
+func refresh_energy():
+	$"../UI/Energy".text = "能量："+str(energy)
