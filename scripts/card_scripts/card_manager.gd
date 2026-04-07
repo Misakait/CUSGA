@@ -62,7 +62,7 @@ func finish_drag():
 	card_being_dragged.scale = Vector2(1.05, 1.05)
 	var card_slot_found = raycast_check_for_card_slot()
 	if card_slot_found:
-		$"../PlayerManager".consume_energy(card_being_dragged.data.cost)
+		player_manager.consume_energy(card_being_dragged.data.cost)
 		deck_manager.play_card(card_being_dragged,card_slot_found.get_parent())
 		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 		#card_being_dragged.position = card_slot_found.position
@@ -85,12 +85,16 @@ func on_hovered_off_card(card):
 		highlight_card(card, false)
 		# Check if hovered off card straight on to another card
 		var new_card_hovered = raycast_check_for_card()
+		printerr(new_card_hovered)
 		if new_card_hovered:
 			highlight_card(new_card_hovered, true)
+			highlight_card(card, false)
 		else:
 			is_hovering_on_card = false
 
 func highlight_card(card, hovered):
+	if card.is_lock:
+		return
 	if hovered:
 		card.scale = Vector2(1.05, 1.05)
 		card.z_index = 2
