@@ -7,9 +7,6 @@ extends Node
 @export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
 @export var card_scene: PackedScene
 
-const MAX_ENERGY: int = 100
-
-var player_energy: int = 100
 var turn_draw_count:int = 5 ##每回合摸牌数
 
 func _ready():
