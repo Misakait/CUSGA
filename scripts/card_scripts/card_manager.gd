@@ -76,16 +76,19 @@ func connect_card_signals(card):
 	card.connect("hovered_off", on_hovered_off_card)
 
 func on_hovered_over_card(card):
-	if !is_hovering_on_card:
+	if !card_being_dragged:
 		is_hovering_on_card = true
-		highlight_card(card, true)
+		var top_card = raycast_check_for_card()
+		if top_card:
+			highlight_card(top_card, true)
+		else:
+			highlight_card(card, true)
 
 func on_hovered_off_card(card):
 	if !card_being_dragged:
 		highlight_card(card, false)
 		# Check if hovered off card straight on to another card
 		var new_card_hovered = raycast_check_for_card()
-		printerr(new_card_hovered)
 		if new_card_hovered:
 			highlight_card(new_card_hovered, true)
 			highlight_card(card, false)
