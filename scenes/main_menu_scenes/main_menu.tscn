@@ -7,6 +7,13 @@
 [ext_resource type="Script" uid="uid://c8v8bpqgsv02b" path="res://scripts/main_menu_scripts/menu_manager.gd" id="4_mt8f4"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
+[ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="7_r5auf"]
+[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="8_r5auf"]
+[ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="9_eliqi"]
+
+[sub_resource type="Resource" id="Resource_v5kme"]
+script = ExtResource("7_r5auf")
+metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 
 [sub_resource type="Resource" id="Resource_r5auf"]
 script = ExtResource("7_gdjtc")
@@ -59,15 +66,31 @@ layout_mode = 0
 offset_right = 50.0
 offset_bottom = 123.0
 
-[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112]
+[node name="SnapperBinder" type="Node2D" parent="." unique_id=987922898 node_paths=PackedStringArray("snap_nodes")]
+script = ExtResource("9_eliqi")
+target_snapper = SubResource("Resource_v5kme")
+snap_nodes = [NodePath("../SnapPoint1")]
+metadata/_custom_type_script = "uid://r4v1cixqpj1o"
+
+[node name="SnapPoint1" type="Node2D" parent="." unique_id=224474800]
+position = Vector2(400, 150)
+
+[node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
+texture = ExtResource("8_r5auf")
+
+[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112 node_paths=PackedStringArray("napper_binder")]
 script = ExtResource("6_gdjtc")
 draggable = SubResource("Resource_r5auf")
-
-[node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(1144, 507)
+napper_binder = NodePath("../SnapperBinder")
 
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
 position = Vector2(762, 275)
+tween_duration = 0.2
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
 position = Vector2(254, 332)
+tween_duration = 0.2
+
+[node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
+position = Vector2(1136, 459)
+tween_duration = 0.2

@@ -1,6 +1,7 @@
 extends Node2D
 
 @export var draggable: Draggable
+@export var napper_binder: SnapperBinder
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
@@ -26,6 +27,9 @@ func start_drag():
 func finish_drag():
 	if card != null : 
 		card.finish_drag()
+		#吸附卡牌
+		napper_binder.target_snapper.snap_card(card)
+		
 	card = null
 
 #光线投射，检查并获取鼠标下的卡牌

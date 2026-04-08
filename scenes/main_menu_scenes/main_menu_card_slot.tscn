@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://dw5trprxgj37j"]
+
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="1_fkilj"]
+[ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="1_lqdhr"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lqdhr"]
+size = Vector2(150, 210)
+
+[node name="MainMenuCardSlot" type="Node2D" unique_id=1594907719]
+script = ExtResource("1_lqdhr")
+
+[node name="CardSlotImage" type="Sprite2D" parent="." unique_id=730903533]
+modulate = Color(0, 0, 0, 1)
+rotation = 1.5707964
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("1_fkilj")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=393397359]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=319672217]
+position = Vector2(4.371122e-08, 3.8146973e-06)
+shape = SubResource("RectangleShape2D_lqdhr")
