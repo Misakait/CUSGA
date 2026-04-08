@@ -15,7 +15,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-func use(target: Monster= null):
+func use(target: Monster = null):
 	if target:
 		print(data.CardName,"被使用，目标为",target.BaseData.MonsterName)
 	else:

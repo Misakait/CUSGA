@@ -1,7 +1,7 @@
 extends Node2D
 
-var max_energy: int = 20
-var energy: int = 20
+var max_energy: int = 100
+var energy: int = 100
 var max_hp: int = 100
 var hp:int = 100
 
