@@ -78,10 +78,10 @@ position = Vector2(400, 150)
 [node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
 texture = ExtResource("8_r5auf")
 
-[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112 node_paths=PackedStringArray("napper_binder")]
+[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112 node_paths=PackedStringArray("binder")]
 script = ExtResource("6_gdjtc")
 draggable = SubResource("Resource_r5auf")
-napper_binder = NodePath("../SnapperBinder")
+binder = NodePath("../SnapperBinder")
 
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
 position = Vector2(762, 275)
