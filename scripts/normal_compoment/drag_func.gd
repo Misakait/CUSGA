@@ -6,7 +6,7 @@ extends Node2D
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
 
-var original_position: Vector2 = Vector2.ZERO   # 记录卡牌原始位置
+var original_position: Dictionary   # 记录卡牌原始位置
 var card = null
 var hovering_card = null
 
@@ -23,7 +23,6 @@ func _input(event):
 		draggable.handle_event(event, card)
 		
 func start_drag():
-	original_position = card.global_position
 	card.start_drag()
 
 func finish_drag():
@@ -38,7 +37,7 @@ func finish_drag():
 		if not snapped:
 			# 没有吸附成功 → 回到原位
 			var tween = card.create_tween()
-			tween.tween_property(card, "global_position", original_position, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	card = null
 
 #光线投射，检查并获取鼠标下的卡牌

@@ -66,6 +66,7 @@ func finish_drag():
 func init_parent() -> void:
 	var par = get_parent()
 	if par != null:
+		par.original_position[self] = global_position
 		connect("hovering_card", Callable(par, "_on_hovering_card"))
 		connect("not_hovering_card", Callable(par, "_on_not_hovering_card"))
 	
