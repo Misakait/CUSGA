@@ -7,9 +7,9 @@ signal not_hovering_card(card)
 @export_group("放大效果")
 @export var normal_scale_offeset: Vector2 = Vector2(0, 0)
 @export var hover_scale_offeset: Vector2 = Vector2(0.2, 0.2)
-@export var drag_scale_offeset: Vector2 = Vector2(0.3, 0.3)
+@export var drag_scale_offeset: Vector2 = Vector2(0.4, 0.4)
 ## 动画时长（秒）
-@export var tween_duration: float = 0.2 
+@export var tween_duration: float = 0.1
 
 @export var sprite_texture: Texture2D
 
@@ -66,6 +66,7 @@ func finish_drag():
 func init_parent() -> void:
 	var par = get_parent()
 	if par != null:
+		par.original_position[self] = global_position
 		connect("hovering_card", Callable(par, "_on_hovering_card"))
 		connect("not_hovering_card", Callable(par, "_on_not_hovering_card"))
 	

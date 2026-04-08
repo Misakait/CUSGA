@@ -1,22 +1,38 @@
 extends Resource
 class_name Snapper
 
-@export var snap_distance: float = 100.0   # 吸附阈值，像素
-@export var enable_snap: bool = true       # 是否启用吸附
+@export_group("吸附设置")
+@export var snap_positions: Array[Vector2] = []   # 吸附点坐标数组
+@export var snap_radius: float = 80.0             # 吸附范围半径
+@export var tween_duration: float = 0.3           # 缓动时长
+@export var allow_multiple: bool = false          # 是否允许多个卡牌吸附到同一点
 
-func snap_to_slots(target_node: Node, slots: Array[Node]) -> void:
-	if not enable_snap or slots.is_empty():
-		return
+var snapped_cards: Dictionary = {}   # {card: snap_position}
 
-	var closest_slot: Node = null
-	var closest_dist: float = INF
+func get_nearest_snap_position(card: Node2D) -> Vector2:
+	var nearest: Vector2 = Vector2.ZERO
+	var min_dist: float = INF
+	for pos in snap_positions:
+		var dist = card.global_position.distance_to(pos)
+		if dist < min_dist and dist <= snap_radius:
+			min_dist = dist
+			nearest = pos
+	return nearest
 
-	for slot in slots:
-		if slot is Control or slot is Node2D:
-			var dist = target_node.position.distance_to(slot.position)
-			if dist < closest_dist:
-				closest_dist = dist
-				closest_slot = slot
+func can_snap(card: Node2D, pos: Vector2) -> bool:
+	if pos == Vector2.ZERO:
+		return false
+	if allow_multiple:
+		return true
+	return not snapped_cards.values().has(pos)
 
-	if closest_slot and closest_dist <= snap_distance:
-		target_node.position = closest_slot.position
+func snap_card(card: Node2D) -> void:
+	var pos = get_nearest_snap_position(card)
+	if can_snap(card,pos):
+		var tween = card.create_tween()
+		tween.tween_property(card, "global_position", pos, tween_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		snapped_cards[card] = pos
+
+func release_card(card: Node2D) -> void:
+	if snapped_cards.has(card):
+		snapped_cards.erase(card)

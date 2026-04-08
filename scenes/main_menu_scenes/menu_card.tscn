@@ -9,6 +9,7 @@ size = Vector2(70, 50)
 [node name="Card" type="Node2D" unique_id=401739906]
 z_index = 1
 script = ExtResource("1_h86l4")
+drag_scale_offeset = Vector2(0.3, 0.3)
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
 scale = Vector2(1.5, 1.5)
@@ -53,7 +54,5 @@ offset_top = -64.0
 offset_right = 88.0
 offset_bottom = -41.0
 
-[connection signal="card_hovering_me" from="." to="." method="_on_card_hovering_me"]
-[connection signal="card_not_hovering_me" from="." to="." method="_on_card_not_hovering_me"]
 [connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
 [connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]
