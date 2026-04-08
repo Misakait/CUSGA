@@ -28,7 +28,6 @@ func can_snap(card: Node2D, pos: Vector2) -> bool:
 
 func snap_card(card: Node2D) -> void:
 	var pos = get_nearest_snap_position(card)
-	print(card," :",pos)
 	if can_snap(card,pos):
 		var tween = card.create_tween()
 		tween.tween_property(card, "global_position", pos, tween_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

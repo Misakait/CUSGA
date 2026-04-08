@@ -1,10 +1,6 @@
 [gd_scene format=3 uid="uid://qwckbjjp11ca"]
 
-[ext_resource type="Script" uid="uid://djfxwyx3sjiob" path="res://scripts/main_menu_scripts/exit_panel.gd" id="1_17cx3"]
-[ext_resource type="Script" uid="uid://bgwfaeq0mm005" path="res://scripts/main_menu_scripts/start_panel.gd" id="1_mh14t"]
 [ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="2_gdjtc"]
-[ext_resource type="Script" uid="uid://cfumu6i2fg3yk" path="res://scripts/main_menu_scripts/settings_panel.gd" id="3_bcsmm"]
-[ext_resource type="Script" uid="uid://c8v8bpqgsv02b" path="res://scripts/main_menu_scripts/menu_manager.gd" id="4_mt8f4"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="7_r5auf"]
@@ -21,51 +17,6 @@ metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
 [node name="MainMenu" type="Node2D" unique_id=1637248230]
 
-[node name="MenuManager" type="Node" parent="." unique_id=737916461]
-script = ExtResource("4_mt8f4")
-
-[node name="StartPanel" type="Control" parent="MenuManager" unique_id=2009313607]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 53.0
-offset_top = 45.0
-offset_right = 93.0
-offset_bottom = 85.0
-script = ExtResource("1_mh14t")
-
-[node name="StartButton" type="Button" parent="MenuManager/StartPanel" unique_id=929621195]
-layout_mode = 0
-offset_left = 11.0
-offset_top = 10.0
-offset_right = 124.0
-offset_bottom = 68.0
-
-[node name="SettingsPanel" type="Control" parent="MenuManager" unique_id=1300585704]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 58.0
-offset_top = 1.0
-offset_right = 98.0
-offset_bottom = 41.0
-script = ExtResource("3_bcsmm")
-
-[node name="SettingsButton" type="Button" parent="MenuManager/SettingsPanel" unique_id=470820055]
-layout_mode = 0
-offset_right = 103.0
-offset_bottom = 36.0
-
-[node name="ExitPanel" type="Control" parent="MenuManager" unique_id=1571917802]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-script = ExtResource("1_17cx3")
-
-[node name="ExitButton" type="Button" parent="MenuManager/ExitPanel" unique_id=235438825]
-layout_mode = 0
-offset_right = 50.0
-offset_bottom = 123.0
-
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=987922898 node_paths=PackedStringArray("snap_nodes")]
 script = ExtResource("9_eliqi")
 target_snapper = SubResource("Resource_v5kme")
@@ -73,7 +24,7 @@ snap_nodes = [NodePath("../SnapPoint1")]
 metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 
 [node name="SnapPoint1" type="Node2D" parent="." unique_id=224474800]
-position = Vector2(400, 150)
+position = Vector2(549.375, 178.855)
 
 [node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
 texture = ExtResource("8_r5auf")
@@ -84,13 +35,13 @@ draggable = SubResource("Resource_r5auf")
 binder = NodePath("../SnapperBinder")
 
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
-position = Vector2(762, 275)
+position = Vector2(554, 486)
 tween_duration = 0.2
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
-position = Vector2(254, 332)
+position = Vector2(193, 483)
 tween_duration = 0.2
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(1136, 459)
+position = Vector2(839, 484)
 tween_duration = 0.2
