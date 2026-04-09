@@ -20,7 +20,7 @@ metadata/__load_path__ = "res://scenes/skill_card_scenes/Card.tscn"
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("5_76lap"), ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("4_qw51t")])
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("5_76lap"), ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("4_qw51t"), ExtResource("5_76lap"), ExtResource("5_76lap"), ExtResource("5_76lap"), ExtResource("5_76lap")])
 starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("7_aorj5"), ExtResource("7_aorj5"), ExtResource("8_aorj5"), ExtResource("7_aorj5")])
 card_scene = SubResource("Resource_navvr")
 

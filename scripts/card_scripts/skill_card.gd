@@ -20,6 +20,13 @@ func use(target: Monster = null):
 		print(data.CardName,"被使用，目标为",target.BaseData.MonsterName)
 	else:
 		print(data.CardName,"被使用，没有目标")
+		
+	#后面这里改成玩家场景
+	var source = null
+	if data.has_method("ApplyEffect"):
+		data.ApplyEffect(source, target)
+	else:
+		printerr("卡牌数据错误！")
 
 func init_card_data(card_data):
 	data = card_data
