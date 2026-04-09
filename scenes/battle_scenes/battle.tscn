@@ -6,9 +6,12 @@
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="3_76lap"]
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="4_qw51t"]
 [ext_resource type="Resource" uid="uid://dejj5ququif3b" path="res://resources/skill_cards/test_card_1.tres" id="5_76lap"]
+[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="6_ajc51"]
+[ext_resource type="Resource" uid="uid://dtnx6pd1ups8n" path="res://resources/monster/test_monster_1.tres" id="7_aorj5"]
+[ext_resource type="Resource" uid="uid://d1k7qaisrtngg" path="res://resources/monster/test_monster_2.tres" id="8_aorj5"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
+[ext_resource type="Script" uid="uid://chjm56tp6xjqk" path="res://scripts/battle_scripts/monster_manager.gd" id="8_xseyc"]
 [ext_resource type="Script" uid="uid://bxcdktnfciqv1" path="res://scripts/battle_scripts/control_lock.gd" id="9_sugqx"]
-[ext_resource type="PackedScene" uid="uid://do46qf017vjha" path="res://scenes/monster_scenes/monster.tscn" id="9_to08p"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
 
@@ -18,6 +21,7 @@ metadata/__load_path__ = "res://scenes/skill_card_scenes/Card.tscn"
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
 starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("5_76lap"), ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("4_qw51t")])
+starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("7_aorj5"), ExtResource("7_aorj5"), ExtResource("8_aorj5"), ExtResource("7_aorj5")])
 card_scene = SubResource("Resource_navvr")
 
 [node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
@@ -27,21 +31,7 @@ script = ExtResource("2_ychmy")
 script = ExtResource("8_ptgcx")
 
 [node name="MonsterManager" type="Node2D" parent="." unique_id=538886183]
-
-[node name="Monster" parent="MonsterManager" unique_id=1411950281 instance=ExtResource("9_to08p")]
-position = Vector2(189, 160)
-
-[node name="Monster2" parent="MonsterManager" unique_id=858697091 instance=ExtResource("9_to08p")]
-position = Vector2(392, 172)
-
-[node name="Monster3" parent="MonsterManager" unique_id=1812910666 instance=ExtResource("9_to08p")]
-position = Vector2(591, 170)
-
-[node name="Monster4" parent="MonsterManager" unique_id=621411771 instance=ExtResource("9_to08p")]
-position = Vector2(803, 164)
-
-[node name="Monster5" parent="MonsterManager" unique_id=1070002156 instance=ExtResource("9_to08p")]
-position = Vector2(1023, 162)
+script = ExtResource("8_xseyc")
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1114505953]
 script = ExtResource("10_navvr")

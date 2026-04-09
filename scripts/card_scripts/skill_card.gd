@@ -40,11 +40,7 @@ func _on_area_2d_mouse_exited() -> void:
 func lock():
 	$LockColor.visible = true
 	is_lock = true
-	$Area2D.collision_layer = 4
-	$Area2D.collision_mask = 4
 
 func unlock():
 	$LockColor.visible = false
 	is_lock = false
-	$Area2D.collision_layer = 1
-	$Area2D.collision_mask = 1

@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_noehs")
 MonsterName = "测试怪物1"
+ElementalProperty = 3
 MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
