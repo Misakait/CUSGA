@@ -41,10 +41,10 @@ func _ready() -> void:
 		print("你的地图数量不对啊")
 		
 	map_search_arr = [Vector2i(1,1)]
-	bfs_search()
 	
-	map[max_dis_from_home_point.x][max_dis_from_home_point.y] = "boss_room"
-	map[1][1] = "home"
+	#bfs_search()
+	#map[max_dis_from_home_point.x][max_dis_from_home_point.y] = "boss_room"
+	#map[1][1] = "home"
 	
 	# 显示地图
 	for col in map:
@@ -53,7 +53,12 @@ func _ready() -> void:
 # 构建二维数组地图
 func bfs_create_map(start_point: Vector2i):
 	if map[start_point.x][start_point.y] == "void":
-		map[start_point.x][start_point.y] = create_what()
+		if start_point != Vector2i(1,1):
+			map[start_point.x][start_point.y] = create_what()
+		else:
+			map[start_point.x][start_point.y] = "home"
+			map_types_ref.map_cnt["home"] -= 1
+			
 		choose_create_position(start_point)
 	
 	if !map_arr.is_empty():
@@ -136,8 +141,16 @@ func create_what() -> String:
 	var keys = map_types_ref.map_cnt.keys()
 	var randi_num = randi_range(0, keys.size()-1)
 	var now_name = keys[randi_num]
+	print(keys,": ",now_name)
 	if map_types_ref.map_cnt[now_name] > 0:
+		if now_name == "boss_room" and keys.size() != 1:
+			return create_what()
+		
 		map_types_ref.map_cnt[now_name] -= 1
+		
+		if map_types_ref.map_cnt[now_name] <= 0:
+			map_types_ref.map_cnt.erase(now_name)
+		
 		return now_name
 	else:
 		map_types_ref.map_cnt.erase(now_name)
@@ -146,6 +159,7 @@ func create_what() -> String:
 func bfs_search():
 	var new_search_arr: Array[Vector2i] = []
 	while !map_search_arr.is_empty():
+		#获取所连接的房间
 		var now_point: Vector2i = map_search_arr.pop_front()
 		var new_point_arr = scene_to_scene[now_point]
 		var id = 0
