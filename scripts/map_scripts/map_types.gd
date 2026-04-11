@@ -26,8 +26,7 @@ func get_map_count_now():
 	var total_cnt = 0
 	#获取可当前地图总数量
 	for cnt: map_attribute in map_type_attribute:
-		if cnt.scene_count >= 0:
-			total_cnt += cnt.scene_count
+		total_cnt += cnt.scene_count
 	return total_cnt
 
 func from_name_get_road(scene_name: String):
