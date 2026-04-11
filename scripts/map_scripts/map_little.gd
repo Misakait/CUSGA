@@ -75,16 +75,14 @@ func build_this_bridge(x: int, y: int):
 				3: bridge_scene.position = Vector2(cell_position.x - offeset_bridge , cell_position.y) # 左
 			add_child(bridge_scene)
 
-# 改变场景颜色
+# 改变场景颜色 与 修改小地图渲染中心
 func change_this_cell_color(x: int, y: int):
 	if map_scene.has(Vector2i(x,y)):
 		map_scene[Vector2i(x,y)].get_node("Cell").self_modulate = Color.RED
 	
+	#修改小地图渲染中心
 	if subviewport:
 		subviewport.camera_node.global_position = map_scene[Vector2i(x,y)].global_position
-		#print("(",x," ",y,")",map_scene[Vector2i(x,y)].position)
-		#print("|")
-		#print(subviewport.camera_node.position)
 
 # 恢复场景颜色
 func return_this_cell_color(x: int, y: int):

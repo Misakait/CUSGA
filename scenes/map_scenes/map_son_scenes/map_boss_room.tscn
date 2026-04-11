@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bpd2bncemempm"]
 
 [ext_resource type="Script" uid="uid://ly8agrcpxa1o" path="res://scripts/map_scripts/map_son_scripts/map_boss_room.gd" id="1_fplxy"]
+[ext_resource type="Texture2D" uid="uid://bm1h14uqp6biq" path="res://res/image/boss.png" id="2_ovxyk"]
 
 [node name="MapBossRoom" type="Node2D" unique_id=2063223928]
 script = ExtResource("1_fplxy")
@@ -8,3 +9,8 @@ script = ExtResource("1_fplxy")
 [node name="Label" type="Label" parent="." unique_id=976613809]
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1327551065]
+position = Vector2(654.34106, 397.7624)
+scale = Vector2(0.47887102, 0.52408814)
+texture = ExtResource("2_ovxyk")

@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://55q6p6bk1ll7"]
 
-[ext_resource type="Texture2D" uid="uid://c21fa3dxxuy42" path="res://res/image/white_background.png" id="1_vuryw"]
 [ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_2r3ie"]
 [ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="2_aulaq"]
 [ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
@@ -13,7 +12,7 @@
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
 [ext_resource type="PackedScene" uid="uid://bpd2bncemempm" path="res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn" id="7_mrmfi"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
-[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scenes/map_scenes/map_son_scenes/mini_map_viewport.gd" id="14_mrmfi"]
+[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 
 [sub_resource type="Resource" id="Resource_4pmc0"]
 script = ExtResource("2_aulaq")
@@ -57,12 +56,6 @@ metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
 
-[node name="WhiteBackground" type="Sprite2D" parent="." unique_id=1657788048]
-modulate = Color(1, 0.75, 0.75, 1)
-position = Vector2(639.5, 360.5)
-scale = Vector2(1.952744, 1.8586117)
-texture = ExtResource("1_vuryw")
-
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
 map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4")])
@@ -77,7 +70,7 @@ script = ExtResource("5_vtfeq")
 
 [node name="UpButton" type="Sprite2D" parent="MapButton" unique_id=621745549]
 modulate = Color(0, 0, 0, 1)
-position = Vector2(540, 80)
+position = Vector2(629, 74)
 texture = ExtResource("6_2263r")
 
 [node name="Label" type="Label" parent="MapButton/UpButton" unique_id=618818774]
@@ -98,10 +91,11 @@ offset_right = -64.0
 offset_bottom = -64.0
 grow_horizontal = 2
 grow_vertical = 2
+metadata/_edit_use_anchors_ = true
 
 [node name="RightButton" type="Sprite2D" parent="MapButton" unique_id=629088341]
 modulate = Color(0, 0, 0, 1)
-position = Vector2(1080, 300)
+position = Vector2(1135, 337)
 texture = ExtResource("6_2263r")
 
 [node name="RightButton" type="LinkButton" parent="MapButton/RightButton" unique_id=664217329]
@@ -124,7 +118,7 @@ text = "往东走"
 
 [node name="DownButton" type="Sprite2D" parent="MapButton" unique_id=1992184109]
 modulate = Color(0, 0, 0, 1)
-position = Vector2(540, 560)
+position = Vector2(624, 639)
 texture = ExtResource("6_2263r")
 
 [node name="DownButton" type="LinkButton" parent="MapButton/DownButton" unique_id=1973347690]
@@ -148,7 +142,7 @@ text = "往南走"
 
 [node name="LeftButton" type="Sprite2D" parent="MapButton" unique_id=438457492]
 modulate = Color(0, 0, 0, 1)
-position = Vector2(80, 300)
+position = Vector2(121, 335)
 texture = ExtResource("6_2263r")
 
 [node name="LeftButton" type="LinkButton" parent="MapButton/LeftButton" unique_id=2014586588]
@@ -188,16 +182,18 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -225.0
-offset_top = 67.0
-offset_right = -166.0
+offset_top = 45.0
+offset_right = -144.0
 offset_bottom = 119.0
 grow_horizontal = 0
+mouse_filter = 2
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="CanvasLayer/SubViewportContainer" unique_id=1091230112 node_paths=PackedStringArray("camera_node")]
 handle_input_locally = false
 canvas_item_default_texture_filter = 0
-size = Vector2i(59, 52)
+canvas_cull_mask = 4294967293
+size = Vector2i(81, 74)
 render_target_update_mode = 4
 script = ExtResource("14_mrmfi")
 camera_node = NodePath("Camera2D")
