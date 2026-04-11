@@ -14,7 +14,7 @@ public partial class HealthComponent : VitalComponentBase, IDamageable
 
     public void TakeDamage(int amount, ElementType elementType)
     {
-        if (CurrentValue <= 0) return;
+        //if (CurrentValue <= 0) return;
         EmitSignal(SignalName.DamageTaken, amount, (int)elementType);
         Subtract(amount);
     }

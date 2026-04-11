@@ -14,7 +14,7 @@ public partial class DamageEffect : CardEffect
     {
         var payload = new DamagePayload { Source = source, Target = target, Damage = BaseDamage, Type = Type, Element = Element };
         // 受伤的代码我还没完全弄好，只是示例，不过以后应该差不多这样
-        target.GetNodeOrNull<DamageReceiverComponent>("DamageReceiverComponent")?.ReceiveDamage(payload);
+        target.GetNodeOrNull<DamageReceiverComponent>("Components/DamageReceiverComponent")?.ReceiveDamage(payload);
     	GD.Print($"[伤害效果] 对目标 {target.Name} 发起攻击，基础伤害：{BaseDamage}");
 	}
 }

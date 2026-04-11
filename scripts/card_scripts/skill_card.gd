@@ -15,18 +15,20 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-func use(target: Monster = null):
+func use(target: Node = null):
 	if target:
 		print(data.CardName,"被使用，目标为",target.BaseData.MonsterName)
 	else:
 		print(data.CardName,"被使用，没有目标")
 		
-	#后面这里改成玩家场景
-	var source = null
+	var source = get_node_or_null("../../PlayerManager")
+	if not source:
+		source = get_tree().current_scene.get_node_or_null("PlayerManager")
+	if not source:
+		source = self
+		
 	if data.has_method("ApplyEffect"):
 		data.ApplyEffect(source, target)
-	else:
-		printerr("卡牌数据错误！")
 
 func init_card_data(card_data):
 	data = card_data
