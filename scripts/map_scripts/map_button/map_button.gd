@@ -4,6 +4,11 @@ extends Node2D
 @onready var map_position_create =  $"../MapPositionCreate"
 @onready var map_little = $"../MapLittle"
 
+@export var UpButton:Node2D
+@export var RightButton: Node2D
+@export var DownButton: Node2D
+@export var LeftButton: Node2D
+
 var current_position: Vector2i = Vector2i(1,1)
 var connect_scene = [0,0,0,0]
 var posx: int = 1
@@ -34,23 +39,23 @@ func check_these_button(the_scene: int):
 	if connect_scene[the_scene] == 0:
 		match the_scene:
 			0:
-				if get_node("UpButton"):
-					get_node("UpButton").visible = false
+				if UpButton:
+					UpButton.visible = false
 				else:
 					print("没有UpButton,去map_button看看吧")
 			1:
-				if get_node("RightButton"):
-					get_node("RightButton").visible = false
+				if RightButton:
+					RightButton.visible = false
 				else:
 					print("没有RightButton,去map_button看看吧")
 			2:
-				if get_node("DownButton"):
-					get_node("DownButton").visible = false
+				if DownButton:
+					DownButton.visible = false
 				else:
 					print("没有DownButton,去map_button看看吧")
 			3:
-				if get_node("LeftButton"):
-					get_node("LeftButton").visible = false
+				if LeftButton:
+					LeftButton.visible = false
 				else:
 					print("没有LeftButton,去map_button看看吧")
 			_:
@@ -58,23 +63,23 @@ func check_these_button(the_scene: int):
 	else:
 		match the_scene:
 			0:
-				if get_node("UpButton"):
-					get_node("UpButton").visible = true
+				if UpButton:
+					UpButton.visible = true
 				else:
 					print("没有UpButton,去map_button看看吧")
 			1:
-				if get_node("RightButton"):
-					get_node("RightButton").visible = true
+				if RightButton:
+					RightButton.visible = true
 				else:
 					print("没有RightButton,去map_button看看吧")
 			2:
-				if get_node("DownButton"):
-					get_node("DownButton").visible = true
+				if DownButton:
+					DownButton.visible = true
 				else:
 					print("没有DownButton,去map_button看看吧")
 			3:
-				if get_node("LeftButton"):
-					get_node("LeftButton").visible = true
+				if LeftButton:
+					LeftButton.visible = true
 				else:
 					print("没有LeftButton,去map_button看看吧")
 			_:
