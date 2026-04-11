@@ -1,9 +1,15 @@
 [gd_scene format=3 uid="uid://7wdqj8cp2mmy"]
 
 [ext_resource type="Script" uid="uid://kjhecly1fr3j" path="res://scripts/map_scripts/map_son_scripts/map_farm.gd" id="1_oain7"]
+[ext_resource type="Texture2D" uid="uid://byo0hx7gf4748" path="res://res/image/农场.png" id="2_s0q1e"]
 
 [node name="MapFarm" type="Node2D" unique_id=1640719016]
 script = ExtResource("1_oain7")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1627432831]
+position = Vector2(654.34106, 397.7624)
+scale = Vector2(0.47887102, 0.52408814)
+texture = ExtResource("2_s0q1e")
 
 [node name="Label" type="Label" parent="." unique_id=725355864]
 offset_right = 40.0

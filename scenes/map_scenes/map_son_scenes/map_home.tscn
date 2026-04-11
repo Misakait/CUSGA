@@ -1,7 +1,16 @@
 [gd_scene format=3 uid="uid://dwapmnj5huibf"]
 
+[ext_resource type="Script" uid="uid://bhhld4oo48r81" path="res://scripts/map_scripts/map_son_scripts/map_home.gd" id="1_3as2g"]
+[ext_resource type="Texture2D" uid="uid://cs3byoucidg84" path="res://res/image/家.png" id="1_rkh03"]
+
 [node name="MapHome" type="Node2D" unique_id=2015149711]
+script = ExtResource("1_3as2g")
 
 [node name="Label" type="Label" parent="." unique_id=668503587]
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="Background" type="Sprite2D" parent="." unique_id=598655736]
+position = Vector2(654.34106, 397.7624)
+scale = Vector2(0.47887102, 0.52408814)
+texture = ExtResource("1_rkh03")

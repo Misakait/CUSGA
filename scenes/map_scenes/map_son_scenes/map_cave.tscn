@@ -1,9 +1,15 @@
 [gd_scene format=3 uid="uid://4a2ijvrcxnqe"]
 
 [ext_resource type="Script" uid="uid://dws6rrh6ssw8x" path="res://scripts/map_scripts/map_son_scripts/map_cave.gd" id="1_bcv0o"]
+[ext_resource type="Texture2D" uid="uid://b7g6he5omlp7r" path="res://res/image/矿洞.png" id="2_1b4bg"]
 
 [node name="MapCave" type="Node2D" unique_id=1617305974]
 script = ExtResource("1_bcv0o")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1453133525]
+position = Vector2(654.34106, 397.7624)
+scale = Vector2(0.47887102, 0.52408814)
+texture = ExtResource("2_1b4bg")
 
 [node name="Label" type="Label" parent="." unique_id=1154569752]
 offset_right = 40.0

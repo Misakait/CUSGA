@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://btsikq2ra6c5u"]
 
 [ext_resource type="Script" uid="uid://d3fipnri5ucw2" path="res://scripts/map_scripts/map_son_scripts/map_forest.gd" id="1_0xvl1"]
+[ext_resource type="Texture2D" uid="uid://b81cquv0b6qqi" path="res://res/image/森林.png" id="2_i74xl"]
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]
 script = ExtResource("1_0xvl1")
@@ -8,3 +9,8 @@ script = ExtResource("1_0xvl1")
 [node name="Label" type="Label" parent="." unique_id=938128314]
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="Background" type="Sprite2D" parent="." unique_id=2031145198]
+position = Vector2(654.34106, 397.7624)
+scale = Vector2(0.47887102, 0.52408814)
+texture = ExtResource("2_i74xl")
