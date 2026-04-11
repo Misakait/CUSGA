@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://55q6p6bk1ll7"]
 
+[ext_resource type="Texture2D" uid="uid://c21fa3dxxuy42" path="res://res/image/white_background.png" id="1_vuryw"]
 [ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_2r3ie"]
 [ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="2_aulaq"]
 [ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
@@ -12,6 +13,7 @@
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
 [ext_resource type="PackedScene" uid="uid://bpd2bncemempm" path="res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn" id="7_mrmfi"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
+[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scenes/map_scenes/map_son_scenes/mini_map_viewport.gd" id="14_mrmfi"]
 
 [sub_resource type="Resource" id="Resource_4pmc0"]
 script = ExtResource("2_aulaq")
@@ -54,6 +56,12 @@ scene_pkg = ExtResource("7_mrmfi")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
+
+[node name="WhiteBackground" type="Sprite2D" parent="." unique_id=1657788048]
+modulate = Color(1, 0.75, 0.75, 1)
+position = Vector2(639.5, 360.5)
+scale = Vector2(1.952744, 1.8586117)
+texture = ExtResource("1_vuryw")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
@@ -165,13 +173,36 @@ text = "往西走"
 [node name="MapInstantiator" type="Node2D" parent="." unique_id=950670003]
 script = ExtResource("3_2r3ie")
 
-[node name="MapLittle" type="Node2D" parent="." unique_id=1178223658]
-position = Vector2(30, 30)
+[node name="MapLittle" type="Node2D" parent="." unique_id=1178223658 node_paths=PackedStringArray("subviewport")]
+position = Vector2(19, -799)
 script = ExtResource("7_aulaq")
 cell_pic = "res://scenes/map_scenes/little_map_cell.tscn"
 bridge_pic = "res://scenes/map_scenes/little_map_bridge.tscn"
-if_see_all_little_map = true
 if_show_the_scene = true
+subviewport = NodePath("../CanvasLayer/SubViewportContainer/SubViewport")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=841791713]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer" unique_id=250783514]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -225.0
+offset_top = 67.0
+offset_right = -166.0
+offset_bottom = 119.0
+grow_horizontal = 0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer/SubViewportContainer" unique_id=1091230112 node_paths=PackedStringArray("camera_node")]
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(59, 52)
+render_target_update_mode = 4
+script = ExtResource("14_mrmfi")
+camera_node = NodePath("Camera2D")
+
+[node name="Camera2D" type="Camera2D" parent="CanvasLayer/SubViewportContainer/SubViewport" unique_id=1813230729]
 
 [connection signal="pressed" from="MapButton/UpButton/UpButton" to="MapButton" method="_on_up_button_pressed"]
 [connection signal="pressed" from="MapButton/RightButton/RightButton" to="MapButton" method="_on_right_button_pressed"]

@@ -35,7 +35,7 @@ draggable = SubResource("Resource_r5auf")
 binder = NodePath("../SnapperBinder")
 
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
-position = Vector2(554, 486)
+position = Vector2(579, 497)
 tween_duration = 0.2
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
@@ -43,5 +43,5 @@ position = Vector2(193, 483)
 tween_duration = 0.2
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(839, 484)
+position = Vector2(994, 490)
 tween_duration = 0.2

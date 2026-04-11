@@ -5,5 +5,5 @@ namespace CUSGA.resources.interaction;
 [GlobalClass]
 public partial class TerrainCardData : BaseCardData
 {
-    [Export] public TerrainInteraction InteractionBehavior { get; set; }
+	[Export] public TerrainInteraction InteractionBehavior { get; set; }
 }

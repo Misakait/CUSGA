@@ -8,6 +8,8 @@ extends Node2D
 @export var if_see_all_little_map: bool = false
 @export var if_show_the_scene: bool = false
 
+@export var subviewport: SubViewport;
+
 var offeset_cell: float = 20
 var offeset_bridge: float = 10
 
@@ -77,6 +79,12 @@ func build_this_bridge(x: int, y: int):
 func change_this_cell_color(x: int, y: int):
 	if map_scene.has(Vector2i(x,y)):
 		map_scene[Vector2i(x,y)].get_node("Cell").self_modulate = Color.RED
+	
+	if subviewport:
+		subviewport.camera_node.global_position = map_scene[Vector2i(x,y)].global_position
+		#print("(",x," ",y,")",map_scene[Vector2i(x,y)].position)
+		#print("|")
+		#print(subviewport.camera_node.position)
 
 # 恢复场景颜色
 func return_this_cell_color(x: int, y: int):
