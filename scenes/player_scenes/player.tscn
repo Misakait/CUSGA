@@ -15,39 +15,41 @@
 [node name="Player" type="CharacterBody2D" unique_id=1686256351]
 script = ExtResource("1_d8qmr")
 
-[node name="EnergyComponent" type="Node" parent="." unique_id=163488888]
+[node name="Components" type="Node" parent="." unique_id=21460224]
+
+[node name="EnergyComponent" type="Node" parent="Components" unique_id=1967012898]
 script = ExtResource("2_k3sny")
 metadata/_custom_type_script = "uid://coyiavqkkmsgv"
 
-[node name="HealthComponent" type="Node" parent="." unique_id=1633011625]
+[node name="HealthComponent" type="Node" parent="Components" unique_id=2132131474]
 unique_name_in_owner = true
 script = ExtResource("3_shuw1")
 metadata/_custom_type_script = "uid://d4gp22cg5vjro"
 
-[node name="SatietyComponent" type="Node" parent="." unique_id=170925398]
+[node name="SatietyComponent" type="Node" parent="Components" unique_id=1837990178]
 script = ExtResource("4_b744r")
 metadata/_custom_type_script = "uid://vhrfbyuub4pr"
 
-[node name="AttributeComponent" type="Node" parent="." unique_id=943467577]
+[node name="AttributeComponent" type="Node" parent="Components" unique_id=1231615670]
 script = ExtResource("5_k3sny")
 
-[node name="TagComponent" type="Node" parent="." unique_id=310653204]
+[node name="TagComponent" type="Node" parent="Components" unique_id=1917411908]
 script = ExtResource("6_shuw1")
 
-[node name="EquipmentComponent" type="Node" parent="." unique_id=1818373124]
+[node name="EquipmentComponent" type="Node" parent="Components" unique_id=1177430014]
 script = ExtResource("7_b744r")
 
-[node name="InventoryComponent" type="Node" parent="." unique_id=2086060361]
+[node name="InventoryComponent" type="Node" parent="Components" unique_id=2126634881]
 script = ExtResource("8_j2xde")
 
-[node name="CraftingComponent" type="Node" parent="." unique_id=666731952]
+[node name="CraftingComponent" type="Node" parent="Components" unique_id=1234254339]
 script = ExtResource("9_v0ulg")
 
-[node name="StatusComponent" type="Node" parent="." unique_id=27906591]
+[node name="StatusComponent" type="Node" parent="Components" unique_id=935942802]
 unique_name_in_owner = true
 script = ExtResource("10_4xp6m")
 metadata/_custom_type_script = "uid://gek5smi6lrcs"
 
-[node name="DamageReceiverComponent" type="Node" parent="." unique_id=1300626617]
+[node name="DamageReceiverComponent" type="Node" parent="Components" unique_id=298072180]
 script = ExtResource("11_mm880")
 metadata/_custom_type_script = "uid://delpo10ufxcco"

@@ -22,11 +22,11 @@ public partial class Player : CharacterBody2D
 
     public override void _Ready()
     {
-        _health = GetNode<HealthComponent>("HealthComponent");
-        _satiety = GetNode<SatietyComponent>("SatietyComponent");
-        Energy = GetNode<EnergyComponent>("EnergyComponent");
-        _attribute = GetNode<AttributeComponent>("AttributeComponent");
-        TagComponent = GetNode<TagComponent>("TagComponent");
+        _health = GetNode<HealthComponent>("Components/HealthComponent");
+        _satiety = GetNode<SatietyComponent>("Components/SatietyComponent");
+        Energy = GetNode<EnergyComponent>("Components/EnergyComponent");
+        _attribute = GetNode<AttributeComponent>("Components/AttributeComponent");
+        TagComponent = GetNode<TagComponent>("Components/TagComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
 
         _satiety.Depleted += OnSatietyDepleted;
