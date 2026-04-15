@@ -13,10 +13,7 @@ public partial class SkillCardData : ItemData
     [Export] public ElementType element = ElementType.None;
     [Export] public int cost = 10;
 
-    public SkillCardData()
-    {
-        MaxStackSize = 1;
-    }
+    public override int ActualMaxStackSize => 1;
 
     // 对应 apply_effect 方法
     public void ApplyEffect(Node source, Node target)

@@ -15,8 +15,8 @@ public partial class ItemStack : RefCounted
     public event Action<ItemStack> OnStackChanged;
 
     public bool IsEmpty => Item == null || Amount <= 0;
-    public bool IsFull => !IsEmpty && Amount >= Item.MaxStackSize;
-    public int AvailableSpace => IsEmpty ? 0 : Item.MaxStackSize - Amount;
+    public bool IsFull => !IsEmpty && Amount >= Item.ActualMaxStackSize;
+    public int AvailableSpace => IsEmpty ? 0 : Item.ActualMaxStackSize - Amount;
     public Dictionary<AttributeType, int> RolledAttributes { get; private set; } = [];
 
     public void RollRandomStats()
@@ -64,8 +64,8 @@ public partial class ItemStack : RefCounted
     // 往格子里加东西，返回“溢出没放下的数量”
     public int Add(int amount)
     {
-        int space = Item.MaxStackSize - Amount;
-        int amountToAdd = Math.Min(space, amount);
+        // int space = Item.MaxStackSize - Amount;
+        int amountToAdd = Math.Min(AvailableSpace, amount);
         Amount += amountToAdd;
         OnStackChanged?.Invoke(this);
 

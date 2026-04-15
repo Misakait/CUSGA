@@ -46,7 +46,7 @@ public partial class InventoryComponent : Node
         {
             if (slot.IsEmpty)
             {
-                int amountToAdd = Math.Min(remaining, item.MaxStackSize);
+                int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize);
                 slot.SetItem(item, amountToAdd);
                 remaining -= amountToAdd;
 
