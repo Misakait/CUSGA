@@ -6,7 +6,7 @@ class_name SnapperBinder
 
 func _ready():
 	update_snapper_positions()
-
+	
 func update_snapper_positions():
 	if target_snapper:
 		target_snapper.snap_positions.clear()

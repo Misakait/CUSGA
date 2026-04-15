@@ -9,7 +9,7 @@ class_name Snapper
 
 var snapped_cards: Dictionary = {}   # {card: snap_position}
 
-func get_nearest_snap_position(card: Node2D) -> Vector2:
+func get_nearest_snap_position(card) -> Vector2:
 	var nearest: Vector2 = Vector2.ZERO
 	var min_dist: float = INF
 	for pos in snap_positions:
@@ -19,20 +19,20 @@ func get_nearest_snap_position(card: Node2D) -> Vector2:
 			nearest = pos
 	return nearest
 
-func can_snap(card: Node2D, pos: Vector2) -> bool:
+func can_snap(card, pos: Vector2) -> bool:
 	if pos == Vector2.ZERO:
 		return false
 	if allow_multiple:
 		return true
 	return not snapped_cards.values().has(pos)
 
-func snap_card(card: Node2D) -> void:
+func snap_card(card) -> void:
 	var pos = get_nearest_snap_position(card)
 	if can_snap(card,pos):
 		var tween = card.create_tween()
 		tween.tween_property(card, "global_position", pos, tween_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		snapped_cards[card] = pos
 
-func release_card(card: Node2D) -> void:
+func release_card(card) -> void:
 	if snapped_cards.has(card):
 		snapped_cards.erase(card)

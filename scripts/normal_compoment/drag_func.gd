@@ -1,5 +1,7 @@
 extends Node2D
 
+signal card_be_snapper(node_name)
+
 @export var draggable: Draggable
 @export var binder: SnapperBinder
 
@@ -14,6 +16,11 @@ func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			card = raycast_check_for_card()
+			
+			#这个是用来防止出现了两个mainmenucardmanager的情况，因为它共享同一个鼠标
+			if !original_position.has(card):
+				card = null
+			
 			if card:
 				start_drag()
 		else:
@@ -38,7 +45,10 @@ func finish_drag():
 			binder.target_snapper.snap_card(card)
 			# 如果 snapper 成功吸附，会在 snapped_cards 里记录
 			snapped = binder.target_snapper.snapped_cards.has(card)
-			
+		
+		if binder and snapped:
+			emit_signal("card_be_snapper", card.name)
+		
 		if binder and not snapped :
 			# 没有吸附成功 → 回到原位
 			var tween = card.create_tween()

@@ -183,7 +183,7 @@ script = ExtResource("15_7fije")
 h_e_zoom = NodePath("hover_exit_zoom")
 
 [node name="LeftButton" type="Sprite2D" parent="MapButton/Left" unique_id=438457492]
-position = Vector2(121, 335)
+position = Vector2(115, 341)
 texture = ExtResource("6_2263r")
 
 [node name="LeftButton" type="LinkButton" parent="MapButton/Left/LeftButton" unique_id=2014586588]

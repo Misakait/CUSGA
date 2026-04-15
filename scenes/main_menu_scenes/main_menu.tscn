@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://qwckbjjp11ca"]
 
 [ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="2_gdjtc"]
+[ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="3_gdjtc"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="7_r5auf"]
@@ -25,6 +26,7 @@ metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 
 [node name="SnapPoint1" type="Node2D" parent="." unique_id=224474800]
 position = Vector2(549.375, 178.855)
+script = ExtResource("3_gdjtc")
 
 [node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
 texture = ExtResource("8_r5auf")
@@ -35,13 +37,18 @@ draggable = SubResource("Resource_r5auf")
 binder = NodePath("../SnapperBinder")
 
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
-position = Vector2(579, 497)
+position = Vector2(158, 509)
 tween_duration = 0.2
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
-position = Vector2(193, 483)
+position = Vector2(461, 506)
 tween_duration = 0.2
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(994, 490)
+position = Vector2(1109, 516)
 tween_duration = 0.2
+
+[node name="Warehouse" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("2_gdjtc")]
+position = Vector2(787, 505)
+
+[connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
