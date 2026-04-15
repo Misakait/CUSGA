@@ -14,6 +14,7 @@ public partial class Player : CharacterBody2D
     public EnergyComponent Energy { get; private set; }
     private AttributeComponent _attribute;
     private InventoryComponent _inventory;
+    public EquipmentComponent Equipment { get; private set; }
     public StatusComponent Status { get; private set; }
 
     public TagComponent TagComponent { get; private set; }
@@ -25,6 +26,7 @@ public partial class Player : CharacterBody2D
         _health = GetNode<HealthComponent>("Components/HealthComponent");
         _satiety = GetNode<SatietyComponent>("Components/SatietyComponent");
         Energy = GetNode<EnergyComponent>("Components/EnergyComponent");
+        Equipment = GetNode<EquipmentComponent>("Components/EquipmentComponent");
         _attribute = GetNode<AttributeComponent>("Components/AttributeComponent");
         TagComponent = GetNode<TagComponent>("Components/TagComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
