@@ -1,0 +1,736 @@
+[gd_scene format=3 uid="uid://dvu0wpxmytvk7"]
+
+[ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="1_88770"]
+[ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="1_cf8n2"]
+[ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="2_brt88"]
+[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_hh660"]
+[ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="3_cf8n2"]
+[ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="4_brt88"]
+[ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="5_3jafb"]
+[ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_brt88"]
+[ext_resource type="Script" uid="uid://cipxx54emufku" path="res://scripts/warehouse/inventory.gd" id="9_3jafb"]
+[ext_resource type="Script" uid="uid://c88x4xdwla5ee" path="res://resources/draggable/button_drag_and_snap.gd" id="10_wqctc"]
+
+[sub_resource type="Resource" id="Resource_3jafb"]
+script = ExtResource("2_brt88")
+metadata/_custom_type_script = "uid://bynkigeqbxcpj"
+
+[sub_resource type="Resource" id="Resource_wqctc"]
+script = ExtResource("4_brt88")
+metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
+
+[sub_resource type="Resource" id="Resource_nwke5"]
+script = ExtResource("4_brt88")
+metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
+
+[node name="Warehouse" type="Node2D" unique_id=2011409827]
+
+[node name="SnapperBinder" type="Node2D" parent="." unique_id=1209280253 node_paths=PackedStringArray("snap_nodes")]
+script = ExtResource("1_cf8n2")
+target_snapper = SubResource("Resource_3jafb")
+snap_nodes = [NodePath("../SnapPoint1"), NodePath("../Control/SnapPointContainer/Button/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button2/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button3/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button4/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button5/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button6/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button7/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button8/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button9/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button10/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button11/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button12/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button13/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button14/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button15/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button16/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button17/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button18/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button19/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button20/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button21/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button22/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button23/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button24/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button25/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button26/SnapPoint1"), NodePath("../Control/SnapPointContainer/Button27/SnapPoint1")]
+metadata/_custom_type_script = "uid://r4v1cixqpj1o"
+
+[node name="SnapPoint1" type="Node2D" parent="." unique_id=1784945840]
+position = Vector2(150, 106)
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=1590815362]
+texture = ExtResource("2_hh660")
+
+[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1589971499 node_paths=PackedStringArray("binder")]
+script = ExtResource("3_cf8n2")
+draggable = SubResource("Resource_wqctc")
+binder = NodePath("../SnapperBinder")
+
+[node name="ExitCard" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("5_3jafb")]
+position = Vector2(1060, 111)
+tween_duration = 0.2
+
+[node name="InventoryComponent" type="Node2D" parent="." unique_id=911228938]
+script = ExtResource("8_brt88")
+
+[node name="Control" type="Control" parent="." unique_id=810572882]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("9_3jafb")
+
+[node name="SnapPointContainer" type="Node2D" parent="Control" unique_id=1304380547]
+
+[node name="Button" type="Button" parent="Control/SnapPointContainer" unique_id=895036999]
+clip_contents = true
+offset_left = 146.0
+offset_top = 373.0
+offset_right = 154.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+button_mask = 7
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button" unique_id=1713489127]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button/SnapPoint1" unique_id=2003054068]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button2" type="Button" parent="Control/SnapPointContainer" unique_id=1332396713]
+clip_contents = true
+offset_left = 275.0
+offset_top = 373.0
+offset_right = 283.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button2" unique_id=837580588]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button2/SnapPoint1" unique_id=269650113]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button3" type="Button" parent="Control/SnapPointContainer" unique_id=1098448129]
+clip_contents = true
+offset_left = 404.0
+offset_top = 373.0
+offset_right = 412.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button3" unique_id=1953280308]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button3/SnapPoint1" unique_id=1678406742]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button4" type="Button" parent="Control/SnapPointContainer" unique_id=853339831]
+clip_contents = true
+offset_left = 533.0
+offset_top = 373.0
+offset_right = 541.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button4" unique_id=1219015566]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button4/SnapPoint1" unique_id=1507514490]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button5" type="Button" parent="Control/SnapPointContainer" unique_id=983477099]
+clip_contents = true
+offset_left = 662.0
+offset_top = 373.0
+offset_right = 670.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button5" unique_id=1444792495]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button5/SnapPoint1" unique_id=278131614]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button6" type="Button" parent="Control/SnapPointContainer" unique_id=117096839]
+clip_contents = true
+offset_left = 791.0
+offset_top = 373.0
+offset_right = 799.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button6" unique_id=1258449352]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button6/SnapPoint1" unique_id=391304313]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button7" type="Button" parent="Control/SnapPointContainer" unique_id=10240821]
+clip_contents = true
+offset_left = 920.0
+offset_top = 373.0
+offset_right = 928.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button7" unique_id=211221616]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button7/SnapPoint1" unique_id=1297639233]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button8" type="Button" parent="Control/SnapPointContainer" unique_id=2028640035]
+clip_contents = true
+offset_left = 1049.0
+offset_top = 373.0
+offset_right = 1057.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button8" unique_id=1639254744]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button8/SnapPoint1" unique_id=19451586]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button9" type="Button" parent="Control/SnapPointContainer" unique_id=1485248082]
+clip_contents = true
+offset_left = 1178.0
+offset_top = 373.0
+offset_right = 1186.0
+offset_bottom = 381.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button9" unique_id=2124006050]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button9/SnapPoint1" unique_id=88235834]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button10" type="Button" parent="Control/SnapPointContainer" unique_id=1410136030]
+clip_contents = true
+offset_left = 146.0
+offset_top = 504.0
+offset_right = 154.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button10" unique_id=1866772826]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button10/SnapPoint1" unique_id=1945373863]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button11" type="Button" parent="Control/SnapPointContainer" unique_id=805597999]
+clip_contents = true
+offset_left = 275.0
+offset_top = 504.0
+offset_right = 283.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button11" unique_id=1915225000]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button11/SnapPoint1" unique_id=746433119]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button12" type="Button" parent="Control/SnapPointContainer" unique_id=885295800]
+clip_contents = true
+offset_left = 404.0
+offset_top = 504.0
+offset_right = 412.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button12" unique_id=2035917423]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button12/SnapPoint1" unique_id=1669728431]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button13" type="Button" parent="Control/SnapPointContainer" unique_id=1304722007]
+clip_contents = true
+offset_left = 533.0
+offset_top = 504.0
+offset_right = 541.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button13" unique_id=388519026]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button13/SnapPoint1" unique_id=433568334]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button14" type="Button" parent="Control/SnapPointContainer" unique_id=1613672326]
+clip_contents = true
+offset_left = 662.0
+offset_top = 504.0
+offset_right = 670.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button14" unique_id=810039335]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button14/SnapPoint1" unique_id=1372269327]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button15" type="Button" parent="Control/SnapPointContainer" unique_id=1532870164]
+clip_contents = true
+offset_left = 791.0
+offset_top = 504.0
+offset_right = 799.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button15" unique_id=1184235653]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button15/SnapPoint1" unique_id=1906217798]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button16" type="Button" parent="Control/SnapPointContainer" unique_id=510635707]
+clip_contents = true
+offset_left = 920.0
+offset_top = 504.0
+offset_right = 928.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button16" unique_id=1462768819]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button16/SnapPoint1" unique_id=528104079]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button17" type="Button" parent="Control/SnapPointContainer" unique_id=1086689531]
+clip_contents = true
+offset_left = 1049.0
+offset_top = 504.0
+offset_right = 1057.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button17" unique_id=311039576]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button17/SnapPoint1" unique_id=942944755]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button18" type="Button" parent="Control/SnapPointContainer" unique_id=1778823526]
+clip_contents = true
+offset_left = 1178.0
+offset_top = 504.0
+offset_right = 1186.0
+offset_bottom = 512.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button18" unique_id=1861328002]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button18/SnapPoint1" unique_id=378143855]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button19" type="Button" parent="Control/SnapPointContainer" unique_id=1598526422]
+clip_contents = true
+offset_left = 146.0
+offset_top = 634.0
+offset_right = 154.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button19" unique_id=89573102]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button19/SnapPoint1" unique_id=995574040]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button20" type="Button" parent="Control/SnapPointContainer" unique_id=321492641]
+clip_contents = true
+offset_left = 275.0
+offset_top = 634.0
+offset_right = 283.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button20" unique_id=1725244922]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button20/SnapPoint1" unique_id=160869473]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button21" type="Button" parent="Control/SnapPointContainer" unique_id=1163700945]
+clip_contents = true
+offset_left = 404.0
+offset_top = 634.0
+offset_right = 412.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button21" unique_id=364952405]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button21/SnapPoint1" unique_id=2030773525]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button22" type="Button" parent="Control/SnapPointContainer" unique_id=1654483977]
+clip_contents = true
+offset_left = 533.0
+offset_top = 634.0
+offset_right = 541.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button22" unique_id=1303700799]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button22/SnapPoint1" unique_id=1015824711]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button23" type="Button" parent="Control/SnapPointContainer" unique_id=1245899580]
+clip_contents = true
+offset_left = 662.0
+offset_top = 634.0
+offset_right = 670.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button23" unique_id=1551332063]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button23/SnapPoint1" unique_id=596162443]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button24" type="Button" parent="Control/SnapPointContainer" unique_id=1748834861]
+clip_contents = true
+offset_left = 791.0
+offset_top = 634.0
+offset_right = 799.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button24" unique_id=138931538]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button24/SnapPoint1" unique_id=1709349233]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button25" type="Button" parent="Control/SnapPointContainer" unique_id=1104046489]
+clip_contents = true
+offset_left = 920.0
+offset_top = 634.0
+offset_right = 928.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button25" unique_id=311469483]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button25/SnapPoint1" unique_id=1330748068]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button26" type="Button" parent="Control/SnapPointContainer" unique_id=1878012475]
+clip_contents = true
+offset_left = 1049.0
+offset_top = 634.0
+offset_right = 1057.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button26" unique_id=823299985]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button26/SnapPoint1" unique_id=1291160381]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="Button27" type="Button" parent="Control/SnapPointContainer" unique_id=161413597]
+clip_contents = true
+offset_left = 1178.0
+offset_top = 634.0
+offset_right = 1186.0
+offset_bottom = 642.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="SnapPoint1" type="Node2D" parent="Control/SnapPointContainer/Button27" unique_id=943368476]
+script = ExtResource("1_88770")
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/SnapPointContainer/Button27/SnapPoint1" unique_id=573602377]
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("2_hh660")
+
+[node name="GridContainer" type="GridContainer" parent="Control" unique_id=428089239]
+layout_mode = 0
+offset_left = 86.0
+offset_top = 314.0
+offset_right = 1243.0
+offset_bottom = 701.0
+columns = 9
+
+[node name="Button" type="Button" parent="Control/GridContainer" unique_id=1472289180 node_paths=PackedStringArray("snapper_binder")]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+script = ExtResource("10_wqctc")
+draggable = SubResource("Resource_nwke5")
+snapper_binder = NodePath("../../../SnapperBinder")
+
+[node name="Button2" type="Button" parent="Control/GridContainer" unique_id=1009454355]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button3" type="Button" parent="Control/GridContainer" unique_id=1708896751]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button4" type="Button" parent="Control/GridContainer" unique_id=481059853]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button5" type="Button" parent="Control/GridContainer" unique_id=1152325025]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button6" type="Button" parent="Control/GridContainer" unique_id=461683882]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button7" type="Button" parent="Control/GridContainer" unique_id=1295604174]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button8" type="Button" parent="Control/GridContainer" unique_id=1246624653]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button9" type="Button" parent="Control/GridContainer" unique_id=1999772303]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button10" type="Button" parent="Control/GridContainer" unique_id=1373480129]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button11" type="Button" parent="Control/GridContainer" unique_id=683285592]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button12" type="Button" parent="Control/GridContainer" unique_id=481910319]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button13" type="Button" parent="Control/GridContainer" unique_id=2001043897]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button14" type="Button" parent="Control/GridContainer" unique_id=1255199121]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button15" type="Button" parent="Control/GridContainer" unique_id=717140440]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button16" type="Button" parent="Control/GridContainer" unique_id=2029975295]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button17" type="Button" parent="Control/GridContainer" unique_id=1038425427]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button18" type="Button" parent="Control/GridContainer" unique_id=1941894619]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button19" type="Button" parent="Control/GridContainer" unique_id=1960557410]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button20" type="Button" parent="Control/GridContainer" unique_id=327020995]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button21" type="Button" parent="Control/GridContainer" unique_id=228372174]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button22" type="Button" parent="Control/GridContainer" unique_id=2036460909]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button23" type="Button" parent="Control/GridContainer" unique_id=254694269]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button24" type="Button" parent="Control/GridContainer" unique_id=113847455]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button25" type="Button" parent="Control/GridContainer" unique_id=1063089751]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button26" type="Button" parent="Control/GridContainer" unique_id=2101543930]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="Button27" type="Button" parent="Control/GridContainer" unique_id=527119822]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+size_flags_stretch_ratio = 0.0
+
+[node name="AddButton" type="Button" parent="Control" unique_id=391916833]
+layout_mode = 0
+offset_left = 255.0
+offset_top = 16.0
+offset_right = 388.0
+offset_bottom = 81.0
+
+[node name="RemoveButton" type="Button" parent="Control" unique_id=487412041]
+layout_mode = 0
+offset_left = 487.0
+offset_top = 16.0
+offset_right = 622.0
+offset_bottom = 81.0
+
+[connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
+[connection signal="pressed" from="Control/AddButton" to="Control" method="_on_add_button_pressed"]
+[connection signal="pressed" from="Control/RemoveButton" to="Control" method="_on_remove_button_pressed"]
