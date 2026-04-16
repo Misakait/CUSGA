@@ -85,7 +85,7 @@ public partial class DamageReceiverComponent : Node
         //GD.Print("伤害计算完毕！");
         int finalDamageInt = Mathf.RoundToInt(calculatedDamage);
 
-        GD.Print($"[Damage] Target: {GetParent().Name} | Source: {payload.Source?.Name ?? "Unknown"} | Damage: {finalDamageInt} | Element: {payload.Element} | Type: {payload.Type}");
+        GD.Print($"[Damage] Target: {GetParent().GetParent().Name} | Source: {payload.Source?.Name ?? "Unknown"} | Damage: {finalDamageInt} | Element: {payload.Element} | Type: {payload.Type}");
 
         GetParent().GetNodeOrNull<HealthComponent>("%HealthComponent")?.TakeDamage(finalDamageInt, payload.Element);
     }
