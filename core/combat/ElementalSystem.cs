@@ -18,7 +18,7 @@ public static class ElementalSystem
         {(ElementType.Water, ElementType.Fire), COUNTERMODIFIER},
         {(ElementType.Fire, ElementType.Metal), COUNTERMODIFIER},
         // 被克制矩阵：0.5倍伤害
-        {(ElementType.Wood, ElementType.Earth), RESISTMODIFIER},
+        {(ElementType.Wood, ElementType.Metal), RESISTMODIFIER},
         {(ElementType.Water, ElementType.Earth), RESISTMODIFIER},
         {(ElementType.Fire, ElementType.Water), RESISTMODIFIER},
         {(ElementType.Earth, ElementType.Wood), RESISTMODIFIER},

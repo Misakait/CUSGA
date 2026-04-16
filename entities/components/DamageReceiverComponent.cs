@@ -10,6 +10,7 @@ public partial class DamageReceiverComponent : Node
 {
     public void ReceiveDamage(DamagePayload payload)
     {
+        GD.Print("成功进入计算伤害方法！");
         var attackerStats = payload.Source?.GetNodeOrNull<AttributeComponent>("AttributeComponent");
         var defenderStats = GetParent().GetNodeOrNull<AttributeComponent>("AttributeComponent");
 
@@ -17,7 +18,7 @@ public partial class DamageReceiverComponent : Node
         var defenderStatus = GetParent().GetNodeOrNull<StatusComponent>("%StatusComponent");
 
         float calculatedDamage = payload.Damage;
-
+        //GD.Print("开始伤害计算！");
         // 攻击方增伤
         if (attackerStats != null)
         {
@@ -38,7 +39,8 @@ public partial class DamageReceiverComponent : Node
                 calculatedDamage *= (1f + magicBoostPct);
             }
         }
-
+        //GD.Print("计算攻击方增伤完毕");
+        
         // 元素反应区
         var targetElement = ElementType.None;
         if (GetParent() is Monster monster)
@@ -47,6 +49,7 @@ public partial class DamageReceiverComponent : Node
         }
         float elementMult = ElementalSystem.CalculateMultiplier(payload.Element, targetElement);
         calculatedDamage *= elementMult;
+        //GD.Print("计算元素反应区完毕");
 
         // buff区
         if (attackerStatus != null)
@@ -59,6 +62,7 @@ public partial class DamageReceiverComponent : Node
             foreach (var buff in defenderStatus.ActiveStatuses)
                 buff.OnReceiveDamage(payload, ref calculatedDamage);
         }
+        //GD.Print("计算buff区完毕");
 
         // 防御抗性减伤区
         if (payload.Type != DamageType.Real && defenderStats != null)
@@ -78,7 +82,7 @@ public partial class DamageReceiverComponent : Node
             float defenseMultiplier = 100f / (100f + finalDefense);
             calculatedDamage *= defenseMultiplier;
         }
-
+        //GD.Print("伤害计算完毕！");
         int finalDamageInt = Mathf.RoundToInt(calculatedDamage);
 
         GD.Print($"[Damage] Target: {GetParent().Name} | Source: {payload.Source?.Name ?? "Unknown"} | Damage: {finalDamageInt} | Element: {payload.Element} | Type: {payload.Type}");
