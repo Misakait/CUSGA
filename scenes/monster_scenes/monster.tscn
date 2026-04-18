@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="11_f5jq7"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
+[ext_resource type="Script" uid="uid://dhw7i7lc8tobr" path="res://entities/components/LootComponent.cs" id="13_kt6in"]
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
 script = ExtResource("2_gqard")
@@ -96,10 +97,12 @@ script = ExtResource("1_i8hiw")
 metadata/_custom_type_script = "uid://d4gp22cg5vjro"
 
 [node name="AttributeComponent" type="Node" parent="Components" unique_id=1840972410]
+unique_name_in_owner = true
 script = ExtResource("2_twjs6")
 metadata/_custom_type_script = "uid://ckflk2am2hx30"
 
 [node name="FactionComponent" type="Node" parent="Components" unique_id=1986993091]
+unique_name_in_owner = true
 script = ExtResource("3_tgvxs")
 metadata/_custom_type_script = "uid://qp3tco60xl2b"
 
@@ -109,5 +112,11 @@ script = ExtResource("11_f5jq7")
 metadata/_custom_type_script = "uid://gek5smi6lrcs"
 
 [node name="DamageReceiverComponent" type="Node" parent="Components" unique_id=985048352]
+unique_name_in_owner = true
 script = ExtResource("12_twqyq")
 metadata/_custom_type_script = "uid://delpo10ufxcco"
+
+[node name="LootComponent" type="Node" parent="Components" unique_id=1412221465]
+unique_name_in_owner = true
+script = ExtResource("13_kt6in")
+metadata/_custom_type_script = "uid://dhw7i7lc8tobr"
