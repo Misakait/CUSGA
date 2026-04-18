@@ -80,7 +80,6 @@ public partial class InventoryComponent : Node
 		return total;
 	}
 
-
 	// 模糊合成:查某个标签的物品够不够
 	public int GetTotalAmountByTag(StringName tag)
 	{

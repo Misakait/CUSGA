@@ -6,7 +6,6 @@ extends Control
 
 func _ready():
 	refresh_ui()
-
 # 刷新背包界面
 func refresh_ui():
 	var slots = inventory._slots
@@ -28,6 +27,7 @@ func _on_slot_button_pressed(index):
 
 func _on_add_button_pressed() -> void:
 	add_item("2",4)
+	add_item("1",5)
 	
 func _on_remove_button_pressed() -> void:
 	remove_item("2",5)

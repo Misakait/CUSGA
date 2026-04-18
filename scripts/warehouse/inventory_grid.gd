@@ -4,6 +4,7 @@ signal card_be_snapper(node_name)
 
 @export var inventory_grid_scene: PackedScene
 @export var snap_point_container: Node2D
+@export var user_snap_point_container: Node2D
 @export var draggable: Draggable
 @export var binder: SnapperBinder
 @export var texture: Texture
@@ -14,11 +15,17 @@ const COLLISION_MASK_CARD_SLOT = 2
 var original_position: Dictionary   # 记录卡牌原始位置
 var card = null
 var hovering_card = null
+var initing:bool = false
+var reback: bool = false
+var skip: bool = false
 
 func _ready() -> void:
+	initing = true
 	add_inventory_grid()
+	initing = false
 
 func add_inventory_grid():
+	var id: int = 1
 	for snap_point: Button in snap_point_container.get_children():
 		var inventory_grid: Node2D = inventory_grid_scene.instantiate()
 		add_child(inventory_grid)
@@ -26,7 +33,31 @@ func add_inventory_grid():
 		inventory_grid.global_position = snap_point.get_node("SnapPoint1").global_position
 		#设置scale
 		inventory_grid.scale = Vector2(0.5, 0.5)
+		#设置名字
+		inventory_grid.name = "card_%d" % id
+		id = id+1
 		original_position[inventory_grid] = inventory_grid.global_position
+		
+		card = inventory_grid
+		finish_drag()
+		
+	var userid: int = 1
+	for snap_point: Button in user_snap_point_container.get_children():
+		var inventory_grid: Node2D = inventory_grid_scene.instantiate()
+		add_child(inventory_grid)
+		#设置全局位置
+		inventory_grid.global_position = snap_point.get_node("SnapPoint1").global_position
+		#设置scale
+		inventory_grid.scale = Vector2(0.5, 0.5)
+		#设置名字
+		inventory_grid.name = "usercard_%d" % userid
+		userid = userid+1
+		original_position[inventory_grid] = inventory_grid.global_position
+		
+		card = inventory_grid
+		finish_drag()
+	
+	card = null
 
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -50,24 +81,33 @@ func start_drag():
 	# 如果卡牌已经在 snapper 的 snapped_cards 里，直接释放它
 	if binder and binder.target_snapper and binder.target_snapper.snapped_cards.has(card):
 		binder.target_snapper.release_card(card)
+		reback = true
 	
 func finish_drag():
 	if card != null : 
 		card.finish_drag()
 		var snapped := false
 		
-		if !snapped and binder and binder.target_snapper:
+		if !snapped and binder and binder.target_snapper and !skip:
 			binder.target_snapper.snap_card(card)
 			# 如果 snapper 成功吸附，会在 snapped_cards 里记录
 			snapped = binder.target_snapper.snapped_cards.has(card)
 		
-		if binder and snapped:
-			emit_signal("card_be_snapper", card.name)
+		#吸附成功
+		if binder and snapped and !initing:
+			reback = false
+			emit_signal("card_be_snapper", card)
+			var tween = card.create_tween()
+			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			binder.target_snapper.snapped_cards[card] = original_position[card]
 		
 		if binder and not snapped :
 			# 没有吸附成功 → 回到原位
 			var tween = card.create_tween()
 			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			if reback:
+				binder.target_snapper.snapped_cards[card] = original_position[card]
+	skip = false
 	card = null
 
 #光线投射，检查并获取鼠标下的卡牌

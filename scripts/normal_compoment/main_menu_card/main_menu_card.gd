@@ -18,7 +18,7 @@ var hover_scale: Vector2 = Vector2(0, 0)
 var drag_scale: Vector2 = Vector2(0, 0)
 
 var other_card_using := false
-var hovering := true
+var hovering := false
 var dragging := false
 var tween: Tween
 
