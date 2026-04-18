@@ -44,7 +44,13 @@ func consume_energy(amount:int):
 	refresh_energy()
 
 func refresh_energy():
-	$"../UI/Energy".text = "能量："+str(energy)+"/"+str(max_energy)
+	var bar = $"../UI/EnergyBar"
+	bar.max_value = max_energy
+	bar.value = energy
+	$"../UI/EnergyBar/EnergyText".text = str(energy) + "/" + str(max_energy)
 
 func refresh_hp():
-	$"../UI/Hp".text = "血量："+str(hp)+"/"+str(max_hp)
+	var bar = $"../UI/HpBar"
+	bar.max_value = max_hp
+	bar.value = hp
+	$"../UI/HpBar/HpText".text = str(hp) + "/" + str(max_hp)

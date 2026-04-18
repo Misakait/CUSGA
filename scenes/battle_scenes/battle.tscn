@@ -58,6 +58,34 @@ metadata/_custom_type_script = "uid://dh28trwcjvre6"
 [sub_resource type="Resource" id="Resource_navvr"]
 metadata/__load_path__ = "res://scenes/skill_card_scenes/Card.tscn"
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
+bg_color = Color(0.15, 0.15, 0.15, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
+bg_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_bg"]
+bg_color = Color(0.15, 0.15, 0.15, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_fill"]
+bg_color = Color(0.2, 0.6, 0.8, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
 starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("5_76lap"), ExtResource("3_76lap"), ExtResource("4_qw51t"), ExtResource("4_qw51t"), ExtResource("5_76lap"), ExtResource("5_76lap"), ExtResource("5_76lap"), ExtResource("5_76lap")])
@@ -99,21 +127,79 @@ text = "摸牌"
 
 [node name="UI" type="Marker2D" parent="." unique_id=1635819477]
 
-[node name="Energy" type="Label" parent="UI" unique_id=1840398388]
-offset_left = 22.0
-offset_top = 4.0
-offset_right = 173.0
-offset_bottom = 50.0
-theme_override_font_sizes/font_size = 32
-text = "能量：100"
+[node name="HpBar" type="ProgressBar" parent="UI" unique_id=1277872820]
+offset_left = 93.0
+offset_top = 309.0
+offset_right = 293.0
+offset_bottom = 339.0
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
+value = 100.0
+show_percentage = false
+metadata/_edit_use_anchors_ = true
 
-[node name="Hp" type="Label" parent="UI" unique_id=1277872820]
-offset_left = 21.0
-offset_top = 64.0
-offset_right = 172.0
-offset_bottom = 110.0
-theme_override_font_sizes/font_size = 32
-text = "血量：100"
+[node name="HpText" type="Label" parent="UI/HpBar" unique_id=1277872821]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="HpTitle" type="Label" parent="UI/HpBar" unique_id=1277872822]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = 13.0
+grow_vertical = 2
+text = "HP"
+horizontal_alignment = 2
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="EnergyBar" type="ProgressBar" parent="UI" unique_id=1840398388]
+offset_left = 93.0
+offset_top = 352.0
+offset_right = 293.0
+offset_bottom = 382.0
+theme_override_styles/background = SubResource("StyleBoxFlat_energy_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_energy_fill")
+value = 100.0
+show_percentage = false
+metadata/_edit_use_anchors_ = true
+
+[node name="EnergyText" type="Label" parent="UI/EnergyBar" unique_id=1840398389]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "3/3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnergyTitle" type="Label" parent="UI/EnergyBar" unique_id=1840398390]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = 13.0
+grow_vertical = 2
+text = "Energy"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="PlayerManager" type="Node2D" parent="." unique_id=1987979305]
 script = ExtResource("11_to08p")
