@@ -37,6 +37,8 @@ public partial class VitalComponentBase : Node
 
     public virtual void Subtract(int amount)
     {
+        if (CurrentValue <= 0) return;
+
         CurrentValue = Mathf.Max(CurrentValue - amount, 0);
         EmitSignal(SignalName.ValueChanged, CurrentValue, MaxValue);
 

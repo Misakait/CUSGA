@@ -29,7 +29,7 @@ public partial class Monster : Node2D
         Faction = GetNode<FactionComponent>("Components/FactionComponent");
         Health = GetNode<HealthComponent>("Components/HealthComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
-        Loot = GetNode<LootComponent>("Components/LootComponent");
+        Loot = GetNodeOrNull<LootComponent>("Components/LootComponent");
         Health.Depleted += HandleDeath;
         Health.ValueChanged += OnHealthChanged;
 
@@ -57,7 +57,7 @@ public partial class Monster : Node2D
 
     private void HandleDeath()
     {
-        Loot.TriggerDrop(GlobalPosition, 0);
+        Loot?.TriggerDrop(GlobalPosition, 0);
         QueueFree();
     }
 

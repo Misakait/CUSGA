@@ -27,13 +27,13 @@ func spawn_monsters():
 		if active_monsters.size() >= max_active_monsters:
 			print("场上怪物已满！")
 			break
-			
+
 		var monster_data = upcoming_monsters.pop_front() # 从队列头取怪物
 		_spawn_monster_instance(monster_data)
-			
+
 	print("生成了怪物。当前场上怪物数：", active_monsters.size())
 	print_all_monsters()
-	
+
 func _process(delta: float) -> void:
 	# 可选：如果需要在process里更新怪物状态或动画等可以在这里写
 	pass
@@ -44,7 +44,9 @@ func _spawn_monster_instance(monster_data):
 	monster.BaseData = monster_data
 	add_child(monster)
 	active_monsters.append(monster)
-	
+
+	monster.tree_exited.connect(on_monster_died.bind(monster))
+
 	update_monsters_position()
 
 # 自动排布场上的怪物
@@ -52,17 +54,17 @@ func update_monsters_position():
 	var count = active_monsters.size()
 	if count == 0:
 		return
-		
+
 	# 自动获取当前屏幕（视口）的宽度并计算中心 X 坐标
 	var center_x = get_viewport_rect().size.x / 2.0
-		
+
 	for i in range(count):
 		var monster = active_monsters[i]
-		
+
 		# 自动居中对称计算公式：(当前索引 - (总数 - 1) / 2) * 间距
 		var offset_x = (i - (count - 1.0) / 2.0) * monster_spacing
 		var target_pos = Vector2(center_x + offset_x, monster_height)
-		
+
 		# 加入Tween动画平滑移动
 		var tween = create_tween()
 		tween.tween_property(monster, "position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)

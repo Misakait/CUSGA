@@ -1,13 +1,21 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://16qrp6486xaj"]
 
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_skflr"]
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_v80vg"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_78w7t"]
+
+[sub_resource type="Resource" id="Resource_874ny"]
+script = ExtResource("2_78w7t")
+BaseDamage = 80
+Element = 3
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
 
 [resource]
 script = ExtResource("1_v80vg")
+Effects = Array[ExtResource("1_skflr")]([SubResource("Resource_874ny")])
 element = 4
 cost = 30
-damage = 30
 CardId = null
 CardName = "测试卡3"
-Description = "这里是卡3描述"
+Description = "造成80点水属性物理伤害。"
 metadata/_custom_type_script = "uid://bejho62d28qir"
