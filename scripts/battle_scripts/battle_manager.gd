@@ -36,8 +36,15 @@ func _ready():
 	deck_manager.initialize_deck(starting_deck_data)
 	#初始化怪物
 	monster_manager.initialize_monsters(starting_monster_data)
+	monster_manager.monsters_spawned.connect(_on_monsters_spawned)
 
 	change_state(BattleState.COMBAT_START)
+
+## 处理中途生成的怪物（为新怪物分配初始行动值）
+func _on_monsters_spawned():
+	for monster in monster_manager.active_monsters:
+		if not monster.has_meta("action_value"):
+			monster.set_meta("action_value", 10000.0 / 100.0)
 
 ## 统一的状态切换入口，负责状态流转的分发
 func change_state(new_state: BattleState):
@@ -145,7 +152,7 @@ func _handle_execute_actions():
 	await _execute_single_action(action)
 
 	# 每次行动后检测是否导致一方死亡而结束战斗
-	if player_manager.hp <= 0 or monster_manager.active_monsters.is_empty():
+	if player_manager.hp <= 0 or (monster_manager.active_monsters.is_empty() and monster_manager.upcoming_monsters.is_empty()):
 		change_state(BattleState.COMBAT_END)
 		return
 
@@ -177,7 +184,7 @@ func _handle_turn_end():
 		deck_manager.discard_hand() # 玩家回合结束必定弃置所有手牌
 
 	# 再次做一次安全检测，确认是否应该转入战斗结束
-	if player_manager.hp <= 0 or monster_manager.active_monsters.is_empty():
+	if player_manager.hp <= 0 or (monster_manager.active_monsters.is_empty() and monster_manager.upcoming_monsters.is_empty()):
 		change_state(BattleState.COMBAT_END)
 	else:
 		# 未结束则转入重新计算回合权

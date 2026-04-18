@@ -1,9 +1,12 @@
 extends Node2D
 class_name MonsterManager
 
-@export var max_active_monsters: int = 5
+signal monster_defeated(monster) ## 怪物被击败信号
+signal monsters_spawned ## 场上有新怪物补充生成信号
 
-@export_group("外显示与排布")
+var max_active_monsters: int = 5
+
+@export_group("排布")
 @export var monster_height: float = 150.0 ## 怪物所处的高度（Y坐标）
 @export var monster_spacing: float = 200.0 ## 怪物排列的间距
 
@@ -23,6 +26,7 @@ func initialize_monsters(starting_monsters_data: Array):
 
 # 生成怪物
 func spawn_monsters():
+	var spawned_any = false
 	while not upcoming_monsters.is_empty():
 		if active_monsters.size() >= max_active_monsters:
 			print("场上怪物已满！")
@@ -30,9 +34,12 @@ func spawn_monsters():
 
 		var monster_data = upcoming_monsters.pop_front() # 从队列头取怪物
 		_spawn_monster_instance(monster_data)
+		spawned_any = true
 
-	print("生成了怪物。当前场上怪物数：", active_monsters.size())
-	print_all_monsters()
+	if spawned_any:
+		print("生成了怪物。当前场上怪物数：", active_monsters.size())
+		print_all_monsters()
+		emit_signal("monsters_spawned")
 
 func _process(delta: float) -> void:
 	# 可选：如果需要在process里更新怪物状态或动画等可以在这里写
@@ -81,7 +88,11 @@ func into_defeated_pool(monster):
 		# 假设monster有data属性
 		# defeated_monsters.append(monster.data)
 		print("怪物被击败")
+		emit_signal("monster_defeated", monster)
 	update_monsters_position() # 怪物死亡后重新排布队伍
+
+	# 尝试从待生成池中补充新怪物
+	spawn_monsters()
 
 # 调试打印所有怪物
 func print_all_monsters():
