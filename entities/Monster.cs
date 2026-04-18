@@ -21,6 +21,7 @@ public partial class Monster : Node2D
     private LootComponent Loot { get; set; }
 
     private ProgressBar _healthBar;
+    private Area2D _area2D;
 
     public override void _Ready()
     {
@@ -34,9 +35,37 @@ public partial class Monster : Node2D
 
         _healthBar = GetNode<ProgressBar>("HealthBar");
 
+        _area2D = GetNode<Area2D>("Area2D");
+        if (_area2D != null)
+        {
+            _area2D.MouseEntered += OnMouseEntered;
+            _area2D.MouseExited += OnMouseExited;
+        }
+
         if (BaseData != null)
         {
             Initialize(BaseData);
+        }
+    }
+
+    private void OnMouseEntered()
+    {
+        var tooltipPanels = GetTree().GetNodesInGroup("tooltip_panel");
+        if (tooltipPanels.Count > 0)
+        {
+            var panel = tooltipPanels[0];
+            string name = BaseData != null ? BaseData.MonsterName : "未知怪物";
+            panel.Call("show_tooltip", name, "敌人");
+        }
+    }
+
+    private void OnMouseExited()
+    {
+        var tooltipPanels = GetTree().GetNodesInGroup("tooltip_panel");
+        if (tooltipPanels.Count > 0)
+        {
+            var panel = tooltipPanels[0];
+            panel.Call("hide_tooltip");
         }
     }
 
@@ -57,6 +86,12 @@ public partial class Monster : Node2D
     {
         Health.Depleted -= HandleDeath;
         Health.ValueChanged -= OnHealthChanged;
+
+        if (_area2D != null)
+        {
+            _area2D.MouseEntered -= OnMouseEntered;
+            _area2D.MouseExited -= OnMouseExited;
+        }
     }
     public void Initialize(MonsterData data)
     {

@@ -7,6 +7,7 @@ extends Node2D
 @onready var control_lock = $"../ControlLock"
 @onready var player_manager = $"../PlayerManager"
 @onready var battle_manager = $".."
+@onready var tooltip_panel = $"../UI/TooltipPanel"
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
@@ -111,6 +112,9 @@ func start_drag(card):
 	var tween = create_tween()
 	tween.tween_property(card, "scale", card_drag_scale, scale_tween_duration)
 
+	if tooltip_panel:
+		tooltip_panel.hide_tooltip()
+
 ## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
 func finish_drag():
 	var tween = create_tween()
@@ -156,9 +160,10 @@ func on_hovered_off_card(card):
 		var new_card_hovered = raycast_check_for_card()
 		if new_card_hovered:
 			highlight_card(new_card_hovered, true)
-			highlight_card(card, false)
 		else:
 			is_hovering_on_card = false
+			if tooltip_panel:
+				tooltip_panel.hide_tooltip()
 
 ## 设置单张卡牌的高亮（视觉放大及置于顶层渲染）
 func highlight_card(card, hovered):
@@ -168,6 +173,8 @@ func highlight_card(card, hovered):
 		var tween = create_tween()
 		tween.tween_property(card, "scale", card_hover_scale, scale_tween_duration)
 		card.z_index = 2
+		if tooltip_panel and card.data:
+			tooltip_panel.show_tooltip(card.data.CardName, card.data.Description)
 	else:
 		var tween = create_tween()
 		tween.tween_property(card, "scale", card_normal_scale, scale_tween_duration)
