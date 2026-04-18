@@ -66,7 +66,7 @@ toggle_inventory={
 2d_physics/layer_1="卡牌"
 2d_physics/layer_2="卡牌槽位"
 2d_physics/layer_3="禁用卡牌"
-2d_physics/layer_4="角色卡"
+2d_physics/layer_4="怪物卡"
 
 [physics]
 

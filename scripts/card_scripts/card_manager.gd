@@ -11,11 +11,20 @@ extends Node2D
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
 
+@export_group("视觉缩放参数")
+@export var card_normal_scale: Vector2 = Vector2(1.0, 1.0) ## 卡牌正常大小
+@export var card_hover_scale: Vector2 = Vector2(1.05, 1.05) ## 卡牌悬停放大
+@export var card_drag_scale: Vector2 = Vector2(0.95, 0.95) ## 卡牌拖拽时略微缩小
+@export var monster_normal_scale: Vector2 = Vector2(1.5, 1.5) ## 怪物正常大小
+@export var monster_hover_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物被选中悬停时放大
+@export var scale_tween_duration: float = 0.08 ## 缩放动画过度时间
+
 var screen_size
 var card_being_dragged:Node2D
 var is_hovering_on_card:bool
 var player_hand_referencd #玩家手牌引用
 var drag_offset: Vector2 # 用于记录拖拽偏移量
+var currently_hovered_slot: Node2D = null # 记录当前被悬停的卡槽
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
@@ -30,7 +39,31 @@ func _process(delta: float) -> void:
 			clamp(target_pos.x, 0, screen_size.x),
 			clamp(target_pos.y, 0, screen_size.y)
 		)
+
+		# 检测是否拖拽到了某个卡槽上
+		var card_slot_found = raycast_check_for_card_slot()
+		update_hovered_monster(card_slot_found)
+
 	check_cards_energy()
+
+## 更新当前悬停的怪物外观（放大/缩小）
+func update_hovered_monster(new_slot: Node2D):
+	if new_slot != currently_hovered_slot:
+		# 如果之前悬停了某个卡槽，现在移开了，恢复它
+		if currently_hovered_slot:
+			var monster = currently_hovered_slot.get_parent()
+			if monster and monster.has_node("Sprite2D"):
+				var tween = create_tween()
+				tween.tween_property(monster.get_node("Sprite2D"), "scale", monster_normal_scale, scale_tween_duration)
+
+		# 如果现在悬停到了新的卡槽，放大它
+		if new_slot:
+			var monster = new_slot.get_parent()
+			if monster and monster.has_node("Sprite2D"):
+				var tween = create_tween()
+				tween.tween_property(monster.get_node("Sprite2D"), "scale", monster_hover_scale, scale_tween_duration)
+
+		currently_hovered_slot = new_slot
 
 ## 检查卡牌状态是否可用（例如是否被锁上变暗）。
 ## 这里判断了两种条件：
@@ -68,11 +101,15 @@ func start_drag(card):
 	card_being_dragged = card
 	# 记录鼠标点击位置与卡牌原点之间的差值
 	drag_offset = card.position - get_global_mouse_position()
-	card.scale = Vector2(1, 1)
+
+	var tween = create_tween()
+	tween.tween_property(card, "scale", card_drag_scale, scale_tween_duration)
 
 ## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
 func finish_drag():
-	card_being_dragged.scale = Vector2(1.05, 1.05)
+	var tween = create_tween()
+	tween.tween_property(card_being_dragged, "scale", card_hover_scale, scale_tween_duration)
+
 	# 通过射线获取是否命中了一个接收区域
 	var card_slot_found = raycast_check_for_card_slot()
 	if card_slot_found:
@@ -85,6 +122,10 @@ func finish_drag():
 	else:
 		# 如果拖动后没进入有效区域(比如丢到空白处)，则卡牌原路弹回玩家手中
 		player_hand_referencd.add_card_to_hand(card_being_dragged)
+
+	# 松开鼠标时，恢复最后悬停的怪物的缩放
+	if currently_hovered_slot:
+		update_hovered_monster(null)
 
 	card_being_dragged = null
 
@@ -118,10 +159,12 @@ func highlight_card(card, hovered):
 	if card.is_lock:
 		return
 	if hovered:
-		card.scale = Vector2(1.05, 1.05)
+		var tween = create_tween()
+		tween.tween_property(card, "scale", card_hover_scale, scale_tween_duration)
 		card.z_index = 2
 	else:
-		card.scale = Vector2(1, 1)
+		var tween = create_tween()
+		tween.tween_property(card, "scale", card_normal_scale, scale_tween_duration)
 		card.z_index = 1
 
 ## 光线投射检测（射线检测），用于检查并获取鼠标落点位置最上层的卡牌。
