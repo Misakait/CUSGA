@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="11_f5jq7"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
 [ext_resource type="Script" uid="uid://dhw7i7lc8tobr" path="res://entities/components/LootComponent.cs" id="13_kt6in"]
+[ext_resource type="Script" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
 script = ExtResource("2_gqard")
@@ -62,6 +63,7 @@ scale = Vector2(1.5, 1.5)
 texture = ExtResource("3_1wyrm")
 
 [node name="HealthBar" type="ProgressBar" parent="." unique_id=1848201292]
+script = ExtResource("stat_bar_script")
 offset_left = -75.0
 offset_top = -140.0
 offset_right = 75.0

@@ -14,8 +14,8 @@ var speed: float = 100.0
 var action_value: float = 0.0
 
 func _ready() -> void:
-	refresh_energy()
-	refresh_hp()
+	refresh_energy(true)
+	refresh_hp(true)
 	reset_action_value()
 
 ## 回合开始时被 BattleManager 调用，用于重置该实体的行动条
@@ -43,14 +43,12 @@ func consume_energy(amount:int):
 	energy = max(energy - amount, 0)
 	refresh_energy()
 
-func refresh_energy():
+func refresh_energy(instant: bool = false):
 	var bar = $"../UI/EnergyBar"
-	bar.max_value = max_energy
-	bar.value = energy
-	$"../UI/EnergyBar/EnergyText".text = str(energy) + "/" + str(max_energy)
+	if bar and bar.has_method("update_stat"):
+		bar.update_stat(energy, max_energy, instant)
 
-func refresh_hp():
+func refresh_hp(instant: bool = false):
 	var bar = $"../UI/HpBar"
-	bar.max_value = max_hp
-	bar.value = hp
-	$"../UI/HpBar/HpText".text = str(hp) + "/" + str(max_hp)
+	if bar and bar.has_method("update_stat"):
+		bar.update_stat(hp, max_hp, instant)

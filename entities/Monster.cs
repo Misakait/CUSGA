@@ -21,7 +21,6 @@ public partial class Monster : Node2D
     private LootComponent Loot { get; set; }
 
     private ProgressBar _healthBar;
-    private Label _healthText;
 
     public override void _Ready()
     {
@@ -34,10 +33,6 @@ public partial class Monster : Node2D
         Health.ValueChanged += OnHealthChanged;
 
         _healthBar = GetNode<ProgressBar>("HealthBar");
-        if (_healthBar != null)
-        {
-            _healthText = _healthBar.GetNodeOrNull<Label>("HealthText");
-        }
 
         if (BaseData != null)
         {
@@ -48,11 +43,8 @@ public partial class Monster : Node2D
     private void OnHealthChanged(int currentValue, int maxValue)
     {
         if (_healthBar == null) throw new System.NullReferenceException("HealthBar node is missing on Monster!");
-        if (_healthText == null) throw new System.NullReferenceException("HealthText node is missing on Monster!");
 
-        _healthBar.MaxValue = maxValue;
-        _healthBar.Value = currentValue;
-        _healthText.Text = $"{currentValue}/{maxValue}";
+        _healthBar.Call("update_stat", currentValue, maxValue, false);
     }
 
     private void HandleDeath()

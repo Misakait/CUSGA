@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://bxcdktnfciqv1" path="res://scripts/battle_scripts/control_lock.gd" id="9_sugqx"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
+[ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 
 [sub_resource type="Resource" id="Resource_xseyc"]
 script = ExtResource("6_ajc51")
@@ -136,6 +137,7 @@ theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
 value = 100.0
 show_percentage = false
+script = ExtResource("stat_bar_script")
 metadata/_edit_use_anchors_ = true
 
 [node name="HpText" type="Label" parent="UI/HpBar" unique_id=1277872821]
@@ -174,6 +176,7 @@ theme_override_styles/background = SubResource("StyleBoxFlat_energy_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_energy_fill")
 value = 100.0
 show_percentage = false
+script = ExtResource("stat_bar_script")
 metadata/_edit_use_anchors_ = true
 
 [node name="EnergyText" type="Label" parent="UI/EnergyBar" unique_id=1840398389]
