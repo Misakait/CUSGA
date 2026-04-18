@@ -45,7 +45,7 @@ func _spawn_monster_instance(monster_data):
 	add_child(monster)
 	active_monsters.append(monster)
 
-	monster.tree_exited.connect(on_monster_died.bind(monster))
+	monster.Health.Depleted.connect(on_monster_died.bind(monster))
 
 	update_monsters_position()
 
