@@ -1,8 +1,12 @@
+## 卡牌管理器 (CardManager)
+## 负责处理手牌中的交互逻辑（如拖拽、悬停高亮、打出检测）。
+## 它实时监测鼠标的射线投射并拦截输入操作。
 extends Node2D
 
 @onready var deck_manager = $"../DeckManager"
 @onready var control_lock = $"../ControlLock"
 @onready var player_manager = $"../PlayerManager"
+@onready var battle_manager = $".."
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
@@ -21,25 +25,31 @@ func _process(delta: float) -> void:
 	if card_being_dragged:
 		var mouse_pos = get_global_mouse_position()
 		# 将偏移量应用到目标位置上
-		var target_pos = mouse_pos + drag_offset 
+		var target_pos = mouse_pos + drag_offset
 		card_being_dragged.position = Vector2(
 			clamp(target_pos.x, 0, screen_size.x),
 			clamp(target_pos.y, 0, screen_size.y)
 		)
 	check_cards_energy()
 
+## 检查卡牌状态是否可用（例如是否被锁上变暗）。
+## 这里判断了两种条件：
+## 1. 玩家当前的能量是否足够打出该牌
+## 2. 战斗状态机是否处于“玩家回合”(PLAYER_TURN)。如果是在排队播放动画或在敌方回合，卡牌强制锁定变暗。
 func check_cards_energy():
 	if control_lock.is_lock:
 		return
 	var pm = player_manager
 	for card in player_hand_referencd.player_hand_card:
-		if pm.energy < card.data.cost:
+		if pm.energy < card.data.cost or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN:
 			card.lock()
 		else:
 			card.unlock()
 
+## 监听全局输入事件，捕捉卡牌拖拽意图。
+## 增加条件：如果不处于玩家操作回合（如敌方回合或技能结算时），直接拦截操作。
 func _input(event):
-	if control_lock.is_lock:
+	if control_lock.is_lock or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -50,7 +60,9 @@ func _input(event):
 			if card_being_dragged:
 				finish_drag()
 
+## 当鼠标按下并检测到点中某张可用的卡时触发，开始拖拽逻辑。
 func start_drag(card):
+	# 如果当前能量小于该卡牌的消耗则不能拖拽
 	if player_manager.energy < card.data.cost:
 		return
 	card_being_dragged = card
@@ -58,19 +70,25 @@ func start_drag(card):
 	drag_offset = card.position - get_global_mouse_position()
 	card.scale = Vector2(1, 1)
 
+## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
 func finish_drag():
 	card_being_dragged.scale = Vector2(1.05, 1.05)
+	# 通过射线获取是否命中了一个接收区域
 	var card_slot_found = raycast_check_for_card_slot()
 	if card_slot_found:
+		# 命中目标：扣除能量
 		player_manager.consume_energy(card_being_dragged.data.cost)
-		deck_manager.play_card(card_being_dragged,card_slot_found.get_parent())
+		# 让DeckManager将卡牌推入战斗状态机的 Action Queue (行动队列)
+		deck_manager.play_card(card_being_dragged, card_slot_found.get_parent())
+		# 将其从玩家手牌节点中移除并走丢弃动画
 		player_hand_referencd.remove_card_from_hand(card_being_dragged)
-		#card_being_dragged.position = card_slot_found.position
-	else:#如果拖动后没进入卡槽，则回到玩家手中
+	else:
+		# 如果拖动后没进入有效区域(比如丢到空白处)，则卡牌原路弹回玩家手中
 		player_hand_referencd.add_card_to_hand(card_being_dragged)
-		
+
 	card_being_dragged = null
 
+## 初始化卡牌本身的鼠标悬停信号，在卡牌实例化时绑定过来
 func connect_card_signals(card):
 	card.connect("hovered", on_hovered_over_card)
 	card.connect("hovered_off", on_hovered_off_card)
@@ -95,6 +113,7 @@ func on_hovered_off_card(card):
 		else:
 			is_hovering_on_card = false
 
+## 设置单张卡牌的高亮（视觉放大及置于顶层渲染）
 func highlight_card(card, hovered):
 	if card.is_lock:
 		return
@@ -105,7 +124,7 @@ func highlight_card(card, hovered):
 		card.scale = Vector2(1, 1)
 		card.z_index = 1
 
-#光线投射，检查并获取鼠标下的卡牌
+## 光线投射检测（射线检测），用于检查并获取鼠标落点位置最上层的卡牌。
 func raycast_check_for_card():
 	var space_state = get_world_2d().direct_space_state
 	var parameters = PhysicsPointQueryParameters2D.new()
@@ -116,16 +135,16 @@ func raycast_check_for_card():
 	if result.size() > 0:
 		return get_card_with_highest_z_index(result)
 	return null
-	
-#复用上方代码，检测卡牌槽
+
+## 同样是通过射线检测目标卡槽（通常在实体身上）
 func raycast_check_for_card_slot():
 	var space_state = get_world_2d().direct_space_state
 	var parameters = PhysicsPointQueryParameters2D.new()
-	
+
 	#将鼠标改为卡牌中心，即卡牌中心进入框内即可放入卡槽
-	parameters.position = card_being_dragged.global_position 
+	parameters.position = card_being_dragged.global_position
 	#parameters.position = get_global_mouse_position()
-	
+
 	parameters.collide_with_areas = true
 	parameters.collision_mask = COLLISION_MASK_CARD_SLOT
 	var result = space_state.intersect_point(parameters)
@@ -133,7 +152,7 @@ func raycast_check_for_card_slot():
 		return result[0].collider.get_parent()
 	return null
 
-#获取传入卡牌中z最高的牌
+## 辅助工具：如果在密集手牌区域多张牌重叠，则选取层级(Z-index)最高的那张来交互
 func get_card_with_highest_z_index(cards):
 	var highest_z_card = cards[0].collider.get_parent()
 	var highest_z_index = highest_z_card.z_index
