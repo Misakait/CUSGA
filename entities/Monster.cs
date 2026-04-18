@@ -20,6 +20,9 @@ public partial class Monster : Node2D
     public StatusComponent Status { get; private set; }
     private LootComponent Loot { get; set; }
 
+    private ProgressBar _healthBar;
+    private Label _healthText;
+
     public override void _Ready()
     {
         Attributes = GetNode<AttributeComponent>("Components/AttributeComponent");
@@ -28,10 +31,28 @@ public partial class Monster : Node2D
         Status = GetNode<StatusComponent>("%StatusComponent");
         Loot = GetNode<LootComponent>("Components/LootComponent");
         Health.Depleted += HandleDeath;
+        Health.ValueChanged += OnHealthChanged;
+
+        _healthBar = GetNode<ProgressBar>("HealthBar");
+        if (_healthBar != null)
+        {
+            _healthText = _healthBar.GetNodeOrNull<Label>("HealthText");
+        }
+
         if (BaseData != null)
         {
             Initialize(BaseData);
         }
+    }
+
+    private void OnHealthChanged(int currentValue, int maxValue)
+    {
+        if (_healthBar == null) throw new System.NullReferenceException("HealthBar node is missing on Monster!");
+        if (_healthText == null) throw new System.NullReferenceException("HealthText node is missing on Monster!");
+
+        _healthBar.MaxValue = maxValue;
+        _healthBar.Value = currentValue;
+        _healthText.Text = $"{currentValue}/{maxValue}";
     }
 
     private void HandleDeath()
@@ -43,6 +64,7 @@ public partial class Monster : Node2D
     public override void _ExitTree()
     {
         Health.Depleted -= HandleDeath;
+        Health.ValueChanged -= OnHealthChanged;
     }
     public void Initialize(MonsterData data)
     {

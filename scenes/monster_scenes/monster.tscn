@@ -33,6 +33,20 @@ LootTable = SubResource("Resource_bgonl")
 MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.15, 0.15, 0.15, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
+bg_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]
 size = Vector2(150, 210)
 
@@ -45,6 +59,27 @@ BaseData = SubResource("Resource_43qb6")
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1606835649]
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("3_1wyrm")
+
+[node name="HealthBar" type="ProgressBar" parent="." unique_id=1848201292]
+offset_left = -75.0
+offset_top = -140.0
+offset_right = 75.0
+offset_bottom = -115.0
+theme_override_styles/background = SubResource("StyleBoxFlat_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+value = 100.0
+show_percentage = false
+
+[node name="HealthText" type="Label" parent="HealthBar" unique_id=786684127]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1411665323]
 collision_layer = 8
