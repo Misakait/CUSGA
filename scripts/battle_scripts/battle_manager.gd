@@ -5,6 +5,7 @@ extends Node
 @onready var control_lock = $ControlLock
 @onready var player_manager = $PlayerManager
 @onready var monster_manager = $MonsterManager
+@onready var action_timeline = $UI/ActionTimeline
 
 @export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
 @export var starting_monster_data: Array[MonsterData] ##初始怪物的卡牌数据。
@@ -31,20 +32,40 @@ var action_queue: Array[Action] = []
 ## 当前正在行动的实体（玩家 player_manager 或某个特定的怪物实体）
 var active_entity: Variant = null
 
+
+## 获取当前场上所有的战斗实体，用于传给 UI 行动轴等系统
+func get_all_combatants() -> Array:
+	var combatants = []
+	if player_manager:
+		combatants.append(player_manager)
+	if monster_manager and monster_manager.active_monsters:
+		combatants.append_array(monster_manager.active_monsters)
+	return combatants
+
 func _ready():
 	#初始化摸牌堆
 	deck_manager.initialize_deck(starting_deck_data)
 	#初始化怪物
 	monster_manager.initialize_monsters(starting_monster_data)
 	monster_manager.monsters_spawned.connect(_on_monsters_spawned)
+	monster_manager.monster_defeated.connect(_on_monster_defeated)
+
 
 	change_state(BattleState.COMBAT_START)
 
 ## 处理中途生成的怪物（为新怪物分配初始行动值）
+
+## 处理怪物死亡，立即刷新时间轴
+func _on_monster_defeated(monster):
+	if action_timeline:
+		action_timeline.update_timeline(get_all_combatants(), active_entity)
+
 func _on_monsters_spawned():
 	for monster in monster_manager.active_monsters:
 		if not monster.has_meta("action_value"):
 			monster.set_meta("action_value", 10000.0 / 100.0)
+	if action_timeline:
+		action_timeline.update_timeline(get_all_combatants(), active_entity)
 
 ## 统一的状态切换入口，负责状态流转的分发
 func change_state(new_state: BattleState):
@@ -75,6 +96,8 @@ func _handle_combat_start():
 		monster.set_meta("action_value", 10000.0 / 100.0)
 
 	# 初始化完成后，进入计算回合阶段
+	if action_timeline:
+		action_timeline.update_timeline(get_all_combatants(), active_entity)
 	change_state(BattleState.CALCULATE_TURN)
 
 ## 计算行动顺位（ATB系统）：找出当前场上 action_value 最小的实体。
@@ -98,6 +121,9 @@ func _handle_calculate_turn():
 
 	# 记录当前获得回合的实体并进入对应回合
 	active_entity = min_av_entity
+	if action_timeline:
+		action_timeline.update_timeline(get_all_combatants(), active_entity)
+
 	if active_entity == player_manager:
 		change_state(BattleState.PLAYER_TURN)
 	else:
@@ -123,6 +149,8 @@ func _handle_enemy_turn():
 
 	# 重置怪物的行动值
 	active_entity.set_meta("action_value", 10000.0 / 100.0)
+	if action_timeline:
+		action_timeline.update_timeline(get_all_combatants(), active_entity)
 	change_state(BattleState.EXECUTE_ACTIONS)
 
 ## 将一个产生的行动压入队列。
@@ -188,6 +216,8 @@ func _handle_turn_end():
 		change_state(BattleState.COMBAT_END)
 	else:
 		# 未结束则转入重新计算回合权
+		if action_timeline:
+			action_timeline.update_timeline(get_all_combatants(), active_entity)
 		change_state(BattleState.CALCULATE_TURN)
 
 ## 战斗结束结算（可扩展弹出结算界面或回到大地图）

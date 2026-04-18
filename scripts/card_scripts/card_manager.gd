@@ -55,6 +55,9 @@ func update_hovered_monster(new_slot: Node2D):
 			if monster and monster.has_node("Sprite2D"):
 				var tween = create_tween()
 				tween.tween_property(monster.get_node("Sprite2D"), "scale", monster_normal_scale, scale_tween_duration)
+			var timeline = get_node_or_null("../UI/ActionTimeline")
+			if timeline and monster:
+				timeline.highlight_entity(monster, false)
 
 		# 如果现在悬停到了新的卡槽，放大它
 		if new_slot:
@@ -62,6 +65,9 @@ func update_hovered_monster(new_slot: Node2D):
 			if monster and monster.has_node("Sprite2D"):
 				var tween = create_tween()
 				tween.tween_property(monster.get_node("Sprite2D"), "scale", monster_hover_scale, scale_tween_duration)
+			var timeline = get_node_or_null("../UI/ActionTimeline")
+			if timeline and monster:
+				timeline.highlight_entity(monster, true)
 
 		currently_hovered_slot = new_slot
 
