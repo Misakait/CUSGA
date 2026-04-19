@@ -11,6 +11,11 @@ extends Node
 @export var starting_monster_data: Array[MonsterData] ##初始怪物的卡牌数据。
 @export var card_scene: PackedScene
 
+@export_group("视觉缩放参数")
+@export var monster_normal_scale: Vector2 = Vector2(1.5, 1.5) ## 怪物正常大小
+@export var monster_turn_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物回合时放大
+@export var scale_tween_duration: float = 0.2 ## 缩放动画过渡时间
+
 var turn_draw_count:int = 5 ##每回合摸牌数
 
 ## 战斗状态机的状态定义
@@ -142,6 +147,10 @@ func _handle_enemy_turn():
 	print("--- 敌人回合开始 ---")
 	control_lock.lock()
 
+	if active_entity and active_entity.has_node("Sprite2D"):
+		var tween = create_tween()
+		tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_turn_scale, scale_tween_duration)
+
 	# 简单的敌人AI逻辑：对玩家造成攻击
 	# 后续可替换为读取怪物的技能表或行为树进行决策
 	var action = Action.new(active_entity, [player_manager], null, "attack", "ATTACK")
@@ -210,6 +219,10 @@ func _handle_turn_end():
 	print("--- 回合结束 ---")
 	if active_entity == player_manager:
 		deck_manager.discard_hand() # 玩家回合结束必定弃置所有手牌
+	else:
+		if active_entity and active_entity.has_node("Sprite2D"):
+			var tween = create_tween()
+			tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_normal_scale, scale_tween_duration)
 
 	# 再次做一次安全检测，确认是否应该转入战斗结束
 	if player_manager.hp <= 0 or (monster_manager.active_monsters.is_empty() and monster_manager.upcoming_monsters.is_empty()):
