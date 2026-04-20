@@ -74,7 +74,7 @@ public partial class EquipmentComponent : Node
         // 加属性
         foreach (var bonus in stack.RolledAttributes)
         {
-            _attributeComponent.GetAttribute(bonus.Key)?.AddBonus(bonus.Value);
+            _attributeComponent.AddPermanentBonus(bonus.Key, bonus.Value, source: this);
         }
         // 加标签
         if (stack.Item is EquipmentData equipData)
@@ -91,7 +91,7 @@ public partial class EquipmentComponent : Node
         // 扣属性
         foreach (var kvp in stack.RolledAttributes)
         {
-            _attributeComponent.GetAttribute(kvp.Key)?.RemoveBonus(kvp.Value);
+            _attributeComponent.RemovePermanentBonus(kvp.Key, kvp.Value, source: this);
         }
         // 删标签
         if (stack.Item is EquipmentData equipData)
@@ -165,7 +165,7 @@ public partial class EquipmentComponent : Node
     private void ApplyTierEffects(SetBonusTier tier)
     {
         foreach (var bonus in tier.AttributeBonuses)
-            _attributeComponent.GetAttribute(bonus.Key)?.AddBonus(bonus.Value);
+            _attributeComponent.AddPermanentBonus(bonus.Key, bonus.Value, source: this);
 
         foreach (var tag in tier.GrantedTags)
             _tagComponent.AddTag(tag);
@@ -174,7 +174,7 @@ public partial class EquipmentComponent : Node
     private void RemoveTierEffects(SetBonusTier tier)
     {
         foreach (var bonus in tier.AttributeBonuses)
-            _attributeComponent.GetAttribute(bonus.Key)?.RemoveBonus(bonus.Value);
+            _attributeComponent.RemovePermanentBonus(bonus.Key, bonus.Value, source: this);
 
         foreach (var tag in tier.GrantedTags)
             _tagComponent.RemoveTag(tag);

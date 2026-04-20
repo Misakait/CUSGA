@@ -1,7 +1,7 @@
-using Godot;
 using CUSGA.core.attributes;
 using CUSGA.core.combat;
 using CUSGA.core.constants;
+using Godot;
 
 namespace CUSGA.entities.components;
 
@@ -10,83 +10,122 @@ public partial class DamageReceiverComponent : Node
 {
     public void ReceiveDamage(DamagePayload payload)
     {
-        GD.Print("成功进入计算伤害方法！");
+        Node defender = GetParent();
+
+        if (defender == null)
+        {
+            GD.PushError($"{nameof(DamageReceiverComponent)} has no parent defender.");
+            return;
+        }
+
         var attackerStats = payload.Source?.GetNodeOrNull<AttributeComponent>("AttributeComponent");
-        var defenderStats = GetParent().GetNodeOrNull<AttributeComponent>("AttributeComponent");
+        var defenderStats = defender.GetNodeOrNull<AttributeComponent>("AttributeComponent");
 
-        var attackerStatus = payload.Source?.GetNodeOrNull<StatusComponent>("%StatusComponent");
-        var defenderStatus = GetParent().GetNodeOrNull<StatusComponent>("%StatusComponent");
+        var attackerStatus = payload.Source?.GetNodeOrNull<StatusComponent>("StatusComponent");
+        var defenderStatus = defender.GetNodeOrNull<StatusComponent>("StatusComponent");
 
-        float calculatedDamage = payload.Damage;
-        //GD.Print("开始伤害计算！");
-        // 攻击方增伤
-        if (attackerStats != null)
+        float damage = Mathf.Max(0f, payload.Damage);
+
+        ApplyAttackerAttributes(payload, attackerStats, ref damage);
+
+        attackerStatus?.ProcessModifyOutgoingDamage(payload, ref damage);
+        defenderStatus?.ProcessModifyIncomingDamageBeforeMitigation(payload, ref damage);
+
+        ApplyElementMultiplier(payload, defender, ref damage);
+        ApplyDefenseMitigation(payload, defenderStats, ref damage);
+
+        defenderStatus?.ProcessModifyIncomingDamageAfterMitigation(payload, ref damage);
+        defenderStatus?.ProcessBeforeHealthDamage(payload, ref damage);
+
+        int finalDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
+
+        GD.Print(
+            $"[Damage] Target: {defender.Name} | " +
+            $"Source: {payload.Source?.Name ?? "Unknown"} | " +
+            $"Damage: {finalDamage} | " +
+            $"Element: {payload.Element} | " +
+            $"Type: {payload.Type}"
+        );
+
+        defender.GetNodeOrNull<HealthComponent>("HealthComponent")
+            ?.TakeDamage(finalDamage, payload.Element);
+    }
+
+    private static void ApplyAttackerAttributes(
+        DamagePayload payload,
+        AttributeComponent attackerStats,
+        ref float damage
+    )
+    {
+        if (attackerStats == null)
+            return;
+
+        switch (payload.Type)
         {
-            if (payload.Type == DamageType.Physical)
-            {
-                float flatPhysPower = attackerStats.GetAttribute(AttributeType.PhysAtk)?.Value ?? 0f;
-                calculatedDamage += flatPhysPower;
+            case DamageType.Physical:
+                {
+                    damage += attackerStats.PhysAtk;
+                    damage *= 1f + attackerStats.PhysDamageBoost;
+                    break;
+                }
 
-                float physBoostPct = attackerStats.GetAttribute(AttributeType.PhysDamageBoost)?.Value ?? 0f;
-                calculatedDamage *= (1f + physBoostPct);
-            }
-            else if (payload.Type == DamageType.Magic)
-            {
-                float flatMagPower = attackerStats.GetAttribute(AttributeType.MagPower)?.Value ?? 0f;
-                calculatedDamage += flatMagPower;
+            case DamageType.Magic:
+                {
+                    damage += attackerStats.MagPower;
+                    damage *= 1f + attackerStats.MagicDamageBoost;
+                    break;
+                }
 
-                float magicBoostPct = attackerStats.GetAttribute(AttributeType.MagicDamageBoost)?.Value ?? 0f;
-                calculatedDamage *= (1f + magicBoostPct);
-            }
+            case DamageType.Real:
+                break;
         }
-        //GD.Print("计算攻击方增伤完毕");
-        
-        // 元素反应区
-        var targetElement = ElementType.None;
-        if (GetParent() is Monster monster)
-        {
+
+        damage = Mathf.Max(0f, damage);
+    }
+
+    private static void ApplyElementMultiplier(
+        DamagePayload payload,
+        Node defender,
+        ref float damage
+    )
+    {
+        ElementType targetElement = ElementType.None;
+
+        if (defender is Monster monster)
             targetElement = monster.BaseData.ElementalProperty;
-        }
-        float elementMult = ElementalSystem.CalculateMultiplier(payload.Element, targetElement);
-        calculatedDamage *= elementMult;
-        //GD.Print("计算元素反应区完毕");
 
-        // buff区
-        if (attackerStatus != null)
+        float elementMultiplier = ElementalSystem.CalculateMultiplier(
+            payload.Element,
+            targetElement
+        );
+
+        damage *= elementMultiplier;
+        damage = Mathf.Max(0f, damage);
+    }
+
+    private static void ApplyDefenseMitigation(
+        DamagePayload payload,
+        AttributeComponent defenderStats,
+        ref float damage
+    )
+    {
+        if (payload.Type == DamageType.Real)
+            return;
+
+        if (defenderStats == null)
+            return;
+
+        float defense = payload.Type switch
         {
-            foreach (var buff in attackerStatus.ActiveStatuses)
-                buff.OnDealDamage(payload, ref calculatedDamage);
-        }
-        if (defenderStatus != null)
-        {
-            foreach (var buff in defenderStatus.ActiveStatuses)
-                buff.OnReceiveDamage(payload, ref calculatedDamage);
-        }
-        //GD.Print("计算buff区完毕");
+            DamageType.Physical => defenderStats.PhysDef,
+            DamageType.Magic => defenderStats.MagResist,
+            _ => 0f
+        };
 
-        // 防御抗性减伤区
-        if (payload.Type != DamageType.Real && defenderStats != null)
-        {
-            float targetDefense = 0f;
+        defense = Mathf.Max(0f, defense);
 
-            if (payload.Type == DamageType.Physical)
-            {
-                targetDefense = defenderStats.GetAttribute(AttributeType.PhysDef)?.Value ?? 0f;
-            }
-            else if (payload.Type == DamageType.Magic)
-            {
-                targetDefense = defenderStats.GetAttribute(AttributeType.MagResist)?.Value ?? 0f;
-            }
-
-            float finalDefense = Mathf.Max(0, targetDefense);
-            float defenseMultiplier = 100f / (100f + finalDefense);
-            calculatedDamage *= defenseMultiplier;
-        }
-        //GD.Print("伤害计算完毕！");
-        int finalDamageInt = Mathf.RoundToInt(calculatedDamage);
-
-        GD.Print($"[Damage] Target: {GetParent().GetParent().Name} | Source: {payload.Source?.Name ?? "Unknown"} | Damage: {finalDamageInt} | Element: {payload.Element} | Type: {payload.Type}");
-
-        GetParent().GetNodeOrNull<HealthComponent>("%HealthComponent")?.TakeDamage(finalDamageInt, payload.Element);
+        float defenseMultiplier = 100f / (100f + defense);
+        damage *= defenseMultiplier;
+        damage = Mathf.Max(0f, damage);
     }
 }
