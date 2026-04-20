@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ApplyStatusCardEffect" format=3 uid="uid://crnp0c8t0fivd"]
+
+[ext_resource type="Script" uid="uid://ilmgwp6hkfi" path="res://core/combat/status/AttributeModifierData.cs" id="1_gidiv"]
+[ext_resource type="Script" uid="uid://eb5trb48cjvk" path="res://core/combat/effects/ApplyStatusCardEffect.cs" id="1_p6rjg"]
+[ext_resource type="Script" uid="uid://dswxdym0jp2hb" path="res://core/combat/buffs/AttributeModifierStatusData.cs" id="2_iv7rc"]
+
+[sub_resource type="Resource" id="Resource_imquy"]
+script = ExtResource("1_gidiv")
+ValuePerStack = 1.0
+metadata/_custom_type_script = "uid://ilmgwp6hkfi"
+
+[sub_resource type="Resource" id="Resource_upkt4"]
+script = ExtResource("2_iv7rc")
+Modifiers = Array[ExtResource("1_gidiv")]([SubResource("Resource_imquy")])
+Id = &"strength_up"
+metadata/_custom_type_script = "uid://dswxdym0jp2hb"
+
+[resource]
+script = ExtResource("1_p6rjg")
+Status = SubResource("Resource_upkt4")
+metadata/_custom_type_script = "uid://eb5trb48cjvk"

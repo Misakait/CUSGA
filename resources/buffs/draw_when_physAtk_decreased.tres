@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AttributeChangeTriggerStatusData" format=3 uid="uid://c315ipwl03gdv"]
+
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_mjn1i"]
+[ext_resource type="Script" uid="uid://df6q0pg7gn2us" path="res://core/combat/status/AttributeChangeTriggerStatusData.cs" id="2_a5c6x"]
+
+[resource]
+script = ExtResource("2_a5c6x")
+Direction = 2
+Id = &"Draw_When_PhysAtk_Decreased"
+metadata/_custom_type_script = "uid://df6q0pg7gn2us"
