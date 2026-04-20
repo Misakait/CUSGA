@@ -51,6 +51,8 @@ func add_inventory_grid():
 		inventory_grid.scale = Vector2(0.5, 0.5)
 		#设置名字
 		inventory_grid.name = "usercard_%d" % userid
+		#设置标签
+		inventory_grid.get_node("CardName").text = "-"
 		userid = userid+1
 		original_position[inventory_grid] = inventory_grid.global_position
 		

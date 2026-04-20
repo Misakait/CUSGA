@@ -25,21 +25,30 @@ func user_inventory_func(node_name):
 	for card in target_snapper.snapped_cards.keys():
 		if card != node_name and target_snapper.snapped_cards[card] == target_snapper.snapped_cards[node_name]:
 			#print("它占据了",card)
-			
+			var card_name = get_name_from_name(card)
+			if card_name != "usercard":
+				return
+				
+			#print("node_name: ",node_name," card: ",card)
 			var node_num: int = get_num_form_name(node_name)
 			var card_num: int = get_num_form_name(card)
 			var item_stack = _slots[node_num-1]
 			if item_stack:
 				var item = item_stack.Item
 				var item_cnt: int = item_stack.Amount
-				if item and item_cnt:
-					inventory_component.RemoveItem(item, item_cnt)
-					inventory_control.refresh_ui()
-					print(item.CardName," ",item_cnt)
-					#获取对应节点
-					var card_node = inventory_grid.get_node(get_name_from_name(card))
-					print(card_node)
+				#print("item:",item," item_cnt: ",item_cnt)
+				
+				inventory_component.ClearItem(node_num-1)
+				#获取对应节点
+				var card_node = inventory_grid.get_node(str(card.name))
+				inventory_component.AddItem(card_node.item_data,card_node.item_cnt)
+				card_node.item_data = item
+				card_node.item_cnt = item_cnt
+				if item:
 					card_node.get_node("CardName").text = "%s x%d" % [item.CardName, item_cnt]
+				else:
+					card_node.get_node("CardName").text = "-"
+				inventory_control.refresh_ui()
 					
 func inventory_func(node_name):
 	
@@ -66,7 +75,7 @@ func get_num_form_name(node):
 
 func get_name_from_name(node):
 	var name1 = node.name
-	var parts = name1.split(":") 
+	var parts = name1.split("_") 
 	var node_name = parts[0]
 	return node_name
 

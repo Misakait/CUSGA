@@ -79,7 +79,28 @@ public partial class InventoryComponent : Node
 		}
 		return total;
 	}
-
+	
+	// 清除特定格子的物品
+	public void ClearItem(int index)
+	{
+		_slots[index].Clear();
+	}
+	
+	// 将物品替换进特定格子
+	public int ReplaceItem(int index, ItemData item,int amount)
+	{
+		ClearItem(index);
+		if (item == null || amount <= 0) return amount;
+		
+		int remaining = amount;
+		int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize);
+		_slots[index].SetItem(item, amountToAdd);
+		remaining -= amountToAdd;
+		
+		//返回溢出物品数量
+		return remaining;
+	}
+	
 	// 模糊合成:查某个标签的物品够不够
 	public int GetTotalAmountByTag(StringName tag)
 	{

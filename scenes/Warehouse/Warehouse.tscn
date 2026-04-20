@@ -20,6 +20,7 @@ metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 
 [sub_resource type="Resource" id="Resource_3jafb"]
 script = ExtResource("2_brt88")
+snap_radius = 30.0
 allow_multiple = true
 metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 
@@ -525,7 +526,6 @@ size_flags_stretch_ratio = 0.0
 button_mask = 7
 
 [node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button" unique_id=592996461]
-script = ExtResource("13_ybp5e")
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" unique_id=693108967]
 scale = Vector2(0.6875, 0.6875)

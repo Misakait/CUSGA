@@ -13,6 +13,9 @@ signal not_hovering_card(card)
 
 @export var sprite_texture: Texture2D
 
+var item_data: ItemData
+var item_cnt: int
+
 var normal_scale: Vector2 = Vector2(0, 0)
 var hover_scale: Vector2 = Vector2(0, 0)
 var drag_scale: Vector2 = Vector2(0, 0)

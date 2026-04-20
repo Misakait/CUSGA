@@ -15,8 +15,12 @@ func refresh_ui():
 
 		if slot.IsEmpty:
 			inventory_grid.get_node("CardName").text = "-"
+			inventory_grid.item_data = null
+			inventory_grid.item_cnt = 0
 		else:
 			inventory_grid.get_node("CardName").text = "%s x%d" % [slot.Item.CardName, slot.Amount]
+			inventory_grid.item_data = slot.Item
+			inventory_grid.item_cnt = slot.Amount
 
 # 点击按钮时尝试移动物品
 func _on_slot_button_pressed(index):
