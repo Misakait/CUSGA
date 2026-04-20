@@ -1,6 +1,7 @@
 using Godot;
 using CUSGA.entities.components;
 using CUSGA.core.combat.status;
+using CUSGA.core.combat.skills;
 
 namespace CUSGA.core.combat.effects;
 
@@ -8,8 +9,9 @@ namespace CUSGA.core.combat.effects;
 public partial class ApplyStatusCardEffect : CardEffect
 {
     [Export] public StatusEffectData Status { get; set; }
+    [Export] public SkillEffectTargetFilter TargetFilter { get; set; } = SkillEffectTargetFilter.AllTargets;
 
-    public override void Execute(Node source, Node target)
+    public override void Execute(SkillExecutionContext context)
     {
         if (Status == null)
         {
@@ -17,21 +19,24 @@ public partial class ApplyStatusCardEffect : CardEffect
             return;
         }
 
-        if (target == null)
+        foreach (var targetInfo in context.Targets)
         {
-            GD.PushError($"{nameof(ApplyStatusCardEffect)} target is null.");
-            return;
+            if (!SkillEffectTargetFilterUtility.Matches(TargetFilter, targetInfo))
+                continue;
+
+            if (targetInfo.Unit == null)
+                continue;
+
+            var statusComponent = targetInfo.Unit.GetNodeOrNull<StatusComponent>("StatusComponent");
+
+            if (statusComponent == null)
+            {
+                GD.PushError($"Target '{targetInfo.Unit.Name}' has no StatusComponent.");
+                continue;
+            }
+
+            var instance = Status.CreateInstance(context.Source, targetInfo.Unit);
+            statusComponent.AddStatus(instance);
         }
-
-        var statusComponent = target.GetNodeOrNull<StatusComponent>("StatusComponent");
-
-        if (statusComponent == null)
-        {
-            GD.PushError($"Target '{target.Name}' has no StatusComponent.");
-            return;
-        }
-
-        var instance = Status.CreateInstance(source, target);
-        statusComponent.AddStatus(instance);
     }
 }

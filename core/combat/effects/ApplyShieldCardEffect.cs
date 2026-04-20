@@ -1,6 +1,7 @@
 using CUSGA.entities.components;
 using CUSGA.core.combat.status;
 using Godot;
+using CUSGA.core.combat.skills;
 
 namespace CUSGA.core.combat.effects;
 
@@ -8,12 +9,13 @@ namespace CUSGA.core.combat.effects;
 public partial class ApplyShieldCardEffect : CardEffect
 {
     [Export] public ShieldStatusData ShieldStatus { get; set; }
+    [Export] public SkillEffectTargetFilter TargetFilter { get; set; } = SkillEffectTargetFilter.AllTargets;
 
-    public override void Execute(Node source, Node target)
+    public override void Execute(SkillExecutionContext context)
     {
-        if (target == null)
+        if (context == null)
         {
-            GD.PushError($"{nameof(ApplyShieldCardEffect)} target is null.");
+            GD.PushError($"{nameof(ApplyShieldCardEffect)} executed with null context.");
             return;
         }
 
@@ -23,20 +25,31 @@ public partial class ApplyShieldCardEffect : CardEffect
             return;
         }
 
-        var statusComponent = target.GetNodeOrNull<StatusComponent>("StatusComponent");
-
-        if (statusComponent == null)
+        foreach (var targetInfo in context.Targets)
         {
-            GD.PushError($"Target '{target.Name}' has no StatusComponent.");
-            return;
+            if (!SkillEffectTargetFilterUtility.Matches(TargetFilter, targetInfo))
+                continue;
+
+            var target = targetInfo.Unit;
+
+            if (target == null)
+                continue;
+
+            var statusComponent = target.GetNodeOrNull<StatusComponent>("StatusComponent");
+
+            if (statusComponent == null)
+            {
+                GD.PushError($"Target '{target.Name}' has no StatusComponent.");
+                continue;
+            }
+
+            var instance = ShieldStatus.CreateInstance(
+                source: context.Source,
+                owner: target,
+                shieldAmount: ShieldStatus.DefaultShieldAmount
+            );
+
+            statusComponent.AddStatus(instance);
         }
-
-        var instance = ShieldStatus.CreateInstance(
-            source: source,
-            owner: target,
-            shieldAmount: ShieldStatus.DefaultShieldAmount
-        );
-
-        statusComponent.AddStatus(instance);
     }
 }
