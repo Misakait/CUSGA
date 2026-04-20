@@ -1,4 +1,5 @@
 using CUSGA.core.combat.effects;
+using CUSGA.core.combat.skills;
 using CUSGA.core.constants;
 using Godot;
 using Godot.Collections;
@@ -8,23 +9,26 @@ namespace CUSGA.resources.item.card;
 [GlobalClass]
 public partial class SkillCardData : ItemData
 {
-    [Export] public Array<CardEffect> Effects { get; set; } = [];
-    // 基类已经有了很多字段
-    [Export] public ElementType element = ElementType.None;
+    [Export] public CombatSkillData Skill { get; set; } = null!;
     [Export] public int cost = 10;
 
     public override int ActualMaxStackSize => 1;
-
-    // 对应 apply_effect 方法
-    public void ApplyEffect(Node source, Node target)
+    public ElementType Element => Skill?.Element ?? ElementType.None;
+    public void ApplyEffect(SkillExecutionContext context)
     {
-        GD.Print($"打出了卡牌：{CardName}");
-        foreach (var effect in Effects)
+        if (Skill == null)
         {
-            if (effect != null)
-            {
-                effect.Execute(source, target);
-            }
+            GD.PushError($"{nameof(SkillCardData)} '{CardName}' has no CombatSkillData assigned.");
+            return;
         }
+
+        if (context == null)
+        {
+            GD.PushError($"{nameof(SkillCardData)} '{CardName}' executed with null context.");
+            return;
+        }
+
+        GD.Print($"打出了卡牌：{CardName}");
+        Skill.Execute(context);
     }
 }
