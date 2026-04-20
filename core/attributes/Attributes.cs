@@ -13,7 +13,7 @@ public enum AttributeType
     MagicDamageBoost // 魔法增伤
 }
 
-public class Attribute(AttributeType type, string displayName, float baseValue, float growthPerPoint)
+public class Attribute(AttributeType type, string displayName, float baseValue, float growthPerPoint) : IReadOnlyAttribute
 {
     public AttributeType Type { get; private set; } = type;
     public string DisplayName { get; private set; } = displayName;
@@ -31,24 +31,29 @@ public class Attribute(AttributeType type, string displayName, float baseValue, 
     public float GrowthPerPoint { get; private set; } = growthPerPoint;
 
     // 动态计算的最终值
-    public float Value => BaseValue + (AllocatedPoints * GrowthPerPoint) + BonusValue;
+    public float RawValue => BaseValue + BonusValue + AllocatedPoints * GrowthPerPoint;
 
-    public event Action<Attribute> OnAttributeChanged;
+    // public event Action<Attribute> OnAttributeChanged;
 
     public void AddPoint(int amount)
     {
         AllocatedPoints += amount;
-        OnAttributeChanged?.Invoke(this);
+        // OnAttributeChanged?.Invoke(this);
     }
 
     public void AddBonus(float amount)
     {
         BonusValue += amount;
-        OnAttributeChanged?.Invoke(this);
+        // OnAttributeChanged?.Invoke(this);
     }
     public void RemoveBonus(float amount)
     {
         BonusValue -= amount;
-        OnAttributeChanged?.Invoke(this);
+        // OnAttributeChanged?.Invoke(this);
+    }
+
+    internal void SetBaseValue(float value)
+    {
+        BaseValue = value;
     }
 }
