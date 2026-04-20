@@ -1,5 +1,6 @@
 using Godot;
 using CUSGA.core.attributes;
+using CUSGA.core.combat.skills;
 
 namespace CUSGA.core.combat.status;
 
@@ -35,8 +36,8 @@ public sealed partial class AttributeChangeTriggerStatusInstance(
             {
                 if (effect == null)
                     continue;
-
-                effect.Execute(context.Source ?? Source ?? Owner, Owner);
+                SkillExecutionContext effectContext = SkillExecutionContext.FromSingleTarget(context.Source ?? Source ?? Owner, Owner);
+                effect.Execute(effectContext);
             }
         }
         finally
