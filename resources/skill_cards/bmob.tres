@@ -38,4 +38,5 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 script = ExtResource("1_xiuvs")
 Skill = SubResource("Resource_htuqe")
 CardId = null
+Description = "爆炸扩散伤害中间灼烧。"
 metadata/_custom_type_script = "uid://bejho62d28qir"

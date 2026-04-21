@@ -1,18 +1,9 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://dejj5ququif3b"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_7sme0"]
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_qehth"]
-[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_i883c"]
-
-[sub_resource type="Resource" id="Resource_i883c"]
-script = ExtResource("2_i883c")
-Element = 1
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
 
 [resource]
 script = ExtResource("1_7sme0")
-Effects = Array[ExtResource("1_qehth")]([SubResource("Resource_i883c")])
-element = 1
 CardId = null
 CardName = "测试卡1"
 Description = "造成10点木属性物理伤害。"

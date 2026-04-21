@@ -18,6 +18,8 @@ extends Node
 
 var turn_draw_count:int = 5 ##每回合摸牌数
 
+const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
+
 ## 战斗状态机的状态定义
 enum BattleState {
 	COMBAT_START,    ## 战斗初始化
@@ -204,7 +206,13 @@ func _execute_single_action(action: Action):
 		# 如果是玩家打出的卡牌，提取 C# 侧的卡牌逻辑并应用其效果(ApplyEffect)
 		var target = action.targets[0] if action.targets.size() > 0 else null
 		if action.card_data and action.card_data.has_method("ApplyEffect"):
-			action.card_data.ApplyEffect(action.source, target)
+			var ContextClass = load(CONTEXT_SCRIPT_PATH)
+			var context = null
+			if target:
+				context = ContextClass.FromSingleTarget(action.source, target)
+			else:
+				context = ContextClass.Self(action.source)
+			action.card_data.ApplyEffect(context)
 
 	elif action.action_type == "ATTACK":
 		# 敌人基础攻击的临时占位逻辑
