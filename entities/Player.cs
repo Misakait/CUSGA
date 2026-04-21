@@ -4,6 +4,7 @@ using CUSGA.core.constants;
 using CUSGA.entities.components;
 using CUSGA.resources.talents;
 using System.Collections.Generic;
+using CUSGA.core.inventory;
 namespace CUSGA.entities;
 
 public partial class Player : CharacterBody2D
@@ -71,7 +72,6 @@ public partial class Player : CharacterBody2D
         GD.Print("主角死亡，游戏结束！");
     }
 
-
     public override void _ExitTree()
     {
         if (_satiety != null)
@@ -88,5 +88,10 @@ public partial class Player : CharacterBody2D
         {
             _globalEventBus.Disconnect("on_player_acquired_talent", Callable.From<TalentData>(AbsorbTalent));
         }
+    }
+
+    public bool TryAddItemToInventory(ItemStack stack)
+    {
+        return _inventory.AddItem(stack.Item, stack.Amount) == 0;
     }
 }
