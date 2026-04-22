@@ -9,4 +9,8 @@ public abstract partial class BaseCardData : Resource
     [Export] public string CardName { get; set; }
     [Export] public Texture2D CardIcon { get; set; }
     [Export(PropertyHint.MultilineText)] public string Description { get; set; }
+
+    public virtual string DisplayName => CardName;
+    public virtual string DisplayDescription => Description;
+    public virtual Texture2D DisplayIcon => CardIcon;
 }
