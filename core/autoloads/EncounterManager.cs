@@ -1,56 +1,61 @@
-using CUSGA.entities;
-using CUSGA.resources.encounters;
+using System;
 using Godot;
 using Godot.Collections;
+using CUSGA.resources.encounters;
+
 namespace CUSGA.core.autoloads;
 
 public partial class EncounterManager : Node
 {
-    public static EncounterManager Instance { get; private set; }
-    [Export] public Array<GatheringEncounterRule> GatheringRules { get; set; } = [];
-    [Export] public PackedScene Monster { get; set; }
-    private const float nightModifier = 6.0f;
-    private const float originSpawnChance = 0.05f;
+    public static EncounterManager Instance { get; private set; } = null!;
 
+    [Export] public Array<GatheringEncounterRule> GatheringRules { get; set; } = [];
+
+    [Export] public float BaseGatheringSpawnChance { get; set; } = 0.05f;
+    [Export] public float NightChanceMultiplier { get; set; } = 6.0f;
 
     public override void _Ready()
     {
         Instance = this;
     }
 
-    public void OnPlayerGatheringComplete(StringName resourceTag, Node resourceNode)
+    public GatheringEncounterResult ResolveGatheringEncounter(StringName resourceTag)
     {
-        float dayNightModifier = TimeSystem.Instance.IsNight ? nightModifier : 1.0f;
-        float spawnChance = originSpawnChance * dayNightModifier;
-
-        if (GD.Randf() <= spawnChance)
+        if (resourceTag.IsEmpty)
         {
-            TriggerGatheringEncounter(resourceTag, resourceNode);
+            return GatheringEncounterResult.None();
         }
-    }
 
-    private void TriggerGatheringEncounter(StringName resourceTag, Node resourceNode)
-    {
+        float timeModifier = TimeSystem.Instance.IsNight ? NightChanceMultiplier : 1.0f;
+
         foreach (var rule in GatheringRules)
         {
-            if (rule.TriggerTag == resourceTag)
+            if (rule == null)
             {
-                if (rule.MonsterToSpawn != null)
+                continue;
+            }
+
+            if (rule.TriggerTag != resourceTag)
+            {
+                continue;
+            }
+
+            float finalChance = BaseGatheringSpawnChance * timeModifier * Mathf.Max(rule.ExtraChanceMultiplier, 0.0f);
+
+            if (GD.Randf() <= finalChance)
+            {
+                if (rule.MonsterToSpawn == null)
                 {
-                    var monster = Monster.Instantiate<Monster>();
-                    monster.Initialize(rule.MonsterToSpawn);
-
-                    //将怪物生成在资源的位置
-                    resourceNode.GetParent().AddChild(monster);
-                    monster.GlobalPosition = (resourceNode as Node2D).GlobalPosition;
-
-                    resourceNode.QueueFree();
-
-                    GD.Print(rule.SpawnMessage);
+                    return GatheringEncounterResult.None();
                 }
 
-                return;
+                return GatheringEncounterResult.Create(
+                    rule.MonsterToSpawn,
+                    rule.SpawnMessage
+                );
             }
         }
+
+        return GatheringEncounterResult.None();
     }
 }
