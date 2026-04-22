@@ -115,7 +115,9 @@ public partial class StatusComponent : Node
     public bool RemoveStatus(StringName statusId)
     {
         if (!_statuses.TryGetValue(statusId, out var status))
+        {
             return false;
+        }
 
         status.OnRemove();
         _statuses.Remove(statusId);
@@ -150,11 +152,15 @@ public partial class StatusComponent : Node
             changed |= status.TickGlobalTurn(currentActor);
 
             if (currentActor == Parent)
+            {
                 // Buff 所属单位自己开始行动时 -1
                 changed |= status.TickOwnerTurn();
+            }
 
             if (!changed)
+            {
                 continue;
+            }
 
             // anyChanged = true;
             ResolveExpiration(status);
@@ -175,7 +181,9 @@ public partial class StatusComponent : Node
         foreach (var status in _statuses.Values.ToList())
         {
             if (!status.TickRound())
+            {
                 continue;
+            }
 
             // anyChanged = true;
             ResolveExpiration(status);
@@ -214,7 +222,9 @@ public partial class StatusComponent : Node
             status.OnBeforeAttributeChange(context);
 
             if (context.IsCancelled)
+            {
                 break;
+            }
         }
     }
 
