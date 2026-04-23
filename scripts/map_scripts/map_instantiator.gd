@@ -4,7 +4,7 @@ extends Node
 @onready var map_types = $"../MapTypes"
 @onready var map_button = $"../MapButton"
 
-signal room_entered(position: Vector2i, scene: Node2D)
+signal on_room_entered(position: Vector2i, scene: Node2D)
 
 var current_scene: Node2D = null
 var current_position: Vector2i = Vector2i.ZERO
