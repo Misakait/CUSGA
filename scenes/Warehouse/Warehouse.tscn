@@ -13,6 +13,9 @@
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="9_nwke5"]
 [ext_resource type="Script" uid="uid://5wtui6vmqah3" path="res://scripts/warehouse/inventory_card_slot.gd" id="12_ejbtm"]
 [ext_resource type="Script" uid="uid://dh406btb4xi6r" path="res://scripts/warehouse/inventory_user_card_slot.gd" id="13_ybp5e"]
+[ext_resource type="Script" uid="uid://bupvum7l613gp" path="res://scripts/anim/MonsterCard_example.gd" id="14_cvm3i"]
+[ext_resource type="Script" uid="uid://dtxetmw6n0hf6" path="res://scripts/anim/CardAnimator.gd" id="15_jlw2o"]
+[ext_resource type="Texture2D" uid="uid://dgio8ure28d70" path="res://res/image/卡牌插画模板.png" id="16_0bmip"]
 
 [sub_resource type="Resource" id="Resource_nwke5"]
 script = ExtResource("2_brt88")
@@ -614,8 +617,28 @@ offset_top = 16.0
 offset_right = 622.0
 offset_bottom = 81.0
 
+[node name="Node2D" type="Node2D" parent="." unique_id=1752047967]
+position = Vector2(223, 257)
+script = ExtResource("14_cvm3i")
+
+[node name="Sprite2D" type="Sprite2D" parent="Node2D" unique_id=804454398]
+texture = ExtResource("16_0bmip")
+
+[node name="CardAnimator" type="Node" parent="Node2D" unique_id=1813013051 node_paths=PackedStringArray("card_sprite", "card_root")]
+script = ExtResource("15_jlw2o")
+card_sprite = NodePath("../Sprite2D")
+card_root = NodePath("..")
+metadata/_custom_type_script = "uid://dtxetmw6n0hf6"
+
+[node name="Button" type="Button" parent="." unique_id=842262837]
+offset_left = 770.0
+offset_top = 156.0
+offset_right = 826.0
+offset_bottom = 228.0
+
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="pressed" from="InventoryControl/AddButton" to="InventoryControl" method="_on_add_button_pressed"]
 [connection signal="pressed" from="InventoryControl/RemoveButton" to="InventoryControl" method="_on_remove_button_pressed"]
+[connection signal="button_down" from="Button" to="Node2D" method="_on_button_button_down"]
