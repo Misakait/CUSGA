@@ -24,7 +24,7 @@ public partial class BoardController : Node2D
     private Node2D _cardsRoot;
     private readonly RandomNumberGenerator _rng = new();
     private readonly HashSet<BoardCardView> _activeCards = [];
-    private readonly Dictionary<Vector2I, BoardCardView> _terrainCardsByGrid = [];
+    private readonly Dictionary<Vector2I, BoardCardView> _terrainCardsByLocalGrid = [];
 
     public override void _Ready()
     {
@@ -47,20 +47,20 @@ public partial class BoardController : Node2D
         }
 
         _activeCards.Clear();
-        _terrainCardsByGrid.Clear();
+        _terrainCardsByLocalGrid.Clear();
     }
 
     public BoardCardView SpawnTerrainCard(TerrainInstance terrainInstance, Vector2 globalPosition)
     {
         ArgumentNullException.ThrowIfNull(terrainInstance);
-        if (_terrainCardsByGrid.ContainsKey(terrainInstance.GridPos))
+        if (_terrainCardsByLocalGrid.ContainsKey(terrainInstance.LocalGridPos))
         {
-            throw new InvalidOperationException($"Grid {terrainInstance.GridPos} 已经存在地形卡。");
+            throw new InvalidOperationException($"Grid {terrainInstance.LocalGridPos} 已经存在地形卡。");
         }
         var state = new TerrainBoardCardState(terrainInstance);
         var card = SpawnCard(state, globalPosition);
 
-        _terrainCardsByGrid[terrainInstance.GridPos] = card;
+        _terrainCardsByLocalGrid[terrainInstance.LocalGridPos] = card;
         return card;
     }
 
@@ -92,7 +92,7 @@ public partial class BoardController : Node2D
 
         if (card.GetTerrainInstanceOrNull() is { } terrain)
         {
-            _terrainCardsByGrid.Remove(terrain.GridPos);
+            _terrainCardsByLocalGrid.Remove(terrain.LocalGridPos);
         }
 
         DisconnectCardSignals(card);
@@ -110,22 +110,22 @@ public partial class BoardController : Node2D
         {
             RemoveCard(card);
         }
-        _terrainCardsByGrid.Clear();
+        _terrainCardsByLocalGrid.Clear();
     }
 
-    public bool TryGetTerrainCard(Vector2I gridPos, out BoardCardView card)
+    public bool TryGetTerrainCardByLocalGrid(Vector2I gridPos, out BoardCardView card)
     {
-        return _terrainCardsByGrid.TryGetValue(gridPos, out card);
+        return _terrainCardsByLocalGrid.TryGetValue(gridPos, out card);
     }
 
-    public BoardCardView GetTerrainCardOrNull(Vector2I gridPos)
+    public BoardCardView GetTerrainCardByLocalGridOrNull(Vector2I gridPos)
     {
-        return _terrainCardsByGrid.TryGetValue(gridPos, out var card) ? card : null;
+        return _terrainCardsByLocalGrid.TryGetValue(gridPos, out var card) ? card : null;
     }
 
-    public bool HasTerrainCard(Vector2I gridPos)
+    public bool HasTerrainCardAtLocalGrid(Vector2I gridPos)
     {
-        return _terrainCardsByGrid.ContainsKey(gridPos);
+        return _terrainCardsByLocalGrid.ContainsKey(gridPos);
     }
 
     private void SpawnSingleLootWithScatter(ItemStack stack, Vector2 spawnOrigin)
