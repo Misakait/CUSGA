@@ -1,0 +1,16 @@
+{
+  "language": "en,zh-CN",
+  "locale": "en-US,zh-CN",
+  "dictionaries": [
+    "en_us",
+    "chinese"
+  ],
+  "allowCompoundWords": true,
+  "words": [
+    "Pickable",
+    "CUSGA",
+    "Randf",
+    "Mathf",
+    "GDSIGNAL"
+  ]
+}

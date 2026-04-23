@@ -9,4 +9,5 @@ public static class GDSignals
     public static readonly StringName OnStatusChanged = new("on_status_changed");
     public static readonly StringName OnEntityDropped = new("on_entity_dropped");
     public static readonly StringName OnEnteredVault = new("on_entered_vault");
+    public static readonly StringName OnEnteredRoom = new("on_entered_room");
 }

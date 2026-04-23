@@ -11,6 +11,12 @@ public abstract partial class StatusEffectData : Resource
 
     [Export] public DurationExpirePolicy ExpirePolicy { get; set; } = DurationExpirePolicy.FirstExpired;
 
+    /// <summary>
+    /// 同一 hook phase 内的默认执行优先级。
+    /// 数值越小越早执行。
+    /// </summary>
+    [Export] public int DefaultHookPriority { get; set; } = 0;
+
     // 持续该单位自己的 N 次行动
     [Export] public int InitOwnerTurnDuration { get; set; } = 0;
 

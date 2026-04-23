@@ -11,10 +11,19 @@ public sealed partial class BossDamageCapStatusInstance(
 {
     private readonly BossDamageCapStatusData _data = data;
 
+    public override int GetHookPriority(StatusHookPhase phase)
+    {
+        return phase == StatusHookPhase.BeforeHealthDamage
+            ? 1000
+            : base.GetHookPriority(phase);
+    }
+
     public override void OnBeforeHealthDamage(DamagePayload payload, ref float damage)
     {
         if (damage <= 0f)
+        {
             return;
+        }
 
         var health = Owner.GetNodeOrNull<HealthComponent>("HealthComponent");
         if (health == null)

@@ -25,6 +25,8 @@ public partial class StatusComponent : Node
 
     public IReadOnlyCollection<StatusEffectInstance> ActiveStatuses => _statuses.Values;
 
+    private long _nextAppliedSequence;
+
     public override void _Ready()
     {
         _globalEventBus = GetNodeOrNull<Node>("/root/GlobalEventBus");
@@ -82,12 +84,20 @@ public partial class StatusComponent : Node
             return;
         }
 
+        incoming.AppliedSequence = _nextAppliedSequence++;
         _statuses.Add(incoming.Id, incoming);
         incoming.OnApply();
 
         NotifyStatusChanged(incoming, StatusChangeReason.Applied, incoming.Source);
     }
-
+    private List<StatusEffectInstance> GetStatusesForHook(StatusHookPhase phase)
+    {
+        return [.. _statuses.Values
+            .ToList()
+            .OrderBy(status => status.GetHookPriority(phase))
+            .ThenBy(status => status.AppliedSequence)
+            .ThenBy(status => status.Id.ToString())];
+    }
     private static void ApplyStackPolicy(
         StatusEffectInstance existing,
         StatusEffectInstance incoming
@@ -115,7 +125,9 @@ public partial class StatusComponent : Node
     public bool RemoveStatus(StringName statusId)
     {
         if (!_statuses.TryGetValue(statusId, out var status))
+        {
             return false;
+        }
 
         status.OnRemove();
         _statuses.Remove(statusId);
@@ -126,10 +138,11 @@ public partial class StatusComponent : Node
 
     public void ClearAllStatuses()
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var id in _statuses.Keys.ToList())
         {
-            status.OnRemove();
-            NotifyStatusChanged(status, StatusChangeReason.Cleared, status.Source);
+            RemoveStatus(id);
+            // status.OnRemove();
+            // NotifyStatusChanged(status, StatusChangeReason.Cleared, status.Source);
         }
 
         _statuses.Clear();
@@ -150,11 +163,15 @@ public partial class StatusComponent : Node
             changed |= status.TickGlobalTurn(currentActor);
 
             if (currentActor == Parent)
+            {
                 // Buff 所属单位自己开始行动时 -1
                 changed |= status.TickOwnerTurn();
+            }
 
             if (!changed)
+            {
                 continue;
+            }
 
             // anyChanged = true;
             ResolveExpiration(status);
@@ -175,7 +192,9 @@ public partial class StatusComponent : Node
         foreach (var status in _statuses.Values.ToList())
         {
             if (!status.TickRound())
+            {
                 continue;
+            }
 
             // anyChanged = true;
             ResolveExpiration(status);
@@ -209,12 +228,13 @@ public partial class StatusComponent : Node
     /// </summary>
     public void ProcessBeforeAttributeChange(AttributeChangeContext context)
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var status in GetStatusesForHook(StatusHookPhase.BeforeAttributeChange))
         {
             status.OnBeforeAttributeChange(context);
-
             if (context.IsCancelled)
+            {
                 break;
+            }
         }
     }
 
@@ -224,7 +244,7 @@ public partial class StatusComponent : Node
     /// </summary>
     public void ProcessAfterAttributeChanged(AttributeChangeContext context)
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var status in GetStatusesForHook(StatusHookPhase.AfterAttributeChanged))
         {
             status.OnAfterAttributeChanged(context);
         }
@@ -235,10 +255,9 @@ public partial class StatusComponent : Node
         ref float damage
     )
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var status in GetStatusesForHook(StatusHookPhase.ModifyOutgoingDamage))
         {
             status.OnModifyOutgoingDamage(payload, ref damage);
-
             if (damage <= 0f)
             {
                 damage = 0f;
@@ -252,10 +271,9 @@ public partial class StatusComponent : Node
         ref float damage
     )
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var status in GetStatusesForHook(StatusHookPhase.ModifyIncomingDamageBeforeMitigation))
         {
             status.OnModifyIncomingDamageBeforeMitigation(payload, ref damage);
-
             if (damage <= 0f)
             {
                 damage = 0f;
@@ -269,10 +287,9 @@ public partial class StatusComponent : Node
         ref float damage
     )
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var status in GetStatusesForHook(StatusHookPhase.ModifyIncomingDamageAfterMitigation))
         {
             status.OnModifyIncomingDamageAfterMitigation(payload, ref damage);
-
             if (damage <= 0f)
             {
                 damage = 0f;
@@ -286,10 +303,9 @@ public partial class StatusComponent : Node
         ref float damage
     )
     {
-        foreach (var status in _statuses.Values.ToList())
+        foreach (var status in GetStatusesForHook(StatusHookPhase.BeforeHealthDamage))
         {
             status.OnBeforeHealthDamage(payload, ref damage);
-
             if (damage <= 0f)
             {
                 damage = 0f;

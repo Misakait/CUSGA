@@ -3,8 +3,8 @@ extends Node2D
 var max_energy: int = 100
 var energy: int = 100
 
-var max_hp: int = 100
-var hp:int = 100
+var max_hp: int = 1000
+var hp:int = 1000
 
 ## 速度越高，计算出的行动值 (action_value) 越低，在 ATB 机制下就能更快获得回合。
 var speed: float = 100.0

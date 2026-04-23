@@ -6,6 +6,7 @@ using CUSGA.resources.item.equipment;
 using CUSGA.entities.components;
 using CUSGA.entities;
 using CUSGA.core.inventory;
+using CUSGA.resources.item.tool;
 
 namespace CUSGA.entities.components;
 
@@ -178,5 +179,20 @@ public partial class EquipmentComponent : Node
 
         foreach (var tag in tier.GrantedTags)
             _tagComponent.RemoveTag(tag);
+    }
+
+    public int GetGatheringYieldBonus(StringName gatheringTag)
+    {
+        int bonus = 0;
+
+        foreach (var stack in _equippedItems.Values)
+        {
+            if (stack.Item is ToolData tool && tool.TargetGatheringTag == gatheringTag)
+            {
+                bonus += tool.YieldGrowth;
+            }
+        }
+
+        return bonus;
     }
 }

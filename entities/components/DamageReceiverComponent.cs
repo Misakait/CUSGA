@@ -58,7 +58,9 @@ public partial class DamageReceiverComponent : Node
     )
     {
         if (attackerStats == null)
+        {
             return;
+        }
 
         switch (payload.Type)
         {
@@ -92,7 +94,9 @@ public partial class DamageReceiverComponent : Node
         ElementType targetElement = ElementType.None;
 
         if (defender is Monster monster)
+        {
             targetElement = monster.BaseData.ElementalProperty;
+        }
 
         float elementMultiplier = ElementalSystem.CalculateMultiplier(
             payload.Element,
@@ -110,10 +114,14 @@ public partial class DamageReceiverComponent : Node
     )
     {
         if (payload.Type == DamageType.Real)
+        {
             return;
+        }
 
         if (defenderStats == null)
+        {
             return;
+        }
 
         float defense = payload.Type switch
         {

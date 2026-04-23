@@ -43,7 +43,9 @@ public abstract partial class StatusEffectInstance : RefCounted
     public bool TryIncreaseStack()
     {
         if (CurrentStacks >= MaxStacks)
+        {
             return false;
+        }
 
         CurrentStacks++;
         OnStackIncreased(CurrentStacks);
@@ -53,7 +55,9 @@ public abstract partial class StatusEffectInstance : RefCounted
     public bool TryRemoveStack()
     {
         if (CurrentStacks <= 1)
+        {
             return false;
+        }
 
         CurrentStacks--;
         OnStackRemoved(CurrentStacks);
@@ -77,7 +81,9 @@ public abstract partial class StatusEffectInstance : RefCounted
     public bool TickOwnerTurn()
     {
         if (OwnerTurnDuration <= 0)
+        {
             return false;
+        }
 
         OnOwnerTurnStart();
         OwnerTurnDuration--;
@@ -87,7 +93,9 @@ public abstract partial class StatusEffectInstance : RefCounted
     public bool TickGlobalTurn(Node currentActor)
     {
         if (GlobalTurnDuration <= 0)
+        {
             return false;
+        }
 
         OnGlobalTurnStart(currentActor);
         GlobalTurnDuration--;
@@ -97,7 +105,9 @@ public abstract partial class StatusEffectInstance : RefCounted
     public bool TickRound()
     {
         if (RoundDuration <= 0)
+        {
             return false;
+        }
 
         OnRoundStart();
         RoundDuration--;
@@ -107,7 +117,9 @@ public abstract partial class StatusEffectInstance : RefCounted
     public bool IsExpired()
     {
         if (!Data.HasFiniteDuration)
+        {
             return false;
+        }
 
         bool ownerExpired = InitOwnerTurnDuration > 0 && OwnerTurnDuration <= 0;
         bool globalExpired = InitGlobalTurnDuration > 0 && GlobalTurnDuration <= 0;
@@ -131,7 +143,12 @@ public abstract partial class StatusEffectInstance : RefCounted
     {
         return initial <= 0 || current <= 0;
     }
+    public long AppliedSequence { get; internal set; } = -1;
 
+    public virtual int GetHookPriority(StatusHookPhase phase)
+    {
+        return Data.DefaultHookPriority;
+    }
     public virtual void OnApply() { }
     public virtual void OnRemove() { }
     public virtual void OnReapplied(StatusEffectInstance incoming) { }

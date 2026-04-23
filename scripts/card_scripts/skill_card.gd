@@ -7,6 +7,7 @@ signal hovered_off
 var hand_position #手牌位置
 var data:SkillCardData
 var is_lock:bool = false
+const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
 
 #该节点必须挂载在CardManager下！
 func _ready() -> void:
@@ -28,7 +29,15 @@ func use(target: Node = null):
 		source = self
 		
 	if data.has_method("ApplyEffect"):
-		data.ApplyEffect(source, target)
+			var ContextClass = load(CONTEXT_SCRIPT_PATH)
+			var context = null
+			
+			if target:
+				context = ContextClass.FromSingleTarget(source, target)
+			else:
+				context = ContextClass.Self(source)
+				
+			data.ApplyEffect(context)
 
 func init_card_data(card_data):
 	data = card_data

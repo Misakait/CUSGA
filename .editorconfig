@@ -2,3 +2,36 @@ root = true
 
 [*]
 charset = utf-8
+# 强制 LF 换行
+end_of_line = lf
+# POSIX 标准：确保文件末尾包含一个空行
+insert_final_newline = true
+# 提交前自动切除行尾多余的幽灵空格
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+tab_width = 4
+
+# ==== 1. 大括号换行逻辑 (Allman 风格：C# 官方标配) ====
+# 强制所有大括号另起一行 (类、方法、控制流等)
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# ==== 2. 空格排版逻辑 ====
+# 逗号后必须有空格
+csharp_space_after_comma = true
+# 强制二元运算符 (如 +, -, ==, &&) 左右两侧加空格
+csharp_space_around_binary_operators = before_and_after
+# 强制 if/for/while 等控制流关键字后面必须跟空格，如 if (condition)
+csharp_space_after_keywords_in_control_flow_statements = true
+# 类型转换括号后不加空格：(int)x 而不是 (int) x
+csharp_space_after_cast = false
+
+# 代码块强制使用大括号 (即使 if 下面只有一行代码，也不允许省略，防止悬挂 else 漏洞)
+csharp_prefer_braces = true:warning
+# 强制显式写出访问修饰符 (private / public 不能省)
+csharp_prefer_always_using_modifier = true:suggestion

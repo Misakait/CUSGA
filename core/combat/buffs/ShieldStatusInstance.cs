@@ -12,14 +12,25 @@ public sealed partial class ShieldStatusInstance(
 {
     private readonly ShieldStatusData _data = data;
 
+    public override int GetHookPriority(StatusHookPhase phase)
+    {
+        return phase == StatusHookPhase.BeforeHealthDamage
+            ? 100
+            : base.GetHookPriority(phase);
+    }
+
     public float ShieldAmount { get; private set; } = Mathf.Max(0f, shieldAmount);
     public override void OnBeforeHealthDamage(DamagePayload payload, ref float damage)
     {
         if (damage <= 0f)
+        {
             return;
+        }
 
         if (ShieldAmount <= 0f)
+        {
             return;
+        }
 
         float absorbed = Mathf.Min(ShieldAmount, damage);
 
@@ -36,7 +47,9 @@ public sealed partial class ShieldStatusInstance(
     public override void OnReapplied(StatusEffectInstance incoming)
     {
         if (incoming is not ShieldStatusInstance shield)
+        {
             return;
+        }
 
         ShieldAmount += shield.ShieldAmount;
     }
