@@ -13,9 +13,6 @@
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="9_nwke5"]
 [ext_resource type="Script" uid="uid://5wtui6vmqah3" path="res://scripts/warehouse/inventory_card_slot.gd" id="12_ejbtm"]
 [ext_resource type="Script" uid="uid://dh406btb4xi6r" path="res://scripts/warehouse/inventory_user_card_slot.gd" id="13_ybp5e"]
-[ext_resource type="Script" uid="uid://bupvum7l613gp" path="res://scripts/anim/MonsterCard_example.gd" id="14_cvm3i"]
-[ext_resource type="Script" uid="uid://dtxetmw6n0hf6" path="res://scripts/anim/CardAnimator.gd" id="15_jlw2o"]
-[ext_resource type="Texture2D" uid="uid://dgio8ure28d70" path="res://res/image/卡牌插画模板.png" id="16_0bmip"]
 
 [sub_resource type="Resource" id="Resource_nwke5"]
 script = ExtResource("2_brt88")
@@ -23,7 +20,6 @@ metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 
 [sub_resource type="Resource" id="Resource_3jafb"]
 script = ExtResource("2_brt88")
-snap_radius = 30.0
 allow_multiple = true
 metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 
@@ -49,7 +45,7 @@ metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 script = ExtResource("8_brt88")
 
 [node name="SnapPoint1" type="Node2D" parent="." unique_id=1784945840]
-position = Vector2(150, 106)
+position = Vector2(80, 77)
 script = ExtResource("1_88770")
 
 [node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=1590815362]
@@ -519,10 +515,10 @@ texture = ExtResource("2_hh660")
 
 [node name="Button" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1071966649]
 clip_contents = true
-offset_left = 318.0
-offset_top = 159.0
-offset_right = 326.0
-offset_bottom = 167.0
+offset_left = 144.0
+offset_top = 248.0
+offset_right = 152.0
+offset_bottom = 256.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -536,10 +532,10 @@ texture = ExtResource("2_hh660")
 
 [node name="Button2" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1993838325]
 clip_contents = true
-offset_left = 431.0
-offset_top = 114.0
-offset_right = 439.0
-offset_bottom = 122.0
+offset_left = 272.0
+offset_top = 248.0
+offset_right = 280.0
+offset_bottom = 256.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -553,10 +549,10 @@ texture = ExtResource("2_hh660")
 
 [node name="Button3" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1231413564]
 clip_contents = true
-offset_left = 384.0
-offset_top = 254.0
-offset_right = 392.0
-offset_bottom = 262.0
+offset_left = 400.0
+offset_top = 248.0
+offset_right = 408.0
+offset_bottom = 256.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -570,10 +566,10 @@ texture = ExtResource("2_hh660")
 
 [node name="Button4" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1432439624]
 clip_contents = true
-offset_left = 567.0
-offset_top = 153.0
-offset_right = 575.0
-offset_bottom = 161.0
+offset_left = 528.0
+offset_top = 248.0
+offset_right = 536.0
+offset_bottom = 256.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -587,10 +583,10 @@ texture = ExtResource("2_hh660")
 
 [node name="Button5" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=759552614]
 clip_contents = true
-offset_left = 506.0
-offset_top = 250.0
-offset_right = 514.0
-offset_bottom = 258.0
+offset_left = 656.0
+offset_top = 248.0
+offset_right = 664.0
+offset_bottom = 256.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -617,28 +613,8 @@ offset_top = 16.0
 offset_right = 622.0
 offset_bottom = 81.0
 
-[node name="Node2D" type="Node2D" parent="." unique_id=1752047967]
-position = Vector2(223, 257)
-script = ExtResource("14_cvm3i")
-
-[node name="Sprite2D" type="Sprite2D" parent="Node2D" unique_id=804454398]
-texture = ExtResource("16_0bmip")
-
-[node name="CardAnimator" type="Node" parent="Node2D" unique_id=1813013051 node_paths=PackedStringArray("card_sprite", "card_root")]
-script = ExtResource("15_jlw2o")
-card_sprite = NodePath("../Sprite2D")
-card_root = NodePath("..")
-metadata/_custom_type_script = "uid://dtxetmw6n0hf6"
-
-[node name="Button" type="Button" parent="." unique_id=842262837]
-offset_left = 770.0
-offset_top = 156.0
-offset_right = 826.0
-offset_bottom = 228.0
-
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="pressed" from="InventoryControl/AddButton" to="InventoryControl" method="_on_add_button_pressed"]
 [connection signal="pressed" from="InventoryControl/RemoveButton" to="InventoryControl" method="_on_remove_button_pressed"]
-[connection signal="button_down" from="Button" to="Node2D" method="_on_button_button_down"]

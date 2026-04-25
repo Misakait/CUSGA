@@ -17,6 +17,13 @@ func _ready() -> void:
 func _on_inventory_grid_card_be_snapper(node) -> void:
 	for card in target_snapper.snapped_cards.keys():
 		if card != node and target_snapper.snapped_cards[card] == target_snapper.snapped_cards[node]:
+			var ex = node.global_position
+			node.global_position = card.global_position
+			card.global_position = ex
+			var tween = card.create_tween()
+			tween.tween_property(card, "global_position", inventory_grid.original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			inventory_grid.binder.target_snapper.snapped_cards[card] = inventory_grid.original_position[card]
+			
 			var node_name = get_name_from_name(node)
 			var card_name = get_name_from_name(card)
 			#print("node_name: ",node_name,"  card_name: ",card_name)
@@ -44,9 +51,7 @@ func _on_inventory_grid_card_be_snapper(node) -> void:
 func inventory_inventory_func(node,card):
 	var node_num: int = get_num_form_name(node)
 	var card_num: int = get_num_form_name(card)
-	print("之前的node: ",_slots[node_num-1].Amount,"  之前的card: ",_slots[card_num-1].Amount)
-	inventory_component.MoveItem(node_num-1,card_num-1)
-	print("之后的node: ",_slots[node_num-1].Amount,"  之后的card: ",_slots[card_num-1].Amount)
+	inventory_component.MEItem(node_num-1,card_num-1)
 
 #仓库槽位与“能够将卡牌带入游戏的卡槽”之间的交互
 func inventory_user_func(node,card):
