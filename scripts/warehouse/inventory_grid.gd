@@ -21,10 +21,12 @@ var skip: bool = false
 
 func _ready() -> void:
 	initing = true
-	add_inventory_grid()
+	add_grid()
 	initing = false
+	
+	get_user_card()
 
-func add_inventory_grid():
+func add_grid():
 	var id: int = 1
 	for snap_point: Button in snap_point_container.get_children():
 		var inventory_grid: Node2D = inventory_grid_scene.instantiate()
@@ -60,6 +62,16 @@ func add_inventory_grid():
 		finish_drag()
 	
 	card = null
+
+func get_user_card() -> Array:
+	var user_card: Array
+	var userid: int = 1
+	
+	for snap_point: Button in user_snap_point_container.get_children():
+		var target_card = get_node("usercard_%d" % userid)
+		userid += 1
+		user_card.append(target_card)
+	return user_card
 
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:

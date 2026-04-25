@@ -10,11 +10,11 @@ func _ready() -> void:
 	inventory_component = get_tree().root.get_node("Warehouse").get_node("InventoryComponent")
 	inventory_control = get_tree().root.get_node("Warehouse").get_node("InventoryControl")
 	target_snapper = inventory_grid.binder.target_snapper
-	_slots = inventory_component._slots
 	#print(inventory_component)
 	#print(inventory_control)
 
 func _on_inventory_grid_card_be_snapper(node) -> void:
+	_slots = inventory_component._slots
 	for card in target_snapper.snapped_cards.keys():
 		if card != node and target_snapper.snapped_cards[card] == target_snapper.snapped_cards[node]:
 			var ex = node.global_position
@@ -58,7 +58,6 @@ func inventory_user_func(node,card):
 	var node_num: int = get_num_form_name(node)
 	var card_num: int = get_num_form_name(card)
 	var item_stack = _slots[node_num-1]
-	
 	var item: ItemData = null
 	var item_cnt: int = 0
 	if item_stack:

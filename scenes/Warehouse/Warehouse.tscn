@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="1_88770"]
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="1_cf8n2"]
+[ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_h115g"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="2_brt88"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_hh660"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="3_cf8n2"]
@@ -27,7 +28,9 @@ metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 script = ExtResource("4_brt88")
 metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
-[node name="Warehouse" type="Node2D" unique_id=2011409827]
+[node name="Warehouse" type="Node2D" unique_id=2011409827 node_paths=PackedStringArray("inventory_grid")]
+script = ExtResource("1_h115g")
+inventory_grid = NodePath("InventoryGrid")
 
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=351214287 node_paths=PackedStringArray("snap_nodes")]
 script = ExtResource("1_cf8n2")
@@ -69,10 +72,11 @@ draggable = SubResource("Resource_wqctc")
 binder = NodePath("../InventorySnapperBinder")
 texture = ExtResource("9_nwke5")
 
-[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("grid")]
+[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("inventory_grid", "grid")]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("9_3jafb")
+inventory_grid = NodePath("../InventoryGrid")
 grid = NodePath("../InventoryGrid")
 
 [node name="SnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1304380547]
@@ -613,8 +617,16 @@ offset_top = 16.0
 offset_right = 622.0
 offset_bottom = 81.0
 
+[node name="RefreshButton" type="Button" parent="InventoryControl" unique_id=614834854]
+layout_mode = 0
+offset_left = 342.0
+offset_top = 117.0
+offset_right = 521.0
+offset_bottom = 153.0
+
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="pressed" from="InventoryControl/AddButton" to="InventoryControl" method="_on_add_button_pressed"]
 [connection signal="pressed" from="InventoryControl/RemoveButton" to="InventoryControl" method="_on_remove_button_pressed"]
+[connection signal="button_down" from="InventoryControl/RefreshButton" to="InventoryControl" method="_on_refresh_button_button_down"]

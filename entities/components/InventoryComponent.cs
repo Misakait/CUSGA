@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using CUSGA.resources.item;
 using CUSGA.core.inventory;
+using System.Linq;
 
 namespace CUSGA.entities.components;
 
@@ -24,6 +25,17 @@ public partial class InventoryComponent : Node
 
     // 提供给 UI 遍历用的只读接口
     public IReadOnlyList<ItemStack> Slots => _slots;
+
+    // 按照 Item.CardName 对 _slots 排序，忽略 null
+    public void SortByCardName()
+    {
+        _slots = _slots
+            .Where(stack => stack.Item != null) // 过滤掉 null
+            .OrderBy(stack => stack.Item.CardName) // 先按名字排序
+            .ThenByDescending(stack => stack.Amount) // 再按数量排序（降序，大的在前）
+            .Concat(_slots.Where(stack => stack.Item == null)) // null 放最后
+            .ToArray();
+    }
 
     public int AddItem(ItemData item, int amount)
     {

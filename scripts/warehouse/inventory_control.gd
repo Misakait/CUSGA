@@ -2,6 +2,7 @@ extends Control
 
 # 引用 InventoryComponent
 @onready var inventory = $"../InventoryComponent"
+@export var inventory_grid: Node2D
 @export var grid: Node2D
 
 func _ready():
@@ -19,6 +20,7 @@ func refresh_ui():
 			inventory_grid.item_cnt = 0
 		else:
 			inventory_grid.get_node("CardName").text = "%s x%d" % [slot.Item.CardName, slot.Amount]
+			#print(i," 原本: ",inventory_grid.item_data," 与 ",inventory_grid.item_cnt,"\n 之后: ", slot.Item," 与 ",slot.Amount)
 			inventory_grid.item_data = slot.Item
 			inventory_grid.item_cnt = slot.Amount
 
@@ -30,13 +32,13 @@ func _on_slot_button_pressed(index):
 
 
 func _on_add_button_pressed() -> void:
-	add_item("2",4)
-	add_item("1",5)
+	add_item_by_name("2",4)
+	add_item_by_name("1",5)
 	
 func _on_remove_button_pressed() -> void:
-	remove_item("2",5)
+	remove_item_by_name("2",5)
 	
-func add_item(cardid: StringName, cnt: int):
+func add_item_by_name(cardid: StringName, cnt: int):
 	var item: ItemData = ItemsControl.get_item(cardid)
 		
 	if item:
@@ -47,8 +49,18 @@ func add_item(cardid: StringName, cnt: int):
 		refresh_ui()
 	else:
 		print("item不存在")
-	
-func remove_item(cardid: StringName, cnt: int):
+
+func add_item_by_item(item: ItemData, cnt: int):
+	if item:
+		var overflow_item: int = 0
+		overflow_item = inventory.AddItem(item, cnt)
+		if overflow_item > 0:
+			print("仓库放不下 ",item.CardName," 了,溢出了",overflow_item,"个")
+		refresh_ui()
+	else:
+		print("item不存在")
+
+func remove_item_by_name(cardid: StringName, cnt: int):
 	var item: ItemData = ItemsControl.get_item(cardid)
 		
 	if item:
@@ -59,4 +71,20 @@ func remove_item(cardid: StringName, cnt: int):
 		refresh_ui()
 	else:
 		print("item不存在")
-		
+
+func remove_item_by_item(item: ItemData, cnt: int):
+	if item:
+		if inventory.HasItem(item, cnt):
+			inventory.RemoveItem(item, cnt)
+		else:
+			print("仓库的 ",item.CardName," 不够！还差",cnt - inventory.ItemCnt(item),"个")
+		refresh_ui()
+	else:
+		print("item不存在")
+
+func sort_by_card_name():
+	inventory.SortByCardName()
+	refresh_ui()
+
+func _on_refresh_button_button_down() -> void:
+	sort_by_card_name()
