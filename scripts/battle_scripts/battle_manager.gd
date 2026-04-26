@@ -1,12 +1,15 @@
 extends Node
 
+#region onready
 @onready var deck_manager = $DeckManager
 @onready var player_hand = $PlayerHand
 @onready var control_lock = $ControlLock
 @onready var player_manager = $PlayerManager
 @onready var monster_manager = $MonsterManager
 @onready var action_timeline = $UI/ActionTimeline
+#endregion
 
+#region exprot
 @export_group("初始化参数")
 @export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
 @export var starting_monster_data: Array[MonsterData] ##初始怪物的卡牌数据。
@@ -20,7 +23,9 @@ extends Node
 @export_group("游戏参数")
 @export var turn_draw_count:int = 5 ##每回合摸牌数
 @export var action_total:float = 10000.0 ##行动值总值
+#endregion
 
+#region 其他参数
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
 
 ## 战斗状态机的状态定义
@@ -41,7 +46,7 @@ var action_queue: Array[Action] = []
 
 ## 当前正在行动的实体（玩家 player_manager 或某个特定的怪物实体）
 var active_entity: Variant = null
-
+#endregion
 
 ## 获取当前场上所有的战斗实体，用于传给 UI 行动轴等系统
 func get_all_combatants() -> Array:
