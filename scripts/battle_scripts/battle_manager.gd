@@ -7,6 +7,7 @@ extends Node
 @onready var monster_manager = $MonsterManager
 @onready var action_timeline = $UI/ActionTimeline
 
+@export_group("初始化参数")
 @export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
 @export var starting_monster_data: Array[MonsterData] ##初始怪物的卡牌数据。
 @export var card_scene: PackedScene
@@ -16,7 +17,9 @@ extends Node
 @export var monster_turn_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物回合时放大
 @export var scale_tween_duration: float = 0.2 ## 缩放动画过渡时间
 
-var turn_draw_count:int = 5 ##每回合摸牌数
+@export_group("游戏参数")
+@export var turn_draw_count:int = 5 ##每回合摸牌数
+@export var action_total:float = 10000.0 ##行动值总值
 
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
 
@@ -70,7 +73,7 @@ func _on_monster_defeated(monster):
 func _on_monsters_spawned():
 	for monster in monster_manager.active_monsters:
 		if not monster.has_meta("action_value"):
-			monster.set_meta("action_value", 10000.0 / 100.0)
+			monster.set_meta("action_value", action_total / 100.0)
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity)
 
@@ -100,7 +103,7 @@ func _handle_combat_start():
 	player_manager.reset_action_value()
 	for monster in monster_manager.active_monsters:
 		# 假设怪物默认速度为100（后续可从 MonsterData 中读取动态速度）
-		monster.set_meta("action_value", 10000.0 / 100.0)
+		monster.set_meta("action_value", action_total / 100.0)
 
 	# 初始化完成后，进入计算回合阶段
 	if action_timeline:
@@ -159,7 +162,7 @@ func _handle_enemy_turn():
 	enqueue_action(action)
 
 	# 重置怪物的行动值
-	active_entity.set_meta("action_value", 10000.0 / 100.0)
+	active_entity.set_meta("action_value", action_total / 100.0)
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity)
 	change_state(BattleState.EXECUTE_ACTIONS)
