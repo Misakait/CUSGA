@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://bti37y31fdnfr"]
+
+[ext_resource type="Script" uid="uid://b02abp0xlqjin" path="res://core/board/BoardCardView.cs" id="1_es72j"]
+[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="2_2akyy"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2akyy"]
+size = Vector2(26, 27)
+
+[node name="BoardCardView" type="Area2D" unique_id=1643839980]
+script = ExtResource("1_es72j")
+
+[node name="Title" type="Label" parent="." unique_id=1516747083]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Amount" type="Label" parent="." unique_id=538609257]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Icon" type="Sprite2D" parent="." unique_id=589342026]
+texture = ExtResource("2_2akyy")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1170748140]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_2akyy")

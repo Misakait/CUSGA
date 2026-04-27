@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://d3fipnri5ucw2" path="res://scripts/map_scripts/map_son_scripts/map_forest.gd" id="1_0xvl1"]
 [ext_resource type="Texture2D" uid="uid://b81cquv0b6qqi" path="res://res/image/森林.png" id="2_i74xl"]
 [ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_qunfr"]
+[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="4_lratd"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
@@ -36,6 +37,7 @@ script = ExtResource("5_ypuhc")
 InteractionBehavior = SubResource("Resource_3wq68")
 CardId = &"woodterrain"
 CardName = " 树木地形"
+CardIcon = ExtResource("4_lratd")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]

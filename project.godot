@@ -24,7 +24,7 @@ resources_spreadsheet_view/freeze_first_column=true
 [application]
 
 config/name="CUSGA"
-run/main_scene="uid://ddyp7h04g6e3l"
+run/main_scene="uid://cv7337rn5yxoc"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 

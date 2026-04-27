@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://55q6p6bk1ll7"]
 
+[ext_resource type="Script" uid="uid://dbccd17rop2k4" path="res://scripts/map_scripts/map_control.gd" id="1_7fije"]
 [ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_2r3ie"]
 [ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="2_aulaq"]
 [ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
@@ -65,6 +66,7 @@ metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 texture = ExtResource("14_00bk6")
 
 [node name="MapControl" type="Node2D" unique_id=223958387]
+script = ExtResource("1_7fije")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")

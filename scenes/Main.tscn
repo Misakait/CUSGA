@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cv7337rn5yxoc"]
+
+[ext_resource type="Script" uid="uid://dp2kl6obtjoh" path="res://core/map/RoomBoardPresenter.cs" id="1_elqb8"]
+[ext_resource type="Script" uid="uid://dysm4qdwufagp" path="res://core/map/RoomTerrainStore.cs" id="1_rarhs"]
+[ext_resource type="Script" uid="uid://bv1xoc07ydxw7" path="res://core/board/BoardController.cs" id="2_0bbpv"]
+[ext_resource type="PackedScene" uid="uid://55q6p6bk1ll7" path="res://scenes/map_scenes/map_control.tscn" id="2_rvslj"]
+[ext_resource type="PackedScene" uid="uid://bti37y31fdnfr" path="res://scenes/board_card_scene/BoardCardView.tscn" id="4_vcsgt"]
+
+[node name="Main" type="Node" unique_id=646455833]
+
+[node name="RuntimeState" type="Node" parent="." unique_id=214171387]
+
+[node name="RoomTerrainStore" type="Node" parent="RuntimeState" unique_id=229807555]
+script = ExtResource("1_rarhs")
+
+[node name="BoardSystem" type="Node" parent="." unique_id=1325131807]
+
+[node name="RoomBoardPresenter" type="Node" parent="BoardSystem" unique_id=2092396437]
+script = ExtResource("1_elqb8")
+MapSystemPath = NodePath("../../MapSystem")
+BoardControllerPath = NodePath("../BoardController")
+TerrainStorePath = NodePath("../../RuntimeState/RoomTerrainStore")
+
+[node name="BoardController" type="Node2D" parent="BoardSystem" unique_id=1414781764]
+script = ExtResource("2_0bbpv")
+CardViewScene = ExtResource("4_vcsgt")
+CardsRootPath = NodePath("CardsRoot")
+
+[node name="CardsRoot" type="Node2D" parent="BoardSystem/BoardController" unique_id=1226399754]
+
+[node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]
