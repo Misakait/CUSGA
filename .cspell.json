@@ -11,6 +11,7 @@
     "CUSGA",
     "Randf",
     "Mathf",
-    "GDSIGNAL"
+    "GDSIGNAL",
+    "onready"
   ]
 }
