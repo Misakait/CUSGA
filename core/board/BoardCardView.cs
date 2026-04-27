@@ -108,6 +108,7 @@ public partial class BoardCardView : Area2D
             })
         {
             EmitSignal(SignalName.Clicked, this);
+            viewport.SetInputAsHandled();
         }
     }
 
