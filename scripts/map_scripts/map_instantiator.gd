@@ -4,7 +4,7 @@ extends Node
 @onready var map_types = $"../MapTypes"
 @onready var map_button = $"../MapButton"
 
-signal on_room_entered(position: Vector2i, scene: Node2D)
+signal on_entered_room(position: Vector2i, scene: Node2D)
 
 var current_scene: Node2D = null
 var current_position: Vector2i = Vector2i.ZERO
@@ -54,4 +54,4 @@ func load_scene_at(position: Vector2i):
 
 	#更新按钮
 	map_button.update_scene_button(position)
-	emit_signal("on_entered_room", position, current_scene)
+	emit_signal(&"on_entered_room", position, current_scene)
