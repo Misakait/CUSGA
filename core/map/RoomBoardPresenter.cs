@@ -9,13 +9,13 @@ namespace CUSGA.core.map;
 
 public partial class RoomBoardPresenter : Node
 {
-    [Export] public NodePath MapInstantiatorPath { get; set; }
+    [Export] public NodePath MapSystemPath { get; set; }
     [Export] public NodePath BoardControllerPath { get; set; }
     [Export] public NodePath TerrainStorePath { get; set; }
 
     [Export] public bool HideHarvestedTerrain { get; set; } = true;
 
-    private Node _mapInstantiator = null!;
+    private Node _mapSystem = null!;
     private BoardController _boardController = null!;
     private RoomTerrainStore _terrainStore = null!;
 
@@ -23,9 +23,9 @@ public partial class RoomBoardPresenter : Node
 
     public override void _Ready()
     {
-        if (MapInstantiatorPath.IsEmpty)
+        if (MapSystemPath.IsEmpty)
         {
-            throw new InvalidOperationException("RoomBoardPresenter.MapInstantiatorPath 未设置。");
+            throw new InvalidOperationException("RoomBoardPresenter.MapSystemPath 未设置。");
         }
 
         if (BoardControllerPath.IsEmpty)
@@ -38,31 +38,31 @@ public partial class RoomBoardPresenter : Node
             throw new InvalidOperationException("RoomBoardPresenter.TerrainStorePath 未设置。");
         }
 
-        _mapInstantiator = GetNode<Node>(MapInstantiatorPath);
+        _mapSystem = GetNode<Node>(MapSystemPath);
         _boardController = GetNode<BoardController>(BoardControllerPath);
         _terrainStore = GetNode<RoomTerrainStore>(TerrainStorePath);
 
         _roomEnteredCallable = Callable.From<Vector2I, Node2D>(OnRoomEntered);
 
-        if (!_mapInstantiator.HasSignal(GDSignals.OnEnteredRoom))
+        if (!_mapSystem.HasSignal(GDSignals.OnEnteredRoom))
         {
             throw new InvalidOperationException(
-                $"MapInstantiator 缺少信号 '{GDSignals.OnEnteredRoom}'"
+                $"MapSystem 缺少信号 '{GDSignals.OnEnteredRoom}'。请在 MapSystem 根节点脚本中声明并转发该信号。"
             );
         }
 
-        if (!_mapInstantiator.IsConnected(GDSignals.OnEnteredRoom, _roomEnteredCallable))
+        if (!_mapSystem.IsConnected(GDSignals.OnEnteredRoom, _roomEnteredCallable))
         {
-            _mapInstantiator.Connect(GDSignals.OnEnteredRoom, _roomEnteredCallable);
+            _mapSystem.Connect(GDSignals.OnEnteredRoom, _roomEnteredCallable);
         }
     }
 
     public override void _ExitTree()
     {
-        if (_mapInstantiator != null &&
-            _mapInstantiator.IsConnected(GDSignals.OnEnteredRoom, _roomEnteredCallable))
+        if (_mapSystem != null &&
+             _mapSystem.IsConnected(GDSignals.OnEnteredRoom, _roomEnteredCallable))
         {
-            _mapInstantiator.Disconnect(GDSignals.OnEnteredRoom, _roomEnteredCallable);
+            _mapSystem.Disconnect(GDSignals.OnEnteredRoom, _roomEnteredCallable);
         }
     }
 
