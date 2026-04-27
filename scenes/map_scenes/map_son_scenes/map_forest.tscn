@@ -2,6 +2,41 @@
 
 [ext_resource type="Script" uid="uid://d3fipnri5ucw2" path="res://scripts/map_scripts/map_son_scripts/map_forest.gd" id="1_0xvl1"]
 [ext_resource type="Texture2D" uid="uid://b81cquv0b6qqi" path="res://res/image/森林.png" id="2_i74xl"]
+[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_qunfr"]
+[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
+[ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_ypuhc"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="6_tdjg7"]
+
+[sub_resource type="Resource" id="Resource_tvqcv"]
+script = ExtResource("5_lratd")
+CardId = &"whitewood"
+CardName = "wood"
+metadata/_custom_type_script = "uid://tg4u4lol2cpi"
+
+[sub_resource type="Resource" id="Resource_bn557"]
+script = ExtResource("4_s8yer")
+Item = SubResource("Resource_tvqcv")
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_h8mko"]
+script = ExtResource("6_tdjg7")
+Drops = Array[ExtResource("4_s8yer")]([SubResource("Resource_bn557")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[sub_resource type="Resource" id="Resource_3wq68"]
+script = ExtResource("4_mcl2d")
+GatheringTag = &"wood"
+DropTable = SubResource("Resource_h8mko")
+metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
+
+[sub_resource type="Resource" id="Resource_s8yer"]
+script = ExtResource("5_ypuhc")
+InteractionBehavior = SubResource("Resource_3wq68")
+CardId = &"woodterrain"
+CardName = " 树木地形"
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]
 script = ExtResource("1_0xvl1")
@@ -14,3 +49,11 @@ offset_bottom = 23.0
 position = Vector2(654.34106, 397.7624)
 scale = Vector2(0.47887102, 0.52408814)
 texture = ExtResource("2_i74xl")
+
+[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=269879055]
+
+[node name="TreePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1169852947]
+script = ExtResource("3_qunfr")
+TerrainData = SubResource("Resource_s8yer")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"
