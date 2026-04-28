@@ -38,6 +38,16 @@ enum BattleState {
 	TURN_END,        ## 回合结束清理与胜负判定
 	COMBAT_END       ## 战斗完全结束
 }
+## C# 中 SkillTargetingType 枚举的 GDScript 映射常量，避免魔法数字
+enum SkillTargetingType {
+	SELF = 0,               ## 自身
+	SINGLE_ENEMY = 1,       ## 单体敌人
+	ALL_ENEMIES = 2,        ## 全体敌人
+	ANY_SINGLE_UNIT = 3,    ## 任意单体
+	ALL_UNITS = 4,          ## 全体单位
+	RANDOM_ENEMY = 5,       ## 随机单体敌人
+	SPREAD_FROM_ENEMY = 6   ## 从单体敌人扩散
+}
 var current_state: BattleState = BattleState.COMBAT_START ## 当前战斗状态
 
 ## 行动队列：用于存放玩家打出的卡牌或敌人的攻击行为。
@@ -216,11 +226,79 @@ func _execute_single_action(action: Action):
 		if action.card_data and action.card_data.has_method("ApplyEffect"):
 			var ContextClass = load(CONTEXT_SCRIPT_PATH)
 			var context = null
-			if target:
-				context = ContextClass.FromSingleTarget(action.source, target)
-			else:
-				context = ContextClass.Self(action.source)
-			action.card_data.ApplyEffect(context)
+			
+			# 尝试安全地获取技能目标的枚举值，默认为自身
+			var targeting_type: int = SkillTargetingType.SELF
+			if action.card_data.get("Skill") != null and action.card_data.Skill.get("TargetingType") != null:
+				targeting_type = action.card_data.Skill.TargetingType
+			
+			# 基于解析到的类型，动态收集场上目标并分配至对应上下文工厂
+			match targeting_type:
+				SkillTargetingType.SELF:
+					# 目标为自身：直接传入卡牌施放者
+					context = ContextClass.Self(action.source)
+					
+				SkillTargetingType.SINGLE_ENEMY, SkillTargetingType.ANY_SINGLE_UNIT:
+					# 单体目标：依赖玩家拖拽或操作时传入的具体 target
+					if target:
+						context = ContextClass.FromSingleTarget(action.source, target)
+					else:
+						# 若发生未选中目标强行释放的异常情况，容错回退为自身
+						push_warning("单体技能未找到目标，退化为以自身为目标")
+						context = ContextClass.Self(action.source)
+						
+				SkillTargetingType.ALL_ENEMIES:
+					# 全体敌人：从怪物管理器中提取所有存活怪物传入数组
+					var enemies: Array[Node] = []
+					if monster_manager and monster_manager.active_monsters:
+						enemies.assign(monster_manager.active_monsters)
+					context = ContextClass.FromPrimaryTargets(action.source, enemies)
+					
+				SkillTargetingType.ALL_UNITS:
+					# 全体单位：复用写好的 get_all_combatants() 获取包含玩家在内的所有人
+					var all_units: Array[Node] = []
+					all_units.assign(get_all_combatants())
+					context = ContextClass.FromPrimaryTargets(action.source, all_units)
+					
+				SkillTargetingType.RANDOM_ENEMY:
+					# 随机单体敌人：在场上存活的怪物中随机抽取一个
+					var random_target = null
+					if monster_manager and monster_manager.active_monsters and monster_manager.active_monsters.size() > 0:
+						random_target = monster_manager.active_monsters.pick_random()
+					
+					if random_target:
+						context = ContextClass.FromSingleTarget(action.source, random_target)
+					else:
+						context = ContextClass.Self(action.source)
+						
+				SkillTargetingType.SPREAD_FROM_ENEMY:
+					# 扩散类型：获取主目标，并根据其在怪物列表中的位置，提取相邻（左右）的敌人作为次要目标
+					var secondary_targets: Array[Node] = []
+					if target and monster_manager and monster_manager.active_monsters:
+						var monsters = monster_manager.active_monsters
+						var target_index = monsters.find(target)
+						
+						# 如果主目标存在于当前怪物列表中（find 返回 -1 表示未找到）
+						if target_index != -1:
+							# 提取左侧相邻敌人，并确保其不越过左边界 (index 0)
+							if target_index > 0:
+								secondary_targets.append(monsters[target_index - 1])
+							# 提取右侧相邻敌人，并确保其不越过右边界 (最大 size - 1)
+							if target_index < monsters.size() - 1:
+								secondary_targets.append(monsters[target_index + 1])
+								
+					# 封装为上下文对象，将找出的左右侧相邻敌人作为 secondary_targets 传入
+					context = ContextClass.FromSpread(action.source, target, secondary_targets)
+					
+				_:
+					# 兜底情况的容错处理
+					if target:
+						context = ContextClass.FromSingleTarget(action.source, target)
+					else:
+						context = ContextClass.Self(action.source)
+
+			if context != null:
+				action.card_data.ApplyEffect(context)
 
 	elif action.action_type == "ATTACK":
 		# 敌人基础攻击的临时占位逻辑

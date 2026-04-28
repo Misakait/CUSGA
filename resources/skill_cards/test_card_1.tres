@@ -16,7 +16,7 @@ Element = 1
 Effects = Array[ExtResource("1_lqd6v")]([SubResource("Resource_nx2k3")])
 CardId = null
 CardName = "测试卡一"
-Description = "造成10点伤害"
+Description = "对单体敌人造成10点木属性物理伤害"
 metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 
 [resource]
