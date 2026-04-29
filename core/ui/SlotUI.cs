@@ -6,23 +6,48 @@ using CUSGA.core.constants;
 
 namespace CUSGA.core.ui;
 
-public partial class SlotUI : Panel
+public partial class SlotUI : PanelContainer
 {
     private int _myIndex; // 该格子背包里的真实坐标
     private ItemStack _itemStackInThisSlot; // 当前渲染的数据引用
     private InventoryComponent _inventoryComponent; //  Player 身上的 InventoryComponent 引用
 
     // UI 局部刷新逻辑 (监听数据变动)
-    public void Init(int index, ItemStack stack, InventoryComponent uiManager)
+    // public void Init(int index, ItemStack stack, InventoryComponent uiManager)
+    // {
+    //     _myIndex = index;
+    //     _itemStackInThisSlot = stack;
+    //     _inventoryComponent = uiManager;
+    //     // 如果内存里的格子数据变了，自动更新画面
+    //     stack.OnStackChanged += UpdateVisuals;
+    //     UpdateVisuals(stack); // 初始化画面
+    // }
+
+    public void Bind(int index, ItemStack stack, InventoryComponent inventory)
     {
+        if (_itemStackInThisSlot != null)
+        {
+            _itemStackInThisSlot.OnStackChanged -= UpdateVisuals;
+        }
+
         _myIndex = index;
         _itemStackInThisSlot = stack;
-        _inventoryComponent = uiManager;
-        // 如果内存里的格子数据变了，自动更新画面
-        stack.OnStackChanged += UpdateVisuals;
-        UpdateVisuals(stack); // 初始化画面
-    }
+        _inventoryComponent = inventory;
 
+        if (_itemStackInThisSlot != null)
+        {
+            _itemStackInThisSlot.OnStackChanged += UpdateVisuals;
+        }
+
+        UpdateVisuals(_itemStackInThisSlot);
+    }
+    public override void _ExitTree()
+    {
+        if (_itemStackInThisSlot != null)
+        {
+            _itemStackInThisSlot.OnStackChanged -= UpdateVisuals;
+        }
+    }
 
     // 开始拖拽
     public override Variant _GetDragData(Vector2 atPosition)

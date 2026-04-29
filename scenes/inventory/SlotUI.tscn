@@ -1,20 +1,33 @@
 [gd_scene format=3 uid="uid://rukl64pxxdie"]
 
-[ext_resource type="Script" uid="uid://c6whilmaj2b1c" path="res://core/ui/SlotU.cs" id="1_ota37"]
+[ext_resource type="Script" uid="uid://dcf3gy8nblbdv" path="res://core/ui/SlotUI.cs" id="1_ota37"]
 
-[node name="SlotUI" type="PanelContainer" unique_id=1951712606]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ota37"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22352941, 0.77254903, 0.73333335, 1)
+
+[node name="SlotUI" type="PanelContainer" unique_id=758270839]
+custom_minimum_size = Vector2(32, 32)
 offset_right = 40.0
 offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ota37")
 script = ExtResource("1_ota37")
 
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1051414403]
-layout_mode = 2
-
-[node name="ItemIcon" type="TextureRect" parent="MarginContainer" unique_id=2056117677]
+[node name="ItemIcon" type="TextureRect" parent="." unique_id=2048186838]
 unique_name_in_owner = true
 layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
-[node name="AmountLabel" type="Label" parent="MarginContainer" unique_id=455454641]
+[node name="AmountLabel" type="Label" parent="." unique_id=843897011]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 8
 size_flags_vertical = 8

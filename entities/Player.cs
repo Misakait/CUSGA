@@ -31,7 +31,7 @@ public partial class Player : Node
         _attribute = GetNode<AttributeComponent>("Components/AttributeComponent");
         TagComponent = GetNode<TagComponent>("Components/TagComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
-
+        _inventory = GetNode<InventoryComponent>("Components/InventoryComponent");
         _satiety.Depleted += OnSatietyDepleted;
         _health.Depleted += OnPlayerDied;
 

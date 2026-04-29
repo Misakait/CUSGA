@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="4_lratd"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
+[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="4_tdjg7"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_ypuhc"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="6_tdjg7"]
@@ -14,6 +15,7 @@
 script = ExtResource("5_lratd")
 CardId = &"whitewood"
 CardName = "wood"
+CardIcon = ExtResource("4_lratd")
 metadata/_custom_type_script = "uid://tg4u4lol2cpi"
 
 [sub_resource type="Resource" id="Resource_bn557"]
@@ -37,7 +39,7 @@ script = ExtResource("5_ypuhc")
 InteractionBehavior = SubResource("Resource_3wq68")
 CardId = &"woodterrain"
 CardName = " 树木地形"
-CardIcon = ExtResource("4_lratd")
+CardIcon = ExtResource("4_tdjg7")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]

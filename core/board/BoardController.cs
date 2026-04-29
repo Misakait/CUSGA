@@ -74,7 +74,6 @@ public partial class BoardController : Node2D
         return SpawnCard(state, globalPosition);
     }
 
-    // GDScript 调用
     public void SpawnLootCards(Godot.Collections.Array<ItemStack> stacks, Vector2 spawnOrigin)
     {
         ArgumentNullException.ThrowIfNull(stacks);

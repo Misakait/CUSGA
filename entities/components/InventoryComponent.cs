@@ -10,6 +10,7 @@ namespace CUSGA.entities.components;
 public partial class InventoryComponent : Node
 {
     [Export] public int Capacity { get; private set; } = 27; // 背包格子数
+    [Signal] public delegate void InventoryChangedEventHandler();
 
     private ItemStack[] _slots = null!;
 
@@ -23,6 +24,10 @@ public partial class InventoryComponent : Node
         }
     }
 
+    private void EmitInventoryChanged()
+    {
+        EmitSignal(SignalName.InventoryChanged);
+    }
     // 提供给 UI 遍历用的只读接口
     public IReadOnlyList<ItemStack> Slots => _slots;
 
@@ -35,6 +40,7 @@ public partial class InventoryComponent : Node
             .ThenByDescending(stack => stack.Amount) // 再按数量排序（降序，大的在前）
             .Concat(_slots.Where(stack => stack.Item == null)) // null 放最后
             .ToArray();
+        EmitInventoryChanged();
     }
 
     public int AddItem(ItemData item, int amount)

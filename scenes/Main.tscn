@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://bti37y31fdnfr" path="res://scenes/board_card_scene/BoardCardView.tscn" id="4_vcsgt"]
 [ext_resource type="Script" uid="uid://cdboqt73nndy5" path="res://core/application/GameplayPort.cs" id="6_c01mt"]
 [ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/ganeflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
+[ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="8_jlsqs"]
+[ext_resource type="PackedScene" uid="uid://re28ypfb6pn7" path="res://scenes/inventory/inventory_ui.tscn" id="9_q8u5g"]
 
 [node name="Main" type="Node" unique_id=646455833]
 
@@ -43,4 +45,26 @@ script = ExtResource("7_nxtc6")
 BoardControllerPath = NodePath("../../BoardSystem/BoardController")
 GameplayPortPath = NodePath("../GameplayPort")
 
-[node name="Player" type="Node" parent="." unique_id=232870812]
+[node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
+
+[node name="UI" type="Node" parent="." unique_id=705485533]
+
+[node name="HUDLayer" type="CanvasLayer" parent="UI" unique_id=1726390246]
+
+[node name="HUDRoot" type="Control" parent="UI/HUDLayer" unique_id=155195524]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="InventoryUI" parent="UI/HUDLayer/HUDRoot" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+layout_mode = 0
+offset_left = 345.0
+offset_top = 204.0
+offset_right = 851.0
+offset_bottom = 504.0
+
+[node name="BackpackFlyTarget" type="Control" parent="UI/HUDLayer/HUDRoot" unique_id=1421347355]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0

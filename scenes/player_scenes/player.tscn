@@ -12,7 +12,7 @@
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="10_4xp6m"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="11_mm880"]
 
-[node name="Player" type="CharacterBody2D" unique_id=1686256351]
+[node name="Player" type="Node" unique_id=1931166684]
 script = ExtResource("1_d8qmr")
 
 [node name="Components" type="Node" parent="." unique_id=21460224]
