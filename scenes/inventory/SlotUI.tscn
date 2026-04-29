@@ -17,6 +17,7 @@ border_color = Color(0.22352941, 0.77254903, 0.73333335, 1)
 custom_minimum_size = Vector2(32, 32)
 offset_right = 40.0
 offset_bottom = 40.0
+size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_ota37")
 script = ExtResource("1_ota37")
 

@@ -12,17 +12,18 @@ public partial class SlotUI : PanelContainer
     private ItemStack _itemStackInThisSlot; // 当前渲染的数据引用
     private InventoryComponent _inventoryComponent; //  Player 身上的 InventoryComponent 引用
 
-    // UI 局部刷新逻辑 (监听数据变动)
-    // public void Init(int index, ItemStack stack, InventoryComponent uiManager)
-    // {
-    //     _myIndex = index;
-    //     _itemStackInThisSlot = stack;
-    //     _inventoryComponent = uiManager;
-    //     // 如果内存里的格子数据变了，自动更新画面
-    //     stack.OnStackChanged += UpdateVisuals;
-    //     UpdateVisuals(stack); // 初始化画面
-    // }
 
+    public override void _Ready()
+    {
+        Resized += OnResized;
+    }
+    private void OnResized()
+    {
+        if (!Mathf.IsEqualApprox(CustomMinimumSize.Y, Size.X))
+        {
+            CustomMinimumSize = new Vector2(CustomMinimumSize.X, Size.X);
+        }
+    }
     public void Bind(int index, ItemStack stack, InventoryComponent inventory)
     {
         if (_itemStackInThisSlot != null)
@@ -53,7 +54,10 @@ public partial class SlotUI : PanelContainer
     public override Variant _GetDragData(Vector2 atPosition)
     {
         // 如果这个格子没数据，或者物品是空的，不准拖拽
-        if (_itemStackInThisSlot == null || _itemStackInThisSlot.IsEmpty) return default;
+        if (_itemStackInThisSlot == null || _itemStackInThisSlot.IsEmpty)
+        {
+            return default;
+        }
 
         // 生成数据快递包
         DraggableData dataPackage = new()
