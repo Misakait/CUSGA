@@ -20,6 +20,8 @@ public partial class InventoryUI : Control
 
     public override void _Ready()
     {
+        var closeButton = GetNode<Button>("%CloseButton");
+        closeButton.Pressed += Close;
         _inventoryToggledCallable = Callable.From<InventoryComponent>(HandleInventoryToggleRequest);
         _slotGrid = GetNode<GridContainer>("%SlotGrid");
         _globalEventBus = GetNode<Node>("/root/GlobalEventBus");
@@ -103,7 +105,7 @@ public partial class InventoryUI : Control
     }
     private void OnInventoryChanged()
     {
-        // 排序后 _slots[i] 引用整体变了，所以必须重新 Bind。
+        // 排序后 _slots[i] 引用整体变了，所以必须重新 Bind
         RebindAllSlots();
     }
     private void DisconnectInventorySignals()

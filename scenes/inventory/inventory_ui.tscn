@@ -34,6 +34,7 @@ text = "背包"
 horizontal_alignment = 1
 
 [node name="CloseButton" type="Button" parent="MainPanel/VBoxContainer/TitleBar" unique_id=1997663957]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 icon = ExtResource("3_8ojme")
