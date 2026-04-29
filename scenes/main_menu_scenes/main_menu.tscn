@@ -1,12 +1,18 @@
 [gd_scene format=3 uid="uid://qwckbjjp11ca"]
 
+[ext_resource type="Script" uid="uid://bcm0sgct3tva4" path="res://scripts/normal_compoment/main_menu.gd" id="1_168ci"]
 [ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="2_gdjtc"]
 [ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="3_gdjtc"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="7_r5auf"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="8_eliqi"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="8_r5auf"]
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="9_eliqi"]
+[ext_resource type="Texture2D" uid="uid://26pqgm5aoa8u" path="res://res/element_icon/earth_icon.png" id="9_k6tey"]
+[ext_resource type="Texture2D" uid="uid://cgpwha1yalblh" path="res://res/element_icon/fire_icon.png" id="10_168ci"]
+[ext_resource type="Texture2D" uid="uid://bxctyc25rpowe" path="res://res/element_icon/gold_icon.png" id="11_8ljqf"]
+[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="12_3flcn"]
 
 [sub_resource type="Resource" id="Resource_v5kme"]
 script = ExtResource("7_r5auf")
@@ -17,6 +23,7 @@ script = ExtResource("7_gdjtc")
 metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
 [node name="MainMenu" type="Node2D" unique_id=1637248230]
+script = ExtResource("1_168ci")
 
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=987922898 node_paths=PackedStringArray("snap_nodes")]
 script = ExtResource("9_eliqi")
@@ -26,6 +33,7 @@ metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 
 [node name="SnapPoint1" type="Node2D" parent="." unique_id=224474800]
 position = Vector2(549.375, 178.855)
+scale = Vector2(0.63427263, 0.6470515)
 script = ExtResource("3_gdjtc")
 
 [node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
@@ -39,16 +47,24 @@ binder = NodePath("../SnapperBinder")
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
 position = Vector2(158, 509)
 tween_duration = 0.2
+sprite_texture = ExtResource("8_eliqi")
+sprite_icon = ExtResource("9_k6tey")
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
 position = Vector2(461, 506)
 tween_duration = 0.2
+sprite_texture = ExtResource("8_eliqi")
+sprite_icon = ExtResource("10_168ci")
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
 position = Vector2(1109, 516)
 tween_duration = 0.2
+sprite_texture = ExtResource("8_eliqi")
+sprite_icon = ExtResource("11_8ljqf")
 
 [node name="Warehouse" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("2_gdjtc")]
 position = Vector2(787, 505)
+sprite_texture = ExtResource("8_eliqi")
+sprite_icon = ExtResource("12_3flcn")
 
-[connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
+[connection signal="card_be_snapper" from="MainMenuCardManager" to="." method="_on_card_be_snapper"]

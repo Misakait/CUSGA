@@ -12,6 +12,7 @@ signal not_hovering_card(card)
 @export var tween_duration: float = 0.1
 
 @export var sprite_texture: Texture2D
+@export var sprite_icon: Texture2D
 
 var item_data: ItemData
 var item_cnt: int
@@ -29,11 +30,11 @@ func _ready():
 	
 	#如果有parent，初始化parent
 	init_parent()
-	
-	if sprite_texture:
-		$Sprite2D.texture = sprite_texture
-	
 	var sprite2d = $Sprite2D
+	if sprite_texture:
+		sprite2d.texture = sprite_texture
+		sprite2d.get_child(0).texture = sprite_icon
+		
 	normal_scale = sprite2d.scale + normal_scale_offeset
 	hover_scale = sprite2d.scale + hover_scale_offeset
 	drag_scale = sprite2d.scale + drag_scale_offeset
