@@ -21,12 +21,12 @@ var skip: bool = false
 
 func _ready() -> void:
 	initing = true
-	add_grid()
+	init_add_grid()
 	initing = false
-	
+
 	get_user_card()
 
-func add_grid():
+func init_add_grid():
 	var id: int = 1
 	for snap_point: Button in snap_point_container.get_children():
 		var inventory_grid: Node2D = inventory_grid_scene.instantiate()
@@ -39,10 +39,10 @@ func add_grid():
 		inventory_grid.name = "card_%d" % id
 		id = id+1
 		original_position[inventory_grid] = inventory_grid.global_position
-		
+
 		card = inventory_grid
 		finish_drag()
-		
+
 	var userid: int = 1
 	for snap_point: Button in user_snap_point_container.get_children():
 		var inventory_grid: Node2D = inventory_grid_scene.instantiate()
@@ -57,16 +57,16 @@ func add_grid():
 		inventory_grid.get_node("CardName").text = "-"
 		userid = userid+1
 		original_position[inventory_grid] = inventory_grid.global_position
-		
+
 		card = inventory_grid
 		finish_drag()
-	
+
 	card = null
 
 func get_user_card() -> Array:
 	var user_card: Array
 	var userid: int = 1
-	
+
 	for snap_point: Button in user_snap_point_container.get_children():
 		var target_card = get_node("usercard_%d" % userid)
 		userid += 1
@@ -77,18 +77,18 @@ func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			card = raycast_check_for_card()
-			
+
 			if !original_position.has(card):
 				card = null
-			
+
 			if card:
 				start_drag()
 		else:
 			finish_drag()
-			
+
 	if card:
 		draggable.handle_event(event, card)
-		
+
 func start_drag():
 	card.start_drag()
 	var snapped := binder.target_snapper.snapped_cards.has(card)
@@ -96,17 +96,17 @@ func start_drag():
 	if binder and binder.target_snapper and binder.target_snapper.snapped_cards.has(card):
 		binder.target_snapper.release_card(card)
 		reback = true
-	
+
 func finish_drag():
-	if card != null : 
+	if card != null :
 		card.finish_drag()
 		var snapped := false
-		
+
 		if !snapped and binder and binder.target_snapper and !skip:
 			binder.target_snapper.snap_card(card)
 			# 如果 snapper 成功吸附，会在 snapped_cards 里记录
 			snapped = binder.target_snapper.snapped_cards.has(card)
-		
+
 		#吸附成功
 		if binder and snapped and !initing:
 			reback = false
@@ -114,7 +114,7 @@ func finish_drag():
 			var tween = card.create_tween()
 			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			binder.target_snapper.snapped_cards[card] = original_position[card]
-		
+
 		if binder and not snapped :
 			# 没有吸附成功 → 回到原位
 			var tween = card.create_tween()
@@ -135,7 +135,7 @@ func raycast_check_for_card():
 	if result.size() > 0:
 		return get_card_with_highest_z_index(result)
 	return null
-	
+
 #获取传入卡牌中z最高的牌
 func get_card_with_highest_z_index(cards):
 	var highest_z_card = cards[0].collider.get_parent()
@@ -146,10 +146,10 @@ func get_card_with_highest_z_index(cards):
 			highest_z_card = current_card
 			highest_z_index = current_card.z_index
 	return highest_z_card
-	
+
 func _on_hovering_card(that_card):
 	hovering_card = raycast_check_for_card()
-	
+
 func _on_not_hovering_card(that_card):
 	hovering_card = raycast_check_for_card()
 	if hovering_card:

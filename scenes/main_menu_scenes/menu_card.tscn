@@ -15,6 +15,9 @@ drag_scale_offeset = Vector2(0.3, 0.3)
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("2_w33iv")
 
+[node name="ItemSprite2D" type="Sprite2D" parent="Sprite2D" unique_id=1896037660]
+scale = Vector2(2, 2)
+
 [node name="Area2D" type="Area2D" parent="." unique_id=1777527990]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=572066935]

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cv6r1ekigeyo4"]
 
-[ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="1_743t7"]
+[ext_resource type="Texture2D" uid="uid://bxctyc25rpowe" path="res://res/element_icon/gold_icon.png" id="1_743t7"]
 [ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_co30f"]
 
 [resource]

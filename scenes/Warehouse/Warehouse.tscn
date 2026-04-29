@@ -78,6 +78,7 @@ anchors_preset = 0
 script = ExtResource("9_3jafb")
 inventory_grid = NodePath("../InventoryGrid")
 grid = NodePath("../InventoryGrid")
+null_texture = ExtResource("9_nwke5")
 
 [node name="SnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1304380547]
 
@@ -624,9 +625,25 @@ offset_top = 117.0
 offset_right = 521.0
 offset_bottom = 153.0
 
+[node name="LeftButton" type="Button" parent="InventoryControl" unique_id=1189218979]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 391.0
+offset_right = 42.0
+offset_bottom = 555.0
+
+[node name="RightButton" type="Button" parent="InventoryControl" unique_id=380072651]
+layout_mode = 0
+offset_left = 1255.0
+offset_top = 401.0
+offset_right = 1273.0
+offset_bottom = 577.0
+
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="pressed" from="InventoryControl/AddButton" to="InventoryControl" method="_on_add_button_pressed"]
 [connection signal="pressed" from="InventoryControl/RemoveButton" to="InventoryControl" method="_on_remove_button_pressed"]
 [connection signal="button_down" from="InventoryControl/RefreshButton" to="InventoryControl" method="_on_refresh_button_button_down"]
+[connection signal="button_down" from="InventoryControl/LeftButton" to="InventoryControl" method="_on_left_button_button_down"]
+[connection signal="button_down" from="InventoryControl/RightButton" to="InventoryControl" method="_on_right_button_button_down"]

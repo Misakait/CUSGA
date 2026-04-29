@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://brxj11n37x152"]
 
 [ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_8adpp"]
-[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="1_w4pwf"]
+[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="1_vo24b"]
 
 [resource]
 script = ExtResource("1_8adpp")
@@ -9,6 +9,6 @@ MaxStackSize = 64
 ItemTags = Array[StringName]([&"BullShit"])
 CardId = &"1"
 CardName = "牛粪"
-CardIcon = ExtResource("1_w4pwf")
+CardIcon = ExtResource("1_vo24b")
 Description = "这是一个什么用都没有的资源，你随时可以把他删掉"
 metadata/_custom_type_script = "uid://b5jfoakosaapj"
