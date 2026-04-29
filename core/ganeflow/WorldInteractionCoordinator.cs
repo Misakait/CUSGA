@@ -15,7 +15,6 @@ public partial class WorldInteractionCoordinator : Node
     [Export] public NodePath BoardControllerPath { get; set; } = null!;
     [Export] public NodePath GameplayPortPath { get; set; } = null!;
     [Export] public NodePath BackpackFlyTargetPath { get; set; } = null!;
-    [Export] public NodePath GlobalEventBusPath { get; set; } = null!;
 
     private BoardController _boardController = null!;
     private GameplayPort _gameplayPort = null!;
@@ -27,7 +26,7 @@ public partial class WorldInteractionCoordinator : Node
         _boardController = GetNode<BoardController>(BoardControllerPath);
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
         _backpackFlyTarget = GetNodeOrNull<Control>(BackpackFlyTargetPath);
-        _globalEventBus = GetNodeOrNull<Node>(GlobalEventBusPath);
+        _globalEventBus = GetNodeOrNull<Node>("/root/GlobalEventBus");
 
         _boardController.CardClicked += OnBoardCardClicked;
     }
@@ -78,12 +77,13 @@ public partial class WorldInteractionCoordinator : Node
 
     private void HandleTerrainCardClicked(BoardCardView card, TerrainInstance terrain)
     {
+        GD.Print($"[WorldInteractionCoordinator] Click terrain: {terrain.TerrainData.CardName}");
         TerrainInteraction interaction = terrain.TerrainData?.InteractionBehavior;
         if (interaction == null)
         {
             return;
         }
-
+        GD.Print($"[WorldInteractionCoordinator] Build ops from {interaction.GetType().Name}");
         var buildCtx = new TerrainInteractionBuildContext
         {
             Player = _gameplayPort.Player,
@@ -102,7 +102,7 @@ public partial class WorldInteractionCoordinator : Node
             GlobalEventBus = _globalEventBus,
             BackpackFlyTarget = _backpackFlyTarget
         };
-
+        GD.Print($"[WorldInteractionCoordinator] Ops count = {ops.Count}");
         foreach (TerrainOp op in ops)
         {
             op.Apply(worldCtx);

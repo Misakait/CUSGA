@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://d3fipnri5ucw2" path="res://scripts/map_scripts/map_son_scripts/map_forest.gd" id="1_0xvl1"]
 [ext_resource type="Texture2D" uid="uid://b81cquv0b6qqi" path="res://res/image/森林.png" id="2_i74xl"]
 [ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_qunfr"]
-[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="4_lratd"]
+[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="4_lratd"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
@@ -55,6 +55,7 @@ texture = ExtResource("2_i74xl")
 [node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=269879055]
 
 [node name="TreePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1169852947]
+position = Vector2(500, 500)
 script = ExtResource("3_qunfr")
 TerrainData = SubResource("Resource_s8yer")
 LocalGridPos = Vector2i(1, 1)

@@ -57,6 +57,8 @@ public partial class BoardController : Node2D
         {
             throw new InvalidOperationException($"Grid {terrainInstance.LocalGridPos} 已经存在地形卡。");
         }
+        GD.Print($"[BoardController] Spawn terrain card at {globalPosition}, localGrid={terrainInstance.LocalGridPos}");
+
         var state = new TerrainBoardCardState(terrainInstance);
         var card = SpawnCard(state, globalPosition);
 
@@ -167,6 +169,7 @@ public partial class BoardController : Node2D
 
     private void OnCardClicked(BoardCardView card)
     {
+        GD.Print($"Card clicked: {card.GetCardData().CardName}");
         EmitSignal(SignalName.CardClicked, card);
     }
 

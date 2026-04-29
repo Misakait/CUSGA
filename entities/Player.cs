@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using CUSGA.core.inventory;
 namespace CUSGA.entities;
 
-public partial class Player : CharacterBody2D
+public partial class Player : Node
 {
 
     private HealthComponent _health;

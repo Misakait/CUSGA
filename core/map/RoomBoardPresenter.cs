@@ -74,7 +74,7 @@ public partial class RoomBoardPresenter : Node
         }
 
         _boardController.ClearAllCards();
-
+        GD.Print($"[RoomBoardPresenter] Enter room {roomPos}, scene={roomScene.Name}");
         foreach (TerrainSpawnPoint spawnPoint in FindTerrainSpawnPoints(roomScene))
         {
             if (!spawnPoint.SpawnOnEnter)
@@ -87,7 +87,7 @@ public partial class RoomBoardPresenter : Node
                 GD.PushWarning($"TerrainSpawnPoint '{spawnPoint.Name}' 缺少 TerrainData。");
                 continue;
             }
-
+            GD.Print($"[RoomBoardPresenter] Spawn point {spawnPoint.Name}, local={spawnPoint.LocalGridPos}, terrain={spawnPoint.TerrainData.CardName}");
             TerrainInstance terrain = _terrainStore.GetOrCreate(
                 roomPos,
                 spawnPoint.LocalGridPos,

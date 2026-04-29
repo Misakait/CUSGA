@@ -5,6 +5,8 @@
 [ext_resource type="Script" uid="uid://bv1xoc07ydxw7" path="res://core/board/BoardController.cs" id="2_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://55q6p6bk1ll7" path="res://scenes/map_scenes/map_control.tscn" id="2_rvslj"]
 [ext_resource type="PackedScene" uid="uid://bti37y31fdnfr" path="res://scenes/board_card_scene/BoardCardView.tscn" id="4_vcsgt"]
+[ext_resource type="Script" uid="uid://cdboqt73nndy5" path="res://core/application/GameplayPort.cs" id="6_c01mt"]
+[ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/ganeflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
 
 [node name="Main" type="Node" unique_id=646455833]
 
@@ -29,3 +31,16 @@ CardsRootPath = NodePath("CardsRoot")
 [node name="CardsRoot" type="Node2D" parent="BoardSystem/BoardController" unique_id=1226399754]
 
 [node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]
+
+[node name="Gameplay" type="Node" parent="." unique_id=1348944482]
+
+[node name="GameplayPort" type="Node" parent="Gameplay" unique_id=1810929418]
+script = ExtResource("6_c01mt")
+PlayerPath = NodePath("../../Player")
+
+[node name="WorldInteractionCoordinator" type="Node" parent="Gameplay" unique_id=33340727]
+script = ExtResource("7_nxtc6")
+BoardControllerPath = NodePath("../../BoardSystem/BoardController")
+GameplayPortPath = NodePath("../GameplayPort")
+
+[node name="Player" type="Node" parent="." unique_id=232870812]
