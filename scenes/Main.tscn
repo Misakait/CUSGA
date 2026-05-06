@@ -9,6 +9,10 @@
 [ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/ganeflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="8_jlsqs"]
 [ext_resource type="PackedScene" uid="uid://re28ypfb6pn7" path="res://scenes/inventory/inventory_ui.tscn" id="9_q8u5g"]
+[ext_resource type="Script" uid="uid://dkr5sf10iqq3b" path="res://core/ui/hud/HUDController.cs" id="9_wp0k4"]
+[ext_resource type="Script" uid="uid://cmpt04ncsoqpu" path="res://core/ui/hud/BackpackButton.cs" id="10_lhr70"]
+[ext_resource type="Script" uid="uid://ti4khreb8ppy" path="res://core/ui/hud/TimePanelUI.cs" id="11_qmy6f"]
+[ext_resource type="Script" uid="uid://2pdyihf4cpq1" path="res://core/ui/hud/HealthBarUI.cs" id="12_mwfav"]
 
 [node name="Main" type="Node" unique_id=646455833]
 
@@ -44,6 +48,7 @@ PlayerPath = NodePath("../../Player")
 script = ExtResource("7_nxtc6")
 BoardControllerPath = NodePath("../../BoardSystem/BoardController")
 GameplayPortPath = NodePath("../GameplayPort")
+BackpackFlyTargetPath = NodePath("../../UI/HUDLayer/HUDRoot/BackpackButton/BackpackFlyTarget")
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 
@@ -53,18 +58,110 @@ GameplayPortPath = NodePath("../GameplayPort")
 
 [node name="HUDRoot" type="Control" parent="UI/HUDLayer" unique_id=155195524]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("9_wp0k4")
+GameplayPortPath = NodePath("../../../Gameplay/GameplayPort")
+BackpackButtonPath = NodePath("BackpackButton")
 
-[node name="InventoryUI" parent="UI/HUDLayer/HUDRoot" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+[node name="BackpackButton" type="Button" parent="UI/HUDLayer/HUDRoot" unique_id=1417693561]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -32.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "背包"
+script = ExtResource("10_lhr70")
+GameplayPortPath = NodePath("../../../../Gameplay/GameplayPort")
+
+[node name="BackpackFlyTarget" type="Control" parent="UI/HUDLayer/HUDRoot/BackpackButton" unique_id=1421347355]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -5.5
+offset_top = -5.5
+offset_right = 5.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopLeftPanel" type="VBoxContainer" parent="UI/HUDLayer/HUDRoot" unique_id=1984711158]
 layout_mode = 0
-offset_left = 345.0
-offset_top = 204.0
-offset_right = 851.0
-offset_bottom = 504.0
+mouse_filter = 2
 
-[node name="BackpackFlyTarget" type="Control" parent="UI/HUDLayer/HUDRoot" unique_id=1421347355]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="TimePanelUI" type="PanelContainer" parent="UI/HUDLayer/HUDRoot/TopLeftPanel" unique_id=1783376434]
+custom_minimum_size = Vector2(280, 96)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("11_qmy6f")
+
+[node name="MarginContainer" type="MarginContainer" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/TimePanelUI" unique_id=1830178582]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/TimePanelUI/MarginContainer" unique_id=922364102]
+layout_mode = 2
+
+[node name="DayLabel" type="Label" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/TimePanelUI/MarginContainer/VBoxContainer" unique_id=766907349]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PhaseLabel" type="Label" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/TimePanelUI/MarginContainer/VBoxContainer" unique_id=54528953]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PhaseProgress" type="ProgressBar" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/TimePanelUI/MarginContainer/VBoxContainer" unique_id=644887522]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 18)
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/TimePanelUI/MarginContainer/VBoxContainer" unique_id=1793527818]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HealthBarUI" type="PanelContainer" parent="UI/HUDLayer/HUDRoot/TopLeftPanel" unique_id=62041132]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("12_mwfav")
+GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
+
+[node name="MarginContainer" type="MarginContainer" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/HealthBarUI" unique_id=424861848]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/HealthBarUI/MarginContainer" unique_id=612003786]
+layout_mode = 2
+
+[node name="HealthBar" type="ProgressBar" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/HealthBarUI/MarginContainer/VBoxContainer" unique_id=1625863580]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 20)
+layout_mode = 2
+
+[node name="HealthLabel" type="Label" parent="UI/HUDLayer/HUDRoot/TopLeftPanel/HealthBarUI/MarginContainer/VBoxContainer" unique_id=1422392845]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CenterOverlay" type="CenterContainer" parent="UI/HUDLayer/HUDRoot" unique_id=1952359426]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="InventoryUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+custom_minimum_size = Vector2(520, 360)
+layout_mode = 2
+GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
