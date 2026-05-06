@@ -2,7 +2,7 @@ extends Node
 
 signal player_died;
 signal on_player_acquired_talent(talent_data);
-signal on_inventory_toggled(inventory_component);
+# signal on_inventory_toggled(inventory_component);
 signal on_status_changed(owner);
 signal on_entity_dropped(global_position,stacks)
 signal on_entered_vault;
