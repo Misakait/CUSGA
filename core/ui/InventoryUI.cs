@@ -3,19 +3,22 @@ using CUSGA.entities.components;
 using CUSGA.core.constants;
 using System.Collections.Generic;
 using CUSGA.resources.item;
+using CUSGA.core.application;
 namespace CUSGA.core.ui;
 
 public partial class InventoryUI : Control
 {
     // SlotUI的scene
     [Export] public PackedScene SlotPrefab { get; set; }
+    [Export] public NodePath GameplayPortPath { get; set; }
 
     private GridContainer _slotGrid;
+    private GameplayPort _gameplayPort = null!;
 
     private InventoryComponent _playerInventory;
     private Callable _inventoryToggledCallable;
     private bool _isInitialized = false;
-    private Node _globalEventBus;
+    // private Node _globalEventBus;
     private readonly List<SlotUI> _slotViews = [];
 
     public override void _Ready()
@@ -24,11 +27,13 @@ public partial class InventoryUI : Control
         closeButton.Pressed += Close;
         _inventoryToggledCallable = Callable.From<InventoryComponent>(HandleInventoryToggleRequest);
         _slotGrid = GetNode<GridContainer>("%SlotGrid");
-        _globalEventBus = GetNode<Node>("/root/GlobalEventBus");
-        if (!_globalEventBus.IsConnected(GDSignals.OnInventoryToggled, _inventoryToggledCallable))
-        {
-            _globalEventBus.Connect(GDSignals.OnInventoryToggled, _inventoryToggledCallable);
-        }
+        _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
+        _gameplayPort.InventoryToggleRequested += HandleInventoryToggleRequest;
+        // _globalEventBus = GetNode<Node>("/root/GlobalEventBus");
+        // if (!_globalEventBus.IsConnected(GDSignals.OnInventoryToggled, _inventoryToggledCallable))
+        // {
+        //     _globalEventBus.Connect(GDSignals.OnInventoryToggled, _inventoryToggledCallable);
+        // }
         Hide();
     }
 
@@ -130,11 +135,7 @@ public partial class InventoryUI : Control
     // }
     public override void _ExitTree()
     {
-        if (_globalEventBus != null &&
-                   _globalEventBus.IsConnected(GDSignals.OnInventoryToggled, _inventoryToggledCallable))
-        {
-            _globalEventBus.Disconnect(GDSignals.OnInventoryToggled, _inventoryToggledCallable);
-        }
+        _gameplayPort.InventoryToggleRequested -= HandleInventoryToggleRequest;
         DisconnectInventorySignals();
     }
 }

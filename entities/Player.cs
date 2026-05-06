@@ -39,14 +39,6 @@ public partial class Player : Node
         _globalEventBus.Connect(GDSignals.OnPlayerAcquiredTalent, Callable.From<TalentData>(AbsorbTalent));
     }
 
-    public override void _UnhandledInput(InputEvent @event)
-    {
-        if (@event.IsActionPressed("toggle_inventory"))
-        {
-            _globalEventBus.EmitSignal(GDSignals.OnInventoryToggled, _inventory);
-        }
-    }
-
     private void AbsorbTalent(TalentData newTalent)
     {
         GD.Print($"主角感受到神秘力量涌入：{newTalent.TalentName}！");
