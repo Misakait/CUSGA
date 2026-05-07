@@ -14,11 +14,11 @@
 [ext_resource type="PackedScene" uid="uid://bpd2bncemempm" path="res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn" id="7_mrmfi"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
 [ext_resource type="Script" uid="uid://5dcs4o1t3h0" path="res://scripts/map_scripts/map_button/up_button.gd" id="9_bl6s4"]
-[ext_resource type="Script" uid="uid://ceces3oo175j7" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
+[ext_resource type="Script" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
 [ext_resource type="Script" uid="uid://htnvjes8g8ym" path="res://scripts/map_scripts/map_button/right_button.gd" id="13_m5w21"]
 [ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_00bk6"]
 [ext_resource type="Script" uid="uid://c7yg358eqvkoy" path="res://scripts/map_scripts/map_button/down_button.gd" id="14_in5uc"]
-[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
+[ext_resource type="Script" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 [ext_resource type="Script" uid="uid://c64fkkngl08fo" path="res://scripts/map_scripts/map_button/left_button.gd" id="15_7fije"]
 [ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_m5w21"]
 
@@ -115,7 +115,6 @@ metadata/_edit_use_anchors_ = true
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Up" unique_id=1140016280 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
 sprite2d = NodePath("../UpButton")
-metadata/_custom_type_script = "uid://ceces3oo175j7"
 
 [node name="Right" type="Node2D" parent="MapButton" unique_id=2036926148 node_paths=PackedStringArray("h_e_zoom")]
 script = ExtResource("13_m5w21")
@@ -146,7 +145,6 @@ text = "往东走"
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Right" unique_id=1220961612 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
 sprite2d = NodePath("../RightButton")
-metadata/_custom_type_script = "uid://ceces3oo175j7"
 
 [node name="Down" type="Node2D" parent="MapButton" unique_id=1514244813 node_paths=PackedStringArray("h_e_zoom")]
 script = ExtResource("14_in5uc")
@@ -178,7 +176,6 @@ text = "往南走"
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Down" unique_id=1048632730 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
 sprite2d = NodePath("../DownButton")
-metadata/_custom_type_script = "uid://ceces3oo175j7"
 
 [node name="Left" type="Node2D" parent="MapButton" unique_id=993494128 node_paths=PackedStringArray("h_e_zoom")]
 script = ExtResource("15_7fije")
@@ -210,7 +207,6 @@ text = "往西走"
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Left" unique_id=2099729154 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
 sprite2d = NodePath("../LeftButton")
-metadata/_custom_type_script = "uid://ceces3oo175j7"
 
 [node name="MapInstantiator" type="Node2D" parent="." unique_id=950670003]
 script = ExtResource("3_2r3ie")
