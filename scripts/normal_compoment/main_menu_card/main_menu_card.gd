@@ -4,6 +4,8 @@ extends Node2D
 signal hovering_card(card)
 signal not_hovering_card(card)
 
+
+
 @export_group("放大效果")
 @export var normal_scale_offeset: Vector2 = Vector2(0, 0)
 @export var hover_scale_offeset: Vector2 = Vector2(0.2, 0.2)
@@ -11,8 +13,16 @@ signal not_hovering_card(card)
 ## 动画时长（秒）
 @export var tween_duration: float = 0.1
 
+@export_group("卡牌ui设置")
 @export var sprite_texture: Texture2D
 @export var sprite_icon: Texture2D
+@export var sp2d: Sprite2D
+@export var my_card_name: Label
+@export var my_card_description: Label
+@export var my_card_cost: Label
+@export var card_name_text: String
+@export var card_description_text: String
+@export var card_cost_text: String
 
 var item_data: ItemData
 var item_cnt: int
@@ -30,15 +40,23 @@ func _ready():
 	
 	#如果有parent，初始化parent
 	init_parent()
-	var sprite2d = $Sprite2D
-	if sprite_texture:
-		sprite2d.texture = sprite_texture
-		sprite2d.get_child(0).texture = sprite_icon
-		
-	normal_scale = sprite2d.scale + normal_scale_offeset
-	hover_scale = sprite2d.scale + hover_scale_offeset
-	drag_scale = sprite2d.scale + drag_scale_offeset
 	
+	normal_scale = sp2d.scale + normal_scale_offeset
+	hover_scale = sp2d.scale + hover_scale_offeset
+	drag_scale = sp2d.scale + drag_scale_offeset
+	
+	#初始化自己的ui
+	refresh_myself()
+	
+
+func refresh_myself():
+	if sprite_texture:
+		sp2d.texture = sprite_texture
+		sp2d.get_child(0).texture = sprite_icon
+	my_card_name.text = card_name_text
+	my_card_description.text = card_description_text
+	my_card_cost.text = card_cost_text
+
 func _on_area_2d_mouse_entered():
 	emit_signal("hovering_card", self)
 	

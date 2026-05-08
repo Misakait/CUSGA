@@ -14,6 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="9_nwke5"]
 [ext_resource type="Script" uid="uid://5wtui6vmqah3" path="res://scripts/warehouse/inventory_card_slot.gd" id="12_ejbtm"]
 [ext_resource type="Script" uid="uid://dh406btb4xi6r" path="res://scripts/warehouse/inventory_user_card_slot.gd" id="13_ybp5e"]
+[ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="15_cvm3i"]
+[ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_jlw2o"]
 
 [sub_resource type="Resource" id="Resource_nwke5"]
 script = ExtResource("2_brt88")
@@ -62,6 +64,9 @@ binder = NodePath("../SnapperBinder")
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("5_3jafb")]
 position = Vector2(1060, 111)
 tween_duration = 0.2
+card_name_text = ""
+card_description_text = ""
+card_cost_text = ""
 
 [node name="InventoryGrid" type="Node2D" parent="." unique_id=1500144558 node_paths=PackedStringArray("snap_point_container", "user_snap_point_container", "binder")]
 script = ExtResource("8_wqctc")
@@ -72,12 +77,11 @@ draggable = SubResource("Resource_wqctc")
 binder = NodePath("../InventorySnapperBinder")
 texture = ExtResource("9_nwke5")
 
-[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("inventory_grid", "grid")]
+[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("inventory_grid")]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("9_3jafb")
 inventory_grid = NodePath("../InventoryGrid")
-grid = NodePath("../InventoryGrid")
 null_texture = ExtResource("9_nwke5")
 
 [node name="SnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1304380547]
@@ -627,17 +631,19 @@ offset_bottom = 153.0
 
 [node name="LeftButton" type="Button" parent="InventoryControl" unique_id=1189218979]
 layout_mode = 0
-offset_left = 7.0
-offset_top = 391.0
-offset_right = 42.0
-offset_bottom = 555.0
+offset_left = 1082.0
+offset_top = 270.0
+offset_right = 1132.0
+offset_bottom = 320.0
+icon = ExtResource("15_cvm3i")
 
 [node name="RightButton" type="Button" parent="InventoryControl" unique_id=380072651]
 layout_mode = 0
-offset_left = 1255.0
-offset_top = 401.0
-offset_right = 1273.0
-offset_bottom = 577.0
+offset_left = 1205.0
+offset_top = 270.0
+offset_right = 1255.0
+offset_bottom = 320.0
+icon = ExtResource("16_jlw2o")
 
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]

@@ -70,9 +70,9 @@ func inventory_user_func(node,card):
 	card_node.item_data = item
 	card_node.item_cnt = item_cnt
 	if item:
-		card_node.get_node("CardName").text = "%s x%d" % [item.CardName, item_cnt]
+		card_node.my_card_name.text = "%s x%d" % [item.CardName, item_cnt]
 	else:
-		card_node.get_node("CardName").text = "-"
+		card_node.my_card_name.text = "-"
 
 #“能够将卡牌带入游戏的卡槽”之间的交互
 func user_user_func(node,card):
@@ -85,13 +85,13 @@ func user_user_func(node,card):
 	card_node.item_data = ex_item
 	card_node.item_cnt = ex_cnt
 	if node_node.item_data:
-		node_node.get_node("CardName").text = "%s x%d" % [node_node.item_data.CardName, node_node.item_cnt]
+		node_node.my_card_name.text = "%s x%d" % [node_node.item_data.CardName, node_node.item_cnt]
 	else:
-		node_node.get_node("CardName").text = "-"
+		node_node.my_card_name.text = "-"
 	if card_node.item_data:
-		card_node.get_node("CardName").text = "%s x%d" % [card_node.item_data.CardName, card_node.item_cnt]
+		card_node.my_card_name.text = "%s x%d" % [card_node.item_data.CardName, card_node.item_cnt]
 	else:
-		card_node.get_node("CardName").text = "-"
+		card_node.my_card_name.text = "-"
 	
 
 func get_name_from_name(node):

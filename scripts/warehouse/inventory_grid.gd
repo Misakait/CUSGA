@@ -54,7 +54,7 @@ func init_add_grid():
 		#设置名字
 		inventory_grid.name = "usercard_%d" % userid
 		#设置标签
-		inventory_grid.get_node("CardName").text = "-"
+		inventory_grid.my_card_name.text = "-"
 		userid = userid+1
 		original_position[inventory_grid] = inventory_grid.global_position
 

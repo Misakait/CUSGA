@@ -3,7 +3,6 @@ extends Control
 # 引用 InventoryComponent
 @onready var inventory = $"../InventoryComponent"
 @export var inventory_grid: Node2D
-@export var grid: Node2D
 @export var null_texture: Texture
 @export var page_cnt: int = 27
 @export var page_mag: int = 1
@@ -17,19 +16,26 @@ func refresh_ui():
 	var slots = inventory._slots
 	for i in range(now_index, now_index + page_cnt):
 		var slot = slots[i]
-		var inventory_grid = grid.get_child(i%27)
+		var grid = inventory_grid.get_child(i%27)
 
 		if slot.IsEmpty:
-			inventory_grid.get_node("CardName").text = "-"
-			inventory_grid.item_data = null
-			inventory_grid.item_cnt = 0
-			inventory_grid.get_child(0).get_child(0).texture = null
+			grid.my_card_name.text = "-"
+			grid.item_data = null
+			grid.item_cnt = 0
+			grid.sp2d.get_child(0).texture = null
 		else:
-			inventory_grid.get_node("CardName").text = "%s x%d" % [slot.Item.CardName, slot.Amount]
+			grid.my_card_name.text = "%s x%d" % [slot.Item.CardName, slot.Amount]
 			#print(i," 原本: ",inventory_grid.item_data," 与 ",inventory_grid.item_cnt,"\n 之后: ", slot.Item," 与 ",slot.Amount)
-			inventory_grid.item_data = slot.Item
-			inventory_grid.item_cnt = slot.Amount
-			inventory_grid.get_child(0).get_child(0).texture = slot.Item.CardIcon
+			grid.item_data = slot.Item
+			grid.item_cnt = slot.Amount
+			grid.sp2d.get_child(0).texture = slot.Item.CardIcon
+			
+	for i in range(1,6):
+		var usercard_path: NodePath = "usercard_%d" % i
+		var grid = inventory_grid.get_node(usercard_path)
+		if grid != null and grid.item_data != null :
+			grid.sp2d.get_child(0).texture = grid.item_data.CardIcon
+		
 
 # 点击按钮时尝试移动物品
 func _on_slot_button_pressed(index):

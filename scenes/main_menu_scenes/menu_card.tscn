@@ -6,10 +6,17 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
 size = Vector2(70, 50)
 
-[node name="Card" type="Node2D" unique_id=401739906]
+[node name="Card" type="Node2D" unique_id=401739906 node_paths=PackedStringArray("sp2d", "my_card_name", "my_card_description", "my_card_cost")]
 z_index = 1
 script = ExtResource("1_h86l4")
 drag_scale_offeset = Vector2(0.3, 0.3)
+sp2d = NodePath("Sprite2D")
+my_card_name = NodePath("Sprite2D/CardName")
+my_card_description = NodePath("Sprite2D/CardDescription")
+my_card_cost = NodePath("Sprite2D/CardCost")
+card_name_text = null
+card_description_text = null
+card_cost_text = null
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
 scale = Vector2(1.5, 1.5)
@@ -18,44 +25,51 @@ texture = ExtResource("2_w33iv")
 [node name="ItemSprite2D" type="Sprite2D" parent="Sprite2D" unique_id=1896037660]
 scale = Vector2(2, 2)
 
+[node name="CardName" type="Label" parent="Sprite2D" unique_id=36102632]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -129.33333
+offset_top = -88.666664
+offset_right = -62.999996
+offset_bottom = -65.666664
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+clip_text = true
+
+[node name="CardDescription" type="Label" parent="Sprite2D" unique_id=1070513239]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.66667
+offset_top = -22.0
+offset_right = 117.33336
+offset_bottom = 8.666672
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+autowrap_mode = 3
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="CardCost" type="Label" parent="Sprite2D" unique_id=822735793]
+offset_left = 32.666668
+offset_top = -36.0
+offset_right = 88.66667
+offset_bottom = -13.0
+scale = Vector2(0.5, 0.5)
+clip_text = true
+
 [node name="Area2D" type="Area2D" parent="." unique_id=1777527990]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=572066935]
 scale = Vector2(3, 3)
 shape = SubResource("RectangleShape2D_2kac4")
-
-[node name="CardName" type="Label" parent="." unique_id=36102632]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -92.0
-offset_top = -67.5
-offset_right = 39.0
-offset_bottom = -34.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="CardDescription" type="Label" parent="." unique_id=1070513239]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -93.0
-offset_top = -27.0
-offset_right = 91.0
-offset_bottom = 63.0
-grow_horizontal = 2
-grow_vertical = 2
-autowrap_mode = 3
-
-[node name="CardCost" type="Label" parent="." unique_id=822735793]
-offset_left = 48.0
-offset_top = -64.0
-offset_right = 88.0
-offset_bottom = -41.0
 
 [connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
 [connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]

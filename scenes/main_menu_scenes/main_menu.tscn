@@ -9,10 +9,10 @@
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="8_eliqi"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="8_r5auf"]
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="9_eliqi"]
-[ext_resource type="Texture2D" uid="uid://26pqgm5aoa8u" path="res://res/element_icon/earth_icon.png" id="9_k6tey"]
-[ext_resource type="Texture2D" uid="uid://cgpwha1yalblh" path="res://res/element_icon/fire_icon.png" id="10_168ci"]
-[ext_resource type="Texture2D" uid="uid://bxctyc25rpowe" path="res://res/element_icon/gold_icon.png" id="11_8ljqf"]
-[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="12_3flcn"]
+[ext_resource type="Texture2D" uid="uid://cki12g8ntwybh" path="res://res/UI/开始.png" id="10_168ci"]
+[ext_resource type="Texture2D" uid="uid://0wfyybb2allh" path="res://res/UI/设置.png" id="11_8ljqf"]
+[ext_resource type="Texture2D" uid="uid://ct3j5esperemx" path="res://res/UI/仓库2.png" id="12_3flcn"]
+[ext_resource type="Texture2D" uid="uid://nqcqgfagxafs" path="res://res/UI/退出 2.png" id="13_f27sh"]
 
 [sub_resource type="Resource" id="Resource_v5kme"]
 script = ExtResource("7_r5auf")
@@ -48,23 +48,35 @@ binder = NodePath("../SnapperBinder")
 position = Vector2(158, 509)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
-sprite_icon = ExtResource("9_k6tey")
+sprite_icon = ExtResource("10_168ci")
+card_name_text = "开始游戏"
+card_description_text = "开始你的游戏"
+card_cost_text = "0"
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
 position = Vector2(461, 506)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
-sprite_icon = ExtResource("10_168ci")
-
-[node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(1109, 516)
-tween_duration = 0.2
-sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("11_8ljqf")
+card_name_text = "设置"
+card_description_text = "进入设置界面"
+card_cost_text = "0"
 
 [node name="Warehouse" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("2_gdjtc")]
 position = Vector2(787, 505)
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("12_3flcn")
+card_name_text = "仓库"
+card_description_text = "进入仓库界面"
+card_cost_text = "0"
+
+[node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
+position = Vector2(1099, 508)
+tween_duration = 0.2
+sprite_texture = ExtResource("8_eliqi")
+sprite_icon = ExtResource("13_f27sh")
+card_name_text = "退出游戏"
+card_description_text = "退出这个游戏"
+card_cost_text = "0"
 
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="." method="_on_card_be_snapper"]
