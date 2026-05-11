@@ -1,9 +1,13 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://dejj5ququif3b"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_7sme0"]
+[ext_resource type="Texture2D" uid="uid://bpif0gvr1msg0" path="res://res/items/雪.png" id="1_dqhnu"]
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_lqd6v"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_dqhnu"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_xwuh1"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_dqhnu"]
+load_path = "res://.godot/imported/甘蔗(3).png-1e833ad235ec7bb4b9d4d5b8daaf4924.ctex"
 
 [sub_resource type="Resource" id="Resource_nx2k3"]
 script = ExtResource("2_dqhnu")
@@ -16,6 +20,7 @@ Element = 1
 Effects = Array[ExtResource("1_lqd6v")]([SubResource("Resource_nx2k3")])
 CardId = null
 CardName = "测试卡一"
+CardIcon = ExtResource("1_dqhnu")
 Description = "对单体敌人造成10点木属性物理伤害"
 metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 
@@ -24,5 +29,6 @@ script = ExtResource("1_7sme0")
 Skill = SubResource("Resource_8lhwl")
 CardId = null
 CardName = "测试卡1"
+CardIcon = SubResource("CompressedTexture2D_dqhnu")
 Description = "造成10点木属性物理伤害。"
 metadata/_custom_type_script = "uid://bejho62d28qir"

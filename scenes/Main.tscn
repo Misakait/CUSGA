@@ -13,6 +13,8 @@
 [ext_resource type="Script" uid="uid://cmpt04ncsoqpu" path="res://core/ui/hud/BackpackButton.cs" id="10_lhr70"]
 [ext_resource type="Script" uid="uid://ti4khreb8ppy" path="res://core/ui/hud/TimePanelUI.cs" id="11_qmy6f"]
 [ext_resource type="Script" uid="uid://2pdyihf4cpq1" path="res://core/ui/hud/HealthBarUI.cs" id="12_mwfav"]
+[ext_resource type="Script" uid="uid://dqlllnjrxs4n7" path="res://core/debug/DebugLoadoutSeeder.cs" id="13_debug"]
+[ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
 
 [node name="Main" type="Node" unique_id=646455833]
 
@@ -51,6 +53,10 @@ GameplayPortPath = NodePath("../GameplayPort")
 BackpackFlyTargetPath = NodePath("../../UI/HUDLayer/HUDRoot/BackpackButton/BackpackFlyTarget")
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
+
+[node name="DebugLoadoutSeeder" type="Node" parent="." unique_id=1135409514]
+script = ExtResource("13_debug")
+Loadout = ExtResource("14_loadout")
 
 [node name="UI" type="Node" parent="." unique_id=705485533]
 
