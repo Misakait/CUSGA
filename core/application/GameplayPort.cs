@@ -5,6 +5,8 @@ using CUSGA.entities;
 using CUSGA.resources.interaction;
 using CUSGA.resources.monsters;
 using CUSGA.entities.components;
+using CUSGA.resources.item.card;
+using Godot.Collections;
 
 namespace CUSGA.core.application;
 
@@ -15,22 +17,27 @@ public partial class GameplayPort : Node
     [Signal]
     public delegate void EncounterRequestedEventHandler(
         TerrainInstance terrain,
-        MonsterData monster,
+        Array<SkillCardData> battleDeck,
+        Array<MonsterData> monsters,
         string message
     );
 
     [Export]
     public NodePath PlayerPath { get; set; } = null!;
     [Export] public NodePath PlayerInventoryPath { get; set; } = new("Components/InventoryComponent");
+    [Export] public NodePath PlayerBattleDeckPath { get; set; } = new("Components/BattleDeckComponent");
     [Export] public NodePath PlayerHealthPath { get; set; } = new("Components/HealthComponent");
 
     private Player _player = null!;
     private HealthComponent _playerHealth = null!;
+    private BattleDeckComponent _playerBattleDeck = null!;
 
     public HealthComponent PlayerHealth =>
            _playerHealth;
     public InventoryComponent PlayerInventory =>
             _playerInventory;
+    public BattleDeckComponent PlayerBattleDeck =>
+            _playerBattleDeck;
 
     public override void _Ready()
     {
@@ -41,6 +48,7 @@ public partial class GameplayPort : Node
 
         _player = GetNode<Player>(PlayerPath);
         _playerInventory = _player.GetNode<InventoryComponent>(PlayerInventoryPath);
+        _playerBattleDeck = _player.GetNode<BattleDeckComponent>(PlayerBattleDeckPath);
         _playerHealth = _player.GetNode<HealthComponent>(PlayerHealthPath);
     }
 
@@ -65,6 +73,23 @@ public partial class GameplayPort : Node
 
     public void RequestEncounter(TerrainInstance terrain, MonsterData monster, string message)
     {
-        EmitSignal(SignalName.EncounterRequested, terrain, monster, message ?? string.Empty);
+        Array<MonsterData> monsters = [];
+        if (monster != null)
+        {
+            monsters.Add(monster);
+        }
+
+        RequestEncounter(terrain, monsters, message);
+    }
+
+    public void RequestEncounter(TerrainInstance terrain, Array<MonsterData> monsters, string message)
+    {
+        EmitSignal(
+            SignalName.EncounterRequested,
+            terrain,
+            PlayerBattleDeck.GetSkillCards(),
+            monsters ?? [],
+            message ?? string.Empty
+        );
     }
 }

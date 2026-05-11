@@ -15,6 +15,7 @@ public partial class Player : Node
     public EnergyComponent Energy { get; private set; }
     private AttributeComponent _attribute;
     private InventoryComponent _inventory;
+    public BattleDeckComponent BattleDeck { get; private set; }
     public EquipmentComponent Equipment { get; private set; }
     public StatusComponent Status { get; private set; }
 
@@ -32,6 +33,7 @@ public partial class Player : Node
         TagComponent = GetNode<TagComponent>("Components/TagComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
         _inventory = GetNode<InventoryComponent>("Components/InventoryComponent");
+        BattleDeck = GetNode<BattleDeckComponent>("Components/BattleDeckComponent");
         _satiety.Depleted += OnSatietyDepleted;
         _health.Depleted += OnPlayerDied;
 

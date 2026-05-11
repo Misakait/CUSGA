@@ -2,7 +2,6 @@ using Godot;
 using CUSGA.core.inventory;
 using CUSGA.core.ui.draggable;
 using CUSGA.entities.components;
-using CUSGA.core.constants;
 
 namespace CUSGA.core.ui;
 
@@ -62,8 +61,9 @@ public partial class SlotUI : PanelContainer
         // 生成数据快递包
         DraggableData dataPackage = new()
         {
-            SourceSystem = TagConsts.SystemInventory,
+            SourceSystem = _inventoryComponent.DragSourceSystem,
             FromIndex = _myIndex,
+            SourceInventory = _inventoryComponent,
             HeldStack = _itemStackInThisSlot
         };
 
@@ -94,10 +94,10 @@ public partial class SlotUI : PanelContainer
 
     public override bool _CanDropData(Vector2 atPosition, Variant data)
     {
-        if (data.Obj is DraggableData _dragData)
+        if (data.Obj is DraggableData dragData)
         {
-            // (如果是装备栏格子，这里就要检查 item.ValidSlots 里是否包含装备栏类型)
-            return true;
+            return _inventoryComponent != null
+                && _inventoryComponent.CanReceiveItemFrom(dragData.SourceInventory, dragData.FromIndex, _myIndex);
         }
         return false;
     }
@@ -109,9 +109,9 @@ public partial class SlotUI : PanelContainer
             int from = dragData.FromIndex;
             int to = _myIndex;
 
-            GD.Print($"[UI交互] 玩家要把格 {from} 的物品拖到格 {to}。");
+            GD.Print($"[UI交互] 玩家要把{dragData.SourceInventory.DragSourceSystem}背包格 {from} 的物品拖到{_inventoryComponent.DragSourceSystem}格 {to}。");
 
-            _inventoryComponent.MoveItem(from, to);
+            _inventoryComponent.MoveItemFrom(dragData.SourceInventory, from, to);
         }
     }
     private void UpdateVisuals(ItemStack stack)

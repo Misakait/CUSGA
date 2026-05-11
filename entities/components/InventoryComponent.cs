@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CUSGA.resources.item;
 using CUSGA.core.inventory;
 using System.Linq;
+using CUSGA.core.constants;
 
 namespace CUSGA.entities.components;
 
@@ -13,6 +14,8 @@ public partial class InventoryComponent : Node
     [Signal] public delegate void InventoryChangedEventHandler();
 
     private ItemStack[] _slots = null!;
+
+    public virtual StringName DragSourceSystem => TagConsts.SystemInventory;
 
     public override void _Ready()
     {
@@ -31,6 +34,16 @@ public partial class InventoryComponent : Node
     // 提供给 UI 遍历用的只读接口
     public IReadOnlyList<ItemStack> Slots => _slots;
 
+    protected virtual bool CanStoreItem(ItemData item)
+    {
+        return item != null;
+    }
+
+    private bool IsValidIndex(int index)
+    {
+        return index >= 0 && index < Capacity;
+    }
+
     // 按照 Item.CardName 对 _slots 排序，忽略 null
     public void SortByCardName()
     {
@@ -45,7 +58,7 @@ public partial class InventoryComponent : Node
 
     public int AddItem(ItemData item, int amount)
     {
-        if (item == null || amount <= 0)
+        if (item == null || amount <= 0 || !CanStoreItem(item))
         {
             return amount;
         }
@@ -122,6 +135,11 @@ public partial class InventoryComponent : Node
     // 将物品替换进特定格子
     public int ReplaceItem(int index, ItemData item, int amount)
     {
+        if (item != null && !CanStoreItem(item))
+        {
+            return amount;
+        }
+
         ClearItem(index);
         if (item == null || amount <= 0)
         {
@@ -226,6 +244,83 @@ public partial class InventoryComponent : Node
             targetSlot.SetItem(sourceSlot.Item, sourceSlot.Amount);
             sourceSlot.SetItem(tempItem, tempAmount);
         }
+
+        EmitInventoryChanged();
+    }
+
+    public bool CanReceiveItemFrom(InventoryComponent sourceInventory, int fromIndex, int toIndex)
+    {
+        if (sourceInventory == null)
+        {
+            return false;
+        }
+
+        if (!sourceInventory.IsValidIndex(fromIndex) || !IsValidIndex(toIndex))
+        {
+            return false;
+        }
+
+        if (sourceInventory == this && fromIndex == toIndex)
+        {
+            return false;
+        }
+
+        var sourceSlot = sourceInventory._slots[fromIndex];
+        if (sourceSlot.IsEmpty || !CanStoreItem(sourceSlot.Item))
+        {
+            return false;
+        }
+
+        var targetSlot = _slots[toIndex];
+
+        if (sourceInventory == this || targetSlot.IsEmpty || targetSlot.Item == sourceSlot.Item)
+        {
+            return true;
+        }
+
+        return sourceInventory.CanStoreItem(targetSlot.Item);
+    }
+
+    public void MoveItemFrom(InventoryComponent sourceInventory, int fromIndex, int toIndex)
+    {
+        if (!CanReceiveItemFrom(sourceInventory, fromIndex, toIndex))
+        {
+            return;
+        }
+
+        if (sourceInventory == this)
+        {
+            MoveItem(fromIndex, toIndex);
+            return;
+        }
+
+        var sourceSlot = sourceInventory._slots[fromIndex];
+        var targetSlot = _slots[toIndex];
+
+        if (!targetSlot.IsEmpty && targetSlot.Item == sourceSlot.Item)
+        {
+            int remaining = targetSlot.Add(sourceSlot.Amount);
+
+            if (remaining <= 0)
+            {
+                sourceSlot.Clear();
+            }
+            else
+            {
+                sourceSlot.SetItem(sourceSlot.Item, remaining);
+            }
+        }
+        else
+        {
+            var tempItem = targetSlot.Item;
+            var tempAmount = targetSlot.Amount;
+
+            targetSlot.SetItem(sourceSlot.Item, sourceSlot.Amount);
+            sourceSlot.SetItem(tempItem, tempAmount);
+        }
+
+        sourceInventory.EmitInventoryChanged();
+        EmitInventoryChanged();
     }
 
     //尝试合并，之后进行交换

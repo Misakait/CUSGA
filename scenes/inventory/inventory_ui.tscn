@@ -5,11 +5,11 @@
 [ext_resource type="Texture2D" uid="uid://dapo07qjenafe" path="res://res/image/61e6dae9ecdf4ea59d601bc75c0c5e02.png" id="3_8ojme"]
 
 [node name="InventoryUI" type="Control" unique_id=1703104203]
-custom_minimum_size = Vector2(500, 300)
+custom_minimum_size = Vector2(760, 360)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 506.0
-offset_bottom = 289.0
+offset_right = 760.0
+offset_bottom = 360.0
 script = ExtResource("1_qedko")
 SlotPrefab = ExtResource("2_3yj3k")
 
@@ -30,7 +30,7 @@ layout_mode = 2
 [node name="title" type="Label" parent="MainPanel/VBoxContainer/TitleBar" unique_id=237112284]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "背包"
+text = "物品管理"
 horizontal_alignment = 1
 
 [node name="CloseButton" type="Button" parent="MainPanel/VBoxContainer/TitleBar" unique_id=1997663957]
@@ -41,16 +41,54 @@ icon = ExtResource("3_8ojme")
 icon_alignment = 1
 expand_icon = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MainPanel/VBoxContainer" unique_id=74073306]
+[node name="ContentSplit" type="HBoxContainer" parent="MainPanel/VBoxContainer" unique_id=1073421424]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="InventorySection" type="VBoxContainer" parent="MainPanel/VBoxContainer/ContentSplit" unique_id=1799003519]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InventoryLabel" type="Label" parent="MainPanel/VBoxContainer/ContentSplit/InventorySection" unique_id=1520628690]
+layout_mode = 2
+text = "背包"
+horizontal_alignment = 1
+
+[node name="InventoryScroll" type="ScrollContainer" parent="MainPanel/VBoxContainer/ContentSplit/InventorySection" unique_id=74073306]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="MainPanel/VBoxContainer/ScrollContainer" unique_id=2117164804]
+[node name="MarginContainer" type="MarginContainer" parent="MainPanel/VBoxContainer/ContentSplit/InventorySection/InventoryScroll" unique_id=2117164804]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="SlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ScrollContainer/MarginContainer" unique_id=376297983]
+[node name="SlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ContentSplit/InventorySection/InventoryScroll/MarginContainer" unique_id=376297983]
 unique_name_in_owner = true
 layout_mode = 2
 columns = 7
+
+[node name="DeckSection" type="VBoxContainer" parent="MainPanel/VBoxContainer/ContentSplit" unique_id=1561178487]
+custom_minimum_size = Vector2(192, 0)
+layout_mode = 2
+
+[node name="DeckLabel" type="Label" parent="MainPanel/VBoxContainer/ContentSplit/DeckSection" unique_id=996680927]
+layout_mode = 2
+text = "出战卡组"
+horizontal_alignment = 1
+
+[node name="DeckScroll" type="ScrollContainer" parent="MainPanel/VBoxContainer/ContentSplit/DeckSection" unique_id=1792468862]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MainPanel/VBoxContainer/ContentSplit/DeckSection/DeckScroll" unique_id=1186945809]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DeckSlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ContentSplit/DeckSection/DeckScroll/MarginContainer" unique_id=114304198]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 4
