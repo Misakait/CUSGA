@@ -1,0 +1,109 @@
+[gd_scene format=3 uid="uid://b4aq56ipsxkpy"]
+
+[ext_resource type="Script" uid="uid://bboj0mleh6n6k" path="res://core/ui/AttributeSummaryUI.cs" id="1_vxqlk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxqlk"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.53725493, 0.65882355, 0.85882354, 0.65)
+
+[node name="AttributeSummaryUI" type="PanelContainer"]
+custom_minimum_size = Vector2(176, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_vxqlk")
+script = ExtResource("1_vxqlk")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "属性"
+horizontal_alignment = 1
+
+[node name="AttributeGrid" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="PhysAtkLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "物攻"
+
+[node name="PhysAtkValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="PhysDefLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "物防"
+
+[node name="PhysDefValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="MagPowerLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "法强"
+
+[node name="MagPowerValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="MagResistLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "法抗"
+
+[node name="MagResistValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="SpeedLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "速度"
+
+[node name="SpeedValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="PhysBoostLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "物理增伤"
+
+[node name="PhysBoostValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="MagicBoostLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+layout_mode = 2
+text = "魔法增伤"
+
+[node name="MagicBoostValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2

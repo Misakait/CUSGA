@@ -14,6 +14,7 @@ public partial class InventoryUI : Control
     [Export] public PackedScene EquipmentSlotPrefab { get; set; }
     [Export] public NodePath GameplayPortPath { get; set; }
 
+    private AttributeSummaryUI _attributeSummary = null!;
     private GridContainer _slotGrid = null!;
     private GridContainer _equipmentSlotGrid = null!;
     private GridContainer _deckSlotGrid = null!;
@@ -34,6 +35,7 @@ public partial class InventoryUI : Control
     {
         var closeButton = GetNode<Button>("%CloseButton");
         closeButton.Pressed += Close;
+        _attributeSummary = GetNode<AttributeSummaryUI>("%AttributeSummaryUI");
         _slotGrid = GetNode<GridContainer>("%SlotGrid");
         _equipmentSlotGrid = GetNode<GridContainer>("%EquipmentSlotGrid");
         _deckSlotGrid = GetNode<GridContainer>("%DeckSlotGrid");
@@ -73,6 +75,7 @@ public partial class InventoryUI : Control
         }
 
         BindPlayerInventory(inventory);
+        _attributeSummary.Bind(_gameplayPort.Player.Attributes);
         BindEquipment(_gameplayPort.Player.Equipment);
         BindBattleDeck(_gameplayPort.PlayerBattleDeck);
         if (_equipment == null || _battleDeck == null)

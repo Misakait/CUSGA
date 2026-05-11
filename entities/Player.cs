@@ -13,7 +13,7 @@ public partial class Player : Node
     private HealthComponent _health;
     private SatietyComponent _satiety;
     public EnergyComponent Energy { get; private set; }
-    private AttributeComponent _attribute;
+    public AttributeComponent Attributes { get; private set; }
     private InventoryComponent _inventory;
     public BattleDeckComponent BattleDeck { get; private set; }
     public EquipmentComponent Equipment { get; private set; }
@@ -29,7 +29,7 @@ public partial class Player : Node
         _satiety = GetNode<SatietyComponent>("Components/SatietyComponent");
         Energy = GetNode<EnergyComponent>("Components/EnergyComponent");
         Equipment = GetNode<EquipmentComponent>("Components/EquipmentComponent");
-        _attribute = GetNode<AttributeComponent>("Components/AttributeComponent");
+        Attributes = GetNode<AttributeComponent>("Components/AttributeComponent");
         TagComponent = GetNode<TagComponent>("Components/TagComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
         _inventory = GetNode<InventoryComponent>("Components/InventoryComponent");
