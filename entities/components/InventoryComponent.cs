@@ -39,9 +39,53 @@ public partial class InventoryComponent : Node
         return item != null;
     }
 
-    private bool IsValidIndex(int index)
+    public bool IsValidSlotIndex(int index)
     {
         return index >= 0 && index < Capacity;
+    }
+
+    public bool CanStore(ItemData item)
+    {
+        return CanStoreItem(item);
+    }
+
+    public ItemStack GetStackAt(int index)
+    {
+        if (!IsValidSlotIndex(index))
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return _slots[index];
+    }
+
+    public bool TrySetStackAt(int index, ItemStack stack)
+    {
+        if (!IsValidSlotIndex(index))
+        {
+            return false;
+        }
+
+        if (stack != null && !stack.IsEmpty && !CanStoreItem(stack.Item))
+        {
+            return false;
+        }
+
+        _slots[index].CopyFrom(stack);
+        EmitInventoryChanged();
+        return true;
+    }
+
+    public bool TryClearStackAt(int index)
+    {
+        if (!IsValidSlotIndex(index))
+        {
+            return false;
+        }
+
+        _slots[index].Clear();
+        EmitInventoryChanged();
+        return true;
     }
 
     // 按照 Item.CardName 对 _slots 排序，忽略 null
@@ -238,11 +282,10 @@ public partial class InventoryComponent : Node
         // 若目标格子是空的，或者装的是不同的物品，互换
         else
         {
-            var tempItem = targetSlot.Item;
-            var tempAmount = targetSlot.Amount;
+            var tempStack = targetSlot.Duplicate();
 
-            targetSlot.SetItem(sourceSlot.Item, sourceSlot.Amount);
-            sourceSlot.SetItem(tempItem, tempAmount);
+            targetSlot.CopyFrom(sourceSlot);
+            sourceSlot.CopyFrom(tempStack);
         }
 
         EmitInventoryChanged();
@@ -255,7 +298,7 @@ public partial class InventoryComponent : Node
             return false;
         }
 
-        if (!sourceInventory.IsValidIndex(fromIndex) || !IsValidIndex(toIndex))
+        if (!sourceInventory.IsValidSlotIndex(fromIndex) || !IsValidSlotIndex(toIndex))
         {
             return false;
         }
@@ -312,11 +355,10 @@ public partial class InventoryComponent : Node
         }
         else
         {
-            var tempItem = targetSlot.Item;
-            var tempAmount = targetSlot.Amount;
+            var tempStack = targetSlot.Duplicate();
 
-            targetSlot.SetItem(sourceSlot.Item, sourceSlot.Amount);
-            sourceSlot.SetItem(tempItem, tempAmount);
+            targetSlot.CopyFrom(sourceSlot);
+            sourceSlot.CopyFrom(tempStack);
         }
 
         sourceInventory.EmitInventoryChanged();
@@ -356,10 +398,9 @@ public partial class InventoryComponent : Node
             }
         }
 
-        var tempItem = targetSlot.Item;
-        var tempAmount = targetSlot.Amount;
+        var tempStack = targetSlot.Duplicate();
 
-        targetSlot.SetItem(sourceSlot.Item, sourceSlot.Amount);
-        sourceSlot.SetItem(tempItem, tempAmount);
+        targetSlot.CopyFrom(sourceSlot);
+        sourceSlot.CopyFrom(tempStack);
     }
 }

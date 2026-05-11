@@ -16,6 +16,12 @@ public partial class DraggableData : RefCounted
     // 起点所属的背包容器
     public InventoryComponent SourceInventory { get; set; }
 
+    // 起点所属的装备容器
+    public EquipmentComponent SourceEquipment { get; set; }
+
+    // 起点装备槽
+    public EquipmentSlot FromEquipmentSlot { get; set; }
+
     // 被拖拽的物品数据
     public ItemStack HeldStack { get; set; }
 }

@@ -96,8 +96,24 @@ public partial class SlotUI : PanelContainer
     {
         if (data.Obj is DraggableData dragData)
         {
-            return _inventoryComponent != null
-                && _inventoryComponent.CanReceiveItemFrom(dragData.SourceInventory, dragData.FromIndex, _myIndex);
+            if (_inventoryComponent == null)
+            {
+                return false;
+            }
+
+            if (dragData.SourceInventory != null)
+            {
+                return _inventoryComponent.CanReceiveItemFrom(dragData.SourceInventory, dragData.FromIndex, _myIndex);
+            }
+
+            if (dragData.SourceEquipment != null)
+            {
+                return dragData.SourceEquipment.CanUnequipToInventory(
+                    dragData.FromEquipmentSlot,
+                    _inventoryComponent,
+                    _myIndex
+                );
+            }
         }
         return false;
     }
@@ -106,12 +122,26 @@ public partial class SlotUI : PanelContainer
     {
         if (data.Obj is DraggableData dragData)
         {
-            int from = dragData.FromIndex;
-            int to = _myIndex;
+            if (dragData.SourceInventory != null)
+            {
+                int from = dragData.FromIndex;
+                int to = _myIndex;
 
-            GD.Print($"[UI交互] 玩家要把{dragData.SourceInventory.DragSourceSystem}背包格 {from} 的物品拖到{_inventoryComponent.DragSourceSystem}格 {to}。");
+                GD.Print($"[UI交互] 玩家要把{dragData.SourceInventory.DragSourceSystem}背包格 {from} 的物品拖到{_inventoryComponent.DragSourceSystem}格 {to}。");
 
-            _inventoryComponent.MoveItemFrom(dragData.SourceInventory, from, to);
+                _inventoryComponent.MoveItemFrom(dragData.SourceInventory, from, to);
+                return;
+            }
+
+            if (dragData.SourceEquipment != null)
+            {
+                GD.Print($"[UI交互] 玩家要把装备槽 {dragData.FromEquipmentSlot} 的装备拖到{_inventoryComponent.DragSourceSystem}格 {_myIndex}。");
+                dragData.SourceEquipment.UnequipToInventory(
+                    dragData.FromEquipmentSlot,
+                    _inventoryComponent,
+                    _myIndex
+                );
+            }
         }
     }
     private void UpdateVisuals(ItemStack stack)

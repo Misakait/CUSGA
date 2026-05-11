@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://cx6d0836hkgj0"]
+
+[ext_resource type="Script" uid="uid://bts8tc1jf7jl" path="res://core/ui/EquipmentSlotUI.cs" id="1_l4xgi"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l4xgi"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.53725493, 0.65882355, 0.85882354, 1)
+
+[node name="EquipmentSlotUI" type="PanelContainer"]
+custom_minimum_size = Vector2(76, 76)
+offset_right = 76.0
+offset_bottom = 76.0
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_l4xgi")
+script = ExtResource("1_l4xgi")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="SlotLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "装备"
+horizontal_alignment = 1
+text_overrun_behavior = 3
+
+[node name="ItemIcon" type="TextureRect" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmountLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1

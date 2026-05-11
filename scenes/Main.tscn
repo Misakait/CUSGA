@@ -162,6 +162,5 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="InventoryUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
-custom_minimum_size = Vector2(520, 360)
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")

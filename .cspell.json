@@ -12,6 +12,7 @@
     "Randf",
     "Mathf",
     "GDSIGNAL",
-    "onready"
+    "onready",
+    "Unequip"
   ]
 }

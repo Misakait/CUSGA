@@ -3,15 +3,17 @@
 [ext_resource type="Script" uid="uid://dvb7fv6n3opp4" path="res://core/ui/InventoryUI.cs" id="1_qedko"]
 [ext_resource type="PackedScene" uid="uid://rukl64pxxdie" path="res://scenes/inventory/SlotUI.tscn" id="2_3yj3k"]
 [ext_resource type="Texture2D" uid="uid://dapo07qjenafe" path="res://res/image/61e6dae9ecdf4ea59d601bc75c0c5e02.png" id="3_8ojme"]
+[ext_resource type="PackedScene" uid="uid://cx6d0836hkgj0" path="res://scenes/inventory/EquipmentSlotUI.tscn" id="4_l4xgi"]
 
 [node name="InventoryUI" type="Control" unique_id=1703104203]
-custom_minimum_size = Vector2(760, 360)
+custom_minimum_size = Vector2(960, 360)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 760.0
+offset_right = 960.0
 offset_bottom = 360.0
 script = ExtResource("1_qedko")
 SlotPrefab = ExtResource("2_3yj3k")
+EquipmentSlotPrefab = ExtResource("4_l4xgi")
 
 [node name="MainPanel" type="PanelContainer" parent="." unique_id=2030953398]
 layout_mode = 1
@@ -45,6 +47,21 @@ expand_icon = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
+
+[node name="EquipmentSection" type="VBoxContainer" parent="MainPanel/VBoxContainer/ContentSplit" unique_id=1929620815]
+custom_minimum_size = Vector2(176, 0)
+layout_mode = 2
+
+[node name="EquipmentLabel" type="Label" parent="MainPanel/VBoxContainer/ContentSplit/EquipmentSection" unique_id=494369740]
+layout_mode = 2
+text = "装备"
+horizontal_alignment = 1
+
+[node name="EquipmentSlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ContentSplit/EquipmentSection" unique_id=1140641077]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
 
 [node name="InventorySection" type="VBoxContainer" parent="MainPanel/VBoxContainer/ContentSplit" unique_id=1799003519]
 layout_mode = 2

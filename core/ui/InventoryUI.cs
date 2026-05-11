@@ -1,5 +1,7 @@
 using Godot;
 using CUSGA.entities.components;
+using CUSGA.core.constants;
+using System;
 using System.Collections.Generic;
 using CUSGA.core.application;
 
@@ -9,18 +11,23 @@ public partial class InventoryUI : Control
 {
     // SlotUI的scene
     [Export] public PackedScene SlotPrefab { get; set; }
+    [Export] public PackedScene EquipmentSlotPrefab { get; set; }
     [Export] public NodePath GameplayPortPath { get; set; }
 
     private GridContainer _slotGrid = null!;
+    private GridContainer _equipmentSlotGrid = null!;
     private GridContainer _deckSlotGrid = null!;
     private GameplayPort _gameplayPort = null!;
 
     private InventoryComponent _playerInventory = null!;
+    private EquipmentComponent _equipment = null!;
     private BattleDeckComponent _battleDeck = null!;
     private bool _isInventoryInitialized = false;
+    private bool _isEquipmentInitialized = false;
     private bool _isDeckInitialized = false;
     // private Node _globalEventBus;
     private readonly List<SlotUI> _slotViews = [];
+    private readonly List<EquipmentSlotUI> _equipmentSlotViews = [];
     private readonly List<SlotUI> _deckSlotViews = [];
 
     public override void _Ready()
@@ -28,6 +35,7 @@ public partial class InventoryUI : Control
         var closeButton = GetNode<Button>("%CloseButton");
         closeButton.Pressed += Close;
         _slotGrid = GetNode<GridContainer>("%SlotGrid");
+        _equipmentSlotGrid = GetNode<GridContainer>("%EquipmentSlotGrid");
         _deckSlotGrid = GetNode<GridContainer>("%DeckSlotGrid");
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
         _gameplayPort.InventoryToggleRequested += HandleInventoryToggleRequest;
@@ -65,8 +73,9 @@ public partial class InventoryUI : Control
         }
 
         BindPlayerInventory(inventory);
+        BindEquipment(_gameplayPort.Player.Equipment);
         BindBattleDeck(_gameplayPort.PlayerBattleDeck);
-        if (_battleDeck == null)
+        if (_equipment == null || _battleDeck == null)
         {
             return;
         }
@@ -77,6 +86,12 @@ public partial class InventoryUI : Control
             _isInventoryInitialized = true;
         }
 
+        if (!_isEquipmentInitialized)
+        {
+            GenerateEquipmentSlots();
+            _isEquipmentInitialized = true;
+        }
+
         if (!_isDeckInitialized)
         {
             GenerateSlots(_deckSlotGrid, _deckSlotViews, _battleDeck);
@@ -84,6 +99,7 @@ public partial class InventoryUI : Control
         }
 
         RebindInventorySlots();
+        RebindEquipmentSlots();
         RebindDeckSlots();
         Show();
     }
@@ -107,6 +123,26 @@ public partial class InventoryUI : Control
         _isInventoryInitialized = false;
     }
 
+    private void BindEquipment(EquipmentComponent equipment)
+    {
+        if (equipment == null)
+        {
+            GD.PushError("InventoryUI 未找到 EquipmentComponent。");
+            return;
+        }
+
+        if (_equipment == equipment)
+        {
+            return;
+        }
+
+        DisconnectEquipmentSignals();
+        _equipment = equipment;
+        _equipment.EquipmentChanged += OnEquipmentChanged;
+
+        _isEquipmentInitialized = false;
+    }
+
     private void BindBattleDeck(BattleDeckComponent battleDeck)
     {
         if (battleDeck == null)
@@ -125,6 +161,24 @@ public partial class InventoryUI : Control
         _battleDeck.InventoryChanged += OnBattleDeckChanged;
 
         _isDeckInitialized = false;
+    }
+
+    private void GenerateEquipmentSlots()
+    {
+        foreach (Node child in _equipmentSlotGrid.GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        _equipmentSlotViews.Clear();
+
+        foreach (EquipmentSlot slot in Enum.GetValues<EquipmentSlot>())
+        {
+            EquipmentSlotUI slotUI = EquipmentSlotPrefab.Instantiate<EquipmentSlotUI>();
+            _equipmentSlotGrid.AddChild(slotUI);
+            slotUI.Bind(_equipment, slot);
+            _equipmentSlotViews.Add(slotUI);
+        }
     }
 
     private void GenerateSlots(GridContainer slotGrid, List<SlotUI> slotViews, InventoryComponent inventory)
@@ -157,6 +211,22 @@ public partial class InventoryUI : Control
         }
     }
 
+    private void RebindEquipmentSlots()
+    {
+        if (_equipmentSlotViews.Count != Enum.GetValues<EquipmentSlot>().Length)
+        {
+            GenerateEquipmentSlots();
+            return;
+        }
+
+        int index = 0;
+        foreach (EquipmentSlot slot in Enum.GetValues<EquipmentSlot>())
+        {
+            _equipmentSlotViews[index].Bind(_equipment, slot);
+            index++;
+        }
+    }
+
     private void RebindDeckSlots()
     {
         if (_deckSlotViews.Count != _battleDeck.Capacity)
@@ -176,6 +246,11 @@ public partial class InventoryUI : Control
         RebindInventorySlots();
     }
 
+    private void OnEquipmentChanged()
+    {
+        RebindEquipmentSlots();
+    }
+
     private void OnBattleDeckChanged()
     {
         RebindDeckSlots();
@@ -189,6 +264,16 @@ public partial class InventoryUI : Control
         }
 
         _playerInventory.InventoryChanged -= OnInventoryChanged;
+    }
+
+    private void DisconnectEquipmentSignals()
+    {
+        if (_equipment == null)
+        {
+            return;
+        }
+
+        _equipment.EquipmentChanged -= OnEquipmentChanged;
     }
 
     private void DisconnectBattleDeckSignals()
@@ -216,6 +301,7 @@ public partial class InventoryUI : Control
     {
         _gameplayPort.InventoryToggleRequested -= HandleInventoryToggleRequest;
         DisconnectInventorySignals();
+        DisconnectEquipmentSignals();
         DisconnectBattleDeckSignals();
     }
 }
