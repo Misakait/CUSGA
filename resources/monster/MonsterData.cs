@@ -2,7 +2,7 @@ using Godot;
 using CUSGA.resources.loot;
 using CUSGA.core.constants;
 using CUSGA.entities.components;
-using CUSGA.resources.stats; // 引用掉落表 Resource
+using CUSGA.resources.stats;
 
 namespace CUSGA.resources.monsters;
 
