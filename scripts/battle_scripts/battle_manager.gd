@@ -75,7 +75,6 @@ func _ready():
 	monster_manager.monsters_spawned.connect(_on_monsters_spawned)
 	monster_manager.monster_defeated.connect(_on_monster_defeated)
 
-
 	change_state(BattleState.COMBAT_START)
 
 ## 处理中途生成的怪物（为新怪物分配初始行动值）
@@ -226,76 +225,93 @@ func _execute_single_action(action: Action):
 		if action.card_data and action.card_data.has_method("ApplyEffect"):
 			var ContextClass = load(CONTEXT_SCRIPT_PATH)
 			var context = null
-			
+
 			# 尝试安全地获取技能目标的枚举值，默认为自身
 			var targeting_type: int = SkillTargetingType.SELF
 			if action.card_data.get("Skill") != null and action.card_data.Skill.get("TargetingType") != null:
 				targeting_type = action.card_data.Skill.TargetingType
-			
+
+			# ---------------------------------------------------------
+			# 【重要：C# 实体解包】
+			# 由于目前的 action.source (行动发起者) 和 target (技能目标)
+			# 可能是 GDScript 的包装器节点（如 PlayerManager ），而 C# 侧的
+			# 技能特效组件（如 DamageEffect）在应用效果时，需要去获取
+			# 目标身上的特定 C# 组件（如 DamageReceiverComponent 等）。
+			# 所以在将 target 传入 SkillExecutionContext 之前，必须
+			# 调用包装器提供的 get_combat_entity() 提取出真正的 C# 实体节点。
+			# ---------------------------------------------------------
+			var real_source = action.source.get_combat_entity() if action.source.has_method("get_combat_entity") else action.source
+			var real_target = target.get_combat_entity() if target and target.has_method("get_combat_entity") else target
+
 			# 基于解析到的类型，动态收集场上目标并分配至对应上下文工厂
 			match targeting_type:
 				SkillTargetingType.SELF:
 					# 目标为自身：直接传入卡牌施放者
-					context = ContextClass.Self(action.source)
-					
+					context = ContextClass.Self(real_source)
+
 				SkillTargetingType.SINGLE_ENEMY, SkillTargetingType.ANY_SINGLE_UNIT:
 					# 单体目标：依赖玩家拖拽或操作时传入的具体 target
-					if target:
-						context = ContextClass.FromSingleTarget(action.source, target)
+					if real_target:
+						context = ContextClass.FromSingleTarget(real_source, real_target)
 					else:
 						# 若发生未选中目标强行释放的异常情况，容错回退为自身
 						push_warning("单体技能未找到目标，退化为以自身为目标")
-						context = ContextClass.Self(action.source)
-						
+						context = ContextClass.Self(real_source)
+
 				SkillTargetingType.ALL_ENEMIES:
 					# 全体敌人：从怪物管理器中提取所有存活怪物传入数组
 					var enemies: Array[Node] = []
 					if monster_manager and monster_manager.active_monsters:
-						enemies.assign(monster_manager.active_monsters)
-					context = ContextClass.FromPrimaryTargets(action.source, enemies)
-					
+						for enemy in monster_manager.active_monsters:
+							enemies.append(enemy.get_combat_entity() if enemy.has_method("get_combat_entity") else enemy)
+					context = ContextClass.FromPrimaryTargets(real_source, enemies)
+
 				SkillTargetingType.ALL_UNITS:
 					# 全体单位：复用写好的 get_all_combatants() 获取包含玩家在内的所有人
 					var all_units: Array[Node] = []
-					all_units.assign(get_all_combatants())
-					context = ContextClass.FromPrimaryTargets(action.source, all_units)
-					
+					for unit in get_all_combatants():
+						all_units.append(unit.get_combat_entity() if unit.has_method("get_combat_entity") else unit)
+					context = ContextClass.FromPrimaryTargets(real_source, all_units)
+
 				SkillTargetingType.RANDOM_ENEMY:
 					# 随机单体敌人：在场上存活的怪物中随机抽取一个
 					var random_target = null
 					if monster_manager and monster_manager.active_monsters and monster_manager.active_monsters.size() > 0:
 						random_target = monster_manager.active_monsters.pick_random()
-					
+						random_target = random_target.get_combat_entity() if random_target.has_method("get_combat_entity") else random_target
+
 					if random_target:
-						context = ContextClass.FromSingleTarget(action.source, random_target)
+						context = ContextClass.FromSingleTarget(real_source, random_target)
 					else:
-						context = ContextClass.Self(action.source)
-						
+						context = ContextClass.Self(real_source)
+
 				SkillTargetingType.SPREAD_FROM_ENEMY:
 					# 扩散类型：获取主目标，并根据其在怪物列表中的位置，提取相邻（左右）的敌人作为次要目标
 					var secondary_targets: Array[Node] = []
 					if target and monster_manager and monster_manager.active_monsters:
 						var monsters = monster_manager.active_monsters
 						var target_index = monsters.find(target)
-						
+
 						# 如果主目标存在于当前怪物列表中（find 返回 -1 表示未找到）
 						if target_index != -1:
 							# 提取左侧相邻敌人，并确保其不越过左边界 (index 0)
 							if target_index > 0:
-								secondary_targets.append(monsters[target_index - 1])
+								var left_enemy = monsters[target_index - 1]
+								secondary_targets.append(left_enemy.get_combat_entity() if left_enemy.has_method("get_combat_entity") else left_enemy)
 							# 提取右侧相邻敌人，并确保其不越过右边界 (最大 size - 1)
 							if target_index < monsters.size() - 1:
-								secondary_targets.append(monsters[target_index + 1])
-								
+								var right_enemy = monsters[target_index + 1]
+								secondary_targets.append(right_enemy.get_combat_entity() if right_enemy.has_method("get_combat_entity") else right_enemy)
+
 					# 封装为上下文对象，将找出的左右侧相邻敌人作为 secondary_targets 传入
-					context = ContextClass.FromSpread(action.source, target, secondary_targets)
-					
+					context = ContextClass.FromSpread(real_source, real_target, secondary_targets)
+
 				_:
 					# 兜底情况的容错处理
-					if target:
-						context = ContextClass.FromSingleTarget(action.source, target)
+					if real_target:
+						context = ContextClass.FromSingleTarget(real_source, real_target)
 					else:
-						context = ContextClass.Self(action.source)
+						context = ContextClass.Self(real_source)
 
 			if context != null:
 				action.card_data.ApplyEffect(context)
