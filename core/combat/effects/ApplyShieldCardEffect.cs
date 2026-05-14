@@ -9,7 +9,9 @@ namespace CUSGA.core.combat.effects;
 public partial class ApplyShieldCardEffect : CardEffect
 {
     [Export] public ShieldStatusData ShieldStatus { get; set; }
-    [Export] public SkillEffectTargetFilter TargetFilter { get; set; } = SkillEffectTargetFilter.AllTargets;
+    [Export]
+    public SkillEffectTargetScope TargetScope { get; set; }
+            = SkillEffectTargetScope.AllTargets;
 
     public override void Execute(SkillExecutionContext context)
     {
@@ -25,16 +27,8 @@ public partial class ApplyShieldCardEffect : CardEffect
             return;
         }
 
-        foreach (var targetInfo in context.Targets)
+        foreach (var target in SkillEffectTargetScopeUtility.SelectNodes(context, TargetScope))
         {
-            if (!SkillEffectTargetFilterUtility.Matches(TargetFilter, targetInfo))
-                continue;
-
-            var target = targetInfo.Unit;
-
-            if (target == null)
-                continue;
-
             var statusComponent = target.GetNodeOrNull<StatusComponent>("StatusComponent");
 
             if (statusComponent == null)

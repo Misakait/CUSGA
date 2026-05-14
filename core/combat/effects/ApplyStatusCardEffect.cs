@@ -9,7 +9,9 @@ namespace CUSGA.core.combat.effects;
 public partial class ApplyStatusCardEffect : CardEffect
 {
     [Export] public StatusEffectData Status { get; set; }
-    [Export] public SkillEffectTargetFilter TargetFilter { get; set; } = SkillEffectTargetFilter.AllTargets;
+    [Export]
+    public SkillEffectTargetScope TargetScope { get; set; }
+            = SkillEffectTargetScope.AllTargets;
 
     public override void Execute(SkillExecutionContext context)
     {
@@ -19,23 +21,17 @@ public partial class ApplyStatusCardEffect : CardEffect
             return;
         }
 
-        foreach (var targetInfo in context.Targets)
+        foreach (var target in SkillEffectTargetScopeUtility.SelectNodes(context, TargetScope))
         {
-            if (!SkillEffectTargetFilterUtility.Matches(TargetFilter, targetInfo))
-                continue;
-
-            if (targetInfo.Unit == null)
-                continue;
-
-            var statusComponent = targetInfo.Unit.GetNodeOrNull<StatusComponent>("StatusComponent");
+            var statusComponent = target.GetNodeOrNull<StatusComponent>("StatusComponent");
 
             if (statusComponent == null)
             {
-                GD.PushError($"Target '{targetInfo.Unit.Name}' has no StatusComponent.");
+                GD.PushError($"Target '{target.Name}' has no StatusComponent.");
                 continue;
             }
 
-            var instance = Status.CreateInstance(context.Source, targetInfo.Unit);
+            var instance = Status.CreateInstance(context.Source, target);
             statusComponent.AddStatus(instance);
         }
     }

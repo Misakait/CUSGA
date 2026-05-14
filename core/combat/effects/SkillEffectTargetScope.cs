@@ -1,7 +1,8 @@
 namespace CUSGA.core.combat.effects;
 
-public enum SkillEffectTargetFilter
+public enum SkillEffectTargetScope
 {
+    Source,
     AllTargets,
     PrimaryOnly,
     SecondaryOnly

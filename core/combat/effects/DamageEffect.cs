@@ -14,7 +14,8 @@ public partial class DamageEffect : CardEffect
 
     [Export] public ElementType Element { get; set; } = ElementType.None;
     [Export]
-    public SkillEffectTargetFilter TargetFilter { get; set; } = SkillEffectTargetFilter.AllTargets;
+    public SkillEffectTargetScope TargetScope { get; set; }
+            = SkillEffectTargetScope.PrimaryOnly;
 
     [Export] public float PrimaryDamageMultiplier { get; set; } = 1.0f;
 
@@ -28,54 +29,71 @@ public partial class DamageEffect : CardEffect
             return;
         }
 
-
-        foreach (var targetInfo in context.Targets)
+        foreach (var target in SkillEffectTargetScopeUtility.SelectTargets(context, TargetScope))
         {
-            if (targetInfo == null)
-                continue;
-
-            if (!SkillEffectTargetFilterUtility.Matches(TargetFilter, targetInfo))
-                continue;
-
-            var target = targetInfo.Unit;
-            if (target == null)
-                continue;
-
-            float damage = CalculateDamageForTarget(targetInfo);
-            if (damage <= 0f)
-                continue;
-
-            var receiver = target.GetNodeOrNull<DamageReceiverComponent>("Components/DamageReceiverComponent");
-
-            if (receiver == null)
+            if (target.Unit == null)
             {
-                GD.PushWarning($"Target '{target.Name}' has no DamageReceiverComponent.");
                 continue;
             }
 
-            var payload = new DamagePayload
-            {
-                Source = context.Source,
-                Target = target,
-                Damage = (int)damage,
-                Type = Type,
-                Element = Element
-            };
+            var damage = CalculateDamageForTarget(target);
 
-            receiver.ReceiveDamage(payload);
-
-            GD.Print($"[伤害效果] {context.Source.Name} 对 {target.Name} 发起攻击，基础伤害：{BaseDamage}");
+            ApplyDamageToNode(
+                source: context.Source,
+                target: target.Unit,
+                damage: damage
+            );
         }
     }
-    private float CalculateDamageForTarget(SkillTarget target)
+    private int CalculateDamageForTarget(SkillEffectTargetSelection target)
     {
-        float multiplier = target.Role switch
+        float multiplier;
+
+        if (target.IsSource)
         {
-            SkillTargetRole.Primary => PrimaryDamageMultiplier,
-            SkillTargetRole.Secondary => SecondaryDamageMultiplier,
-            _ => 1.0f
+            multiplier = PrimaryDamageMultiplier;
+        }
+        else
+        {
+            multiplier = target.Role switch
+            {
+                SkillTargetRole.Primary => PrimaryDamageMultiplier,
+                SkillTargetRole.Secondary => SecondaryDamageMultiplier,
+                _ => 1.0f
+            };
+        }
+
+        return Mathf.Max(0, Mathf.RoundToInt(BaseDamage * multiplier));
+    }
+
+    private void ApplyDamageToNode(Node source, Node target, int damage)
+    {
+        if (damage <= 0)
+        {
+            return;
+        }
+
+        var receiver = target.GetNodeOrNull<DamageReceiverComponent>(
+            "Components/DamageReceiverComponent"
+        );
+
+        if (receiver == null)
+        {
+            GD.PushWarning($"Target '{target.Name}' has no DamageReceiverComponent.");
+            return;
+        }
+
+        var payload = new DamagePayload
+        {
+            Source = source,
+            Target = target,
+            Damage = damage,
+            Type = Type,
+            Element = Element
         };
 
-        return Mathf.Max(0f, BaseDamage * multiplier);
+        receiver.ReceiveDamage(payload);
+
+        GD.Print($"[伤害效果] {source.Name} 对 {target.Name} 造成 {damage} 点伤害，基础伤害：{BaseDamage}");
     }
 }
