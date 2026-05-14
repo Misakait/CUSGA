@@ -7,6 +7,9 @@ using CUSGA.entities;
 using CUSGA.resources.interaction;
 using CUSGA.core.application;
 using CUSGA.resources.interaction.operations;
+using CUSGA.resources.item.card;
+using CUSGA.resources.monsters;
+using Godot.Collections;
 
 namespace CUSGA.core.gameplay;
 
@@ -30,7 +33,9 @@ public partial class WorldInteractionCoordinator : Node
         _backpackFlyTarget = GetNodeOrNull<Control>(BackpackFlyTargetPath);
         _globalEventBus = GetNodeOrNull<Node>("/root/GlobalEventBus");
         _encounterManager = GetNode<EncounterManager>(EncounterManagerPath);
+
         _boardController.CardClicked += OnBoardCardClicked;
+        _gameplayPort.EncounterRequested += OnEncounterRequested;
     }
 
     public override void _ExitTree()
@@ -39,6 +44,62 @@ public partial class WorldInteractionCoordinator : Node
         {
             _boardController.CardClicked -= OnBoardCardClicked;
         }
+        if (_gameplayPort != null)
+        {
+            _gameplayPort.EncounterRequested -= OnEncounterRequested;
+        }
+    }
+
+    private void OnEncounterRequested(TerrainInstance terrain, Array<SkillCardData> battleDeck, Array<MonsterData> monsters, string message)
+    {
+        GD.Print($"[WorldInteractionCoordinator] Entering Combat!");
+        PackedScene battleScene = GD.Load<PackedScene>("res://scenes/battle_scenes/battle.tscn");
+        Node battleInstance = battleScene.Instantiate();
+
+        // 传递由 GameplayPort 获取到的玩家战斗卡组和遭遇到的怪物数据，给即将生成的战斗场景
+        if (battleDeck != null && battleDeck.Count > 0)
+        {
+            battleInstance.Set("starting_deck_data", battleDeck);
+        }
+        if (monsters != null && monsters.Count > 0)
+        {
+            battleInstance.Set("starting_monster_data", monsters);
+        }
+
+        // 监听战斗结束信号，用于在战斗完成后销毁战斗场景并恢复主界面
+        battleInstance.Connect("battle_ended", Callable.From<bool>(isVictory => OnBattleEnded(battleInstance, isVictory)));
+
+        // 将战斗场景添加为主场景的子节点，从而将其加入游戏渲染树
+        GetNode("/root/Main").AddChild(battleInstance);
+
+        // 隐藏主界面的各个模块（棋盘、地图、背包UI等），确保战斗画面不受遮挡
+        GetNode<CanvasItem>("/root/Main/BoardSystem/BoardController").Hide();
+        GetNode<CanvasItem>("/root/Main/MapSystem").Hide();
+        // 小地图因为在 CanvasLayer 下，需要单独隐藏
+        GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Hide();
+        GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Hide();
+    }
+
+    /// <summary>
+    /// 处理战斗结束的逻辑
+    /// </summary>
+    /// <param name="battleInstance">当前的战斗场景实例</param>
+    /// <param name="isVictory">战斗是否胜利</param>
+    private void OnBattleEnded(Node battleInstance, bool isVictory)
+    {
+        GD.Print($"[WorldInteractionCoordinator] Combat Ended! Victory: {isVictory}");
+
+        // 销毁战斗场景
+        if (IsInstanceValid(battleInstance))
+        {
+            battleInstance.QueueFree();
+        }
+
+        // 重新显示主场景界面的各系统和小地图
+        GetNode<CanvasItem>("/root/Main/BoardSystem/BoardController").Show();
+        GetNode<CanvasItem>("/root/Main/MapSystem").Show();
+        GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Show();
+        GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Show();
     }
 
     private void OnBoardCardClicked(BoardCardView card)

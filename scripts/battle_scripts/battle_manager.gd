@@ -1,5 +1,7 @@
 extends Node
 
+signal battle_ended(is_victory: bool)
+
 #region onready
 @onready var deck_manager = $DeckManager
 @onready var player_hand = $PlayerHand
@@ -424,6 +426,9 @@ func _handle_turn_end():
 func _handle_combat_end():
 	print("--- 战斗结束 ---")
 	control_lock.lock()
+
+	var is_victory = monster_manager.active_monsters.is_empty() and monster_manager.upcoming_monsters.is_empty()
+	battle_ended.emit(is_victory)
 
 ## 玩家点击"结束回合"按钮触发
 func _on_turn_end_pressed() -> void:
