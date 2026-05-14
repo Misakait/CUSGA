@@ -32,7 +32,6 @@ config/icon="res://icon.svg"
 
 GlobalEventBus="*uid://f4acdsbh24f4"
 TimeSystem="*uid://da5qjs7g2tqfs"
-EncounterManager="*uid://c8cvyjuxy5m80"
 WeatherManager="*uid://b0l58aislix47"
 ItemsControl="*uid://b1nat1ps6dux8"
 

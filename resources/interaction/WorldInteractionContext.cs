@@ -14,4 +14,5 @@ public sealed partial class WorldInteractionContext : RefCounted
     public required TerrainInstance Terrain { get; init; }
     public required Node GlobalEventBus { get; init; }
     public required Control BackpackFlyTarget { get; init; }
+    public required EncounterManager EncounterManager { get; init; }
 }

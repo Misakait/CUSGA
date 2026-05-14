@@ -15,7 +15,9 @@ public partial class WorldInteractionCoordinator : Node
     [Export] public NodePath BoardControllerPath { get; set; } = null!;
     [Export] public NodePath GameplayPortPath { get; set; } = null!;
     [Export] public NodePath BackpackFlyTargetPath { get; set; } = null!;
+    [Export] public NodePath EncounterManagerPath { get; set; } = null!;
 
+    private EncounterManager _encounterManager;
     private BoardController _boardController = null!;
     private GameplayPort _gameplayPort = null!;
     private Control _backpackFlyTarget;
@@ -27,7 +29,7 @@ public partial class WorldInteractionCoordinator : Node
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
         _backpackFlyTarget = GetNodeOrNull<Control>(BackpackFlyTargetPath);
         _globalEventBus = GetNodeOrNull<Node>("/root/GlobalEventBus");
-
+        _encounterManager = GetNode<EncounterManager>(EncounterManagerPath);
         _boardController.CardClicked += OnBoardCardClicked;
     }
 
@@ -100,7 +102,8 @@ public partial class WorldInteractionCoordinator : Node
             Card = card,
             Terrain = terrain,
             GlobalEventBus = _globalEventBus,
-            BackpackFlyTarget = _backpackFlyTarget
+            BackpackFlyTarget = _backpackFlyTarget,
+            EncounterManager = _encounterManager,
         };
         GD.Print($"[WorldInteractionCoordinator] Ops count = {ops.Count}");
         foreach (TerrainOp op in ops)

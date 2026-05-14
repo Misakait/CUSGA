@@ -2,8 +2,9 @@ using System;
 using Godot;
 using Godot.Collections;
 using CUSGA.resources.encounters;
+using CUSGA.core.autoloads;
 
-namespace CUSGA.core.autoloads;
+namespace CUSGA.core.application;
 
 public partial class EncounterManager : Node
 {
@@ -41,14 +42,15 @@ public partial class EncounterManager : Node
             }
 
             float finalChance = BaseGatheringSpawnChance * timeModifier * Mathf.Max(rule.ExtraChanceMultiplier, 0.0f);
-
+            // float finalChance = 1.0f;
+            GD.Print($"Resolving gathering encounter for tag: {resourceTag}, finalChance: {finalChance}");
             if (GD.Randf() <= finalChance)
             {
                 if (rule.MonsterToSpawn == null)
                 {
                     return GatheringEncounterResult.None();
                 }
-
+                GD.Print($"Gathering encounter triggered: {rule.MonsterToSpawn.MonsterName}");
                 return GatheringEncounterResult.Create(
                     rule.MonsterToSpawn,
                     rule.SpawnMessage

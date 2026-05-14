@@ -14,7 +14,7 @@ public sealed partial class CheckGatheringEncounterOp(StringName gatheringTag) :
             return;
         }
         GD.Print($"Checking gathering encounter for tag: {GatheringTag}");
-        var result = EncounterManager.Instance.ResolveGatheringEncounter(GatheringTag);
+        var result = context.EncounterManager.ResolveGatheringEncounter(GatheringTag);
         if (!result.Triggered)
         {
             return;

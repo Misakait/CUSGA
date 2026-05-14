@@ -84,6 +84,7 @@ public partial class GameplayPort : Node
 
     public void RequestEncounter(TerrainInstance terrain, Array<MonsterData> monsters, string message)
     {
+        GD.Print($"RequestEncounter: terrain={terrain}, monsters={monsters}, message={message}");
         EmitSignal(
             SignalName.EncounterRequested,
             terrain,
