@@ -23,7 +23,7 @@ public partial class ApplyStatusCardEffect : CardEffect
 
         foreach (var target in SkillEffectTargetScopeUtility.SelectNodes(context, TargetScope))
         {
-            var statusComponent = target.GetNodeOrNull<StatusComponent>("StatusComponent");
+            var statusComponent = target.GetNodeOrNull<StatusComponent>("Components/StatusComponent");
 
             if (statusComponent == null)
             {

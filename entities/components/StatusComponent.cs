@@ -52,14 +52,14 @@ public partial class StatusComponent : Node
             return;
         }
 
-        if (incoming.Owner != Parent)
-        {
-            GD.PushError(
-                $"Status '{incoming.Id}' owner mismatch. " +
-                $"Expected '{Parent?.Name}', got '{incoming.Owner?.Name}'."
-            );
-            return;
-        }
+        // if (incoming.Owner != Parent)
+        // {
+        //     GD.PushError(
+        //         $"Status '{incoming.Id}' owner mismatch. " +
+        //         $"Expected '{Parent?.Name}', got '{incoming.Owner?.Name}'."
+        //     );
+        //     return;
+        // }
 
         if (incoming.Id == default)
         {
