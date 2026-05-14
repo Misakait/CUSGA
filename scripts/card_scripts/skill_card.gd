@@ -41,8 +41,10 @@ func use(target: Node = null):
 
 func init_card_data(card_data):
 	data = card_data
-	$CardName.text = data.CardName
-	$CardDescription.text = data.Description
+	# 调用 SkillCardData.cs 的 DisplayName 属性获取实际显示的名称（如果没有独立命名则获取技能名称）
+	$CardName.text = data.DisplayName
+	# 调用 SkillCardData.cs 的 DisplayDescription 属性获取实际显示的描述（如果没有独立描述则获取技能描述）
+	$CardDescription.text = data.DisplayDescription
 	$CardCost.text = str(data.cost)
 
 func _on_area_2d_mouse_entered() -> void:

@@ -10,7 +10,6 @@
 [sub_resource type="Resource" id="Resource_l6wee"]
 script = ExtResource("2_htuqe")
 Element = 5
-TargetScope = 1
 SecondaryDamageMultiplier = 0.5
 metadata/_custom_type_script = "uid://b2df0ritlplj8"
 
@@ -23,7 +22,6 @@ metadata/_custom_type_script = "uid://b1nwu3fjhbo5n"
 [sub_resource type="Resource" id="Resource_eo14m"]
 script = ExtResource("3_htuqe")
 Status = SubResource("Resource_bkq4h")
-TargetScope = 2
 metadata/_custom_type_script = "uid://eb5trb48cjvk"
 
 [sub_resource type="Resource" id="Resource_htuqe"]
