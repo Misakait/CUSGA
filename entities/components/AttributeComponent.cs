@@ -38,29 +38,102 @@ public partial class AttributeComponent : Node
 
     public Node Host => GetParent();
 
-    public float Speed => GetEffectiveValue(AttributeType.Speed);
-    public float MagPower => GetEffectiveValue(AttributeType.MagPower);
-    public float MagResist => GetEffectiveValue(AttributeType.MagResist);
-    public float PhysAtk => GetEffectiveValue(AttributeType.PhysAtk);
-    public float PhysDef => GetEffectiveValue(AttributeType.PhysDef);
-    public float PhysDamageBoost => GetEffectiveValue(AttributeType.PhysDamageBoost);
-    public float MagicDamageBoost => GetEffectiveValue(AttributeType.MagicDamageBoost);
+    // public float Speed => GetEffectiveValue(AttributeType.Speed);
+    // public float MagPower => GetEffectiveValue(AttributeType.MagPower);
+    // public float MagResist => GetEffectiveValue(AttributeType.MagResist);
+    // public float PhysAtk => GetEffectiveValue(AttributeType.PhysAtk);
+    // public float PhysDef => GetEffectiveValue(AttributeType.PhysDef);
+    // public float PhysDamageBoost => GetEffectiveValue(AttributeType.PhysDamageBoost);
+    // public float MagicDamageBoost => GetEffectiveValue(AttributeType.MagicDamageBoost);
+    [ExportGroup("Realtime Attributes (Debug)")]
+    [Export]
+    public float Speed
+    {
+        get => GetEffectiveValue(AttributeType.Speed);
+        set { }
+    }
+
+    [Export]
+    public float MagPower
+    {
+        get => GetEffectiveValue(AttributeType.MagPower);
+        set { }
+    }
+
+    [Export]
+    public float MagResist
+    {
+        get => GetEffectiveValue(AttributeType.MagResist);
+        set { }
+    }
+
+    [Export]
+    public float PhysAtk
+    {
+        get => GetEffectiveValue(AttributeType.PhysAtk);
+        set { }
+    }
+
+    [Export]
+    public float PhysDef
+    {
+        get => GetEffectiveValue(AttributeType.PhysDef);
+        set { }
+    }
+
+    [Export]
+    public float PhysDamageBoost
+    {
+        get => GetEffectiveValue(AttributeType.PhysDamageBoost);
+        set { }
+    }
+
+    [Export]
+    public float MagicDamageBoost
+    {
+        get => GetEffectiveValue(AttributeType.MagicDamageBoost);
+        set { }
+    }
+
+    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+    {
+        string propName = property["name"].AsString();
+
+        if (propName == nameof(Speed) ||
+            propName == nameof(MagPower) ||
+            propName == nameof(MagResist) ||
+            propName == nameof(PhysAtk) ||
+            propName == nameof(PhysDef) ||
+            propName == nameof(PhysDamageBoost) ||
+            propName == nameof(MagicDamageBoost))
+        {
+            var usage = (PropertyUsageFlags)property["usage"].AsInt64();
+            usage |= PropertyUsageFlags.ReadOnly;
+            property["usage"] = (long)usage;
+        }
+    }
 
     public override void _Ready()
     {
         _statusComponent = Host?.GetNodeOrNull<StatusComponent>("StatusComponent");
 
         if (_statusComponent != null)
+        {
             _statusComponent.StatusChangedDetailed += HandleStatusChanged;
+        }
 
         if (InitialData != null)
+        {
             InitializeWithData(InitialData);
+        }
     }
 
     public override void _ExitTree()
     {
         if (_statusComponent != null)
+        {
             _statusComponent.StatusChangedDetailed -= HandleStatusChanged;
+        }
     }
 
     public void InitializeWithData(StartingStats data)
@@ -118,7 +191,9 @@ public partial class AttributeComponent : Node
     public IEnumerable<IReadOnlyAttribute> GetAllAttributes()
     {
         foreach (var attribute in _attributes.Values)
+        {
             yield return attribute;
+        }
     }
 
     public float GetRawValue(AttributeType type)
@@ -131,7 +206,9 @@ public partial class AttributeComponent : Node
     public float GetEffectiveValue(AttributeType type)
     {
         if (_effectiveCache.TryGetValue(type, out var value))
+        {
             return value;
+        }
 
         float calculated = CalculateUnclampedEffectiveValue(type);
         float clamped = ClampAttributeValue(type, calculated);
@@ -201,7 +278,9 @@ public partial class AttributeComponent : Node
         }
 
         if (Mathf.IsZeroApprox(amount))
+        {
             return false;
+        }
 
         RequestRecalculateAttribute(
             type: type,
@@ -229,7 +308,9 @@ public partial class AttributeComponent : Node
         }
 
         if (Mathf.IsZeroApprox(amount))
+        {
             return false;
+        }
 
         RequestRecalculateAttribute(
             type: type,
@@ -309,7 +390,9 @@ public partial class AttributeComponent : Node
         _recalculateQueue.Enqueue(request);
 
         if (_isFlushingRecalculateQueue)
+        {
             return;
+        }
 
         FlushRecalculateQueue();
     }
@@ -402,7 +485,9 @@ public partial class AttributeComponent : Node
     )
     {
         if (!_attributes.ContainsKey(type))
+        {
             return;
+        }
 
         float oldValue = _effectiveCache.TryGetValue(type, out var cached)
             ? cached
@@ -423,7 +508,9 @@ public partial class AttributeComponent : Node
         );
 
         if (allowInterception)
+        {
             _statusComponent?.ProcessBeforeAttributeChange(context);
+        }
 
         if (context.IsCancelled)
         {
@@ -457,7 +544,9 @@ public partial class AttributeComponent : Node
         _effectiveCache[type] = finalValue;
 
         if (!emitEvents)
+        {
             return;
+        }
 
         NotifyAttributeChanged(context);
 
@@ -468,7 +557,9 @@ public partial class AttributeComponent : Node
     private float CalculateUnclampedEffectiveValue(AttributeType type)
     {
         if (!_attributes.TryGetValue(type, out var attribute))
+        {
             return 0f;
+        }
 
         float baseValue = attribute.RawValue;
 
@@ -483,7 +574,9 @@ public partial class AttributeComponent : Node
                 foreach (var modifier in status.GetAttributeModifiers())
                 {
                     if (modifier.Type != type)
+                    {
                         continue;
+                    }
 
                     switch (modifier.Mode)
                     {
