@@ -55,7 +55,7 @@ var speed: float:
 ## BattleManager 每次会在 CALCULATE_TURN 中将全体人员的 action_value 逐步扣除，谁先归零谁先行动。
 var action_value: float = 0.0
 
-# 兜底变量，当没有找到全局玩家时使用
+# 兜底变量，当没有找到全局玩家或临时玩家时使用
 var _fallback_hp: int = 1000
 var _fallback_max_hp: int = 1000
 var _fallback_energy: int = 100
@@ -85,21 +85,22 @@ func _initialize_player_entity() -> void:
 				player_entity = main_player
 
 	if not player_entity:
-		# 如果还是没找到，为了允许独立测试战斗场景，临时实例化一个
-		var player_scene = load("res://scenes/player_scenes/player.tscn")
-		if player_scene:
-			player_entity = player_scene.instantiate()
-			add_child(player_entity)
-			print("未找到全局玩家，已为战斗系统临时实例化一个玩家实体。")
+		# 如果还是没找到，为了允许独立测试战斗场景，寻找挂载在 PlayerManager 下的本地 Player 节点
+		player_entity = get_node_or_null("Player")
+		if player_entity:
+			print("未找到全局玩家，使用挂载在 PlayerManager 下的 Player 节点。")
+		else:
+			# 容错：如果节点不叫 Player，遍历子节点找名字包含 player 的
+			for child in get_children():
+				if "player" in child.name.to_lower():
+					player_entity = child
+					print("未找到全局玩家，使用挂载在 PlayerManager 下的 ", child.name, " 节点。")
+					break
 
-			# 为临时玩家强行注入兜底生命值，避免被直接秒杀
-			var temp_hc = player_entity.get_node_or_null("Components/HealthComponent")
-			if temp_hc and temp_hc.has_method("InitializeMax"):
-				temp_hc.call("InitializeMax", _fallback_max_hp)
-
-			var temp_ec = player_entity.get_node_or_null("Components/EnergyComponent")
-			if temp_ec and temp_ec.has_method("InitializeMax"):
-				temp_ec.call("InitializeMax", _fallback_max_energy)
+		if player_entity:
+			pass # 玩家实体已找到（无论是全局还是挂载），不再强制注入兜底数值，以免覆盖用户在检查器里的配置
+		else:
+			push_warning("未找到全局玩家，且 PlayerManager 下也没有玩家节点！")
 
 	if player_entity:
 		health_component = player_entity.get_node_or_null("Components/HealthComponent")

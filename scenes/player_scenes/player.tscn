@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
 [ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]
 [ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="5_k3sny"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="6_5ro12"]
 [ext_resource type="Script" uid="uid://l0wa2cwb0txu" path="res://entities/components/TagComponent.cs" id="6_shuw1"]
 [ext_resource type="Script" uid="uid://dh3lwksrhok2a" path="res://entities/components/EquipmentComponent.cs" id="7_b744r"]
 [ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_j2xde"]
@@ -12,6 +13,10 @@
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="10_4xp6m"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="11_mm880"]
 [ext_resource type="Script" uid="uid://c48vw35k5eu7c" path="res://entities/components/BattleDeckComponent.cs" id="12_bdeck"]
+
+[sub_resource type="Resource" id="Resource_whhsb"]
+script = ExtResource("6_5ro12")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [node name="Player" type="Node" unique_id=1931166684]
 script = ExtResource("1_d8qmr")
@@ -25,6 +30,7 @@ metadata/_custom_type_script = "uid://coyiavqkkmsgv"
 [node name="HealthComponent" type="Node" parent="Components" unique_id=2132131474]
 unique_name_in_owner = true
 script = ExtResource("3_shuw1")
+MaxValue = 1000
 metadata/_custom_type_script = "uid://d4gp22cg5vjro"
 
 [node name="SatietyComponent" type="Node" parent="Components" unique_id=1837990178]
@@ -33,6 +39,7 @@ metadata/_custom_type_script = "uid://vhrfbyuub4pr"
 
 [node name="AttributeComponent" type="Node" parent="Components" unique_id=1231615670]
 script = ExtResource("5_k3sny")
+InitialData = SubResource("Resource_whhsb")
 
 [node name="TagComponent" type="Node" parent="Components" unique_id=1917411908]
 script = ExtResource("6_shuw1")

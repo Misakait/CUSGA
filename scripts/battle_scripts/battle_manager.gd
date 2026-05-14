@@ -99,6 +99,8 @@ func _on_combatant_attribute_changed(event: RefCounted, combatant: Variant):
 		var old_speed = event.get("OldValue")
 		var new_speed = event.get("NewValue")
 
+		print("[BattleManager] 检测到速度变化! 实体: ", combatant.name, " old: ", old_speed, " new: ", new_speed)
+
 		# 当速度发生改变时，按比例调整当前的行动值
 		if old_speed != null and new_speed != null and old_speed > 0 and new_speed > 0:
 			var ratio = float(old_speed) / float(new_speed)
@@ -110,6 +112,7 @@ func _on_combatant_attribute_changed(event: RefCounted, combatant: Variant):
 
 			if current_av != null:
 				var new_av = current_av * ratio
+				print("[BattleManager] 重算行动值! current_av: ", current_av, " ratio: ", ratio, " new_av: ", new_av)
 				if combatant.has_method("set_meta") and combatant.has_meta("action_value"):
 					combatant.set_meta("action_value", new_av)
 				elif "action_value" in combatant:
@@ -132,7 +135,15 @@ func _on_monster_defeated(monster):
 func _on_monsters_spawned():
 	for monster in monster_manager.active_monsters:
 		if not monster.has_meta("action_value"):
-			monster.set_meta("action_value", action_total / 100.0)
+			var speed = 100.0
+			var real_entity = monster.get_combat_entity() if monster.has_method("get_combat_entity") else monster
+			if real_entity and real_entity.has_method("get_node_or_null"):
+				var attr_comp = real_entity.get_node_or_null("Components/AttributeComponent")
+				if attr_comp and attr_comp.has_method("GetEffectiveValue"):
+					var val = attr_comp.call("GetEffectiveValue", 4)
+					if val != null and float(val) > 1.0:
+						speed = float(val)
+			monster.set_meta("action_value", action_total / speed)
 
 		#未测试
 		_connect_combatant_attribute_signals(monster)
@@ -165,8 +176,16 @@ func _handle_combat_start():
 	print("--- 战斗开始 ---")
 	player_manager.reset_action_value()
 	for monster in monster_manager.active_monsters:
-		# 假设怪物默认速度为100（后续可从 MonsterData 中读取动态速度）
-		monster.set_meta("action_value", action_total / 100.0)
+		var speed = 100.0
+		var real_entity = monster.get_combat_entity() if monster.has_method("get_combat_entity") else monster
+		if real_entity and real_entity.has_method("get_node_or_null"):
+			var attr_comp = real_entity.get_node_or_null("Components/AttributeComponent")
+			if attr_comp and attr_comp.has_method("GetEffectiveValue"):
+				var val = attr_comp.call("GetEffectiveValue", 4)
+				if val != null and float(val) > 1.0:
+					speed = float(val)
+
+		monster.set_meta("action_value", action_total / speed)
 
 	# 初始化完成后，进入计算回合阶段
 	if action_timeline:
@@ -225,7 +244,16 @@ func _handle_enemy_turn():
 	enqueue_action(action)
 
 	# 重置怪物的行动值
-	active_entity.set_meta("action_value", action_total / 100.0)
+	var speed = 100.0
+	var real_entity = active_entity.get_combat_entity() if active_entity.has_method("get_combat_entity") else active_entity
+	if real_entity and real_entity.has_method("get_node_or_null"):
+		var attr_comp = real_entity.get_node_or_null("Components/AttributeComponent")
+		if attr_comp and attr_comp.has_method("GetEffectiveValue"):
+			var val = attr_comp.call("GetEffectiveValue", 4)
+			if val != null and float(val) > 1.0:
+				speed = float(val)
+	active_entity.set_meta("action_value", action_total / speed)
+
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity)
 	change_state(BattleState.EXECUTE_ACTIONS)
