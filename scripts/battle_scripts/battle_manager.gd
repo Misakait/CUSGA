@@ -75,7 +75,52 @@ func _ready():
 	monster_manager.monsters_spawned.connect(_on_monsters_spawned)
 	monster_manager.monster_defeated.connect(_on_monster_defeated)
 
+#未测试
+	_connect_combatant_attribute_signals(player_manager)
+	for monster in monster_manager.active_monsters:
+		_connect_combatant_attribute_signals(monster)
+
 	change_state(BattleState.COMBAT_START)
+
+#未测试
+func _connect_combatant_attribute_signals(combatant: Variant):
+	var real_entity = combatant.get_combat_entity() if combatant.has_method("get_combat_entity") else combatant
+	if not real_entity or not real_entity.has_method("get_node_or_null"):
+		return
+
+	var attr_comp = real_entity.get_node_or_null("Components/AttributeComponent")
+	if attr_comp and attr_comp.has_signal("AttributeChanged"):
+		if not attr_comp.is_connected("AttributeChanged", _on_combatant_attribute_changed):
+			attr_comp.connect("AttributeChanged", _on_combatant_attribute_changed.bind(combatant))
+
+func _on_combatant_attribute_changed(event: RefCounted, combatant: Variant):
+	# TypeId 4 是 Speed
+	if event.get("TypeId") == 4:
+		var old_speed = event.get("OldValue")
+		var new_speed = event.get("NewValue")
+
+		# 当速度发生改变时，按比例调整当前的行动值
+		if old_speed != null and new_speed != null and old_speed > 0 and new_speed > 0:
+			var ratio = float(old_speed) / float(new_speed)
+			var current_av = null
+			if combatant.has_method("get_meta") and combatant.has_meta("action_value"):
+				current_av = combatant.get_meta("action_value")
+			elif "action_value" in combatant:
+				current_av = combatant.action_value
+
+			if current_av != null:
+				var new_av = current_av * ratio
+				if combatant.has_method("set_meta") and combatant.has_meta("action_value"):
+					combatant.set_meta("action_value", new_av)
+				elif "action_value" in combatant:
+					combatant.action_value = new_av
+				else:
+					if combatant.has_method("set_meta"):
+						combatant.set_meta("action_value", new_av)
+
+			# 更新行动轴UI，平滑重排
+			if action_timeline:
+				action_timeline.update_timeline(get_all_combatants(), active_entity)
 
 ## 处理中途生成的怪物（为新怪物分配初始行动值）
 
@@ -88,6 +133,10 @@ func _on_monsters_spawned():
 	for monster in monster_manager.active_monsters:
 		if not monster.has_meta("action_value"):
 			monster.set_meta("action_value", action_total / 100.0)
+
+		#未测试
+		_connect_combatant_attribute_signals(monster)
+
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity)
 

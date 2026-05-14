@@ -136,6 +136,14 @@ func _get_av(entity: Variant) -> float:
 
 ## 安全获取实体速度的辅助函数
 func _get_speed(entity: Variant) -> float:
+	var real_entity = entity.get_combat_entity() if entity.has_method("get_combat_entity") else entity
+	if real_entity and real_entity.has_method("get_node_or_null"):
+		var attr_comp = real_entity.get_node_or_null("Components/AttributeComponent")
+		if attr_comp and attr_comp.has_method("GetEffectiveValue"):
+			var val = attr_comp.call("GetEffectiveValue", 4)
+			if val != null and float(val) > 1.0:
+				return float(val)
+
 	# 假设玩家在 player_manager 中定义了 speed
 	if "speed" in entity:
 		return float(entity.speed)

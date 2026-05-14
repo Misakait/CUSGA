@@ -39,11 +39,16 @@ var max_energy: int:
 var speed: float:
 	get:
 		if attribute_component:
-			var val = attribute_component.get("Speed")
-			# AttributeComponent 未初始化时，Speed 会被 C# 限制为最小的 1.0。
-			# 如果速度 <= 1.0，说明大概率是未初始化的临时玩家，强制走兜底的 100.0
-			if val != null and val > 1.0:
-				return float(val)
+			if attribute_component.has_method("GetEffectiveValue"):
+				var val = attribute_component.call("GetEffectiveValue", 4)
+				if val != null and float(val) > 1.0:
+					return float(val)
+			else:
+				var val = attribute_component.get("Speed")
+				# AttributeComponent 未初始化时，Speed 会被 C# 限制为最小的 1.0。
+				# 如果速度 <= 1.0，说明大概率是未初始化的临时玩家，强制走兜底的 100.0
+				if val != null and val > 1.0:
+					return float(val)
 		return _fallback_speed
 
 ## 玩家的行动值（决定回合顺序的内部计量尺）。
