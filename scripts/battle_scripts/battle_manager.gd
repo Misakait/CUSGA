@@ -218,10 +218,28 @@ func _handle_calculate_turn():
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity)
 
+	_notify_turn_started()
+
 	if active_entity == player_manager:
 		change_state(BattleState.PLAYER_TURN)
 	else:
 		change_state(BattleState.ENEMY_TURN)
+
+#专门用于分发回合开始信号的函数
+func _notify_turn_started():
+	var current_actor = active_entity.get_combat_entity() if active_entity.has_method("get_combat_entity") else active_entity
+	var combatants = get_all_combatants()
+	for c in combatants:
+		var entity = c.get_combat_entity() if c.has_method("get_combat_entity") else c
+		if entity:
+			var status_comp = entity.get("Status")
+			if not status_comp:
+				status_comp = entity.get_node_or_null("Components/StatusComponent")
+			if not status_comp:
+				status_comp = entity.get_node_or_null("StatusComponent")
+
+			if status_comp and status_comp.has_method("OnTurnStarted"):
+				status_comp.call("OnTurnStarted", current_actor)
 
 ## 玩家回合逻辑：重置玩家行动值、恢复能量、抽牌并解锁控制让玩家出牌。
 func _handle_player_turn():

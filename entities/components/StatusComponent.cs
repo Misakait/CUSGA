@@ -162,7 +162,7 @@ public partial class StatusComponent : Node
             // 任意单位开始行动时 -1
             changed |= status.TickGlobalTurn(currentActor);
 
-            if (currentActor == Parent)
+            if (currentActor == status.Owner || currentActor == Parent || currentActor == Parent?.GetParent())
             {
                 // Buff 所属单位自己开始行动时 -1
                 changed |= status.TickOwnerTurn();
