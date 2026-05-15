@@ -66,6 +66,13 @@ public partial class WorldInteractionCoordinator : Node
             battleInstance.Set("starting_monster_data", monsters);
         }
 
+        // 将当前地图背景克隆到战斗场景中，作为战斗背景
+        Sprite2D battleBackground = TryDuplicateCurrentMapBackground();
+        if (battleBackground != null)
+        {
+            battleInstance.AddChild(battleBackground);
+        }
+
         // 监听战斗结束信号，用于在战斗完成后销毁战斗场景并恢复主界面
         battleInstance.Connect("battle_ended", Callable.From<bool>(isVictory => OnBattleEnded(battleInstance, isVictory)));
 
@@ -100,6 +107,48 @@ public partial class WorldInteractionCoordinator : Node
         GetNode<CanvasItem>("/root/Main/MapSystem").Show();
         GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Show();
         GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Show();
+    }
+
+    private Sprite2D TryDuplicateCurrentMapBackground()
+    {
+        Node mapSystem = GetNodeOrNull<Node>("/root/Main/MapSystem");
+        if (mapSystem == null)
+        {
+            return null;
+        }
+
+        Node mapInstantiator = mapSystem.GetNodeOrNull<Node>("MapInstantiator");
+        if (mapInstantiator == null)
+        {
+            return null;
+        }
+
+        foreach (Node child in mapInstantiator.GetChildren())
+        {
+            if (child is not Node2D roomScene)
+            {
+                continue;
+            }
+
+            Sprite2D background = roomScene.GetNodeOrNull<Sprite2D>("Background");
+            if (background == null)
+            {
+                continue;
+            }
+
+            Sprite2D duplicated = background.Duplicate() as Sprite2D;
+            if (duplicated == null)
+            {
+                return null;
+            }
+
+            duplicated.Name = "MapBackground";
+            duplicated.ZIndex = -100;
+            duplicated.ZAsRelative = false;
+            return duplicated;
+        }
+
+        return null;
     }
 
     private void OnBoardCardClicked(BoardCardView card)
