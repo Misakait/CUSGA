@@ -228,8 +228,13 @@ func on_hovered_off_card(card):
 
 ## 设置单张卡牌的高亮（视觉放大及置于顶层渲染）
 func highlight_card(card, hovered):
+	# 【修复】安全检查：如果传入的节点为空，或者它根本不是卡牌，则直接返回
+	if not card is SkillCard:
+		return
+		
 	if card.is_lock:
 		return
+		
 	if hovered:
 		var tween = create_tween()
 		tween.tween_property(card, "scale", card_hover_scale, scale_tween_duration)
@@ -249,8 +254,16 @@ func raycast_check_for_card():
 	parameters.collide_with_areas = true
 	parameters.collision_mask = COLLISION_MASK_CARD
 	var result = space_state.intersect_point(parameters)
-	if result.size() > 0:
-		return get_card_with_highest_z_index(result)
+	
+	# 【修复】增加类型过滤：只保留父节点确实为 SkillCard 类型的碰撞体
+	var valid_results = []
+	for res in result:
+		var parent = res.collider.get_parent()
+		if parent is SkillCard:
+			valid_results.append(res)
+			
+	if valid_results.size() > 0:
+		return get_card_with_highest_z_index(valid_results)
 	return null
 
 ## 同样是通过射线检测目标卡槽（通常在实体身上）
