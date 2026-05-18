@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://46x32bj7s2wy" path="res://scripts/anim/ScreenTransitions.gd" id="1_svibp"]
 
 [sub_resource type="Animation" id="Animation_p30w8"]
-length = 0.1
+length = 0.001
 step = 0.1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -57,3 +57,4 @@ color = Color(0, 0, 0, 1)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1049667871]
 libraries/ = SubResource("AnimationLibrary_pyeav")
+speed_scale = 2.0

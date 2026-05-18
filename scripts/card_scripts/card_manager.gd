@@ -14,13 +14,13 @@ const COLLISION_MASK_CARD_SLOT = 2
 
 ## 引入 C# 端的枚举，用于判断多目标高亮
 enum SkillTargetingType {
-	SELF = 0,               
-	SINGLE_ENEMY = 1,       
-	ALL_ENEMIES = 2,        
-	ANY_SINGLE_UNIT = 3,    
-	ALL_UNITS = 4,          
-	RANDOM_ENEMY = 5,       
-	SPREAD_FROM_ENEMY = 6   
+	SELF = 0,
+	SINGLE_ENEMY = 1,
+	ALL_ENEMIES = 2,
+	ANY_SINGLE_UNIT = 3,
+	ALL_UNITS = 4,
+	RANDOM_ENEMY = 5,
+	SPREAD_FROM_ENEMY = 6
 }
 
 @export_group("视觉缩放参数")
@@ -30,6 +30,9 @@ enum SkillTargetingType {
 @export var monster_normal_scale: Vector2 = Vector2(1.5, 1.5) ## 怪物正常大小
 @export var monster_hover_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物被选中悬停时放大
 @export var scale_tween_duration: float = 0.08 ## 缩放动画过度时间
+
+@export_group("自我施放参数")
+@export var allow_self_cast_on_empty: bool = true ## 当卡牌为【对自己使用】时，允许拖到空白处直接施放
 
 var screen_size
 var card_being_dragged:Node2D
@@ -62,39 +65,39 @@ func _process(delta: float) -> void:
 ## 根据拖拽的卡牌类型，动态计算并更新受影响范围的实体高亮
 func update_hovered_targets(new_slot: Node2D):
 	var intended_targets: Array[Node] = []
-	
+
 	# 如果悬停在有效卡槽上，并且手里抓着牌，开始计算波及范围
 	if new_slot and card_being_dragged and card_being_dragged.data:
 		var target = new_slot.get_parent()
 		var targeting_type: int = SkillTargetingType.SINGLE_ENEMY
-		
+
 		# 尝试安全获取目标类型
 		if card_being_dragged.data.get("Skill") != null and card_being_dragged.data.Skill.get("TargetingType") != null:
 			targeting_type = card_being_dragged.data.Skill.TargetingType
-			
+
 		match targeting_type:
 			SkillTargetingType.SELF:
 				intended_targets.append(player_manager)
-				
+
 			SkillTargetingType.SINGLE_ENEMY, SkillTargetingType.ANY_SINGLE_UNIT:
 				if target:
 					intended_targets.append(target)
-					
+
 			SkillTargetingType.ALL_ENEMIES, SkillTargetingType.RANDOM_ENEMY:
 				# 全体和随机都会高亮所有敌人，以提示波及范围
 				if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
 					intended_targets.assign(battle_manager.monster_manager.active_monsters)
-					
+
 			SkillTargetingType.ALL_UNITS:
 				# 所有人，包括玩家
 				intended_targets.assign(battle_manager.get_all_combatants())
-				
+
 			SkillTargetingType.SPREAD_FROM_ENEMY:
 				# 扩散逻辑：主目标 + 左右相邻
 				if target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
 					var monsters = battle_manager.monster_manager.active_monsters
 					var target_index = monsters.find(target)
-					
+
 					if target_index != -1:
 						intended_targets.append(target) # 本身
 						if target_index > 0:
@@ -121,14 +124,14 @@ func update_hovered_targets(new_slot: Node2D):
 ## 辅助函数：统一处理实体的视觉放大和时间轴高亮
 func set_entity_highlight(entity: Node, is_highlighted: bool):
 	if not entity: return
-	
+
 	var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
-	
+
 	# 处理缩放动画
 	if entity.has_node("Sprite2D"):
 		var tween = create_tween()
 		tween.tween_property(entity.get_node("Sprite2D"), "scale", target_scale, scale_tween_duration)
-		
+
 	# 处理时间轴的高亮联动
 	var timeline = get_node_or_null("../UI/ActionTimeline")
 	if timeline:
@@ -177,6 +180,16 @@ func start_drag(card):
 	if tooltip_panel:
 		tooltip_panel.hide_tooltip()
 
+## 辅助函数：判断卡牌是否为【对自己使用】
+func is_self_target_card(card: SkillCard) -> bool:
+	if not card or not card.data:
+		return false
+	var targeting_type: int = SkillTargetingType.SINGLE_ENEMY
+	# 尝试安全获取目标类型
+	if card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
+		targeting_type = card.data.Skill.TargetingType
+	return targeting_type == SkillTargetingType.SELF
+
 ## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
 func finish_drag():
 	var tween = create_tween()
@@ -193,7 +206,13 @@ func finish_drag():
 		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 	else:
 		# 如果拖动后没进入有效区域(比如丢到空白处)，则卡牌原路弹回玩家手中
-		player_hand_referencd.add_card_to_hand(card_being_dragged)
+		# 特例：当卡牌是【对自己使用】类型时，允许直接在空白处施放
+		if allow_self_cast_on_empty and is_self_target_card(card_being_dragged):
+			player_manager.consume_energy(card_being_dragged.data.cost)
+			deck_manager.play_card(card_being_dragged)
+			player_hand_referencd.remove_card_from_hand(card_being_dragged)
+		else:
+			player_hand_referencd.add_card_to_hand(card_being_dragged)
 
 	# 松开鼠标时，恢复最后悬停的怪物的缩放
 	update_hovered_targets(null)
@@ -231,10 +250,10 @@ func highlight_card(card, hovered):
 	# 【修复】安全检查：如果传入的节点为空，或者它根本不是卡牌，则直接返回
 	if not card is SkillCard:
 		return
-		
+
 	if card.is_lock:
 		return
-		
+
 	if hovered:
 		var tween = create_tween()
 		tween.tween_property(card, "scale", card_hover_scale, scale_tween_duration)
@@ -254,14 +273,14 @@ func raycast_check_for_card():
 	parameters.collide_with_areas = true
 	parameters.collision_mask = COLLISION_MASK_CARD
 	var result = space_state.intersect_point(parameters)
-	
+
 	# 【修复】增加类型过滤：只保留父节点确实为 SkillCard 类型的碰撞体
 	var valid_results = []
 	for res in result:
 		var parent = res.collider.get_parent()
 		if parent is SkillCard:
 			valid_results.append(res)
-			
+
 	if valid_results.size() > 0:
 		return get_card_with_highest_z_index(valid_results)
 	return null

@@ -9,6 +9,7 @@
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="5_i4gjj"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="6_ajc51"]
 [ext_resource type="Resource" uid="uid://b1xcn5llorviu" path="res://resources/skill_cards/senketsu.tres" id="7_0ajq7"]
+[ext_resource type="Resource" uid="uid://dpvgpsxnxw8rg" path="res://resources/skill_cards/test_card_4.tres" id="8_1t3o5"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
 [ext_resource type="Script" uid="uid://chjm56tp6xjqk" path="res://scripts/battle_scripts/monster_manager.gd" id="8_xseyc"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="9_b6vuc"]
@@ -129,7 +130,7 @@ corner_radius_bottom_left = 4
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("7_0ajq7"), ExtResource("7_0ajq7")])
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("7_0ajq7"), ExtResource("7_0ajq7"), ExtResource("8_1t3o5"), ExtResource("8_1t3o5")])
 starting_monster_data = Array[ExtResource("6_ajc51")]([SubResource("Resource_xseyc"), SubResource("Resource_1t3o5"), SubResource("Resource_qxj8e"), SubResource("Resource_74ila"), SubResource("Resource_qhmct"), SubResource("Resource_moing")])
 card_scene = SubResource("Resource_navvr")
 
