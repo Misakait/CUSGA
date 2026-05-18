@@ -10,7 +10,7 @@ public partial class DamageReceiverComponent : Node
 {
     public void ReceiveDamage(DamagePayload payload)
     {
-        Node defender = GetParent().GetParent();
+        Node defender = GetParent();
 
         if (defender == null)
         {
@@ -40,7 +40,7 @@ public partial class DamageReceiverComponent : Node
         int finalDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
 
         GD.Print(
-            $"[Damage] Target: {defender.Name} | " +
+            $"[Damage] Target: {defender.GetParent().Name} | " +
             $"Source: {payload.Source?.Name ?? "Unknown"} | " +
             $"Damage: {finalDamage} | " +
             $"Element: {payload.Element} | " +
