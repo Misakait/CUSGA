@@ -12,6 +12,12 @@ public abstract partial class StatusEffectData : Resource
     [Export] public DurationExpirePolicy ExpirePolicy { get; set; } = DurationExpirePolicy.FirstExpired;
 
     /// <summary>
+    /// 持续时间在对应行动/轮次的开始还是结束扣减。
+    /// 默认回合/轮次开始扣减。
+    /// </summary>
+    [Export] public DurationTickTiming DurationTickTiming { get; set; } = DurationTickTiming.Start;
+
+    /// <summary>
     /// 同一 hook phase 内的默认执行优先级。
     /// 数值越小越早执行。
     /// </summary>

@@ -225,8 +225,11 @@ func _handle_calculate_turn():
 	else:
 		change_state(BattleState.ENEMY_TURN)
 
-#专门用于分发回合开始信号的函数
-func _notify_turn_started():
+#专门用于分发回合开始/结束信号的函数
+func _notify_turn_status(method_name: String):
+	if not active_entity:
+		return
+
 	var current_actor = active_entity.get_combat_entity() if active_entity.has_method("get_combat_entity") else active_entity
 	var combatants = get_all_combatants()
 	for c in combatants:
@@ -238,8 +241,14 @@ func _notify_turn_started():
 			if not status_comp:
 				status_comp = entity.get_node_or_null("StatusComponent")
 
-			if status_comp and status_comp.has_method("OnTurnStarted"):
-				status_comp.call("OnTurnStarted", current_actor)
+			if status_comp and status_comp.has_method(method_name):
+				status_comp.call(method_name, current_actor)
+
+func _notify_turn_started():
+	_notify_turn_status("OnTurnStarted")
+
+func _notify_turn_ended():
+	_notify_turn_status("OnTurnEnded")
 
 ## 玩家回合逻辑：重置玩家行动值、恢复能量、抽牌并解锁控制让玩家出牌。
 func _handle_player_turn():
@@ -424,6 +433,8 @@ func _execute_single_action(action: Action):
 ## 处理回合结束阶段的清理：如丢弃手牌、结算Buff/Debuff等
 func _handle_turn_end():
 	print("--- 回合结束 ---")
+	_notify_turn_ended()
+
 	if active_entity == player_manager:
 		deck_manager.discard_hand() # 玩家回合结束必定弃置所有手牌
 	else:

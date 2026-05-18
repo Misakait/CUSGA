@@ -92,8 +92,15 @@ public partial class StatusComponent : Node
     }
     private List<StatusEffectInstance> GetStatusesForHook(StatusHookPhase phase)
     {
-        return [.. _statuses.Values
-            .ToList()
+        return GetStatusesForHook(phase, _statuses.Values);
+    }
+
+    private static List<StatusEffectInstance> GetStatusesForHook(
+        StatusHookPhase phase,
+        IEnumerable<StatusEffectInstance> statuses
+    )
+    {
+        return [.. statuses
             .OrderBy(status => status.GetHookPriority(phase))
             .ThenBy(status => status.AppliedSequence)
             .ThenBy(status => status.Id.ToString())];
@@ -149,59 +156,167 @@ public partial class StatusComponent : Node
     }
 
     /// <summary>
-    /// 任意单位开始行动时，由战斗系统调用
-    /// 处理GlobalTurnDuration和当前行动者自己的 OwnerTurnDuration
+    /// 任意单位开始行动时，由战斗系统调用。
+    /// 触发回合开始 hook，并按配置在开始阶段扣减持续时间。
     /// </summary>
     public void OnTurnStarted(Node currentActor)
     {
-        // bool anyChanged = false;
-
-        foreach (var status in _statuses.Values.ToList())
-        {
-            bool changed = false;
-            // 任意单位开始行动时 -1
-            changed |= status.TickGlobalTurn(currentActor);
-
-            if (currentActor == status.Owner || currentActor == Parent || currentActor == Parent?.GetParent())
-            {
-                // Buff 所属单位自己开始行动时 -1
-                changed |= status.TickOwnerTurn();
-            }
-
-            if (!changed)
-            {
-                continue;
-            }
-
-            // anyChanged = true;
-            ResolveExpiration(status);
-        }
-
-        // if (anyChanged)
-        //     EmitLocalStatusChanged();
+        ProcessTurnPhase(
+            currentActor,
+            DurationTickTiming.Start,
+            StatusHookPhase.GlobalTurnStart,
+            status => status.OnGlobalTurnStart(currentActor),
+            StatusHookPhase.OwnerTurnStart,
+            status => status.OnOwnerTurnStart()
+        );
     }
 
     /// <summary>
-    /// 当战斗系统判定“所有存活单位都至少行动过一次”时调用
-    /// StatusComponent 自己不负责判断 round 边界
+    /// 任意单位结束行动时，由战斗系统调用。
+    /// 触发回合结束 hook，并按配置在结束阶段扣减持续时间。
+    /// </summary>
+    public void OnTurnEnded(Node currentActor)
+    {
+        ProcessTurnPhase(
+            currentActor,
+            DurationTickTiming.End,
+            StatusHookPhase.GlobalTurnEnd,
+            status => status.OnGlobalTurnEnd(currentActor),
+            StatusHookPhase.OwnerTurnEnd,
+            status => status.OnOwnerTurnEnd()
+        );
+    }
+
+    /// <summary>
+    /// 当战斗系统判定“所有存活单位都至少行动过一次”时调用。
+    /// StatusComponent 自己不负责判断 round 边界。
     /// </summary>
     public void OnRoundStarted()
     {
-        // bool anyChanged = false;
+        ProcessRoundPhase(
+            DurationTickTiming.Start,
+            StatusHookPhase.RoundStart,
+            status => status.OnRoundStart()
+        );
+    }
 
-        foreach (var status in _statuses.Values.ToList())
+    /// <summary>
+    /// 当战斗系统判定一轮结束时调用。
+    /// StatusComponent 自己不负责判断 round 边界。
+    /// </summary>
+    public void OnRoundEnded()
+    {
+        ProcessRoundPhase(
+            DurationTickTiming.End,
+            StatusHookPhase.RoundEnd,
+            status => status.OnRoundEnd()
+        );
+    }
+
+    private void ProcessTurnPhase(
+        Node currentActor,
+        DurationTickTiming timing,
+        StatusHookPhase globalHookPhase,
+        Action<StatusEffectInstance> invokeGlobalHook,
+        StatusHookPhase ownerHookPhase,
+        Action<StatusEffectInstance> invokeOwnerHook
+    )
+    {
+        var statuses = _statuses.Values.ToList();
+
+        foreach (var status in GetStatusesForHook(globalHookPhase, statuses))
         {
-            if (!status.TickRound())
+            if (!IsActiveStatus(status))
             {
                 continue;
             }
 
-            // anyChanged = true;
-            ResolveExpiration(status);
+            invokeGlobalHook(status);
         }
 
-        // if (anyChanged)
-        //     EmitLocalStatusChanged();
+        foreach (var status in GetStatusesForHook(ownerHookPhase, statuses))
+        {
+            if (!IsActiveStatus(status) || !IsStatusOwnerTurn(status, currentActor))
+            {
+                continue;
+            }
+
+            invokeOwnerHook(status);
+        }
+
+        TickTurnDurations(statuses, currentActor, timing);
+    }
+
+    private void ProcessRoundPhase(
+        DurationTickTiming timing,
+        StatusHookPhase hookPhase,
+        Action<StatusEffectInstance> invokeHook
+    )
+    {
+        var statuses = _statuses.Values.ToList();
+
+        foreach (var status in GetStatusesForHook(hookPhase, statuses))
+        {
+            if (!IsActiveStatus(status))
+            {
+                continue;
+            }
+
+            invokeHook(status);
+        }
+
+        foreach (var status in statuses)
+        {
+            if (!IsActiveStatus(status) || !status.TickRoundDuration(timing))
+            {
+                continue;
+            }
+
+            ResolveExpiration(status);
+        }
+    }
+
+    private void TickTurnDurations(
+        IEnumerable<StatusEffectInstance> statuses,
+        Node currentActor,
+        DurationTickTiming timing
+    )
+    {
+        foreach (var status in statuses)
+        {
+            if (!IsActiveStatus(status))
+            {
+                continue;
+            }
+
+            bool changed = status.TickGlobalTurnDuration(timing);
+
+            if (IsStatusOwnerTurn(status, currentActor))
+            {
+                changed |= status.TickOwnerTurnDuration(timing);
+            }
+
+            if (!changed || !IsActiveStatus(status))
+            {
+                continue;
+            }
+
+            ResolveExpiration(status);
+        }
+    }
+
+
+    private bool IsActiveStatus(StatusEffectInstance status)
+    {
+        return _statuses.TryGetValue(status.Id, out var activeStatus) &&
+            ReferenceEquals(activeStatus, status);
+    }
+
+    private bool IsStatusOwnerTurn(StatusEffectInstance status, Node currentActor)
+    {
+        return currentActor == status.Owner ||
+            currentActor == Parent ||
+            currentActor == Parent?.GetParent();
     }
 
     private void ResolveExpiration(StatusEffectInstance status)

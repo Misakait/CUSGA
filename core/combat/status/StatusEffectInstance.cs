@@ -12,6 +12,7 @@ public abstract partial class StatusEffectInstance : RefCounted
     public int MaxStacks => Data.MaxStacks;
     public StackPolicy Policy => Data.Policy;
     public DurationExpirePolicy ExpirePolicy => Data.ExpirePolicy;
+    public DurationTickTiming TickTiming => Data.DurationTickTiming;
 
     public int InitOwnerTurnDuration => Data.InitOwnerTurnDuration;
     public int InitGlobalTurnDuration => Data.InitGlobalTurnDuration;
@@ -80,38 +81,58 @@ public abstract partial class StatusEffectInstance : RefCounted
 
     public bool TickOwnerTurn()
     {
-        if (OwnerTurnDuration <= 0)
-        {
-            return false;
-        }
-
         OnOwnerTurnStart();
-        OwnerTurnDuration--;
-        return true;
+        return TickOwnerTurnDuration(DurationTickTiming.Start);
     }
 
     public bool TickGlobalTurn(Node currentActor)
     {
-        if (GlobalTurnDuration <= 0)
-        {
-            return false;
-        }
-
         OnGlobalTurnStart(currentActor);
-        GlobalTurnDuration--;
-        return true;
+        return TickGlobalTurnDuration(DurationTickTiming.Start);
     }
 
     public bool TickRound()
     {
-        if (RoundDuration <= 0)
+        OnRoundStart();
+        return TickRoundDuration(DurationTickTiming.Start);
+    }
+
+    public bool TickOwnerTurnDuration(DurationTickTiming timing)
+    {
+        if (!ShouldTickDuration(timing) || OwnerTurnDuration <= 0)
         {
             return false;
         }
 
-        OnRoundStart();
+        OwnerTurnDuration--;
+        return true;
+    }
+
+    public bool TickGlobalTurnDuration(DurationTickTiming timing)
+    {
+        if (!ShouldTickDuration(timing) || GlobalTurnDuration <= 0)
+        {
+            return false;
+        }
+
+        GlobalTurnDuration--;
+        return true;
+    }
+
+    public bool TickRoundDuration(DurationTickTiming timing)
+    {
+        if (!ShouldTickDuration(timing) || RoundDuration <= 0)
+        {
+            return false;
+        }
+
         RoundDuration--;
         return true;
+    }
+
+    private bool ShouldTickDuration(DurationTickTiming timing)
+    {
+        return TickTiming == timing;
     }
 
     public bool IsExpired()
@@ -159,6 +180,10 @@ public abstract partial class StatusEffectInstance : RefCounted
     public virtual void OnOwnerTurnStart() { }
     public virtual void OnGlobalTurnStart(Node currentActor) { }
     public virtual void OnRoundStart() { }
+
+    public virtual void OnOwnerTurnEnd() { }
+    public virtual void OnGlobalTurnEnd(Node currentActor) { }
+    public virtual void OnRoundEnd() { }
 
     public virtual void OnBeforeAttributeChange(AttributeChangeContext context) { }
     public virtual void OnAfterAttributeChanged(AttributeChangeContext context) { }
