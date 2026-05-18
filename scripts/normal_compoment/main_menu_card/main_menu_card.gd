@@ -21,8 +21,12 @@ signal not_hovering_card(card)
 @export var my_card_description: Label
 @export var my_card_cost: Label
 @export var card_name_text: String
+@export var card_name_scale: Vector2 = Vector2(1,1)
 @export var card_description_text: String
+@export var card_description_scale: Vector2 = Vector2(1,1)
 @export var card_cost_text: String
+@export var card_cost_scale: Vector2 = Vector2(1,1)
+
 
 var item_data: ItemData
 var item_cnt: int
@@ -37,29 +41,32 @@ var dragging := false
 var tween: Tween
 
 func _ready():
-	
+
 	#如果有parent，初始化parent
 	init_parent()
-	
+
 	normal_scale = sp2d.scale + normal_scale_offeset
 	hover_scale = sp2d.scale + hover_scale_offeset
 	drag_scale = sp2d.scale + drag_scale_offeset
-	
+
 	#初始化自己的ui
 	refresh_myself()
-	
+
 
 func refresh_myself():
 	if sprite_texture:
 		sp2d.texture = sprite_texture
 		sp2d.get_child(0).texture = sprite_icon
 	my_card_name.text = card_name_text
+	my_card_name.scale = card_name_scale
 	my_card_description.text = card_description_text
+	my_card_description.scale = card_description_scale
 	my_card_cost.text = card_cost_text
+	my_card_cost.scale = card_cost_scale
 
 func _on_area_2d_mouse_entered():
 	emit_signal("hovering_card", self)
-	
+
 	# 如果自己不是正在拖拽的卡牌，且没有其他卡牌在拖拽，才放大
 	if not dragging and not is_other_card_hovering():
 		hovering = true
@@ -68,7 +75,7 @@ func _on_area_2d_mouse_entered():
 
 func _on_area_2d_mouse_exited():
 	emit_signal("not_hovering_card", self)
-	
+
 	if not dragging :
 		hovering = false
 		z_index = 1
@@ -91,14 +98,14 @@ func init_parent() -> void:
 		par.original_position[self] = global_position
 		connect("hovering_card", Callable(par, "_on_hovering_card"))
 		connect("not_hovering_card", Callable(par, "_on_not_hovering_card"))
-	
+
 func animate_scale(target: Vector2):
 	# 停止之前的动画，重新创建
 	if tween and tween.is_running():
 		tween.kill()
 	tween = create_tween()
 	tween.tween_property($Sprite2D, "scale", target, tween_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	
+
 func is_other_card_hovering():
 	if get_parent():
 		var cf = get_parent()

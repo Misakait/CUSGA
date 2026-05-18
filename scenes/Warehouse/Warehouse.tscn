@@ -1,11 +1,9 @@
 [gd_scene format=3 uid="uid://dvu0wpxmytvk7"]
 
-[ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="1_88770"]
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="1_cf8n2"]
 [ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_h115g"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="2_brt88"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_hh660"]
-[ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="3_cf8n2"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="4_brt88"]
 [ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="5_3jafb"]
 [ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_brt88"]
@@ -30,14 +28,15 @@ metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 script = ExtResource("4_brt88")
 metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
-[node name="Warehouse" type="Node2D" unique_id=2011409827 node_paths=PackedStringArray("inventory_grid")]
+[node name="Warehouse" type="Node2D" unique_id=2011409827 node_paths=PackedStringArray("inventory_grid", "inventory_control")]
 script = ExtResource("1_h115g")
 inventory_grid = NodePath("InventoryGrid")
+inventory_control = NodePath("InventoryControl")
 
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=351214287 node_paths=PackedStringArray("snap_nodes")]
 script = ExtResource("1_cf8n2")
 target_snapper = SubResource("Resource_nwke5")
-snap_nodes = [NodePath("../SnapPoint1")]
+snap_nodes = [null]
 metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 
 [node name="InventorySnapperBinder" type="Node2D" parent="." unique_id=1209280253 node_paths=PackedStringArray("snap_nodes")]
@@ -49,25 +48,6 @@ metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 [node name="InventoryComponent" type="Node2D" parent="." unique_id=911228938]
 script = ExtResource("8_brt88")
 
-[node name="SnapPoint1" type="Node2D" parent="." unique_id=1784945840]
-position = Vector2(80, 77)
-script = ExtResource("1_88770")
-
-[node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=1590815362]
-texture = ExtResource("2_hh660")
-
-[node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1589971499 node_paths=PackedStringArray("binder")]
-script = ExtResource("3_cf8n2")
-draggable = SubResource("Resource_wqctc")
-binder = NodePath("../SnapperBinder")
-
-[node name="ExitCard" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("5_3jafb")]
-position = Vector2(1060, 111)
-tween_duration = 0.2
-card_name_text = ""
-card_description_text = ""
-card_cost_text = ""
-
 [node name="InventoryGrid" type="Node2D" parent="." unique_id=1500144558 node_paths=PackedStringArray("snap_point_container", "user_snap_point_container", "binder")]
 script = ExtResource("8_wqctc")
 inventory_grid_scene = ExtResource("5_3jafb")
@@ -77,12 +57,13 @@ draggable = SubResource("Resource_wqctc")
 binder = NodePath("../InventorySnapperBinder")
 texture = ExtResource("9_nwke5")
 
-[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("inventory_grid")]
+[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("inventory_grid", "page_label")]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("9_3jafb")
 inventory_grid = NodePath("../InventoryGrid")
 null_texture = ExtResource("9_nwke5")
+page_label = NodePath("Page")
 
 [node name="SnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1304380547]
 
@@ -97,8 +78,11 @@ size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
 button_mask = 7
 
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button" unique_id=1713489127]
+[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button" unique_id=1713489127 node_paths=PackedStringArray("inventory_grid", "inventory_component", "inventory_control")]
 script = ExtResource("12_ejbtm")
+inventory_grid = NodePath("../../../../InventoryGrid")
+inventory_component = NodePath("../../../../InventoryComponent")
+inventory_control = NodePath("../../..")
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button/SnapPoint1" unique_id=2003054068]
 scale = Vector2(0.6875, 0.6875)
@@ -523,7 +507,6 @@ texture = ExtResource("2_hh660")
 [node name="UserSnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1693080624]
 
 [node name="Button" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1071966649]
-clip_contents = true
 offset_left = 144.0
 offset_top = 248.0
 offset_right = 152.0
@@ -536,8 +519,8 @@ button_mask = 7
 [node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button" unique_id=592996461]
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" unique_id=693108967]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
+position = Vector2(6.437497, -4.3125057)
+scale = Vector2(0.77946424, 0.77375007)
 
 [node name="Button2" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1993838325]
 clip_contents = true
@@ -554,7 +537,6 @@ button_mask = 7
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button2/SnapPoint1" unique_id=1429205577]
 scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
 
 [node name="Button3" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1231413564]
 clip_contents = true
@@ -571,14 +553,13 @@ button_mask = 7
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button3/SnapPoint1" unique_id=1653497249]
 scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
 
 [node name="Button4" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1432439624]
 clip_contents = true
-offset_left = 528.0
-offset_top = 248.0
-offset_right = 536.0
-offset_bottom = 256.0
+offset_left = 530.0
+offset_top = 247.0
+offset_right = 538.0
+offset_bottom = 255.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -588,46 +569,47 @@ button_mask = 7
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button4/SnapPoint1" unique_id=468378647]
 scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
 
 [node name="Button5" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=759552614]
 clip_contents = true
-offset_left = 656.0
+offset_left = 659.0
 offset_top = 248.0
-offset_right = 664.0
+offset_right = 667.0
 offset_bottom = 256.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
 button_mask = 7
 
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button5" unique_id=1803032839]
+[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button5" unique_id=1803032839 node_paths=PackedStringArray("inventory_grid", "inventory_component", "inventory_control")]
 script = ExtResource("13_ybp5e")
+inventory_grid = NodePath("../../../../InventoryGrid")
+inventory_component = NodePath("../../../../InventoryComponent")
+inventory_control = NodePath("../../..")
 
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button5/SnapPoint1" unique_id=154071194]
 scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
 
 [node name="AddButton" type="Button" parent="InventoryControl" unique_id=391916833]
 layout_mode = 0
-offset_left = 255.0
-offset_top = 16.0
-offset_right = 388.0
-offset_bottom = 81.0
+offset_left = 243.0
+offset_top = 49.0
+offset_right = 376.0
+offset_bottom = 114.0
 
 [node name="RemoveButton" type="Button" parent="InventoryControl" unique_id=487412041]
 layout_mode = 0
-offset_left = 487.0
-offset_top = 16.0
-offset_right = 622.0
-offset_bottom = 81.0
+offset_left = 423.0
+offset_top = 51.0
+offset_right = 558.0
+offset_bottom = 116.0
 
 [node name="RefreshButton" type="Button" parent="InventoryControl" unique_id=614834854]
 layout_mode = 0
-offset_left = 342.0
-offset_top = 117.0
-offset_right = 521.0
-offset_bottom = 153.0
+offset_left = 601.0
+offset_top = 70.0
+offset_right = 780.0
+offset_bottom = 106.0
 
 [node name="LeftButton" type="Button" parent="InventoryControl" unique_id=1189218979]
 layout_mode = 0
@@ -645,11 +627,71 @@ offset_right = 1255.0
 offset_bottom = 320.0
 icon = ExtResource("16_jlw2o")
 
-[connection signal="card_be_snapper" from="MainMenuCardManager" to="SnapPoint1" method="_on_card_be_snapper"]
+[node name="Page" type="Label" parent="InventoryControl" unique_id=1829247889]
+layout_mode = 0
+offset_left = 633.0
+offset_top = 681.0
+offset_right = 698.0
+offset_bottom = 704.0
+text = "0 / 0"
+
+[node name="Panel" type="Node2D" parent="InventoryControl" unique_id=1606179904]
+position = Vector2(911, 170)
+scale = Vector2(0.8, 0.8)
+
+[node name="Background" type="Sprite2D" parent="InventoryControl/Panel" unique_id=904486948]
+scale = Vector2(1.5, 3)
+texture = ExtResource("9_nwke5")
+
+[node name="ButtonControl" type="Node2D" parent="InventoryControl/Panel" unique_id=636643101]
+
+[node name="Label" type="Label" parent="InventoryControl/Panel/ButtonControl" unique_id=1218215246]
+offset_left = -70.0
+offset_top = -129.0
+offset_right = 62.0
+offset_bottom = -83.0
+theme_override_font_sizes/font_size = 33
+text = "控制面板"
+horizontal_alignment = 1
+autowrap_trim_flags = 128
+justification_flags = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="InventoryControl/Panel/ButtonControl" unique_id=1789601259]
+offset_left = -61.0
+offset_top = -64.0
+offset_right = 58.0
+offset_bottom = 119.0
+theme_override_constants/separation = 16
+
+[node name="SelectButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1508993293]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 23
+text = "选取"
+
+[node name="ClipButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1002646211]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 23
+text = "分取"
+
+[node name="DeleteButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1027492698]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 23
+text = "丢弃"
+
+[node name="ExitButton" type="Button" parent="." unique_id=1418447391]
+offset_left = 640.0
+offset_top = 154.0
+offset_right = 754.0
+offset_bottom = 205.0
+text = "返回主菜单"
+
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
-[connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
 [connection signal="pressed" from="InventoryControl/AddButton" to="InventoryControl" method="_on_add_button_pressed"]
 [connection signal="pressed" from="InventoryControl/RemoveButton" to="InventoryControl" method="_on_remove_button_pressed"]
 [connection signal="button_down" from="InventoryControl/RefreshButton" to="InventoryControl" method="_on_refresh_button_button_down"]
 [connection signal="button_down" from="InventoryControl/LeftButton" to="InventoryControl" method="_on_left_button_button_down"]
 [connection signal="button_down" from="InventoryControl/RightButton" to="InventoryControl" method="_on_right_button_button_down"]
+[connection signal="button_down" from="ExitButton" to="." method="_on_exit_button_button_down"]

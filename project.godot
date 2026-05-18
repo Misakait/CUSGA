@@ -24,7 +24,7 @@ resources_spreadsheet_view/freeze_first_column=true
 [application]
 
 config/name="CUSGA"
-run/main_scene="uid://cv7337rn5yxoc"
+run/main_scene="uid://qwckbjjp11ca"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -34,6 +34,8 @@ GlobalEventBus="*uid://f4acdsbh24f4"
 TimeSystem="*uid://da5qjs7g2tqfs"
 WeatherManager="*uid://b0l58aislix47"
 ItemsControl="*uid://b1nat1ps6dux8"
+SceneManager="*uid://0cimhegik5tk"
+ScreenTransitions="*uid://byi0pyqiabw0d"
 
 [display]
 

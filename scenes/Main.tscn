@@ -47,8 +47,6 @@ CardsRootPath = NodePath("CardsRoot")
 
 [node name="CardsRoot" type="Node2D" parent="BoardSystem/BoardController" unique_id=1226399754]
 
-[node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]
-
 [node name="Gameplay" type="Node" parent="." unique_id=1348944482]
 
 [node name="GameplayPort" type="Node" parent="Gameplay" unique_id=1810929418]
@@ -185,3 +183,5 @@ mouse_filter = 2
 [node name="InventoryUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
+
+[node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]

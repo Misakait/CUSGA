@@ -4,14 +4,20 @@ extends Control
 @onready var inventory = $"../InventoryComponent"
 @export var inventory_grid: Node2D
 @export var null_texture: Texture
+@export var page_label: Label
+#每页的格子数
 @export var page_cnt: int = 27
+#仓库的页数
 @export var page_mag: int = 1
+#玩家所处的页数
 var now_page: int = 1
 
 func _ready():
 	refresh_ui()
 # 刷新背包界面
 func refresh_ui():
+	page_label.text = "%d / %d" % [now_page , page_mag]
+
 	var now_index: int = page_cnt * (now_page-1)
 	var slots = inventory._slots
 	for i in range(now_index, now_index + page_cnt):
@@ -29,13 +35,15 @@ func refresh_ui():
 			grid.item_data = slot.Item
 			grid.item_cnt = slot.Amount
 			grid.sp2d.get_child(0).texture = slot.Item.CardIcon
-			
+
 	for i in range(1,6):
 		var usercard_path: NodePath = "usercard_%d" % i
 		var grid = inventory_grid.get_node(usercard_path)
 		if grid != null and grid.item_data != null :
 			grid.sp2d.get_child(0).texture = grid.item_data.CardIcon
-		
+		if grid != null and grid.item_data == null:
+			grid.sp2d.get_child(0).texture = null
+
 
 # 点击按钮时尝试移动物品
 func _on_slot_button_pressed(index):

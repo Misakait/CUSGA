@@ -1,14 +1,11 @@
 extends Node2D
-var inventory_grid
-var inventory_component
-var inventory_control
+@export var inventory_grid: Node2D
+@export var inventory_component: Node2D
+@export var inventory_control: Control
 var _slots
 var target_snapper
 
 func _ready() -> void:
-	inventory_grid = get_tree().root.get_node("Warehouse").get_node("InventoryGrid")
-	inventory_component = get_tree().root.get_node("Warehouse").get_node("InventoryComponent")
-	inventory_control = get_tree().root.get_node("Warehouse").get_node("InventoryControl")
 	target_snapper = inventory_grid.binder.target_snapper
 	#print(inventory_component)
 	#print(inventory_control)
@@ -21,29 +18,29 @@ func _on_inventory_grid_card_be_snapper(node) -> void:
 			node.global_position = card.global_position
 			card.global_position = ex
 			var tween = card.create_tween()
-			tween.tween_property(card, "global_position", inventory_grid.original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-			inventory_grid.binder.target_snapper.snapped_cards[card] = inventory_grid.original_position[card]
-			
+			tween.tween_property(card, "global_position", inventory_grid.original_position[card.name], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			inventory_grid.binder.target_snapper.snapped_cards[card] = inventory_grid.original_position[card.name]
+
 			var node_name = get_name_from_name(node)
 			var card_name = get_name_from_name(card)
-			#print("node_name: ",node_name,"  card_name: ",card_name)
-			
+			print("node_name: ",node_name,"  card_name: ",card_name)
+
 			if node_name == "card" and card_name == "card":
 				inventory_inventory_func(node,card)
 				inventory_control.refresh_ui()
-			
+
 			elif node_name == "card" and card_name == "usercard":
 				inventory_user_func(node,card)
 				inventory_control.refresh_ui()
-				
+
 			elif node_name == "usercard" and card_name == "card":
 				inventory_user_func(card,node)
 				inventory_control.refresh_ui()
-				
+
 			elif node_name == "usercard" and card_name == "usercard":
 				user_user_func(node,card)
 				inventory_control.refresh_ui()
-			
+
 			else:
 				print("你进行交互的两张牌有问题，去inventory_card_slot看看吧")
 
@@ -92,23 +89,23 @@ func user_user_func(node,card):
 		card_node.my_card_name.text = "%s x%d" % [card_node.item_data.CardName, card_node.item_cnt]
 	else:
 		card_node.my_card_name.text = "-"
-	
+
 
 func get_name_from_name(node):
 	var name1 = node.name
-	var parts = name1.split("_") 
+	var parts = name1.split("_")
 	var node_name = parts[0]
 	return node_name
 
 func get_num_form_name(node):
 	var name1 = node.name
-	var parts = name1.split("_") 
+	var parts = name1.split("_")
 	var num_str = parts[1].split(":")[0]
 	var num = int(num_str)
 	return num
 
 func exchange_position(card,node_name):
-	var ex_pos = inventory_grid.original_position[card]
-	inventory_grid.original_position[card] = inventory_grid.original_position[node_name]
-	target_snapper.snapped_cards[card] = inventory_grid.original_position[card]
-	inventory_grid.original_position[node_name] = ex_pos
+	var ex_pos = inventory_grid.original_position[card.name]
+	inventory_grid.original_position[card.name] = inventory_grid.original_position[node_name.name]
+	target_snapper.snapped_cards[card.name] = inventory_grid.original_position[card.name]
+	inventory_grid.original_position[node_name.name] = ex_pos

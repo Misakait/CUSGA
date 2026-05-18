@@ -3,11 +3,11 @@
 [ext_resource type="Script" uid="uid://bcm0sgct3tva4" path="res://scripts/normal_compoment/main_menu.gd" id="1_168ci"]
 [ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="2_gdjtc"]
 [ext_resource type="Script" uid="uid://c0vmkk6bek2ma" path="res://scripts/normal_compoment/main_menu_card_slot/main_menu_card_slot.gd" id="3_gdjtc"]
+[ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="6_168ci"]
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="7_r5auf"]
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="8_eliqi"]
-[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="8_r5auf"]
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="9_eliqi"]
 [ext_resource type="Texture2D" uid="uid://cki12g8ntwybh" path="res://res/UI/开始.png" id="10_168ci"]
 [ext_resource type="Texture2D" uid="uid://0wfyybb2allh" path="res://res/UI/设置.png" id="11_8ljqf"]
@@ -25,6 +25,11 @@ metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 [node name="MainMenu" type="Node2D" unique_id=1637248230]
 script = ExtResource("1_168ci")
 
+[node name="ColorRect" type="ColorRect" parent="." unique_id=873487231]
+offset_right = 1283.0
+offset_bottom = 720.0
+color = Color(0.2509804, 0.2509804, 0.2509804, 1)
+
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=987922898 node_paths=PackedStringArray("snap_nodes")]
 script = ExtResource("9_eliqi")
 target_snapper = SubResource("Resource_v5kme")
@@ -32,12 +37,18 @@ snap_nodes = [NodePath("../SnapPoint1")]
 metadata/_custom_type_script = "uid://r4v1cixqpj1o"
 
 [node name="SnapPoint1" type="Node2D" parent="." unique_id=224474800]
-position = Vector2(549.375, 178.855)
+position = Vector2(630, 207.00002)
 scale = Vector2(0.63427263, 0.6470515)
 script = ExtResource("3_gdjtc")
 
-[node name="Sprite2D" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
-texture = ExtResource("8_r5auf")
+[node name="Background" type="Sprite2D" parent="SnapPoint1" unique_id=1848510988]
+position = Vector2(-1.5766602, 1.5454712)
+scale = Vector2(2.2973452, 2.1945703)
+texture = ExtResource("8_eliqi")
+
+[node name="Transform" type="Sprite2D" parent="SnapPoint1" unique_id=171052999]
+scale = Vector2(2.3953147, 2.3209321)
+texture = ExtResource("6_168ci")
 
 [node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112 node_paths=PackedStringArray("binder")]
 script = ExtResource("6_gdjtc")
@@ -50,8 +61,11 @@ tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("10_168ci")
 card_name_text = "开始游戏"
+card_name_scale = Vector2(0.5, 0.5)
 card_description_text = "开始你的游戏"
+card_description_scale = Vector2(0.5, 0.5)
 card_cost_text = "0"
+card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
 position = Vector2(461, 506)
@@ -59,16 +73,22 @@ tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("11_8ljqf")
 card_name_text = "设置"
+card_name_scale = Vector2(0.5, 0.5)
 card_description_text = "进入设置界面"
+card_description_scale = Vector2(0.5, 0.5)
 card_cost_text = "0"
+card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="Warehouse" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("2_gdjtc")]
 position = Vector2(787, 505)
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("12_3flcn")
 card_name_text = "仓库"
+card_name_scale = Vector2(0.5, 0.5)
 card_description_text = "进入仓库界面"
+card_description_scale = Vector2(0.5, 0.5)
 card_cost_text = "0"
+card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
 position = Vector2(1099, 508)
@@ -76,7 +96,10 @@ tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("13_f27sh")
 card_name_text = "退出游戏"
+card_name_scale = Vector2(0.5, 0.5)
 card_description_text = "退出这个游戏"
+card_description_scale = Vector2(0.5, 0.5)
 card_cost_text = "0"
+card_cost_scale = Vector2(0.5, 0.5)
 
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="." method="_on_card_be_snapper"]

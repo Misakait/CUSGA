@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqfor6mukto2l" path="res://scripts/normal_compoment/main_menu_card/main_menu_card.gd" id="1_h86l4"]
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_w33iv"]
+[ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="3_ecajb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
 size = Vector2(70, 50)
@@ -14,9 +15,9 @@ sp2d = NodePath("Sprite2D")
 my_card_name = NodePath("Sprite2D/CardName")
 my_card_description = NodePath("Sprite2D/CardDescription")
 my_card_cost = NodePath("Sprite2D/CardCost")
-card_name_text = null
-card_description_text = null
-card_cost_text = null
+card_name_scale = null
+card_description_scale = null
+card_cost_scale = null
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
 scale = Vector2(1.5, 1.5)
@@ -37,7 +38,6 @@ offset_right = -62.999996
 offset_bottom = -65.666664
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.5, 0.5)
 clip_text = true
 
 [node name="CardDescription" type="Label" parent="Sprite2D" unique_id=1070513239]
@@ -64,6 +64,11 @@ offset_right = 88.66667
 offset_bottom = -13.0
 scale = Vector2(0.5, 0.5)
 clip_text = true
+
+[node name="ItemBox" type="Sprite2D" parent="Sprite2D" unique_id=1355555981]
+position = Vector2(-1.6093254e-06, 0.3333334)
+scale = Vector2(1.0285714, 1.0333334)
+texture = ExtResource("3_ecajb")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1777527990]
 

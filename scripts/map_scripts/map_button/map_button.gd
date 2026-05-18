@@ -19,21 +19,21 @@ var scene_button: Dictionary
 
 func _ready() -> void:
 	update_scene_button(current_position)
-	
+
 func update_scene_button(position: Vector2i):
-	
+
 	#更新自身位置
 	current_position = position
 	posx = position.x
 	posy = position.y
-	
+
 	connect_scene = map_position_create.scene_to_scene[position]
-	
+
 	#检测相连房间
 	for the_scene in range(0,4):
-		
+
 		check_these_button(the_scene)
-		
+
 
 func check_these_button(the_scene: int):
 	if connect_scene[the_scene] == 0:
@@ -91,15 +91,23 @@ func _on_up_button_pressed() -> void:
 	map_little.build_little_map(posx-1, posy)
 	map_little.change_this_cell_color(posx-1, posy)
 	map_little.return_this_cell_color(posx, posy)
+
+	ScreenTransitions.fade_out()
+	await ScreenTransitions.fade_complete
+
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx-1 , posy))
-	
+
 #右按钮
 func _on_right_button_pressed() -> void:
 	#print("卧槽，我是右")
 	map_little.build_little_map(posx, posy+1)
 	map_little.change_this_cell_color(posx, posy+1)
 	map_little.return_this_cell_color(posx, posy)
+
+	ScreenTransitions.fade_out()
+	await ScreenTransitions.fade_complete
+
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx , posy+1))
 
@@ -109,6 +117,10 @@ func _on_down_button_pressed() -> void:
 	map_little.build_little_map(posx+1, posy)
 	map_little.change_this_cell_color(posx+1, posy)
 	map_little.return_this_cell_color(posx, posy)
+
+	ScreenTransitions.fade_out()
+	await ScreenTransitions.fade_complete
+
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx+1 , posy))
 
@@ -118,5 +130,9 @@ func _on_left_button_pressed() -> void:
 	map_little.build_little_map(posx, posy-1)
 	map_little.change_this_cell_color(posx, posy-1)
 	map_little.return_this_cell_color(posx, posy)
+
+	ScreenTransitions.fade_out()
+	await ScreenTransitions.fade_complete
+
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx , posy-1))

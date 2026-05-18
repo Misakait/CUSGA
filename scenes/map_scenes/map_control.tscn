@@ -69,8 +69,9 @@ metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
 texture = ExtResource("14_00bk6")
 
-[node name="MapControl" type="Node2D" unique_id=223958387]
+[node name="MapControl" type="Node2D" unique_id=223958387 node_paths=PackedStringArray("canvas_layer")]
 script = ExtResource("1_7fije")
+canvas_layer = NodePath("CanvasLayer")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")

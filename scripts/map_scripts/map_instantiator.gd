@@ -28,6 +28,8 @@ func create_map_road():
 
 func load_scene_at(position: Vector2i):
 
+	ScreenTransitions.fade_in()
+
 	if current_scene:
 		remove_child(current_scene)
 

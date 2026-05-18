@@ -1,5 +1,7 @@
 extends Node
 
+@export var canvas_layer: CanvasLayer
+
 signal on_entered_room(position: Vector2i, scene: Node2D)
 
 @onready var map_instantiator: Node = $MapInstantiator

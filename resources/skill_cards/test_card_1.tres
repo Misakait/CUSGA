@@ -37,7 +37,6 @@ metadata/_custom_type_script = "uid://dswxdym0jp2hb"
 [sub_resource type="Resource" id="Resource_xwuh1"]
 script = ExtResource("4_xwuh1")
 Status = SubResource("Resource_l2nwx")
-TargetScope = 0
 metadata/_custom_type_script = "uid://eb5trb48cjvk"
 
 [sub_resource type="Resource" id="Resource_8lhwl"]

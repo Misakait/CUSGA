@@ -6,3 +6,5 @@ signal on_player_acquired_talent(talent_data);
 signal on_status_changed(owner);
 signal on_entity_dropped(global_position,stacks)
 signal on_entered_vault;
+
+signal scene_requested(scene_id: String)

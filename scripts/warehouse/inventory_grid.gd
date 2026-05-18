@@ -23,7 +23,7 @@ func _ready() -> void:
 	initing = true
 	init_add_grid()
 	initing = false
-
+	print("1")
 	get_user_card()
 
 func init_add_grid():
@@ -38,7 +38,7 @@ func init_add_grid():
 		#设置名字
 		inventory_grid.name = "card_%d" % id
 		id = id+1
-		original_position[inventory_grid] = inventory_grid.global_position
+		original_position[inventory_grid.name] = inventory_grid.global_position
 
 		card = inventory_grid
 		finish_drag()
@@ -56,7 +56,7 @@ func init_add_grid():
 		#设置标签
 		inventory_grid.my_card_name.text = "-"
 		userid = userid+1
-		original_position[inventory_grid] = inventory_grid.global_position
+		original_position[inventory_grid.name] = inventory_grid.global_position
 
 		card = inventory_grid
 		finish_drag()
@@ -77,8 +77,7 @@ func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			card = raycast_check_for_card()
-
-			if !original_position.has(card):
+			if card and !original_position.has(card.name):
 				card = null
 
 			if card:
@@ -112,15 +111,15 @@ func finish_drag():
 			reback = false
 			emit_signal("card_be_snapper", card)
 			var tween = card.create_tween()
-			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-			binder.target_snapper.snapped_cards[card] = original_position[card]
+			tween.tween_property(card, "global_position", original_position[card.name], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			binder.target_snapper.snapped_cards[card] = original_position[card.name]
 
 		if binder and not snapped :
 			# 没有吸附成功 → 回到原位
 			var tween = card.create_tween()
-			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tween.tween_property(card, "global_position", original_position[card.name], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			if reback:
-				binder.target_snapper.snapped_cards[card] = original_position[card]
+				binder.target_snapper.snapped_cards[card] = original_position[card.name]
 	skip = false
 	card = null
 
