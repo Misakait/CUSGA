@@ -21,22 +21,22 @@ func use(target: Node = null):
 		print(data.CardName,"被使用，目标为",target.BaseData.MonsterName)
 	else:
 		print(data.CardName,"被使用，没有目标")
-		
+
 	var source = get_node_or_null("../../PlayerManager")
 	if not source:
 		source = get_tree().current_scene.get_node_or_null("PlayerManager")
 	if not source:
 		source = self
-		
+
 	if data.has_method("ApplyEffect"):
 			var ContextClass = load(CONTEXT_SCRIPT_PATH)
 			var context = null
-			
+
 			if target:
 				context = ContextClass.FromSingleTarget(source, target)
 			else:
 				context = ContextClass.Self(source)
-				
+
 			data.ApplyEffect(context)
 
 func init_card_data(card_data):
@@ -45,6 +45,9 @@ func init_card_data(card_data):
 	$CardName.text = data.DisplayName
 	# 调用 SkillCardData.cs 的 DisplayDescription 属性获取实际显示的描述（如果没有独立描述则获取技能描述）
 	$CardDescription.text = data.DisplayDescription
+	# 调用 SkillCardData.cs 的 DisplayTag 属性获取实际显示的标签（多个标签以换行分隔）
+	$CardTag.text = data.DisplayTag
+	$CardTag.visible = not $CardTag.text.is_empty()
 	$CardCost.text = str(data.cost)
 
 func _on_area_2d_mouse_entered() -> void:

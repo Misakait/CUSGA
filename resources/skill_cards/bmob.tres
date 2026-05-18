@@ -39,6 +39,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 [resource]
 script = ExtResource("1_xiuvs")
 Skill = SubResource("Resource_htuqe")
+CardTags = Array[String](["扩散伤害", "灼烧"])
 CardId = null
 CardName = "炸弹"
 Description = "爆炸扩散伤害中间灼烧。"

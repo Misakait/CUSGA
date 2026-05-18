@@ -29,6 +29,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 [resource]
 script = ExtResource("1_psaci")
 Skill = SubResource("Resource_lkgp0")
+CardTags = Array[String](["伤害", "自残"])
 CardId = null
 Description = "对自己造成一点伤害，对一个敌人造成10点伤害"
 metadata/_custom_type_script = "uid://bejho62d28qir"

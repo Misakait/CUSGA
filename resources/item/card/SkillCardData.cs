@@ -3,6 +3,7 @@ using CUSGA.core.combat.skills;
 using CUSGA.core.constants;
 using Godot;
 using Godot.Collections;
+using System.Collections.Generic;
 
 namespace CUSGA.resources.item.card;
 
@@ -11,6 +12,7 @@ public partial class SkillCardData : ItemData
 {
     [Export] public CombatSkillData Skill { get; set; } = null!;
     [Export] public int cost = 10;
+    [Export] public Array<string> CardTags { get; set; } = [];
 
     public override int ActualMaxStackSize => 1;
 
@@ -50,6 +52,30 @@ public partial class SkillCardData : ItemData
             }
 
             return Skill?.DisplayIcon;
+        }
+    }
+
+    public string DisplayTag
+    {
+        get
+        {
+            if (CardTags == null || CardTags.Count == 0)
+            {
+                return "";
+            }
+
+            List<string> tags = new();
+            foreach (var tag in CardTags)
+            {
+                if (string.IsNullOrWhiteSpace(tag))
+                {
+                    continue;
+                }
+
+                tags.Add(tag);
+            }
+
+            return tags.Count == 0 ? "" : string.Join("\n", tags);
         }
     }
 

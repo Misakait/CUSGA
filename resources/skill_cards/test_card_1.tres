@@ -37,6 +37,7 @@ metadata/_custom_type_script = "uid://dswxdym0jp2hb"
 [sub_resource type="Resource" id="Resource_xwuh1"]
 script = ExtResource("4_xwuh1")
 Status = SubResource("Resource_l2nwx")
+TargetScope = 0
 metadata/_custom_type_script = "uid://eb5trb48cjvk"
 
 [sub_resource type="Resource" id="Resource_8lhwl"]
@@ -51,6 +52,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 [resource]
 script = ExtResource("1_7sme0")
 Skill = SubResource("Resource_8lhwl")
+CardTags = Array[String](["伤害", "加速"])
 CardId = null
 CardName = "测试卡1"
 CardIcon = SubResource("CompressedTexture2D_dqhnu")

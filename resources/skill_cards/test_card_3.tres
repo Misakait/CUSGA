@@ -23,6 +23,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 script = ExtResource("1_v80vg")
 Skill = SubResource("Resource_trse8")
 cost = 30
+CardTags = Array[String](["高额伤害"])
 CardId = null
 CardName = "测试卡3"
 Description = "对所有敌人造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。"

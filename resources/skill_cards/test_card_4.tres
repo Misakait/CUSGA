@@ -23,6 +23,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 script = ExtResource("4_lwned")
 Skill = SubResource("Resource_trse8")
 cost = 0
+CardTags = Array[String](["自残"])
 CardId = null
 CardName = "测试卡4"
 Description = "对自己造成20点伤害"
