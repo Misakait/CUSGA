@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_7sme0"]
 [ext_resource type="Texture2D" uid="uid://bpif0gvr1msg0" path="res://res/items/雪.png" id="1_dqhnu"]
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_lqd6v"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_dqhnu"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_xwuh1"]
 [ext_resource type="Script" uid="uid://ilmgwp6hkfi" path="res://core/combat/status/AttributeModifierData.cs" id="4_8lhwl"]
@@ -25,7 +24,7 @@ metadata/_custom_type_script = "uid://ilmgwp6hkfi"
 
 [sub_resource type="Resource" id="Resource_l2nwx"]
 script = ExtResource("5_lwroi")
-Modifiers = Array[ExtResource("4_8lhwl")]([SubResource("Resource_lwroi")])
+Modifiers = [SubResource("Resource_lwroi")]
 Id = null
 MaxStacks = 999
 Policy = 2
@@ -43,7 +42,7 @@ metadata/_custom_type_script = "uid://eb5trb48cjvk"
 [sub_resource type="Resource" id="Resource_8lhwl"]
 script = ExtResource("3_xwuh1")
 Element = 1
-Effects = Array[ExtResource("1_lqd6v")]([SubResource("Resource_nx2k3"), SubResource("Resource_xwuh1")])
+Effects = [SubResource("Resource_nx2k3"), SubResource("Resource_xwuh1")]
 CardId = null
 CardName = "测试卡一"
 CardIcon = ExtResource("1_dqhnu")

@@ -156,7 +156,7 @@ metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 [resource]
 script = ExtResource("1_loadout")
 PlayerStartingStats = SubResource("StartingStats_debug")
-InventoryItems = Array[ExtResource("2_stack")]([SubResource("Inventory_item1"), SubResource("Inventory_item2"), SubResource("Inventory_item3"), SubResource("Inventory_card1"), SubResource("Inventory_card2"), SubResource("Inventory_card3"), SubResource("Inventory_bomb")])
-BattleDeckItems = Array[ExtResource("2_stack")]([SubResource("Deck_card1"), SubResource("Deck_card2"), SubResource("Deck_card3"), SubResource("Deck_bomb")])
-InventoryEquipment = Array[ExtResource("3_equip")]([SubResource("Equip_weapon"), SubResource("Equip_chest"), SubResource("Equip_legs"), SubResource("Equip_axe"), SubResource("Equip_pickaxe"), SubResource("Equip_rod")])
-EquippedEquipment = Array[ExtResource("3_equip")]([SubResource("Equipped_helmet"), SubResource("Equipped_boots")])
+InventoryItems = [SubResource("Inventory_item1"), SubResource("Inventory_item2"), SubResource("Inventory_item3"), SubResource("Inventory_card1"), SubResource("Inventory_card2"), SubResource("Inventory_card3"), SubResource("Inventory_bomb")]
+BattleDeckItems = [SubResource("Deck_card1"), SubResource("Deck_card2"), SubResource("Deck_card3"), SubResource("Deck_bomb")]
+InventoryEquipment = [SubResource("Equip_weapon"), SubResource("Equip_chest"), SubResource("Equip_legs"), SubResource("Equip_axe"), SubResource("Equip_pickaxe"), SubResource("Equip_rod")]
+EquippedEquipment = [SubResource("Equipped_helmet"), SubResource("Equipped_boots")]

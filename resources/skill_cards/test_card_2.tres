@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://biq5mpj4n1rqp"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_bhrvp"]
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_rt7uw"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_3i3k0"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_uxcp8"]
 
@@ -16,7 +15,7 @@ metadata/_custom_type_script = "uid://b2df0ritlplj8"
 script = ExtResource("3_uxcp8")
 Element = 5
 TargetingType = 5
-Effects = Array[ExtResource("1_rt7uw")]([SubResource("Resource_7wn03")])
+Effects = [SubResource("Resource_7wn03")]
 CardId = null
 metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 
