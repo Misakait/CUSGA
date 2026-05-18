@@ -30,6 +30,7 @@ MonsterName = "测试怪物1"
 InitialAttributes = SubResource("Resource_5rlhp")
 ElementalProperty = 3
 MaxHealth = 100
+SkillCards = Array[ExtResource("2_navvr")]([ExtResource("3_ajc51")])
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
 [sub_resource type="Resource" id="Resource_b6vuc"]

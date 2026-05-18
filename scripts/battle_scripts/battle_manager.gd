@@ -69,6 +69,41 @@ func get_all_combatants() -> Array:
 		combatants.append_array(monster_manager.active_monsters)
 	return combatants
 
+func _unwrap_combat_entity(entity: Variant) -> Node:
+	# 将包装器节点解包为真实的 C# 实体节点（用于技能结算）
+	if entity and entity.has_method("get_combat_entity"):
+		return entity.get_combat_entity()
+	return entity
+
+func _is_player_actor(actor: Variant) -> bool:
+	# 判断是否是玩家行动实体（PlayerManager）
+	return actor == player_manager
+
+func _is_monster_actor(actor: Variant) -> bool:
+	# 判断是否是场上怪物实体
+	return monster_manager and monster_manager.active_monsters and monster_manager.active_monsters.has(actor)
+
+func _get_enemies_for_source(source: Variant) -> Array:
+	# 根据施法者/攻击者阵营动态取得敌人列表
+	if _is_player_actor(source):
+		if monster_manager and monster_manager.active_monsters:
+			return monster_manager.active_monsters.duplicate()
+		return []
+	if _is_monster_actor(source):
+		var enemies: Array = []
+		if player_manager:
+			enemies.append(player_manager)
+		return enemies
+	if monster_manager and monster_manager.active_monsters:
+		return monster_manager.active_monsters.duplicate()
+	return []
+
+func _pick_random_from(list: Array):
+	# 从列表中安全随机选择一个元素
+	if not list or list.is_empty():
+		return null
+	return list.pick_random()
+
 func _ready():
 	#初始化摸牌堆
 	deck_manager.initialize_deck(starting_deck_data)
@@ -267,10 +302,18 @@ func _handle_enemy_turn():
 		var tween = create_tween()
 		tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_turn_scale, scale_tween_duration)
 
-	# 简单的敌人AI逻辑：对玩家造成攻击
-	# 后续可替换为读取怪物的技能表或行为树进行决策
-	var action = Action.new(active_entity, [player_manager], null, "attack", "ATTACK")
-	enqueue_action(action)
+	# 怪物回合：优先从技能池中随机释放一张技能卡
+	var skill_card = null
+	if active_entity and active_entity.has_method("GetRandomSkillCard"):
+		skill_card = active_entity.GetRandomSkillCard()
+
+	if skill_card:
+		var action = Action.new(active_entity, [], skill_card, "skill", "CARD")
+		enqueue_action(action)
+	else:
+		# 兜底：没有技能卡时执行基础攻击
+		var action = Action.new(active_entity, [player_manager], null, "attack", "ATTACK")
+		enqueue_action(action)
 
 	# 重置怪物的行动值
 	var speed = 100.0
@@ -346,8 +389,8 @@ func _execute_single_action(action: Action):
 			# 所以在将 target 传入 SkillExecutionContext 之前，必须
 			# 调用包装器提供的 get_combat_entity() 提取出真正的 C# 实体节点。
 			# ---------------------------------------------------------
-			var real_source = action.source.get_combat_entity() if action.source.has_method("get_combat_entity") else action.source
-			var real_target = target.get_combat_entity() if target and target.has_method("get_combat_entity") else target
+			var real_source = _unwrap_combat_entity(action.source)
+			var real_target = _unwrap_combat_entity(target)
 
 			# 基于解析到的类型，动态收集场上目标并分配至对应上下文工厂
 			match targeting_type:
@@ -355,62 +398,92 @@ func _execute_single_action(action: Action):
 					# 目标为自身：直接传入卡牌施放者
 					context = ContextClass.Self(real_source)
 
-				SkillTargetingType.SINGLE_ENEMY, SkillTargetingType.ANY_SINGLE_UNIT:
-					# 单体目标：依赖玩家拖拽或操作时传入的具体 target
+				SkillTargetingType.SINGLE_ENEMY:
+					# 单体敌人：若未显式指定目标，则自动从敌方中随机选择
+					if not real_target:
+						var enemy = _pick_random_from(_get_enemies_for_source(action.source))
+						real_target = _unwrap_combat_entity(enemy)
 					if real_target:
 						context = ContextClass.FromSingleTarget(real_source, real_target)
 					else:
-						# 若发生未选中目标强行释放的异常情况，容错回退为自身
 						push_warning("单体技能未找到目标，退化为以自身为目标")
 						context = ContextClass.Self(real_source)
 
+				SkillTargetingType.ANY_SINGLE_UNIT:
+					# 任意单体：若未显式指定目标，则从场上所有单位中随机选择
+					if not real_target:
+						var any_unit = _pick_random_from(get_all_combatants())
+						real_target = _unwrap_combat_entity(any_unit)
+					if real_target:
+						context = ContextClass.FromSingleTarget(real_source, real_target)
+					else:
+						push_warning("任意单体技能未找到目标，退化为以自身为目标")
+						context = ContextClass.Self(real_source)
+
 				SkillTargetingType.ALL_ENEMIES:
-					# 全体敌人：从怪物管理器中提取所有存活怪物传入数组
+					# 全体敌人：根据施放者阵营动态选择敌对单位
 					var enemies: Array[Node] = []
-					if monster_manager and monster_manager.active_monsters:
-						for enemy in monster_manager.active_monsters:
-							enemies.append(enemy.get_combat_entity() if enemy.has_method("get_combat_entity") else enemy)
-					context = ContextClass.FromPrimaryTargets(real_source, enemies)
+					for enemy in _get_enemies_for_source(action.source):
+						var real_enemy = _unwrap_combat_entity(enemy)
+						if real_enemy:
+							enemies.append(real_enemy)
+					if enemies.is_empty():
+						context = ContextClass.Self(real_source)
+					else:
+						context = ContextClass.FromPrimaryTargets(real_source, enemies)
 
 				SkillTargetingType.ALL_UNITS:
 					# 全体单位：复用写好的 get_all_combatants() 获取包含玩家在内的所有人
 					var all_units: Array[Node] = []
 					for unit in get_all_combatants():
-						all_units.append(unit.get_combat_entity() if unit.has_method("get_combat_entity") else unit)
-					context = ContextClass.FromPrimaryTargets(real_source, all_units)
+						var real_unit = _unwrap_combat_entity(unit)
+						if real_unit:
+							all_units.append(real_unit)
+					if all_units.is_empty():
+						context = ContextClass.Self(real_source)
+					else:
+						context = ContextClass.FromPrimaryTargets(real_source, all_units)
 
 				SkillTargetingType.RANDOM_ENEMY:
-					# 随机单体敌人：在场上存活的怪物中随机抽取一个
-					var random_target = null
-					if monster_manager and monster_manager.active_monsters and monster_manager.active_monsters.size() > 0:
-						random_target = monster_manager.active_monsters.pick_random()
-						random_target = random_target.get_combat_entity() if random_target.has_method("get_combat_entity") else random_target
-
-					if random_target:
-						context = ContextClass.FromSingleTarget(real_source, random_target)
+					# 随机单体敌人：根据施放者阵营动态选择敌对单位
+					var random_enemy = _pick_random_from(_get_enemies_for_source(action.source))
+					random_enemy = _unwrap_combat_entity(random_enemy)
+					if random_enemy:
+						context = ContextClass.FromSingleTarget(real_source, random_enemy)
 					else:
 						context = ContextClass.Self(real_source)
 
 				SkillTargetingType.SPREAD_FROM_ENEMY:
 					# 扩散类型：获取主目标，并根据其在怪物列表中的位置，提取相邻（左右）的敌人作为次要目标
+					var spread_primary = target
+					if not spread_primary:
+						spread_primary = _pick_random_from(_get_enemies_for_source(action.source))
+					var real_primary = _unwrap_combat_entity(spread_primary)
 					var secondary_targets: Array[Node] = []
-					if target and monster_manager and monster_manager.active_monsters:
+					if spread_primary and monster_manager and monster_manager.active_monsters:
 						var monsters = monster_manager.active_monsters
-						var target_index = monsters.find(target)
+						var target_index = monsters.find(spread_primary)
 
 						# 如果主目标存在于当前怪物列表中（find 返回 -1 表示未找到）
 						if target_index != -1:
 							# 提取左侧相邻敌人，并确保其不越过左边界 (index 0)
 							if target_index > 0:
 								var left_enemy = monsters[target_index - 1]
-								secondary_targets.append(left_enemy.get_combat_entity() if left_enemy.has_method("get_combat_entity") else left_enemy)
+								var real_left = _unwrap_combat_entity(left_enemy)
+								if real_left:
+									secondary_targets.append(real_left)
 							# 提取右侧相邻敌人，并确保其不越过右边界 (最大 size - 1)
 							if target_index < monsters.size() - 1:
 								var right_enemy = monsters[target_index + 1]
-								secondary_targets.append(right_enemy.get_combat_entity() if right_enemy.has_method("get_combat_entity") else right_enemy)
+								var real_right = _unwrap_combat_entity(right_enemy)
+								if real_right:
+									secondary_targets.append(real_right)
 
 					# 封装为上下文对象，将找出的左右侧相邻敌人作为 secondary_targets 传入
-					context = ContextClass.FromSpread(real_source, real_target, secondary_targets)
+					if real_primary:
+						context = ContextClass.FromSpread(real_source, real_primary, secondary_targets)
+					else:
+						context = ContextClass.Self(real_source)
 
 				_:
 					# 兜底情况的容错处理

@@ -1,9 +1,11 @@
 using Godot;
+using Godot.Collections;
 using CUSGA.resources.monsters;
 using CUSGA.entities.components;
 using CUSGA.core.constants;
 using CUSGA.core.combat;
 using CUSGA.core.attributes;
+using CUSGA.resources.item.card;
 using System;
 
 namespace CUSGA.entities;
@@ -71,7 +73,10 @@ public partial class Monster : Node2D
 
     private void OnHealthChanged(int currentValue, int maxValue)
     {
-        if (_healthBar == null) throw new System.NullReferenceException("HealthBar node is missing on Monster!");
+        if (_healthBar == null)
+        {
+            throw new System.NullReferenceException("HealthBar node is missing on Monster!");
+        }
 
         _healthBar.Call("update_stat", currentValue, maxValue, false);
     }
@@ -113,5 +118,24 @@ public partial class Monster : Node2D
         // {
         //     BehaviorTree.AddChild(behaviorTree);
         // }
+    }
+
+    // 获取怪物的技能卡池（直接复用玩家技能卡资源）
+    public Array<SkillCardData> GetSkillCards()
+    {
+        return BaseData?.SkillCards ?? [];
+    }
+
+    // 从技能卡池中随机选取一张，用于怪物回合自动施放
+    public SkillCardData GetRandomSkillCard()
+    {
+        var cards = GetSkillCards();
+        if (cards == null || cards.Count == 0)
+        {
+            return null;
+        }
+
+        var index = (int)(GD.Randi() % (uint)cards.Count);
+        return cards[index];
     }
 }
