@@ -11,6 +11,7 @@
 [ext_resource type="Resource" uid="uid://b1xcn5llorviu" path="res://resources/skill_cards/senketsu.tres" id="7_0ajq7"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
 [ext_resource type="Script" uid="uid://chjm56tp6xjqk" path="res://scripts/battle_scripts/monster_manager.gd" id="8_xseyc"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="9_b6vuc"]
 [ext_resource type="Script" uid="uid://bxcdktnfciqv1" path="res://scripts/battle_scripts/control_lock.gd" id="9_sugqx"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
@@ -19,45 +20,68 @@
 [ext_resource type="Script" uid="uid://b74g378xtw11y" path="res://scripts/ui_scripts/action_timeline.gd" id="timeline_script"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="tooltip_panel_scene"]
 
+[sub_resource type="Resource" id="Resource_5rlhp"]
+script = ExtResource("9_b6vuc")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
 [sub_resource type="Resource" id="Resource_xseyc"]
 script = ExtResource("6_ajc51")
 MonsterName = "测试怪物1"
+InitialAttributes = SubResource("Resource_5rlhp")
 ElementalProperty = 3
 MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
-[sub_resource type="Resource" id="Resource_ajc51"]
-script = ExtResource("6_ajc51")
-MonsterName = "测试怪物1"
-ElementalProperty = 3
-MaxHealth = 100
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
+[sub_resource type="Resource" id="Resource_b6vuc"]
+script = ExtResource("9_b6vuc")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
-[sub_resource type="Resource" id="Resource_aorj5"]
+[sub_resource type="Resource" id="Resource_r54vc"]
 script = ExtResource("6_ajc51")
-MonsterName = "怪物2"
+InitialAttributes = SubResource("Resource_b6vuc")
 ElementalProperty = 1
+MaxHealth = 100
+metadata/_custom_type_script = "uid://dh28trwcjvre6"
+
+[sub_resource type="Resource" id="Resource_1t3o5"]
+script = ExtResource("9_b6vuc")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="Resource_j5bay"]
+script = ExtResource("6_ajc51")
+InitialAttributes = SubResource("Resource_1t3o5")
 MaxHealth = 200
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
-[sub_resource type="Resource" id="Resource_b6b28"]
+[sub_resource type="Resource" id="Resource_32c2v"]
+script = ExtResource("9_b6vuc")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="Resource_qxj8e"]
 script = ExtResource("6_ajc51")
-MonsterName = "测试怪物1"
-ElementalProperty = 3
+InitialAttributes = SubResource("Resource_32c2v")
+MaxHealth = 300
+metadata/_custom_type_script = "uid://dh28trwcjvre6"
+
+[sub_resource type="Resource" id="Resource_wgwps"]
+script = ExtResource("9_b6vuc")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="Resource_74ila"]
+script = ExtResource("6_ajc51")
+InitialAttributes = SubResource("Resource_wgwps")
+ElementalProperty = 1
 MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
-[sub_resource type="Resource" id="Resource_i4gjj"]
-script = ExtResource("6_ajc51")
-MonsterName = "怪物2"
-ElementalProperty = 1
-MaxHealth = 200
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
+[sub_resource type="Resource" id="Resource_qnbvl"]
+script = ExtResource("9_b6vuc")
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
-[sub_resource type="Resource" id="Resource_0ajq7"]
+[sub_resource type="Resource" id="Resource_qhmct"]
 script = ExtResource("6_ajc51")
-MonsterName = "测试怪物1"
-ElementalProperty = 3
+InitialAttributes = SubResource("Resource_qnbvl")
+ElementalProperty = 4
 MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
@@ -95,7 +119,7 @@ corner_radius_bottom_left = 4
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
 starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("7_0ajq7"), ExtResource("7_0ajq7")])
-starting_monster_data = Array[ExtResource("6_ajc51")]([SubResource("Resource_xseyc"), SubResource("Resource_ajc51"), SubResource("Resource_aorj5"), SubResource("Resource_b6b28"), SubResource("Resource_i4gjj"), SubResource("Resource_0ajq7")])
+starting_monster_data = Array[ExtResource("6_ajc51")]([SubResource("Resource_xseyc"), SubResource("Resource_r54vc"), SubResource("Resource_j5bay"), SubResource("Resource_qxj8e"), SubResource("Resource_74ila"), SubResource("Resource_qhmct")])
 card_scene = SubResource("Resource_navvr")
 
 [node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
