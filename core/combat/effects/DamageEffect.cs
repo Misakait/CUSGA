@@ -28,7 +28,7 @@ public partial class DamageEffect : CardEffect
             GD.PushError($"{nameof(DamageEffect)} executed with null context.");
             return;
         }
-
+        GD.Print("TargetScope:", TargetScope, "Executing DamageEffect");
         foreach (var target in SkillEffectTargetScopeUtility.SelectTargets(context, TargetScope))
         {
             if (target.Unit == null)

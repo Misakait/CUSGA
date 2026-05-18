@@ -72,7 +72,7 @@ public partial class StatusComponent : Node
             ApplyStackPolicy(existing, incoming);
             existing.OnReapplied(incoming);
             bool stackChanged = existing.TryIncreaseStack();
-
+            GD.Print("ReapplyStatus", incoming.Id, "stackChanged", stackChanged);
             NotifyStatusChanged(
                 existing,
                 stackChanged
@@ -87,7 +87,7 @@ public partial class StatusComponent : Node
         incoming.AppliedSequence = _nextAppliedSequence++;
         _statuses.Add(incoming.Id, incoming);
         incoming.OnApply();
-
+        GD.Print("Owner:", Parent.GetParent().Name, ", AddStatus: ", incoming.Id);
         NotifyStatusChanged(incoming, StatusChangeReason.Applied, incoming.Source);
     }
     private List<StatusEffectInstance> GetStatusesForHook(StatusHookPhase phase)
@@ -135,7 +135,7 @@ public partial class StatusComponent : Node
         {
             return false;
         }
-
+        GD.Print("RemoveStatus", statusId);
         status.OnRemove();
         _statuses.Remove(statusId);
 
@@ -161,6 +161,7 @@ public partial class StatusComponent : Node
     /// </summary>
     public void OnTurnStarted(Node currentActor)
     {
+        GD.Print("OnTurnStarted: ", currentActor.Name);
         ProcessTurnPhase(
             currentActor,
             DurationTickTiming.Start,
@@ -177,6 +178,7 @@ public partial class StatusComponent : Node
     /// </summary>
     public void OnTurnEnded(Node currentActor)
     {
+        GD.Print("OnTurnEnded", currentActor.Name);
         ProcessTurnPhase(
             currentActor,
             DurationTickTiming.End,
@@ -193,6 +195,7 @@ public partial class StatusComponent : Node
     /// </summary>
     public void OnRoundStarted()
     {
+        GD.Print("OnRoundStarted");
         ProcessRoundPhase(
             DurationTickTiming.Start,
             StatusHookPhase.RoundStart,
@@ -206,6 +209,7 @@ public partial class StatusComponent : Node
     /// </summary>
     public void OnRoundEnded()
     {
+        GD.Print("OnRoundEnded");
         ProcessRoundPhase(
             DurationTickTiming.End,
             StatusHookPhase.RoundEnd,

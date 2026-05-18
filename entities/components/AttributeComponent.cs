@@ -158,6 +158,8 @@ public partial class AttributeComponent : Node
         SetAttribute(AttributeType.PhysDamageBoost, "物理增伤", 0f, 0f);
         SetAttribute(AttributeType.MagicDamageBoost, "魔法增伤", 0f, 0f);
 
+        GD.Print("InitializeWithData", data);
+
         RecalculateAllDirect(
             source: Host,
             reason: AttributeChangeReason.Initialization,

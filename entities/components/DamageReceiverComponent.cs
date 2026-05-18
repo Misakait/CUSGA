@@ -10,7 +10,7 @@ public partial class DamageReceiverComponent : Node
 {
     public void ReceiveDamage(DamagePayload payload)
     {
-        Node defender = GetParent();
+        Node defender = GetParent().GetParent();
 
         if (defender == null)
         {

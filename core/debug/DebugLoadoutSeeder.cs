@@ -62,8 +62,9 @@ public partial class DebugLoadoutSeeder : Node
             return;
         }
 
-        if (Loadout.PlayerStartingStats != null && attributes != null)
+        if (Loadout.PlayerStartingStats != null && attributes.InitialData == null)
         {
+            GD.Print("[Seeder] PlayerStartingStats", Loadout.PlayerStartingStats);
             attributes.InitializeWithData(Loadout.PlayerStartingStats);
         }
 
