@@ -38,6 +38,13 @@ public partial class HUDController : Control
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (@event.IsActionPressed("toggle_crafting"))
+        {
+            _gameplayPort.RequestToggleCrafting();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (@event.IsActionPressed("toggle_inventory"))
         {
             _gameplayPort.RequestToggleInventory();
