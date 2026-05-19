@@ -1,5 +1,4 @@
-using CUSGA.core.constants;
-using Godot;
+using System;
 
 namespace CUSGA.resources.interaction.operations;
 
@@ -7,6 +6,8 @@ public sealed partial class EnterVaultOp : TerrainOp
 {
     public override void Apply(WorldInteractionContext context)
     {
-        context.GlobalEventBus?.EmitSignal(GDSignals.OnEnteredVault);
+        ArgumentNullException.ThrowIfNull(context);
+
+        context.GameplayPort.RequestOpenWarehouse();
     }
 }

@@ -50,7 +50,10 @@ public partial class EncounterManager : Node
                 {
                     return GatheringEncounterResult.None();
                 }
-                GD.Print($"Gathering encounter triggered: {rule.MonsterToSpawn.MonsterName}");
+                foreach (var monster in rule.MonsterToSpawn)
+                {
+                    GD.Print($"Gathering encounter triggered: {monster.MonsterName}");
+                }
                 return GatheringEncounterResult.Create(
                     rule.MonsterToSpawn,
                     rule.SpawnMessage

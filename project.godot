@@ -34,6 +34,7 @@ GlobalEventBus="*uid://f4acdsbh24f4"
 TimeSystem="*uid://da5qjs7g2tqfs"
 WeatherManager="*uid://b0l58aislix47"
 ItemsControl="*uid://b1nat1ps6dux8"
+GlobalWarehouse="*res://core/autoloads/global_warehouse.tscn"
 SceneManager="*uid://0cimhegik5tk"
 ScreenTransitions="*uid://byi0pyqiabw0d"
 

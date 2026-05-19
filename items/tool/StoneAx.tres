@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://byoi6egh1c4ph"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_k2qin"]
+[ext_resource type="Texture2D" uid="uid://d2aldn17medii" path="res://res/tool/StoneAx.png" id="1_v0lc8"]
+
+[resource]
+script = ExtResource("1_k2qin")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"StoneAx"])
+CardId = &"StoneAx"
+CardName = "石斧"
+CardIcon = ExtResource("1_v0lc8")
+Description = "一把石斧"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

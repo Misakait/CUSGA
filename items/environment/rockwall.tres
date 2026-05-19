@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://berthv8dckcje"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_4pkff"]
+[ext_resource type="Texture2D" uid="uid://dmc67lipd6gs2" path="res://res/environment/rockwall.png" id="1_4sah5"]
+
+[resource]
+script = ExtResource("1_4pkff")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"rockwall"])
+CardId = &"rockwall"
+CardName = "石壁"
+CardIcon = ExtResource("1_4sah5")
+Description = "一堵石壁，可以挖点石头下来"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

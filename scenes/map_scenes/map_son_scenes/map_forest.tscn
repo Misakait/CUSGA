@@ -30,7 +30,7 @@ script = ExtResource("6_tdjg7")
 Drops = Array[ExtResource("4_s8yer")]([SubResource("Resource_bn557")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-[sub_resource type="Resource" id="Resource_3wq68"]
+[sub_resource type="Resource" id="Resource_tdjg7"]
 script = ExtResource("4_mcl2d")
 GatheringTag = &"wood"
 DropTable = SubResource("Resource_h8mko")
@@ -38,7 +38,7 @@ metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
 
 [sub_resource type="Resource" id="Resource_s8yer"]
 script = ExtResource("5_ypuhc")
-InteractionBehavior = SubResource("Resource_3wq68")
+InteractionBehavior = SubResource("Resource_tdjg7")
 CardId = &"woodterrain"
 CardName = " 树木地形"
 CardIcon = ExtResource("4_tdjg7")

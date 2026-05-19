@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://da11xb6fh4350"]
+
+[ext_resource type="Texture2D" uid="uid://0imqm7gwstwh" path="res://res/background/治愈泉水 2-a1f1.png" id="1_q2j0r"]
+
+[node name="MapHotspring" type="Node2D" unique_id=2083360387]
+
+[node name="治愈泉水2A1f1" type="Sprite2D" parent="." unique_id=1198609484]
+position = Vector2(640, 360)
+scale = Vector2(16, 16)
+texture = ExtResource("1_q2j0r")

@@ -5,6 +5,7 @@ namespace CUSGA.core.constants;
 public static class TagConsts
 {
     public static readonly StringName SystemInventory = new("SystemInventory");
+    public static readonly StringName SystemWarehouse = new("SystemWarehouse");
     public static readonly StringName SystemBattleDeck = new("SystemBattleDeck");
     public static readonly StringName SystemEquipment = new("SystemEquipment");
     public static readonly StringName WoodDamageUp = new("WoodDamageUp");

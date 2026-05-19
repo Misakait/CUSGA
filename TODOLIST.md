@@ -1,0 +1,1 @@
+1.monsterdata应该持有combatskilldata，同时拿怪物所拥有技能应该从其skillcomponent拿

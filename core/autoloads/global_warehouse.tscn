@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bnbnh31hga7vx"]
+
+[ext_resource type="Script" uid="uid://b0djm07mv0twm" path="res://entities/components/WarehouseInventoryComponent.cs" id="1_global_warehouse"]
+
+[node name="GlobalWarehouse" type="Node" unique_id=1010548828]
+script = ExtResource("1_global_warehouse")

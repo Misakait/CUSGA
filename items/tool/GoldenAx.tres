@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c5ge1tt8p2huf"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_6wh3m"]
+[ext_resource type="Texture2D" uid="uid://6vcdcjctnm2h" path="res://res/tool/GoldenAx.png" id="1_mj5lb"]
+
+[resource]
+script = ExtResource("1_6wh3m")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenAx"])
+CardId = &"GoldenAx"
+CardName = "金斧"
+CardIcon = ExtResource("1_mj5lb")
+Description = "你把他打造得又沉又锋利
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

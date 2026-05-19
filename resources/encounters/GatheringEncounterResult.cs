@@ -1,5 +1,7 @@
 using Godot;
 using CUSGA.resources.monsters;
+using System;
+using Godot.Collections;
 
 namespace CUSGA.resources.encounters;
 
@@ -7,7 +9,7 @@ public partial class GatheringEncounterResult : RefCounted
 {
     public bool Triggered { get; set; } = false;
 
-    public MonsterData MonsterToSpawn { get; set; }
+    public Array<MonsterData> MonsterToSpawn { get; set; }
 
     public string SpawnMessage { get; set; } = string.Empty;
 
@@ -19,7 +21,7 @@ public partial class GatheringEncounterResult : RefCounted
         };
     }
 
-    public static GatheringEncounterResult Create(MonsterData monster, string message)
+    public static GatheringEncounterResult Create(Array<MonsterData> monster, string message)
     {
         return new GatheringEncounterResult
         {

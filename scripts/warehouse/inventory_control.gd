@@ -19,9 +19,8 @@ func refresh_ui():
 	page_label.text = "%d / %d" % [now_page , page_mag]
 
 	var now_index: int = page_cnt * (now_page-1)
-	var slots = inventory._slots
 	for i in range(now_index, now_index + page_cnt):
-		var slot = slots[i]
+		var slot = inventory.GetStackAt(i)
 		var grid = inventory_grid.get_child(i%27)
 
 		if slot.IsEmpty:

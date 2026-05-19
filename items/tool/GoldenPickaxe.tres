@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cp57w5c0k7o6f"]
+
+[ext_resource type="Texture2D" uid="uid://cdb7nl7n3u4fd" path="res://res/tool/GoldenPickaxe.png" id="1_5sqpd"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_t1oeu"]
+
+[resource]
+script = ExtResource("1_t1oeu")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenPickaxe"])
+CardId = &"GoldenPickaxe"
+CardName = "金镐"
+CardIcon = ExtResource("1_5sqpd")
+Description = "别听信那些谣言，这把金镐子不会损耗耐久"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

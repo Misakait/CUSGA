@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://d388lc1s38fih"]
+
+[ext_resource type="Texture2D" uid="uid://ki1kbtn1dr00" path="res://res/tool/Truncheon.png" id="1_ale8n"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_xj0i1"]
+
+[resource]
+script = ExtResource("1_xj0i1")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"Truncheon"])
+CardId = &"Truncheon"
+CardName = "长棍子"
+CardIcon = ExtResource("1_ale8n")
+Description = "用甘蔗做的"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

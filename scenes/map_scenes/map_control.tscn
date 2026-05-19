@@ -24,12 +24,15 @@
 [ext_resource type="Script" uid="uid://htnvjes8g8ym" path="res://scripts/map_scripts/map_button/right_button.gd" id="13_m5w21"]
 [ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_00bk6"]
 [ext_resource type="Script" uid="uid://c7yg358eqvkoy" path="res://scripts/map_scripts/map_button/down_button.gd" id="14_in5uc"]
+[ext_resource type="PackedScene" uid="uid://da11xb6fh4350" path="res://scenes/map_scenes/map_son_scenes/map_hotspring.tscn" id="14_lyes2"]
 [ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 [ext_resource type="Script" uid="uid://c64fkkngl08fo" path="res://scripts/map_scripts/map_button/left_button.gd" id="15_7fije"]
+[ext_resource type="PackedScene" uid="uid://bd3oumuesx70" path="res://scenes/map_scenes/map_son_scenes/map_brook.tscn" id="15_667l1"]
 [ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_m5w21"]
 [ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_rhltn"]
 [ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/下-f65b.png" id="18_fcbp0"]
 [ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="20_gky4a"]
+[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/image/技能卡模板2.png" id="21_667l1"]
 
 [sub_resource type="Resource" id="Resource_4pmc0"]
 script = ExtResource("2_aulaq")
@@ -111,6 +114,26 @@ scene_dir = "res://scenes/map_scenes/map_son_scenes/map_volcanic.tscn"
 scene_pkg = ExtResource("13_667l1")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
+[sub_resource type="Resource" id="Resource_ooc15"]
+script = ExtResource("2_aulaq")
+scene_name = "hotspring"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_hotspring.tscn"
+scene_pkg = ExtResource("14_lyes2")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_qm2pj"]
+script = ExtResource("2_aulaq")
+scene_name = "brook"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_brook.tscn"
+scene_pkg = ExtResource("15_667l1")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_ncygy"]
+script = ExtResource("2_aulaq")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
 texture = ExtResource("14_00bk6")
 
@@ -120,7 +143,7 @@ canvas_layer = NodePath("CanvasLayer")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
-map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4"), SubResource("Resource_rhltn"), SubResource("Resource_a4yqg"), SubResource("Resource_6hss4"), SubResource("Resource_gi0q2"), SubResource("Resource_0pxkt")])
+map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4"), SubResource("Resource_rhltn"), SubResource("Resource_a4yqg"), SubResource("Resource_6hss4"), SubResource("Resource_gi0q2"), SubResource("Resource_0pxkt"), SubResource("Resource_ooc15"), SubResource("Resource_qm2pj"), SubResource("Resource_ncygy")])
 
 [node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("2_2r3ie")
@@ -167,6 +190,12 @@ metadata/_edit_use_anchors_ = true
 scale = Vector2(2, 2)
 texture = ExtResource("13_2viwr")
 
+[node name="技能卡模板2" type="Sprite2D" parent="MapButton/Up/UpButton" unique_id=583793260]
+show_behind_parent = true
+position = Vector2(0, -1)
+scale = Vector2(0.9714279, 0.94)
+texture = ExtResource("21_667l1")
+
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Up" unique_id=1140016280 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
 sprite2d = NodePath("../UpButton")
@@ -201,6 +230,12 @@ text = "往东走"
 [node name="RightIcon" type="Sprite2D" parent="MapButton/Right/RightButton" unique_id=695978412]
 scale = Vector2(2, 2)
 texture = ExtResource("16_rhltn")
+
+[node name="技能卡模板2" type="Sprite2D" parent="MapButton/Right/RightButton" unique_id=2068780690]
+show_behind_parent = true
+position = Vector2(0.38288307, 3.8146973e-06)
+scale = Vector2(0.96595603, 0.96)
+texture = ExtResource("21_667l1")
 
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Right" unique_id=1220961612 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
@@ -238,6 +273,12 @@ text = "往南走"
 scale = Vector2(2, 2)
 texture = ExtResource("18_fcbp0")
 
+[node name="技能卡模板2" type="Sprite2D" parent="MapButton/Down/DownButton" unique_id=1463838566]
+show_behind_parent = true
+position = Vector2(0.3829775, 0.9999609)
+scale = Vector2(0.9373866, 0.9400007)
+texture = ExtResource("21_667l1")
+
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Down" unique_id=1048632730 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")
 sprite2d = NodePath("../DownButton")
@@ -273,6 +314,12 @@ text = "往西走"
 [node name="LeftIcon" type="Sprite2D" parent="MapButton/Left/LeftButton" unique_id=1485623632]
 scale = Vector2(2, 2)
 texture = ExtResource("20_gky4a")
+
+[node name="技能卡模板2" type="Sprite2D" parent="MapButton/Left/LeftButton" unique_id=687782926]
+show_behind_parent = true
+position = Vector2(0.8829632, -0.5000038)
+scale = Vector2(0.95881444, 0.95000005)
+texture = ExtResource("21_667l1")
 
 [node name="hover_exit_zoom" type="Node2D" parent="MapButton/Left" unique_id=2099729154 node_paths=PackedStringArray("sprite2d")]
 script = ExtResource("11_00bk6")

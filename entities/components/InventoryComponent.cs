@@ -89,6 +89,28 @@ public partial class InventoryComponent : Node, ICraftingInventory
         return true;
     }
 
+    public bool CopySlotsFrom(InventoryComponent source)
+    {
+        if (source == null)
+        {
+            return false;
+        }
+
+        int copyCount = Math.Min(Capacity, source.Capacity);
+        for (int i = 0; i < copyCount; i++)
+        {
+            _slots[i].CopyFrom(source.GetStackAt(i));
+        }
+
+        for (int i = copyCount; i < Capacity; i++)
+        {
+            _slots[i].Clear();
+        }
+
+        EmitInventoryChanged();
+        return true;
+    }
+
     // 按照 Item.CardName 对 _slots 排序，忽略 null
     public void SortByCardName()
     {

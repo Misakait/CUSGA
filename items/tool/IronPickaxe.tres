@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c0ddj2dv5c3x3"]
+
+[ext_resource type="Texture2D" uid="uid://badp4chj0tpoi" path="res://res/tool/IronPickaxe.png" id="1_7ndvx"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_mvp3f"]
+
+[resource]
+script = ExtResource("1_mvp3f")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronPickaxe"])
+CardId = &"IronPickaxe"
+CardName = "铁镐"
+CardIcon = ExtResource("1_7ndvx")
+Description = "一把铁镐，十分好用"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"
