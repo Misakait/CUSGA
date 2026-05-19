@@ -31,6 +31,8 @@
 [ext_resource type="PackedScene" uid="uid://doi30pgmescy5" path="res://scenes/map_scenes/map_son_scenes/map_underlake.tscn" id="16_a4yqg"]
 [ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_m5w21"]
 [ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_rhltn"]
+[ext_resource type="PackedScene" uid="uid://cwblwans3h34i" path="res://scenes/map_scenes/map_son_scenes/map_desolateland.tscn" id="17_gi0q2"]
+[ext_resource type="PackedScene" uid="uid://hfgp25rvw8be" path="res://scenes/map_scenes/map_son_scenes/map_magmalake.tscn" id="18_0pxkt"]
 [ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/下-f65b.png" id="18_fcbp0"]
 [ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="20_gky4a"]
 [ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/image/技能卡模板2.png" id="21_667l1"]
@@ -139,6 +141,22 @@ scene_dir = "res://scenes/map_scenes/map_son_scenes/map_underlake.tscn"
 scene_pkg = ExtResource("16_a4yqg")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
+[sub_resource type="Resource" id="Resource_y6xvl"]
+script = ExtResource("2_aulaq")
+scene_name = "desolateland"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_desolateland.tscn"
+scene_pkg = ExtResource("17_gi0q2")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_31j1n"]
+script = ExtResource("2_aulaq")
+scene_name = "magmalake"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_magmalake.tscn"
+scene_pkg = ExtResource("18_0pxkt")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
 texture = ExtResource("14_00bk6")
 
@@ -148,7 +166,7 @@ canvas_layer = NodePath("CanvasLayer")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
-map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4"), SubResource("Resource_rhltn"), SubResource("Resource_a4yqg"), SubResource("Resource_6hss4"), SubResource("Resource_gi0q2"), SubResource("Resource_0pxkt"), SubResource("Resource_ooc15"), SubResource("Resource_qm2pj"), SubResource("Resource_ncygy")])
+map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4"), SubResource("Resource_rhltn"), SubResource("Resource_a4yqg"), SubResource("Resource_6hss4"), SubResource("Resource_gi0q2"), SubResource("Resource_0pxkt"), SubResource("Resource_ooc15"), SubResource("Resource_qm2pj"), SubResource("Resource_ncygy"), SubResource("Resource_y6xvl"), SubResource("Resource_31j1n")])
 
 [node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("2_2r3ie")
