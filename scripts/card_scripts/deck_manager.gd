@@ -12,16 +12,16 @@ var discard_pile_data: Array[SkillCardData] = []  ## 当前战斗的弃牌堆
 var min_start_cards_count:int = 20 ## 最少卡牌数量，低于该值会被填充基础卡牌
 
 const BASIC_CARD_PATHS := [
-	"res://resources/skill_cards/metal_phys_qiege.tres",
-	"res://resources/skill_cards/wood_phys_chouzhi.tres",
-	"res://resources/skill_cards/water_phys_langji.tres",
-	"res://resources/skill_cards/fire_phys_yanyong.tres",
-	"res://resources/skill_cards/earth_phys_yanbeng.tres",
-	"res://resources/skill_cards/metal_magic_ruimang.tres",
-	"res://resources/skill_cards/wood_magic_tengxiang.tres",
-	"res://resources/skill_cards/water_magic_langjue.tres",
-	"res://resources/skill_cards/fire_magic_fenzhuo.tres",
-	"res://resources/skill_cards/earth_magic_shixiao.tres",
+	"res://resources/skill_cards/metal_phys_jinji.tres",
+	"res://resources/skill_cards/wood_phys_muji.tres",
+	"res://resources/skill_cards/water_phys_shuiji.tres",
+	"res://resources/skill_cards/fire_phys_huoji.tres",
+	"res://resources/skill_cards/earth_phys_tuji.tres",
+	"res://resources/skill_cards/metal_magic_jinshu.tres",
+	"res://resources/skill_cards/wood_magic_mushu.tres",
+	"res://resources/skill_cards/water_magic_shuishu.tres",
+	"res://resources/skill_cards/fire_magic_huoshu.tres",
+	"res://resources/skill_cards/earth_magic_tushu.tres",
 ]
 
 var _basic_card_pool: Array[SkillCardData] = []
