@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://yggxjkty31if"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_id7q0"]
+[ext_resource type="Texture2D" uid="uid://dmhlihbdq1bx1" path="res://res/items/birdegg.png" id="1_mto6n"]
+
+[resource]
+script = ExtResource("1_id7q0")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"birdegg"])
+CardId = &"birdegg"
+CardName = "鸟蛋"
+CardIcon = ExtResource("1_mto6n")
+Description = "鸟蛋！上面好像还粘有鸟屎..."
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

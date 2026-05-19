@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dfpuwuwagfu7n"]
+
+[ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="1_4jj07"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_ow026"]
+
+[resource]
+script = ExtResource("2_ow026")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"tree"])
+CardId = &"tree"
+CardName = "树木"
+CardIcon = ExtResource("1_4jj07")
+Description = "这是一颗树"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

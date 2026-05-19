@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://blfs6xdb35q66"]
+
+[ext_resource type="Texture2D" uid="uid://bs41dwqdck6ja" path="res://res/equip/GoldenBelt.png" id="1_benyn"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_wvwv2"]
+
+[resource]
+script = ExtResource("1_wvwv2")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenBelt"])
+CardId = &"GoldenBelt"
+CardName = "金腰带"
+CardIcon = ExtResource("1_benyn")
+Description = "闪！闪！发！光！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

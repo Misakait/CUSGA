@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://daqehcsmhq78y"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_53aid"]
+[ext_resource type="Texture2D" uid="uid://dpw7wkgacy5uf" path="res://res/equip/GoldenBreastplate.png" id="1_xas4m"]
+
+[resource]
+script = ExtResource("1_53aid")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenBreastplate"])
+CardId = &"GoldenBreastplate"
+CardName = "金胸甲"
+CardIcon = ExtResource("1_xas4m")
+Description = "由黄金做成的胸甲，提供强大的防御力，但穿起来几乎喘不过气了"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

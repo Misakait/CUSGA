@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c75w12sk3bqs0"]
+
+[ext_resource type="Texture2D" uid="uid://penrjupl0ugr" path="res://res/environment/berrybush.png" id="1_evuuw"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_76jxb"]
+
+[resource]
+script = ExtResource("2_76jxb")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"berrybush"])
+CardId = &"berrybush"
+CardName = "浆果丛"
+CardIcon = ExtResource("1_evuuw")
+Description = "一个浆果丛"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

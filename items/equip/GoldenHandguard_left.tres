@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://8mders5mur4a"]
+
+[ext_resource type="Texture2D" uid="uid://c1junf5fpxdqk" path="res://res/equip/GoldenHandguard_left.png" id="1_k1dal"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_7q2lg"]
+
+[resource]
+script = ExtResource("2_7q2lg")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenHandguard_left"])
+CardId = &"GoldenHandguard_left"
+CardName = "金护手左"
+CardIcon = ExtResource("1_k1dal")
+Description = "一个由黄金做的护手，可以给你的左手穿戴"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

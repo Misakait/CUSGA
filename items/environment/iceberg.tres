@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://clvxnsdkyvh4c"]
+
+[ext_resource type="Texture2D" uid="uid://ba2dhcvgmgf7e" path="res://res/environment/iceberg.png" id="1_feyxp"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_jx3sj"]
+
+[resource]
+script = ExtResource("2_jx3sj")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"iceberg"])
+CardId = &"iceberg"
+CardName = "冰山"
+CardIcon = ExtResource("1_feyxp")
+Description = "这是冰山
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

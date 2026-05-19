@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ca73fxr83uyat"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_1v51n"]
+[ext_resource type="Texture2D" uid="uid://beuq16m56b1jn" path="res://res/items/littlerock.png" id="1_xgiwm"]
+
+[resource]
+script = ExtResource("1_1v51n")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"littlerock"])
+CardId = &"littlerock"
+CardName = "小石子"
+CardIcon = ExtResource("1_xgiwm")
+Description = "用来骚扰敌人倒是挺不错的
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

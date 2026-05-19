@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://diofp46gaq72e"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_t1rf8"]
+[ext_resource type="Texture2D" uid="uid://uil3w2kp1sxk" path="res://res/equip/IronBreastplate.png" id="1_ts6g6"]
+
+[resource]
+script = ExtResource("1_t1rf8")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronBreastplate"])
+CardId = &"IronBreastplate"
+CardName = "铁胸甲"
+CardIcon = ExtResource("1_ts6g6")
+Description = "一个由铁做的胸甲，非常理想的装备"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

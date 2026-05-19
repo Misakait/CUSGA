@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c6hmx3sy5ekyn"]
+
+[ext_resource type="Texture2D" uid="uid://b4kmuglmjkq4y" path="res://res/items/golddeposit.png" id="1_16vva"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_6kfdu"]
+
+[resource]
+script = ExtResource("2_6kfdu")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"olddeposit"])
+CardId = &"golddeposit"
+CardName = "金矿体"
+CardIcon = ExtResource("1_16vva")
+Description = "从这个金矿体上挖掘黄金
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

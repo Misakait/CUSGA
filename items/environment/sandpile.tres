@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dppaaom3xxsak"]
+
+[ext_resource type="Texture2D" uid="uid://carpxy5ucj1er" path="res://res/environment/sandpile.png" id="1_svea7"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_pahdw"]
+
+[resource]
+script = ExtResource("2_pahdw")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"sandpile"])
+CardId = &"sandpile"
+CardName = "沙堆"
+CardIcon = ExtResource("1_svea7")
+Description = "一堆沙子"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

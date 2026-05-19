@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://div8partbugai"]
+
+[ext_resource type="Texture2D" uid="uid://cgpwha1yalblh" path="res://res/element_icon/fire_icon.png" id="1_2rwqm"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_8th0y"]
+
+[resource]
+script = ExtResource("2_8th0y")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"fire"])
+CardId = &"fire"
+CardName = "火"
+CardIcon = ExtResource("1_2rwqm")
+Description = "这是火"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

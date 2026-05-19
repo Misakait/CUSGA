@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://famuwpvx4nji"]
+
+[ext_resource type="Texture2D" uid="uid://ccnr123tjonig" path="res://res/items/wheat.png" id="1_3wgtr"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_8l5p4"]
+
+[resource]
+script = ExtResource("1_8l5p4")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"wheat"])
+CardId = &"wheat"
+CardName = "小麦"
+CardIcon = ExtResource("1_3wgtr")
+Description = "长得跟玉米似的"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

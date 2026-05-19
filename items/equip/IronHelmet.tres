@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://i7wxni2pq0kk"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_cmodx"]
+[ext_resource type="Texture2D" uid="uid://bpoke77vwbbmo" path="res://res/equip/IronHelmet.png" id="1_tm0m3"]
+
+[resource]
+script = ExtResource("1_cmodx")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronHelmet"])
+CardId = &"IronHelmet"
+CardName = "铁头盔"
+CardIcon = ExtResource("1_tm0m3")
+Description = "一个由铁做成的头盔，提供良好的保护
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

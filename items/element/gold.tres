@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://22kr333gr1f2"]
+
+[ext_resource type="Texture2D" uid="uid://bxctyc25rpowe" path="res://res/element_icon/gold_icon.png" id="1_i4bbb"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_imgsg"]
+
+[resource]
+script = ExtResource("2_imgsg")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"gold"])
+CardId = &"gold"
+CardName = "金"
+CardIcon = ExtResource("1_i4bbb")
+Description = "这是金"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

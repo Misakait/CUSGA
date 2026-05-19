@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://3j3edsdgywi"]
+
+[ext_resource type="Texture2D" uid="uid://garwmy8e2fgh" path="res://res/equip/IronHandguard_left.png" id="1_hcfwj"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_ns2ix"]
+
+[resource]
+script = ExtResource("1_ns2ix")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronHandguard_left"])
+CardId = &"IronHandguard_left"
+CardName = "铁护手左"
+CardIcon = ExtResource("1_hcfwj")
+Description = "这是一个铁做的护手，给你的左手穿戴
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

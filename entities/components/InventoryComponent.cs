@@ -3,13 +3,12 @@ using System;
 using System.Collections.Generic;
 using CUSGA.resources.item;
 using CUSGA.core.inventory;
-using CUSGA.core.crafting;
 using System.Linq;
 using CUSGA.core.constants;
 
 namespace CUSGA.entities.components;
 
-public partial class InventoryComponent : Node, ICraftingInventory
+public partial class InventoryComponent : Node
 {
     [Export] public int Capacity { get; private set; } = 27; // 背包格子数
     [Signal] public delegate void InventoryChangedEventHandler();
@@ -103,13 +102,12 @@ public partial class InventoryComponent : Node, ICraftingInventory
 
     public int AddItem(ItemData item, int amount)
     {
-        if (item == null || amount <= 0 || item.ActualMaxStackSize <= 0 || !CanStoreItem(item))
+        if (item == null || amount <= 0 || !CanStoreItem(item))
         {
             return amount;
         }
 
         int remaining = amount;
-        bool changed = false;
 
         // 找已经有这个物品，且还没满的格子塞进去
         foreach (var slot in _slots)
@@ -117,10 +115,8 @@ public partial class InventoryComponent : Node, ICraftingInventory
             if (!slot.IsEmpty && slot.Item == item && !slot.IsFull)
             {
                 remaining = slot.Add(remaining);
-                changed = true;
                 if (remaining <= 0)
                 {
-                    EmitInventoryChanged();
                     return 0; // 全部塞完了
                 }
             }
@@ -134,81 +130,44 @@ public partial class InventoryComponent : Node, ICraftingInventory
                 int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize);
                 slot.SetItem(item, amountToAdd);
                 remaining -= amountToAdd;
-                changed = true;
 
                 if (remaining <= 0)
                 {
-                    EmitInventoryChanged();
                     return 0;
                 }
             }
-        }
-
-        if (changed)
-        {
-            EmitInventoryChanged();
         }
 
         // 返回最终没放下的数量
         return remaining;
     }
 
-    public bool CanAddItem(ItemData item, int amount)
-    {
-        if (item == null || amount <= 0 || item.ActualMaxStackSize <= 0 || !CanStoreItem(item))
-        {
-            return false;
-        }
-
-        int remaining = amount;
-        foreach (var slot in _slots)
-        {
-            if (slot.IsEmpty)
-            {
-                remaining -= item.ActualMaxStackSize;
-            }
-            else if (slot.Item == item && !slot.IsFull)
-            {
-                remaining -= slot.AvailableSpace;
-            }
-
-            if (remaining <= 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // 查特定物品够不够
     public bool HasItem(ItemData item, int requiredAmount)
     {
-        return item != null
-            && requiredAmount > 0
-            && CountWhere(candidate => candidate == item) >= requiredAmount;
-    }
-
-    public int CountWhere(Func<ItemData, bool> predicate)
-    {
-        ArgumentNullException.ThrowIfNull(predicate);
-
         int total = 0;
         foreach (var slot in _slots)
         {
-            if (!slot.IsEmpty && predicate(slot.Item))
+            if (!slot.IsEmpty && slot.Item == item)
             {
                 total += slot.Amount;
             }
         }
-
-        return total;
+        return total >= requiredAmount;
     }
 
     // 查特定物品数量
     public int ItemCnt(ItemData item)
     {
-        return item == null ? 0 : CountWhere(candidate => candidate == item);
+        int total = 0;
+        foreach (var slot in _slots)
+        {
+            if (!slot.IsEmpty && slot.Item == item)
+            {
+                total += slot.Amount;
+            }
+        }
+        return total;
     }
 
     // 清除特定格子的物品
@@ -249,58 +208,19 @@ public partial class InventoryComponent : Node, ICraftingInventory
             return 0;
         }
 
-        return CountWhere(item => item.ItemTags.Contains(tag));
-    }
-
-    public bool TryRemoveItem(ItemData item, int amountToRemove)
-    {
-        if (item == null || amountToRemove <= 0)
+        int total = 0;
+        foreach (var slot in _slots)
         {
-            return false;
-        }
-
-        return TryRemoveItems(new Dictionary<ItemData, int>
-        {
-            [item] = amountToRemove
-        });
-    }
-
-    public bool TryRemoveItems(IReadOnlyDictionary<ItemData, int> itemsToRemove)
-    {
-        if (itemsToRemove == null || itemsToRemove.Count == 0)
-        {
-            return false;
-        }
-
-        foreach (var itemToRemove in itemsToRemove)
-        {
-            if (itemToRemove.Key == null || itemToRemove.Value <= 0 || !HasItem(itemToRemove.Key, itemToRemove.Value))
+            if (!slot.IsEmpty && slot.Item.ItemTags.Contains(tag))
             {
-                return false;
+                total += slot.Amount;
             }
         }
-
-        bool changed = false;
-        foreach (var itemToRemove in itemsToRemove)
-        {
-            RemoveItemWithoutSignal(itemToRemove.Key, itemToRemove.Value, ref changed);
-        }
-
-        if (changed)
-        {
-            EmitInventoryChanged();
-        }
-
-        return true;
+        return total;
     }
 
-    private void RemoveItemWithoutSignal(ItemData item, int amountToRemove, ref bool changed)
+    public void RemoveItem(ItemData item, int amountToRemove)
     {
-        if (item == null || amountToRemove <= 0)
-        {
-            return;
-        }
-
         int remainingToRemove = amountToRemove;
 
         // 从后往前扣
@@ -312,22 +232,15 @@ public partial class InventoryComponent : Node, ICraftingInventory
                 if (slot.Amount >= remainingToRemove)
                 {
                     slot.SetItem(slot.Item, slot.Amount - remainingToRemove);
-                    changed = true;
                     return;
                 }
                 else
                 {
                     remainingToRemove -= slot.Amount;
                     slot.Clear();
-                    changed = true;
                 }
             }
         }
-    }
-
-    public void RemoveItem(ItemData item, int amountToRemove)
-    {
-        TryRemoveItem(item, amountToRemove);
     }
     // 将一个格子里的物品，移动/交换到另一个格子
     public void MoveItem(int fromIndex, int toIndex)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://t4yt1d7do228"]
+
+[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="1_2s5iw"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_8xv6n"]
+
+[resource]
+script = ExtResource("2_8xv6n")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"wood"])
+CardId = &"wood"
+CardName = "木"
+CardIcon = ExtResource("1_2s5iw")
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

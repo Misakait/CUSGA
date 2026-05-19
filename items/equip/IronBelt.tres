@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://2s3kb3hdeeow"]
+
+[ext_resource type="Texture2D" uid="uid://cervc1l0kw4cn" path="res://res/equip/IronBelt.png" id="1_f3uuj"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_rj8vj"]
+
+[resource]
+script = ExtResource("1_rj8vj")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronBelt"])
+CardId = &"IronBelt"
+CardName = "铁腰带"
+CardIcon = ExtResource("1_f3uuj")
+Description = "感觉有点奇怪，是不是腰带勒太紧了"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

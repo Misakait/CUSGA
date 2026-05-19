@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bif4vc7kp30lp"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_g1jef"]
+[ext_resource type="Texture2D" uid="uid://cy7p3602vvrdo" path="res://res/equip/LeatherHelmet.png" id="1_klye4"]
+
+[resource]
+script = ExtResource("1_g1jef")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"LeatherHelmet"])
+CardId = &"LeatherHelmet"
+CardName = "皮革头盔"
+CardIcon = ExtResource("1_klye4")
+Description = "一个皮革做的头盔，提供基础的防护
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

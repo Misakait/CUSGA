@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bpshu6yiul8ng"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_76ajm"]
+[ext_resource type="Texture2D" uid="uid://dqiittqn4xtlp" path="res://res/equip/GoldenRing.png" id="1_ujnpl"]
+
+[resource]
+script = ExtResource("1_76ajm")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"GoldenRing"])
+CardId = &"GoldenRing"
+CardName = "金戒指"
+CardIcon = ExtResource("1_ujnpl")
+Description = "我有钱了！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

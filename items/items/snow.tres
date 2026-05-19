@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://2yguoo4pt17e"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_3khax"]
+[ext_resource type="Texture2D" uid="uid://bpif0gvr1msg0" path="res://res/items/snow.png" id="1_4qp7m"]
+
+[resource]
+script = ExtResource("1_3khax")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"snow"])
+CardId = &"snow"
+CardName = "雪"
+CardIcon = ExtResource("1_4qp7m")
+Description = "是雪啊..."
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

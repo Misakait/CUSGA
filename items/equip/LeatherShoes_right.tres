@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dm0dnha0dubgf"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_kftmv"]
+[ext_resource type="Texture2D" uid="uid://do5io1e4amkan" path="res://res/equip/LeatherShoes_right.png" id="1_ks8p3"]
+
+[resource]
+script = ExtResource("1_kftmv")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"LeatherShoes_right"])
+CardId = &"LeatherShoes_right"
+CardName = "皮革鞋子右"
+CardIcon = ExtResource("1_ks8p3")
+Description = "由皮革做的鞋子，穿起来应该很舒服，给右脚穿戴"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

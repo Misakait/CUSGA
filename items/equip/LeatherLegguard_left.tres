@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://rs36q3q8nouq"]
+
+[ext_resource type="Texture2D" uid="uid://cqcrlowrcr68k" path="res://res/equip/LeatherLegguard_left.png" id="1_lpemd"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_yc32d"]
+
+[resource]
+script = ExtResource("2_yc32d")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"LeatherLegguard_left"])
+CardId = &"LeatherLegguard_left"
+CardName = "皮革护腿左"
+CardIcon = ExtResource("1_lpemd")
+Description = "一个由皮革制作成的护腿，感觉很舒服，给左腿穿戴"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

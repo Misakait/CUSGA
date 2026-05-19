@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://sfyolkuqsjxn"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_q3ypk"]
+[ext_resource type="Texture2D" uid="uid://baohsyjg4gxvl" path="res://res/equip/GlodenHelmet.png" id="1_rbodj"]
+
+[resource]
+script = ExtResource("1_q3ypk")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GlodenHelmet"])
+CardId = &"GlodenHelmet"
+CardName = "金头盔"
+CardIcon = ExtResource("1_rbodj")
+Description = "一个由黄金制作的头盔，提供强大的防护
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

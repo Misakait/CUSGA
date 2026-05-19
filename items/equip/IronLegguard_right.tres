@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cvuaela2pytve"]
+
+[ext_resource type="Texture2D" uid="uid://cl8enimbl2eg8" path="res://res/equip/IronLegguard_right.png" id="1_l7dq1"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_m0hvo"]
+
+[resource]
+script = ExtResource("1_m0hvo")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronLegguard_right"])
+CardId = &"IronLegguard_right"
+CardName = "铁护腿右"
+CardIcon = ExtResource("1_l7dq1")
+Description = "一个由铁做的护腿，提供良好的防护，给右腿穿戴
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

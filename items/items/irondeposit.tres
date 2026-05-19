@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b2pgo2g7epv6r"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_5sjdj"]
+[ext_resource type="Texture2D" uid="uid://t1751nx6fmvk" path="res://res/items/irondeposit.png" id="1_61ofk"]
+
+[resource]
+script = ExtResource("1_5sjdj")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"irondeposit"])
+CardId = &"irondeposit"
+CardName = "铁矿体"
+CardIcon = ExtResource("1_61ofk")
+Description = "从铁矿体上挖掘铁矿"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

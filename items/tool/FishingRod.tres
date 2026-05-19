@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cf0it77bsc0lp"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_0sfpn"]
+[ext_resource type="Texture2D" uid="uid://dar6rv800agj0" path="res://res/tool/FishingRod.png" id="1_v4i48"]
+
+[resource]
+script = ExtResource("1_0sfpn")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"FishingRod"])
+CardId = &"FishingRod"
+CardName = "钓鱼竿"
+CardIcon = ExtResource("1_v4i48")
+Description = "钓鱼！钓怪！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"
