@@ -687,6 +687,7 @@ theme_override_font_sizes/font_size = 23
 text = "返回主菜单"
 
 [node name="FishButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=2078876008]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 23
