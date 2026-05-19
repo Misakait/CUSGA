@@ -10,6 +10,7 @@
 [ext_resource type="Resource" uid="uid://cf4li0yku7unk" path="res://resources/item/card/res_cards/charcoal.tres" id="18_7drai"]
 [ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="19_ibe04"]
 [ext_resource type="Resource" uid="uid://dejj5ququif3b" path="res://resources/skill_cards/test_card_1.tres" id="20_card1"]
+[ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="20_ibe04"]
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="21_card2"]
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="22_card3"]
 [ext_resource type="Resource" uid="uid://b7onaix7yqka8" path="res://resources/skill_cards/bmob.tres" id="23_bomb"]
@@ -162,6 +163,13 @@ Amount = 4
 RollRandomStats = false
 metadata/_custom_type_script = "uid://boejtq5adncuh"
 
+[sub_resource type="Resource" id="Resource_4s3f3"]
+script = ExtResource("2_stack")
+Item = ExtResource("20_ibe04")
+Amount = 8
+RollRandomStats = false
+metadata/_custom_type_script = "uid://boejtq5adncuh"
+
 [sub_resource type="Resource" id="StartingStats_debug"]
 script = ExtResource("4_stats")
 BasePhysAtk = 12.0
@@ -172,7 +180,7 @@ metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 [resource]
 script = ExtResource("1_loadout")
 PlayerStartingStats = SubResource("StartingStats_debug")
-InventoryItems = Array[ExtResource("2_stack")]([SubResource("Inventory_item1"), SubResource("Inventory_item2"), SubResource("Inventory_item3"), SubResource("Inventory_card1"), SubResource("Inventory_card2"), SubResource("Inventory_card3"), SubResource("Inventory_bomb"), SubResource("Resource_mtqsv"), SubResource("Resource_emcri")])
+InventoryItems = Array[ExtResource("2_stack")]([SubResource("Inventory_item1"), SubResource("Inventory_item2"), SubResource("Inventory_item3"), SubResource("Inventory_card1"), SubResource("Inventory_card2"), SubResource("Inventory_card3"), SubResource("Inventory_bomb"), SubResource("Resource_mtqsv"), SubResource("Resource_emcri"), SubResource("Resource_4s3f3")])
 BattleDeckItems = Array[ExtResource("2_stack")]([SubResource("Deck_card1"), SubResource("Deck_card2"), SubResource("Deck_card3"), SubResource("Deck_bomb")])
 InventoryEquipment = Array[ExtResource("3_equip")]([SubResource("Equip_weapon"), SubResource("Equip_chest"), SubResource("Equip_legs"), SubResource("Equip_axe"), SubResource("Equip_pickaxe"), SubResource("Equip_rod")])
 EquippedEquipment = Array[ExtResource("3_equip")]([SubResource("Equipped_helmet"), SubResource("Equipped_boots")])
