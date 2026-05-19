@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://becce1opep0e1"]
+
+[ext_resource type="Texture2D" uid="uid://c5fxq2q06sif1" path="res://res/items/goldingot.png" id="1_0jywp"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_eftg0"]
+
+[resource]
+script = ExtResource("1_eftg0")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"goldingot"])
+CardId = &"goldingot"
+CardName = "金锭"
+CardIcon = ExtResource("1_0jywp")
+Description = "可以卖很多钱，当然命要紧"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

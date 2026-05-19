@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bp77xis5n1jel"]
+
+[ext_resource type="Texture2D" uid="uid://70umfdssq3lt" path="res://res/items/ice.png" id="1_fbrap"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_iguxm"]
+
+[resource]
+script = ExtResource("1_iguxm")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"ice"])
+CardId = &"ice"
+CardName = "冰！"
+CardIcon = ExtResource("1_fbrap")
+Description = "冰！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b2i828oq0yiny"]
+
+[ext_resource type="Texture2D" uid="uid://bk82osp1i3mrx" path="res://res/equip/IronRing.png" id="1_7psw7"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_tbak8"]
+
+[resource]
+script = ExtResource("1_tbak8")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"IronRing"])
+CardId = &"IronRing"
+CardName = "铁戒指"
+CardIcon = ExtResource("1_7psw7")
+Description = "不是很气派，但可以当指虎用"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

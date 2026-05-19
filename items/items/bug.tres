@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cl6wjpyietlmi"]
+
+[ext_resource type="Texture2D" uid="uid://brc68dn8lr4nj" path="res://res/items/bug.png" id="1_tocha"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_weosu"]
+
+[resource]
+script = ExtResource("1_weosu")
+MaxStackSize = 12
+ItemTags = Array[StringName]([&"bug"])
+CardId = &"bug"
+CardName = "小虫子"
+CardIcon = ExtResource("1_tocha")
+Description = "？！虫且！？"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

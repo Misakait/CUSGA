@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bfvjuhyo53ehd"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_53dx4"]
+[ext_resource type="Texture2D" uid="uid://t5kfuer043du" path="res://res/items/leaf.png" id="1_pwutt"]
+
+[resource]
+script = ExtResource("1_53dx4")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"leaf"])
+CardId = &"leaf"
+CardName = "树叶"
+CardIcon = ExtResource("1_pwutt")
+Description = "！？叶子？！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cvp6lwlv254i8"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_efn3b"]
+[ext_resource type="Texture2D" uid="uid://21uqekbhdylb" path="res://res/items/tent.png" id="1_ysjks"]
+
+[resource]
+script = ExtResource("1_efn3b")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"tent"])
+CardId = &"tent"
+CardName = "帐篷"
+CardIcon = ExtResource("1_ysjks")
+Description = "做春秋大梦去吧"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

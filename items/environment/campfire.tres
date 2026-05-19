@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dulobelggwfpt"]
+
+[ext_resource type="Texture2D" uid="uid://8pvxktoxr0jq" path="res://res/environment/campfire.png" id="1_xoi1m"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_an6yf"]
+
+[resource]
+script = ExtResource("2_an6yf")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"campfire"])
+CardId = &"campfire"
+CardName = "篝火"
+CardIcon = ExtResource("1_xoi1m")
+Description = "一个篝火，可以烤食物，给你温暖，加速你回血
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

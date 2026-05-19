@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://dejj5ququif3b"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_7sme0"]
-[ext_resource type="Texture2D" uid="uid://bpif0gvr1msg0" path="res://res/items/雪.png" id="1_dqhnu"]
+[ext_resource type="Texture2D" uid="uid://bpif0gvr1msg0" path="res://res/items/snow.png" id="1_dqhnu"]
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_lqd6v"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_dqhnu"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_xwuh1"]
@@ -52,7 +52,6 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 [resource]
 script = ExtResource("1_7sme0")
 Skill = SubResource("Resource_8lhwl")
-CardTags = Array[String](["伤害", "加速"])
 CardId = null
 CardName = "测试卡1"
 CardIcon = SubResource("CompressedTexture2D_dqhnu")

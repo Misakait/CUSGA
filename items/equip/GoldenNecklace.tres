@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://djmus5gnpd25v"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_epqxe"]
+[ext_resource type="Texture2D" uid="uid://c38u7aeu7uxwb" path="res://res/equip/GoldenNecklace.png" id="1_kr004"]
+
+[resource]
+script = ExtResource("1_epqxe")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenNecklace"])
+CardId = &"GoldenNecklace"
+CardName = "金项链"
+CardIcon = ExtResource("1_kr004")
+Description = "带上之后我就是大富人家"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

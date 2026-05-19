@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b5tdf8uxke014"]
+
+[ext_resource type="Texture2D" uid="uid://3nbyif8rrj32" path="res://res/element_icon/water_icon.png" id="1_6wim7"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_33ouh"]
+
+[resource]
+script = ExtResource("2_33ouh")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"water"])
+CardId = &"water"
+CardName = "水"
+CardIcon = ExtResource("1_6wim7")
+Description = "这是水"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

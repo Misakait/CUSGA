@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ddmq73sknh522"]
+
+[ext_resource type="Texture2D" uid="uid://bi7qw8gd8jybl" path="res://res/items/magicpotion.png" id="1_bjpon"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_qxxq3"]
+
+[resource]
+script = ExtResource("1_qxxq3")
+MaxStackSize = 12
+ItemTags = Array[StringName]([&"magicpotion"])
+CardId = &"magicpotion"
+CardName = "魔法药剂"
+CardIcon = ExtResource("1_bjpon")
+Description = "扎一针，然后回蓝"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

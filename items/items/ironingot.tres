@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bfyuxvfy7ns5g"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_0vvq1"]
+[ext_resource type="Texture2D" uid="uid://dny0nww8143n4" path="res://res/items/ironingot.png" id="1_ihv6k"]
+
+[resource]
+script = ExtResource("1_0vvq1")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"ironingot"])
+CardId = &"ironingot"
+CardName = "铁锭"
+CardIcon = ExtResource("1_ihv6k")
+Description = "可以用来锻造铁制装备"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

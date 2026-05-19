@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using CUSGA.core.constants;
 
 namespace CUSGA.core.autoloads;
 
@@ -33,6 +34,7 @@ public partial class TimeSystem : Node
     public int CurrentDay => _currentDay;
     public bool IsNight { get; private set; } = false;
     public int PhaseProgress => _totalTimePassed % PhaseLength;
+    [Export] public int MapMoveTimeCost { get; set; } = TimeCosts.MapMove;
 
     public override void _EnterTree()
     {
@@ -63,6 +65,19 @@ public partial class TimeSystem : Node
 
         CheckTimeTransitions(previousTime, _totalTimePassed);
         EmitTimeChanged();
+    }
+
+    public void SetMapMoveTimeCost(int amount)
+    {
+        if (amount > 0)
+        {
+            MapMoveTimeCost = amount;
+        }
+    }
+
+    public void PassMapMoveTime()
+    {
+        PassTime(MapMoveTimeCost);
     }
 
     private void CheckTimeTransitions(int oldPoints, int newPoints)

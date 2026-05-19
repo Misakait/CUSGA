@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bc234x8f6ds5e"]
+
+[ext_resource type="Texture2D" uid="uid://cakl1fn186udi" path="res://res/environment/altar.png" id="1_kqrs6"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_vbxrl"]
+
+[resource]
+script = ExtResource("1_vbxrl")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"altar"])
+CardId = &"altar"
+CardName = "献祭节点"
+CardIcon = ExtResource("1_kqrs6")
+Description = "一个诡异的东西"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

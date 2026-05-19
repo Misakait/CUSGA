@@ -97,6 +97,7 @@ func _on_up_button_pressed() -> void:
 
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx-1 , posy))
+	_pass_map_move_time()
 
 #右按钮
 func _on_right_button_pressed() -> void:
@@ -110,6 +111,7 @@ func _on_right_button_pressed() -> void:
 
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx , posy+1))
+	_pass_map_move_time()
 
 #下按钮
 func _on_down_button_pressed() -> void:
@@ -123,6 +125,7 @@ func _on_down_button_pressed() -> void:
 
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx+1 , posy))
+	_pass_map_move_time()
 
 #左按钮
 func _on_left_button_pressed() -> void:
@@ -136,3 +139,7 @@ func _on_left_button_pressed() -> void:
 
 	#注意：load_scene_at会改变当前posx与posy的值
 	map_instantiator.load_scene_at(Vector2i(posx , posy-1))
+	_pass_map_move_time()
+
+func _pass_map_move_time() -> void:
+	TimeSystem.PassMapMoveTime()

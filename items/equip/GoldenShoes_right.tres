@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cantbc58oqgo5"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_fados"]
+[ext_resource type="Texture2D" uid="uid://cmyfm7d0b3kdu" path="res://res/equip/GoldenShoes_right.png" id="1_o8j56"]
+
+[resource]
+script = ExtResource("1_fados")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenShoes_right"])
+CardId = &"GoldenShoes_right"
+CardName = "黄金鞋子右"
+CardIcon = ExtResource("1_o8j56")
+Description = "一个由黄金做成的鞋子，感觉很沉重，给右脚穿戴"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://di7uggh50dja3"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_3yn62"]
+[ext_resource type="Texture2D" uid="uid://i3t0giexli36" path="res://res/equip/GoldenLegguard_left.png" id="1_dg534"]
+
+[resource]
+script = ExtResource("1_3yn62")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenLegguard_left"])
+CardId = &"GoldenLegguard_left"
+CardName = "金护腿左"
+CardIcon = ExtResource("1_dg534")
+Description = "一个由黄金制作而成的护腿，感觉值很多钱，给左腿穿戴"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

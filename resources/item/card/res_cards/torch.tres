@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ResourceCardData" format=3 uid="uid://vlltwh1x74yg"]
 
-[ext_resource type="Texture2D" uid="uid://bwevt5skf8aer" path="res://res/items/火把(1).png" id="1_1i4mn"]
+[ext_resource type="Texture2D" uid="uid://bwevt5skf8aer" path="res://res/items/flametorch.png" id="1_1i4mn"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="1_sbxde"]
 
 [resource]

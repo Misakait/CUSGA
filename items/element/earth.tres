@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dqm0uwwdlkv4e"]
+
+[ext_resource type="Texture2D" uid="uid://26pqgm5aoa8u" path="res://res/element_icon/earth_icon.png" id="1_asskx"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_gxjt5"]
+
+[resource]
+script = ExtResource("2_gxjt5")
+MaxStackSize = 5
+ItemTags = Array[StringName]([&"earth"])
+CardId = &"earth"
+CardName = "土"
+CardIcon = ExtResource("1_asskx")
+Description = "这是土"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

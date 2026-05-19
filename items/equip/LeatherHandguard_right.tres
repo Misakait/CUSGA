@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ciwbd13dbmnyc"]
+
+[ext_resource type="Texture2D" uid="uid://cglwc663njk05" path="res://res/equip/LeatherHandguard_right.png" id="1_m4uh4"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_ph6bt"]
+
+[resource]
+script = ExtResource("1_ph6bt")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"LeatherHandguard_right"])
+CardId = &"LeatherHandguard_right"
+CardName = "皮革护手右"
+CardIcon = ExtResource("1_m4uh4")
+Description = "这是一个皮革护手，给你的右手穿戴
+"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

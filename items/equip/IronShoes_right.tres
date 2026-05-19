@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b2i8l7j8bt2sm"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_2hrc3"]
+[ext_resource type="Texture2D" uid="uid://7lecten0rjj0" path="res://res/equip/IronShoes_right.png" id="1_utl6y"]
+
+[resource]
+script = ExtResource("1_2hrc3")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronShoes_right"])
+CardId = &"IronShoes_right"
+CardName = "铁鞋右"
+CardIcon = ExtResource("1_utl6y")
+Description = "这是一个铁做的鞋子，给你的右脚穿戴"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c3nuq0e03c76e"]
+
+[ext_resource type="Texture2D" uid="uid://cvc5kivl2kq62" path="res://res/environment/treasurechest.png" id="1_xvswu"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_0o777"]
+
+[resource]
+script = ExtResource("2_0o777")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"treasurechest"])
+CardId = &"treasurechest"
+CardName = "宝箱"
+CardIcon = ExtResource("1_xvswu")
+Description = "会开出什么好东西呢"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

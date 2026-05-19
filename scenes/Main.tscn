@@ -193,4 +193,5 @@ GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 [node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
 layout_mode = 0
 
-[node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]
+[node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player") instance=ExtResource("2_rvslj")]
+player = NodePath("../Player")

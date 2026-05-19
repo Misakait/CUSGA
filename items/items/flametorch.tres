@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cxbfyo0t2j2ij"]
+
+[ext_resource type="Texture2D" uid="uid://bwevt5skf8aer" path="res://res/items/flametorch.png" id="1_2hu1a"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_dfcbd"]
+
+[resource]
+script = ExtResource("1_dfcbd")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"flametorch"])
+CardId = &"flametorch"
+CardName = "火把"
+CardIcon = ExtResource("1_2hu1a")
+Description = "一个火把"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

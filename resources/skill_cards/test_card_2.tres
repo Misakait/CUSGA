@@ -24,7 +24,6 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 script = ExtResource("1_bhrvp")
 Skill = SubResource("Resource_yxabe")
 cost = 20
-CardTags = Array[String](["随机伤害"])
 CardId = null
 CardName = "测试卡2"
 Description = "对随机敌人造成20点火属性法术伤害。"

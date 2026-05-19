@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b7ptrlcnbc7bw"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_64tht"]
+[ext_resource type="Texture2D" uid="uid://dp5404a1ejwgw" path="res://res/items/sand.png" id="1_igp1n"]
+
+[resource]
+script = ExtResource("1_64tht")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"sand"])
+CardId = &"sand"
+CardName = "沙子"
+CardIcon = ExtResource("1_igp1n")
+Description = "别吹进眼睛里了"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://t2vgpkoa7iyv"]
+
+[ext_resource type="Texture2D" uid="uid://b8k2x6b7llhji" path="res://res/equip/LeatherBelt.png" id="1_ir8rb"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_o16rl"]
+
+[resource]
+script = ExtResource("1_o16rl")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"LeatherBelt"])
+CardId = &"LeatherBelt"
+CardName = "皮革腰带"
+CardIcon = ExtResource("1_ir8rb")
+Description = "穿上后感觉自己气派的不行"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

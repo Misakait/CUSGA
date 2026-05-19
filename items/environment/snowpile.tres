@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://m1cvcv7c6f47"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_4he6o"]
+[ext_resource type="Texture2D" uid="uid://dwxwpgglpbay6" path="res://res/environment/snowpile.png" id="1_yacfb"]
+
+[resource]
+script = ExtResource("1_4he6o")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"snowpile"])
+CardId = &"snowpile"
+CardName = "雪堆"
+CardIcon = ExtResource("1_yacfb")
+Description = "一堆雪，要不堆个雪人吧"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"
