@@ -4,46 +4,50 @@ using CUSGA.resources.item;
 
 namespace CUSGA.core.ui;
 
-public static class ItemTooltipPresenter
+public sealed class ItemTooltipPresenter(Node tooltipPanel)
 {
-    public static void Show(Node context, ItemStack stack)
+    public static ItemTooltipPresenter Empty { get; } = new(null);
+
+    private readonly Node _tooltipPanel = tooltipPanel;
+
+    public void Show(ItemStack stack)
     {
         if (stack == null || stack.IsEmpty)
         {
-            Hide(context);
+            Hide();
             return;
         }
 
-        Show(context, stack.Item);
+        Show(stack.Item);
     }
 
-    public static void Show(Node context, ItemData item)
+    public void Show(ItemData item)
     {
         if (item == null)
         {
-            Hide(context);
+            Hide();
             return;
         }
 
-        Node tooltipPanel = GetTooltipPanel(context);
-        tooltipPanel?.Call("show_tooltip", GetItemName(item), GetItemDescription(item));
-    }
-
-    public static void Hide(Node context)
-    {
-        Node tooltipPanel = GetTooltipPanel(context);
-        tooltipPanel?.Call("hide_tooltip");
-    }
-
-    private static Node GetTooltipPanel(Node context)
-    {
-        if (context == null || !context.IsInsideTree())
+        if (!HasTooltipPanel())
         {
-            return null;
+            return;
         }
 
-        var panels = context.GetTree().GetNodesInGroup("tooltip_panel");
-        return panels.Count > 0 ? panels[0] : null;
+        _tooltipPanel.Call("show_tooltip", GetItemName(item), GetItemDescription(item));
+    }
+
+    public void Hide()
+    {
+        if (HasTooltipPanel())
+        {
+            _tooltipPanel.Call("hide_tooltip");
+        }
+    }
+
+    private bool HasTooltipPanel()
+    {
+        return _tooltipPanel != null && GodotObject.IsInstanceValid(_tooltipPanel);
     }
 
     private static string GetItemName(ItemData item)

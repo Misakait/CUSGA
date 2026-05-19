@@ -14,6 +14,7 @@ public partial class EquipmentSlotUI : PanelContainer
     private TextureRect _icon = null!;
     private Label _amountLabel = null!;
     private Label _slotLabel = null!;
+    private ItemTooltipPresenter _tooltipPresenter = ItemTooltipPresenter.Empty;
     private bool _isReady = false;
     private bool _isPointerInside = false;
 
@@ -48,6 +49,11 @@ public partial class EquipmentSlotUI : PanelContainer
         RefreshView();
     }
 
+    public void SetTooltipPresenter(ItemTooltipPresenter tooltipPresenter)
+    {
+        _tooltipPresenter = tooltipPresenter ?? ItemTooltipPresenter.Empty;
+    }
+
     public override void _ExitTree()
     {
         MouseEntered -= OnMouseEntered;
@@ -58,7 +64,7 @@ public partial class EquipmentSlotUI : PanelContainer
             _stack.OnStackChanged -= UpdateVisuals;
         }
 
-        ItemTooltipPresenter.Hide(this);
+        _tooltipPresenter.Hide();
     }
 
     public override Variant _GetDragData(Vector2 atPosition)
@@ -78,7 +84,7 @@ public partial class EquipmentSlotUI : PanelContainer
 
         SetDragPreview(CreateDragPreview());
         _icon.Modulate = new Color(1, 1, 1, 0.3f);
-        ItemTooltipPresenter.Hide(this);
+        _tooltipPresenter.Hide();
         return dataPackage;
     }
 
@@ -168,7 +174,7 @@ public partial class EquipmentSlotUI : PanelContainer
 
         if (_isPointerInside)
         {
-            ItemTooltipPresenter.Show(this, stack);
+            _tooltipPresenter.Show(stack);
         }
     }
 
@@ -186,13 +192,13 @@ public partial class EquipmentSlotUI : PanelContainer
     private void OnMouseEntered()
     {
         _isPointerInside = true;
-        ItemTooltipPresenter.Show(this, _stack);
+        _tooltipPresenter.Show(_stack);
     }
 
     private void OnMouseExited()
     {
         _isPointerInside = false;
-        ItemTooltipPresenter.Hide(this);
+        _tooltipPresenter.Hide();
     }
 
     private static string GetSlotLabel(EquipmentSlot slot)

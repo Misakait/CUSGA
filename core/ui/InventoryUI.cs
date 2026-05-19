@@ -13,12 +13,14 @@ public partial class InventoryUI : Control
     [Export] public PackedScene SlotPrefab { get; set; }
     [Export] public PackedScene EquipmentSlotPrefab { get; set; }
     [Export] public NodePath GameplayPortPath { get; set; }
+    [Export] public NodePath TooltipPanelPath { get; set; } = new("../../TooltipPanel");
 
     private AttributeSummaryUI _attributeSummary = null!;
     private GridContainer _slotGrid = null!;
     private GridContainer _equipmentSlotGrid = null!;
     private GridContainer _deckSlotGrid = null!;
     private GameplayPort _gameplayPort = null!;
+    private ItemTooltipPresenter _tooltipPresenter = ItemTooltipPresenter.Empty;
 
     private InventoryComponent _playerInventory = null!;
     private EquipmentComponent _equipment = null!;
@@ -40,6 +42,7 @@ public partial class InventoryUI : Control
         _equipmentSlotGrid = GetNode<GridContainer>("%EquipmentSlotGrid");
         _deckSlotGrid = GetNode<GridContainer>("%DeckSlotGrid");
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
+        _tooltipPresenter = new ItemTooltipPresenter(GetNodeOrNull<Node>(TooltipPanelPath));
         _gameplayPort.InventoryToggleRequested += HandleInventoryToggleRequest;
         // _globalEventBus = GetNode<Node>("/root/GlobalEventBus");
         // if (!_globalEventBus.IsConnected(GDSignals.OnInventoryToggled, _inventoryToggledCallable))
@@ -179,6 +182,7 @@ public partial class InventoryUI : Control
         {
             EquipmentSlotUI slotUI = EquipmentSlotPrefab.Instantiate<EquipmentSlotUI>();
             _equipmentSlotGrid.AddChild(slotUI);
+            slotUI.SetTooltipPresenter(_tooltipPresenter);
             slotUI.Bind(_equipment, slot);
             _equipmentSlotViews.Add(slotUI);
         }
@@ -197,6 +201,7 @@ public partial class InventoryUI : Control
         {
             SlotUI slotUI = SlotPrefab.Instantiate<SlotUI>();
             slotGrid.AddChild(slotUI);
+            slotUI.SetTooltipPresenter(_tooltipPresenter);
             slotViews.Add(slotUI);
         }
     }
