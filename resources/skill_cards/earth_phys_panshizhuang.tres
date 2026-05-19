@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://b7le1wvfsj0fv"]
+
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="2_cardeffect"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="3_damageeffect"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="4_combat"]
+
+[sub_resource type="Resource" id="Resource_damage"]
+script = ExtResource("3_damageeffect")
+BaseDamage = 20
+Type = 0
+Element = 4
+TargetScope = 1
+SecondaryDamageMultiplier = 0.5
+
+[sub_resource type="Resource" id="Resource_skill"]
+script = ExtResource("4_combat")
+Element = 4
+TargetingType = 6
+Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
+CardId = null
+
+[resource]
+script = ExtResource("1_skillcard")
+Skill = SubResource("Resource_skill")
+cost = 30
+CardTags = Array[String](["扩散伤害"])
+CardId = null
+CardName = "磐石撞"
+Description = "对单体敌人造成20点土属性物理伤害，并对相邻敌人造成10点土属性物理伤害。"

@@ -11,13 +11,29 @@ var draw_pile_data: Array[SkillCardData] = []     ## 当前战斗的抽牌堆（
 var discard_pile_data: Array[SkillCardData] = []  ## 当前战斗的弃牌堆
 var min_start_cards_count:int = 20 ## 最少卡牌数量，低于该值会被填充基础卡牌
 
+const BASIC_CARD_PATHS := [
+	"res://resources/skill_cards/metal_phys_qiege.tres",
+	"res://resources/skill_cards/wood_phys_chouzhi.tres",
+	"res://resources/skill_cards/water_phys_langji.tres",
+	"res://resources/skill_cards/fire_phys_yanyong.tres",
+	"res://resources/skill_cards/earth_phys_yanbeng.tres",
+	"res://resources/skill_cards/metal_magic_ruimang.tres",
+	"res://resources/skill_cards/wood_magic_tengxiang.tres",
+	"res://resources/skill_cards/water_magic_langjue.tres",
+	"res://resources/skill_cards/fire_magic_fenzhuo.tres",
+	"res://resources/skill_cards/earth_magic_shixiao.tres",
+]
+
+var _basic_card_pool: Array[SkillCardData] = []
+var _rng := RandomNumberGenerator.new()
+
 #region 动画部分
 @export_group("动画部分")
 @export var draw_interval:float = 0.2 ##摸牌动画间隔
 #endregion
 
 func _ready() -> void:
-	pass
+	_rng.randomize()
 
 ## 战斗开始时初始化牌库
 func initialize_deck(starting_deck_data: Array[SkillCardData]):
@@ -92,11 +108,24 @@ func reshuffle_discard_into_draw():
 
 ## 补充基础卡牌
 func fill_with_basic_cards(amount: int):
+	var basic_cards = _get_basic_card_pool()
+	if basic_cards.is_empty():
+		push_warning("基础卡牌池为空，无法填充起始牌库。")
+		return
+
 	for i in range(amount):
-		var basic_card = SkillCardData.new()
-		basic_card.CardName = "填充卡牌测试001"
-		basic_card.cost = 10
-		draw_pile_data.append(basic_card)
+		var index = _rng.randi_range(0, basic_cards.size() - 1)
+		draw_pile_data.append(basic_cards[index])
+
+func _get_basic_card_pool() -> Array[SkillCardData]:
+	if _basic_card_pool.is_empty():
+		for path in BASIC_CARD_PATHS:
+			var card = load(path) as SkillCardData
+			if card:
+				_basic_card_pool.append(card)
+			else:
+				push_warning("无法加载基础卡牌资源：" + path)
+	return _basic_card_pool
 
 ## 调试与控制台日志打印，能够清晰看出场上三种牌堆的变化
 func print_all_card():
