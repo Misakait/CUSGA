@@ -2,6 +2,16 @@
 
 [ext_resource type="Script" uid="uid://ly8agrcpxa1o" path="res://scripts/map_scripts/map_son_scripts/map_boss_room.gd" id="1_fplxy"]
 [ext_resource type="Texture2D" uid="uid://bm1h14uqp6biq" path="res://res/image/boss.png" id="2_ovxyk"]
+[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_addj8"]
+[ext_resource type="Texture2D" uid="uid://dmc67lipd6gs2" path="res://res/environment/石壁-a1f5.png" id="4_lf3et"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="9_86omh"]
+
+[sub_resource type="Resource" id="Resource_tgktn"]
+script = ExtResource("9_86omh")
+CardId = &"stoneterrain"
+CardName = "石头地形"
+CardIcon = ExtResource("4_lf3et")
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapBossRoom" type="Node2D" unique_id=2063223928]
 script = ExtResource("1_fplxy")
@@ -11,6 +21,17 @@ offset_right = 40.0
 offset_bottom = 23.0
 
 [node name="Background" type="Sprite2D" parent="." unique_id=1327551065]
+z_index = 1
 position = Vector2(654.34106, 397.7624)
 scale = Vector2(0.47887102, 0.52408814)
 texture = ExtResource("2_ovxyk")
+
+[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=1968967078]
+
+[node name="BossPoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=664672404]
+position = Vector2(600, 500)
+scale = Vector2(3, 3)
+script = ExtResource("3_addj8")
+TerrainData = SubResource("Resource_tgktn")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"

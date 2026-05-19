@@ -9,10 +9,12 @@
 [ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/ganeflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://d0aq30etvrhiu" path="res://core/application/EncounterManager.cs" id="8_ft6cd"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="8_jlsqs"]
+[ext_resource type="Resource" uid="uid://d1c4jp3rhojb5" path="res://resources/monster/tree_kumujing.tres" id="9_1iba3"]
 [ext_resource type="Script" uid="uid://b2503x8ewmybj" path="res://resources/encounters/GatheringEncounterRule.cs" id="9_bb450"]
 [ext_resource type="PackedScene" uid="uid://re28ypfb6pn7" path="res://scenes/inventory/inventory_ui.tscn" id="9_q8u5g"]
 [ext_resource type="Script" uid="uid://dkr5sf10iqq3b" path="res://core/ui/hud/HUDController.cs" id="9_wp0k4"]
 [ext_resource type="Script" uid="uid://cmpt04ncsoqpu" path="res://core/ui/hud/BackpackButton.cs" id="10_lhr70"]
+[ext_resource type="Resource" uid="uid://c41yc5wjcn8ms" path="res://resources/monster/rockwall_yankeshou.tres" id="10_yxlcp"]
 [ext_resource type="Script" uid="uid://ti4khreb8ppy" path="res://core/ui/hud/TimePanelUI.cs" id="11_qmy6f"]
 [ext_resource type="Script" uid="uid://2pdyihf4cpq1" path="res://core/ui/hud/HealthBarUI.cs" id="12_mwfav"]
 [ext_resource type="Script" uid="uid://dqlllnjrxs4n7" path="res://core/debug/DebugLoadoutSeeder.cs" id="13_debug"]
@@ -24,7 +26,13 @@
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
 TriggerTag = &"wood"
-MonsterToSpawn = Array[Object]([null])
+MonsterToSpawn = Array[Object]([ExtResource("9_1iba3")])
+metadata/_custom_type_script = "uid://b2503x8ewmybj"
+
+[sub_resource type="Resource" id="Resource_1iba3"]
+script = ExtResource("9_bb450")
+TriggerTag = &"stone"
+MonsterToSpawn = Array[Object]([ExtResource("10_yxlcp")])
 metadata/_custom_type_script = "uid://b2503x8ewmybj"
 
 [node name="Main" type="Node" unique_id=646455833]
@@ -64,13 +72,7 @@ EncounterManagerPath = NodePath("../EncounterManager")
 
 [node name="EncounterManager" type="Node" parent="Gameplay" unique_id=2003392084]
 script = ExtResource("8_ft6cd")
-GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy")])
-BaseGatheringSpawnChance = 1.0
-
-[node name="EncounterManager2" type="Node" parent="Gameplay" unique_id=1045438962]
-script = ExtResource("8_ft6cd")
-GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy")])
-BaseGatheringSpawnChance = 1.0
+GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3")])
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 

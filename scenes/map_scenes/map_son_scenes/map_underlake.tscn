@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://doi30pgmescy5"]
+
+[ext_resource type="Texture2D" uid="uid://dvlj64tnqalut" path="res://res/background/地下湖-a1e3(1).png" id="1_7gdgy"]
+
+[node name="MapUnderlake" type="Node2D" unique_id=1027647085]
+
+[node name="地下湖A1e3(1)" type="Sprite2D" parent="." unique_id=2020835610]
+z_index = -1
+position = Vector2(640, 360)
+texture = ExtResource("1_7gdgy")

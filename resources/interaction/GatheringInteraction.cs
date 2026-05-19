@@ -22,7 +22,7 @@ public partial class GatheringInteraction : TerrainInteraction
             new PassTimeOp(TimeCost),
             new MarkHarvestedOp()
         };
-        if (context.Terrain.IsHarvested)
+        if (!context.Terrain.IsHarvested)
         {
             int extraYield = context.Player.Equipment.GetGatheringYieldBonus(GatheringTag);
             var loots = DropTable?.RollLoot(extraYield) ?? [];

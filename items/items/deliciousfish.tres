@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dgqid772iklbl"]
+
+[ext_resource type="Texture2D" uid="uid://cibix62j5i2b" path="res://res/items/deliciousfish.png" id="1_063dx"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_l3583"]
+
+[resource]
+script = ExtResource("2_l3583")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"deliciousfish"])
+CardId = &"deliciousfish"
+CardName = "美味的鱼"
+CardIcon = ExtResource("1_063dx")
+Description = "处理过的鱼再去烤，很美味"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

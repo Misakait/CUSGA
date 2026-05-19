@@ -1,25 +1,18 @@
 [gd_scene format=3 uid="uid://b3m1p2y3nixre"]
 
+[ext_resource type="Script" uid="uid://hvqhimys3jy6" path="res://scripts/map_scripts/map_son_scripts/map_desert.gd" id="1_ehudh"]
 [ext_resource type="Texture2D" uid="uid://yf0anxfeav0f" path="res://res/image/黑暗破败感像素背景画.png" id="1_mrowe"]
 [ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="2_ehudh"]
-[ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="3_7xg47"]
+[ext_resource type="Texture2D" uid="uid://dmc67lipd6gs2" path="res://res/environment/石壁-a1f5.png" id="3_dt3d6"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_704vg"]
-[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="5_dxieh"]
-[ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="6_vwyfb"]
+[ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="5_dt3d6"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="7_53hot"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="8_yut5j"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="9_uowok"]
 
-[sub_resource type="Resource" id="Resource_tvqcv"]
-script = ExtResource("6_vwyfb")
-CardId = &"whitewood"
-CardName = "wood"
-CardIcon = ExtResource("5_dxieh")
-metadata/_custom_type_script = "uid://tg4u4lol2cpi"
-
 [sub_resource type="Resource" id="Resource_bn557"]
 script = ExtResource("4_704vg")
-Item = SubResource("Resource_tvqcv")
+Item = ExtResource("5_dt3d6")
 MinAmount = 2
 MaxAmount = 2
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
@@ -29,31 +22,34 @@ script = ExtResource("7_53hot")
 Drops = Array[ExtResource("4_704vg")]([SubResource("Resource_bn557")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-[sub_resource type="Resource" id="Resource_tdjg7"]
+[sub_resource type="Resource" id="Resource_ehudh"]
 script = ExtResource("8_yut5j")
-GatheringTag = &"wood"
+GatheringTag = &"stone"
 DropTable = SubResource("Resource_hy465")
 metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
 
 [sub_resource type="Resource" id="Resource_xoror"]
 script = ExtResource("9_uowok")
-InteractionBehavior = SubResource("Resource_tdjg7")
-CardId = &"woodterrain"
-CardName = " 树木地形"
-CardIcon = ExtResource("3_7xg47")
+InteractionBehavior = SubResource("Resource_ehudh")
+CardId = &"stoneterrain"
+CardName = "石头地形"
+CardIcon = ExtResource("3_dt3d6")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapDesert" type="Node2D" unique_id=847919400]
+script = ExtResource("1_ehudh")
 
 [node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=295229518]
+z_index = -1
 position = Vector2(638, 387.99997)
 scale = Vector2(0.49388713, 0.49388713)
 texture = ExtResource("1_mrowe")
 
 [node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=231279159]
 
-[node name="TreePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=502136326]
-position = Vector2(500, 500)
+[node name="StonePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=502136326]
+position = Vector2(600, 500)
+scale = Vector2(3, 3)
 script = ExtResource("2_ehudh")
 TerrainData = SubResource("Resource_xoror")
 LocalGridPos = Vector2i(1, 1)
