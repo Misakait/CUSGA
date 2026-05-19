@@ -13,6 +13,7 @@ namespace CUSGA.core.application;
 public partial class GameplayPort : Node
 {
     [Signal] public delegate void InventoryToggleRequestedEventHandler(InventoryComponent inventory);
+    [Signal] public delegate void CraftingToggleRequestedEventHandler(CraftingComponent crafting);
     [Signal] public delegate void FarmingPanelRequestedEventHandler(TerrainInstance terrain);
     [Signal]
     public delegate void EncounterRequestedEventHandler(
@@ -27,10 +28,12 @@ public partial class GameplayPort : Node
     [Export] public NodePath PlayerInventoryPath { get; set; } = new("Components/InventoryComponent");
     [Export] public NodePath PlayerBattleDeckPath { get; set; } = new("Components/BattleDeckComponent");
     [Export] public NodePath PlayerHealthPath { get; set; } = new("Components/HealthComponent");
+    [Export] public NodePath PlayerCraftingPath { get; set; } = new("Components/CraftingComponent");
 
     private Player _player = null!;
     private HealthComponent _playerHealth = null!;
     private BattleDeckComponent _playerBattleDeck = null!;
+    private CraftingComponent _playerCrafting = null!;
 
     public HealthComponent PlayerHealth =>
            _playerHealth;
@@ -38,18 +41,21 @@ public partial class GameplayPort : Node
             _playerInventory;
     public BattleDeckComponent PlayerBattleDeck =>
             _playerBattleDeck;
+    public CraftingComponent PlayerCrafting =>
+            _playerCrafting;
 
     public override void _Ready()
     {
         if (PlayerPath.IsEmpty)
         {
-            throw new InvalidOperationException("GameplayPort.PlayerPath 未设置。");
+            throw new InvalidOperationException("GameplayPort.PlayerPath 未设置");
         }
 
         _player = GetNode<Player>(PlayerPath);
         _playerInventory = _player.GetNode<InventoryComponent>(PlayerInventoryPath);
         _playerBattleDeck = _player.GetNode<BattleDeckComponent>(PlayerBattleDeckPath);
         _playerHealth = _player.GetNode<HealthComponent>(PlayerHealthPath);
+        _playerCrafting = _player.GetNode<CraftingComponent>(PlayerCraftingPath);
     }
 
     public Player Player => _player;
@@ -58,6 +64,11 @@ public partial class GameplayPort : Node
     public void RequestToggleInventory()
     {
         EmitSignal(SignalName.InventoryToggleRequested, PlayerInventory);
+    }
+
+    public void RequestToggleCrafting()
+    {
+        EmitSignal(SignalName.CraftingToggleRequested, PlayerCrafting);
     }
 
     public bool TryAddItemToInventory(ItemStack stack)

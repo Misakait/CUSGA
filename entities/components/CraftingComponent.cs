@@ -1,11 +1,23 @@
 using Godot;
+using System.Collections.Generic;
+using System.Linq;
+using CUSGA.core.crafting;
 using CUSGA.resources.crafting;
 
 namespace CUSGA.entities.components;
 
 public partial class CraftingComponent : Node
 {
-    private InventoryComponent _inventory;
+    [Signal] public delegate void CraftingCompletedEventHandler(CraftingRecipe recipe, int quantity, int outputAmount);
+    [Signal] public delegate void CraftingFailedEventHandler(CraftingRecipe recipe, int quantity, int failureReason);
+
+    [Export] public RecipeBookData RecipeBook { get; set; }
+
+    private readonly CraftingService _craftingService = new();
+    private InventoryComponent _inventory = null!;
+
+    public InventoryComponent Inventory => _inventory;
+    public IEnumerable<CraftingRecipe> Recipes => RecipeBook?.Recipes?.Where(recipe => recipe != null) ?? [];
 
     public override void _Ready()
     {
@@ -14,37 +26,53 @@ public partial class CraftingComponent : Node
 
     public bool CanCraft(CraftingRecipe recipe)
     {
-        if (recipe == null || recipe.Inputs.Count == 0) return false;
-
-        foreach (var ingredient in recipe.Inputs)
-        {
-            if (!_inventory.HasItem(ingredient.RequiredItem, ingredient.Amount))
-            {
-                return false;
-            }
-        }
-        return true;
+        return CanCraft(recipe, 1);
     }
 
+    public bool CanCraft(CraftingRecipe recipe, int quantity)
+    {
+        return _craftingService.CanCraft(_inventory, recipe, quantity);
+    }
+
+    public int MaxCraftableQuantity(CraftingRecipe recipe)
+    {
+        return _craftingService.MaxCraftableQuantity(_inventory, recipe);
+    }
 
     public bool TryCraft(CraftingRecipe recipe)
     {
-        if (!CanCraft(recipe))
+        return TryCraft(recipe, 1, out _);
+    }
+
+    public bool TryCraft(CraftingRecipe recipe, int quantity)
+    {
+        return TryCraft(recipe, quantity, out _);
+    }
+
+    public bool TryCraft(CraftingRecipe recipe, int quantity, out CraftingFailureReason failureReason)
+    {
+        bool crafted = _craftingService.TryCraft(_inventory, recipe, quantity, out failureReason);
+        if (crafted)
         {
-            GD.Print("材料不足，合成失败！");
-            return false;
+            int outputAmount = recipe.OutputAmount * quantity;
+            EmitSignal(SignalName.CraftingCompleted, recipe, quantity, outputAmount);
+            GD.Print($"成功合成了 {outputAmount} 个 {recipe.OutputItem.DisplayName}！");
+            return true;
         }
 
-        // 扣除所有输入材料
-        foreach (var ingredient in recipe.Inputs)
+        EmitSignal(SignalName.CraftingFailed, recipe, quantity, (int)failureReason);
+        GD.Print(GetFailureMessage(failureReason));
+        return false;
+    }
+
+    private static string GetFailureMessage(CraftingFailureReason failureReason)
+    {
+        return failureReason switch
         {
-            _inventory.RemoveItem(ingredient.RequiredItem, ingredient.Amount);
-        }
-
-        // 发放输出物品
-        _inventory.AddItem(recipe.OutputItem, recipe.OutputAmount);
-
-        GD.Print($"成功合成了 {recipe.OutputAmount} 个 {recipe.OutputItem.CardName}！");
-        return true;
+            CraftingFailureReason.MissingMaterials => "材料不足，合成失败！",
+            CraftingFailureReason.NotEnoughSpace => "背包空间不足，合成失败！",
+            CraftingFailureReason.InvalidQuantity => "合成数量无效，合成失败！",
+            _ => "配方无效，合成失败！"
+        };
     }
 }

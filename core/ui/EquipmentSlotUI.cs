@@ -14,13 +14,17 @@ public partial class EquipmentSlotUI : PanelContainer
     private TextureRect _icon = null!;
     private Label _amountLabel = null!;
     private Label _slotLabel = null!;
+    private ItemTooltipPresenter _tooltipPresenter = ItemTooltipPresenter.Empty;
     private bool _isReady = false;
+    private bool _isPointerInside = false;
 
     public override void _Ready()
     {
         _icon = GetNode<TextureRect>("%ItemIcon");
         _amountLabel = GetNode<Label>("%AmountLabel");
         _slotLabel = GetNode<Label>("%SlotLabel");
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
         _isReady = true;
         RefreshView();
     }
@@ -45,12 +49,22 @@ public partial class EquipmentSlotUI : PanelContainer
         RefreshView();
     }
 
+    public void SetTooltipPresenter(ItemTooltipPresenter tooltipPresenter)
+    {
+        _tooltipPresenter = tooltipPresenter ?? ItemTooltipPresenter.Empty;
+    }
+
     public override void _ExitTree()
     {
+        MouseEntered -= OnMouseEntered;
+        MouseExited -= OnMouseExited;
+
         if (_stack != null)
         {
             _stack.OnStackChanged -= UpdateVisuals;
         }
+
+        _tooltipPresenter.Hide();
     }
 
     public override Variant _GetDragData(Vector2 atPosition)
@@ -70,6 +84,7 @@ public partial class EquipmentSlotUI : PanelContainer
 
         SetDragPreview(CreateDragPreview());
         _icon.Modulate = new Color(1, 1, 1, 0.3f);
+        _tooltipPresenter.Hide();
         return dataPackage;
     }
 
@@ -156,6 +171,11 @@ public partial class EquipmentSlotUI : PanelContainer
             _amountLabel.Text = stack.Amount > 1 ? stack.Amount.ToString() : "";
         }
         _icon.Modulate = Colors.White;
+
+        if (_isPointerInside)
+        {
+            _tooltipPresenter.Show(stack);
+        }
     }
 
     private void RefreshView()
@@ -167,6 +187,18 @@ public partial class EquipmentSlotUI : PanelContainer
 
         _slotLabel.Text = GetSlotLabel(_slot);
         UpdateVisuals(_stack);
+    }
+
+    private void OnMouseEntered()
+    {
+        _isPointerInside = true;
+        _tooltipPresenter.Show(_stack);
+    }
+
+    private void OnMouseExited()
+    {
+        _isPointerInside = false;
+        _tooltipPresenter.Hide();
     }
 
     private static string GetSlotLabel(EquipmentSlot slot)

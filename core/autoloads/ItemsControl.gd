@@ -3,6 +3,10 @@
 extends Node
 
 var items = {}
+var warehouse_to_player: Array[ItemData]
+var warehouse_to_player_cnt: Array[int]
+var player_to_warehouse: Array[ItemData]
+var player_to_warehouse_cnt: Array[int]
 
 func _ready():
 	var dir = DirAccess.open("res://items")

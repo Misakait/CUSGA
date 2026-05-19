@@ -37,6 +37,12 @@ func _switch_to(target_id: String, target_path: String) -> void:
 	# 1. 把当前场景从树中移除（但不销毁！引用还在 _cache 里）
 	var current: Node2D = _cache.get(_current_id) as Node2D
 	if current and current.get_parent():
+		
+		ScreenTransitions.fade_out()
+		await ScreenTransitions.fade_complete
+		
+		if current.has_method("exit"):
+			current.exit()
 		current.get_parent().remove_child(current)
 	
 	# 2. 获取或创建目标场景
@@ -50,6 +56,9 @@ func _switch_to(target_id: String, target_path: String) -> void:
 		_cache[target_id] = target
 	
 	# 3. 挂入场景树，设为 current_scene
+	ScreenTransitions.fade_in()
 	get_tree().root.add_child(target)
 	get_tree().current_scene = target
 	_current_id = target_id
+	if target.has_method("init"):
+		target.init()

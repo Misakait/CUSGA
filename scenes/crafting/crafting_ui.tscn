@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://76d7t852i5is"]
+
+[ext_resource type="Script" uid="uid://bxc7jy6r1vf8u" path="res://core/ui/crafting/CraftingUI.cs" id="1_crafting"]
+[ext_resource type="Texture2D" uid="uid://dapo07qjenafe" path="res://res/image/61e6dae9ecdf4ea59d601bc75c0c5e02.png" id="2_close"]
+
+[node name="CraftingUI" type="Control" unique_id=2042195131]
+custom_minimum_size = Vector2(820, 460)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 820.0
+offset_bottom = 460.0
+script = ExtResource("1_crafting")
+
+[node name="MainPanel" type="PanelContainer" parent="." unique_id=1880619909]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MainPanel" unique_id=969539329]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainPanel/MarginContainer" unique_id=1093557647]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleBar" type="HBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer" unique_id=1085660905]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/TitleBar" unique_id=1110319563]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "合成"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="MainPanel/MarginContainer/VBoxContainer/TitleBar" unique_id=886438957]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+icon = ExtResource("2_close")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ContentSplit" type="HBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer" unique_id=840231756]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="RecipeSection" type="VBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit" unique_id=483395264]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="RecipeLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/RecipeSection" unique_id=1646807501]
+layout_mode = 2
+text = "合成表"
+horizontal_alignment = 1
+
+[node name="RecipeScroll" type="ScrollContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/RecipeSection" unique_id=1423096843]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RecipeMargin" type="MarginContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/RecipeSection/RecipeScroll" unique_id=1286320855]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="RecipeGrid" type="GridContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/RecipeSection/RecipeScroll/RecipeMargin" unique_id=106028880]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 4
+
+[node name="DetailSection" type="VBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit" unique_id=90982105]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="OutputHeader" type="HBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection" unique_id=655210600]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OutputIcon" type="TextureRect" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/OutputHeader" unique_id=1919879910]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OutputText" type="VBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/OutputHeader" unique_id=1322803637]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OutputNameLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/OutputHeader/OutputText" unique_id=1248569712]
+unique_name_in_owner = true
+layout_mode = 2
+text = "选择配方"
+autowrap_mode = 3
+
+[node name="OutputDescriptionLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/OutputHeader/OutputText" unique_id=84077607]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 3
+
+[node name="IngredientLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection" unique_id=142063596]
+layout_mode = 2
+text = "材料"
+
+[node name="IngredientScroll" type="ScrollContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection" unique_id=309560474]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="IngredientList" type="VBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/IngredientScroll" unique_id=1009906662]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CraftControls" type="HBoxContainer" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection" unique_id=48167788]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="QuantityLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/CraftControls" unique_id=1368859344]
+layout_mode = 2
+text = "数量"
+vertical_alignment = 1
+
+[node name="QuantitySpinBox" type="SpinBox" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/CraftControls" unique_id=1827339814]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 1.0
+value = 1.0
+
+[node name="CraftButton" type="Button" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/CraftControls" unique_id=16922441]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+text = "合成"
+
+[node name="StatusLabel" type="Label" parent="MainPanel/MarginContainer/VBoxContainer/ContentSplit/DetailSection/CraftControls" unique_id=1421675014]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+vertical_alignment = 1

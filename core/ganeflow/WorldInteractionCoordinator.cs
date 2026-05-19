@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 using CUSGA.core.board;
 using CUSGA.core.inventory;
@@ -19,12 +20,15 @@ public partial class WorldInteractionCoordinator : Node
     [Export] public NodePath GameplayPortPath { get; set; } = null!;
     [Export] public NodePath BackpackFlyTargetPath { get; set; } = null!;
     [Export] public NodePath EncounterManagerPath { get; set; } = null!;
+    [Export] public NodePath ScreenTransitionsPath { get; set; } = new("/root/ScreenTransitions");
 
     private EncounterManager _encounterManager;
     private BoardController _boardController = null!;
     private GameplayPort _gameplayPort = null!;
     private Control _backpackFlyTarget;
     private Node _globalEventBus;
+    private Node _screenTransitions;
+    private bool _isTransitioning;
 
     public override void _Ready()
     {
@@ -33,6 +37,7 @@ public partial class WorldInteractionCoordinator : Node
         _backpackFlyTarget = GetNodeOrNull<Control>(BackpackFlyTargetPath);
         _globalEventBus = GetNodeOrNull<Node>("/root/GlobalEventBus");
         _encounterManager = GetNode<EncounterManager>(EncounterManagerPath);
+        _screenTransitions = GetNodeOrNull<Node>(ScreenTransitionsPath);
 
         _boardController.CardClicked += OnBoardCardClicked;
         _gameplayPort.EncounterRequested += OnEncounterRequested;
@@ -50,41 +55,58 @@ public partial class WorldInteractionCoordinator : Node
         }
     }
 
-    private void OnEncounterRequested(TerrainInstance terrain, Array<SkillCardData> battleDeck, Array<MonsterData> monsters, string message)
+    private async void OnEncounterRequested(TerrainInstance terrain, Array<SkillCardData> battleDeck, Array<MonsterData> monsters, string message)
     {
+        if (_isTransitioning)
+        {
+            return;
+        }
+
+        _isTransitioning = true;
         GD.Print($"[WorldInteractionCoordinator] Entering Combat!");
-        PackedScene battleScene = GD.Load<PackedScene>("res://scenes/battle_scenes/battle.tscn");
-        Node battleInstance = battleScene.Instantiate();
-
-        // 传递由 GameplayPort 获取到的玩家战斗卡组和遭遇到的怪物数据，给即将生成的战斗场景
-        if (battleDeck != null && battleDeck.Count > 0)
+        try
         {
-            battleInstance.Set("starting_deck_data", battleDeck);
+            await FadeOutAsync();
+
+            PackedScene battleScene = GD.Load<PackedScene>("res://scenes/battle_scenes/battle.tscn");
+            Node battleInstance = battleScene.Instantiate();
+
+            // 传递由 GameplayPort 获取到的玩家战斗卡组和遭遇到的怪物数据，给即将生成的战斗场景
+            if (battleDeck != null && battleDeck.Count > 0)
+            {
+                battleInstance.Set("starting_deck_data", battleDeck);
+            }
+            if (monsters != null && monsters.Count > 0)
+            {
+                battleInstance.Set("starting_monster_data", monsters);
+            }
+
+            // 将当前地图背景克隆到战斗场景中，作为战斗背景
+            Sprite2D battleBackground = TryDuplicateCurrentMapBackground();
+            if (battleBackground != null)
+            {
+                battleInstance.AddChild(battleBackground);
+            }
+
+            // 监听战斗结束信号，用于在战斗完成后销毁战斗场景并恢复主界面
+            battleInstance.Connect("battle_ended", Callable.From<bool>(isVictory => OnBattleEnded(battleInstance, isVictory)));
+
+            // 将战斗场景添加为主场景的子节点，从而将其加入游戏渲染树
+            GetNode("/root/Main").AddChild(battleInstance);
+
+            // 隐藏主界面的各个模块（棋盘、地图、背包UI等），确保战斗画面不受遮挡
+            GetNode<CanvasItem>("/root/Main/BoardSystem/BoardController").Hide();
+            GetNode<CanvasItem>("/root/Main/MapSystem").Hide();
+            // 小地图因为在 CanvasLayer 下，需要单独隐藏
+            GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Hide();
+            GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Hide();
+
+            await FadeInAsync();
         }
-        if (monsters != null && monsters.Count > 0)
+        finally
         {
-            battleInstance.Set("starting_monster_data", monsters);
+            _isTransitioning = false;
         }
-
-        // 将当前地图背景克隆到战斗场景中，作为战斗背景
-        Sprite2D battleBackground = TryDuplicateCurrentMapBackground();
-        if (battleBackground != null)
-        {
-            battleInstance.AddChild(battleBackground);
-        }
-
-        // 监听战斗结束信号，用于在战斗完成后销毁战斗场景并恢复主界面
-        battleInstance.Connect("battle_ended", Callable.From<bool>(isVictory => OnBattleEnded(battleInstance, isVictory)));
-
-        // 将战斗场景添加为主场景的子节点，从而将其加入游戏渲染树
-        GetNode("/root/Main").AddChild(battleInstance);
-
-        // 隐藏主界面的各个模块（棋盘、地图、背包UI等），确保战斗画面不受遮挡
-        GetNode<CanvasItem>("/root/Main/BoardSystem/BoardController").Hide();
-        GetNode<CanvasItem>("/root/Main/MapSystem").Hide();
-        // 小地图因为在 CanvasLayer 下，需要单独隐藏
-        GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Hide();
-        GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Hide();
     }
 
     /// <summary>
@@ -92,21 +114,58 @@ public partial class WorldInteractionCoordinator : Node
     /// </summary>
     /// <param name="battleInstance">当前的战斗场景实例</param>
     /// <param name="isVictory">战斗是否胜利</param>
-    private void OnBattleEnded(Node battleInstance, bool isVictory)
+    private async void OnBattleEnded(Node battleInstance, bool isVictory)
     {
-        GD.Print($"[WorldInteractionCoordinator] Combat Ended! Victory: {isVictory}");
-
-        // 销毁战斗场景
-        if (IsInstanceValid(battleInstance))
+        if (_isTransitioning)
         {
-            battleInstance.QueueFree();
+            return;
         }
 
-        // 重新显示主场景界面的各系统和小地图
-        GetNode<CanvasItem>("/root/Main/BoardSystem/BoardController").Show();
-        GetNode<CanvasItem>("/root/Main/MapSystem").Show();
-        GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Show();
-        GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Show();
+        _isTransitioning = true;
+        GD.Print($"[WorldInteractionCoordinator] Combat Ended! Victory: {isVictory}");
+        try
+        {
+            await FadeOutAsync();
+
+            // 销毁战斗场景
+            if (IsInstanceValid(battleInstance))
+            {
+                battleInstance.QueueFree();
+            }
+            // TODO：隐藏/显示主世界 UI”抽成一个 `WorldViewVisibilityController
+            // 重新显示主场景界面的各系统和小地图
+            GetNode<CanvasItem>("/root/Main/BoardSystem/BoardController").Show();
+            GetNode<CanvasItem>("/root/Main/MapSystem").Show();
+            GetNode<CanvasLayer>("/root/Main/MapSystem/CanvasLayer").Show();
+            GetNode<CanvasLayer>("/root/Main/UI/HUDLayer").Show();
+
+            await FadeInAsync();
+        }
+        finally
+        {
+            _isTransitioning = false;
+        }
+    }
+
+    private async Task FadeOutAsync()
+    {
+        await RunScreenTransitionAsync("fade_out", "fade_complete");
+    }
+
+    private async Task FadeInAsync()
+    {
+        await RunScreenTransitionAsync("fade_in", "fade_in_complete");
+    }
+
+    private async Task RunScreenTransitionAsync(string methodName, string completedSignal)
+    {
+        if (_screenTransitions == null || !_screenTransitions.HasMethod(methodName))
+        {
+            return;
+        }
+
+        _screenTransitions.Call(methodName);
+        await ToSignal(_screenTransitions, completedSignal);
     }
 
     private Sprite2D TryDuplicateCurrentMapBackground()
@@ -136,8 +195,7 @@ public partial class WorldInteractionCoordinator : Node
                 continue;
             }
 
-            Sprite2D duplicated = background.Duplicate() as Sprite2D;
-            if (duplicated == null)
+            if (background.Duplicate() is not Sprite2D duplicated)
             {
                 return null;
             }

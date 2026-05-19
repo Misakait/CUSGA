@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3 uid="uid://ch4rxtqw0tc74"]
+
+[ext_resource type="Script" uid="uid://bxu7bsfkejd6t" path="res://resources/recipe/CraftingIngredient.cs" id="1_utnrx"]
+[ext_resource type="Script" uid="uid://crlbihv7x1gu2" path="res://resources/recipe/CraftingRecipe.cs" id="2_neagp"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="2_xrnm5"]
+[ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="3_cjx8h"]
+[ext_resource type="Resource" uid="uid://mslyvpd6f5xi" path="res://resources/item/card/res_cards/axe.tres" id="4_s7022"]
+
+[sub_resource type="Resource" id="Resource_tg87k"]
+script = ExtResource("1_utnrx")
+RequiredItem = ExtResource("2_xrnm5")
+Amount = 4
+metadata/_custom_type_script = "uid://bxu7bsfkejd6t"
+
+[sub_resource type="Resource" id="Resource_tgcf2"]
+script = ExtResource("1_utnrx")
+RequiredItem = ExtResource("3_cjx8h")
+Amount = 4
+metadata/_custom_type_script = "uid://bxu7bsfkejd6t"
+
+[resource]
+script = ExtResource("2_neagp")
+RecipeName = "stone_axe"
+Inputs = Array[ExtResource("1_utnrx")]([SubResource("Resource_tg87k"), SubResource("Resource_tgcf2")])
+OutputItem = ExtResource("4_s7022")
+metadata/_custom_type_script = "uid://crlbihv7x1gu2"

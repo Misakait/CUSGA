@@ -18,6 +18,8 @@
 [ext_resource type="Script" uid="uid://2pdyihf4cpq1" path="res://core/ui/hud/HealthBarUI.cs" id="12_mwfav"]
 [ext_resource type="Script" uid="uid://dqlllnjrxs4n7" path="res://core/debug/DebugLoadoutSeeder.cs" id="13_debug"]
 [ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
+[ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
+[ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -183,5 +185,12 @@ mouse_filter = 2
 [node name="InventoryUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
+
+[node name="CraftingUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
+layout_mode = 2
+GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
+
+[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
+layout_mode = 0
 
 [node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]

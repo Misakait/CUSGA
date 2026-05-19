@@ -1,6 +1,7 @@
 extends  Node
 
 signal fade_complete()
+signal fade_in_complete()
 
 @onready var fade_to_black: ColorRect = $CanvasLayer/FadeToBlack
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -14,6 +15,7 @@ func fade_in() -> void:
 	
 	await animation_player.animation_finished
 	fade_to_black.hide()
+	fade_in_complete.emit()
 	
 func fade_out() -> void:
 	fade_to_black.show()
