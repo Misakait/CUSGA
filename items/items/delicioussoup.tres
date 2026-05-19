@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bq6tomdjk0ixe"]
+
+[ext_resource type="Texture2D" uid="uid://b80g25i6wapr6" path="res://res/items/delicioussoup.png" id="1_h2cc1"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_qfnli"]
+
+[resource]
+script = ExtResource("1_qfnli")
+MaxStackSize = 12
+ItemTags = Array[StringName]([&"delicioussoup"])
+CardId = &"delicioussoup"
+CardName = "美味汤"
+CardIcon = ExtResource("1_h2cc1")
+Description = "十分丰盛！爱吃多吃！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

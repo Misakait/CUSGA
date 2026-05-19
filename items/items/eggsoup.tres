@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://7r702bg5pbne"]
+
+[ext_resource type="Texture2D" uid="uid://bx1pmaeoeum1h" path="res://res/items/eggsoup.png" id="1_hgc68"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_i4dj4"]
+
+[resource]
+script = ExtResource("1_i4dj4")
+MaxStackSize = 12
+ItemTags = Array[StringName]([&"eggsoup"])
+CardId = &"eggsoup"
+CardName = "蛋汤"
+CardIcon = ExtResource("1_hgc68")
+Description = "富含优质蛋白"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

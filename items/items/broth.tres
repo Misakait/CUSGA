@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dipywoi5vwhhh"]
+
+[ext_resource type="Texture2D" uid="uid://n8dpd6gtfj6l" path="res://res/items/broth.png" id="1_d21v3"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_nclji"]
+
+[resource]
+script = ExtResource("1_nclji")
+MaxStackSize = 12
+ItemTags = Array[StringName]([&"broth"])
+CardId = &"broth"
+CardName = "肉汤"
+CardIcon = ExtResource("1_d21v3")
+Description = "感觉很不错，至少能吃饱了是不?"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"
