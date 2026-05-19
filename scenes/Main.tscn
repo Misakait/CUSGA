@@ -67,11 +67,6 @@ script = ExtResource("8_ft6cd")
 GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy")])
 BaseGatheringSpawnChance = 1.0
 
-[node name="EncounterManager2" type="Node" parent="Gameplay" unique_id=1045438962]
-script = ExtResource("8_ft6cd")
-GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy")])
-BaseGatheringSpawnChance = 1.0
-
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 
 [node name="DebugLoadoutSeeder" type="Node" parent="." unique_id=1135409514]
