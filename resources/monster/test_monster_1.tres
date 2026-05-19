@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dtnx6pd1ups8n"]
 
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_mqn6d"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_noehs"]
 
 [resource]
