@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://hfgp25rvw8be"]
+
+[ext_resource type="Texture2D" uid="uid://dhgi1d1ecg6hj" path="res://res/background/岩浆湖-b1f1.png" id="1_dte6y"]
+
+[node name="MapMagmalake" type="Node2D" unique_id=880757283]
+
+[node name="岩浆湖B1f1" type="Sprite2D" parent="." unique_id=37526928]
+z_index = -1
+position = Vector2(640, 360)
+texture = ExtResource("1_dte6y")
