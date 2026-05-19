@@ -50,13 +50,21 @@ texture = ExtResource("8_eliqi")
 scale = Vector2(2.3953147, 2.3209321)
 texture = ExtResource("6_168ci")
 
+[node name="Label" type="Label" parent="SnapPoint1" unique_id=794852451]
+offset_left = -93.01994
+offset_top = -24.727575
+offset_right = 86.98006
+offset_bottom = 17.272425
+theme_override_font_sizes/font_size = 30
+text = "放入你的卡牌"
+
 [node name="MainMenuCardManager" type="Node2D" parent="." unique_id=1892186112 node_paths=PackedStringArray("binder")]
 script = ExtResource("6_gdjtc")
 draggable = SubResource("Resource_r5auf")
 binder = NodePath("../SnapperBinder")
 
 [node name="StartCard" parent="MainMenuCardManager" unique_id=1169648371 instance=ExtResource("2_gdjtc")]
-position = Vector2(158, 509)
+position = Vector2(314, 509)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("10_168ci")
@@ -65,7 +73,8 @@ card_description_scale = Vector2(0.5, 0.5)
 card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
-position = Vector2(461, 506)
+visible = false
+position = Vector2(252, 173)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("11_8ljqf")
@@ -74,7 +83,7 @@ card_description_scale = Vector2(0.5, 0.5)
 card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="Warehouse" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("2_gdjtc")]
-position = Vector2(787, 505)
+position = Vector2(630, 506)
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("12_3flcn")
 card_name_scale = Vector2(0.5, 0.5)
@@ -82,7 +91,7 @@ card_description_scale = Vector2(0.5, 0.5)
 card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
-position = Vector2(1099, 508)
+position = Vector2(937, 508)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("13_f27sh")
