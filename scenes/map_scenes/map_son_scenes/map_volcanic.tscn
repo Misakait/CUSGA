@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://b22mlxgtsdm06"]
+
+[ext_resource type="Texture2D" uid="uid://boog6afolkqkw" path="res://res/image/黑暗破败感像素背景画 (4).png" id="1_c03ys"]
+
+[node name="MapVolcanic" type="Node2D" unique_id=254171053]
+
+[node name="黑暗破败感像素背景画(4)" type="Sprite2D" parent="." unique_id=2113510690]
+position = Vector2(637, 376)
+scale = Vector2(0.49608147, 0.4960815)
+texture = ExtResource("1_c03ys")

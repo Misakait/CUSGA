@@ -51,11 +51,6 @@ func _on_slot_button_pressed(index):
 	inventory.MoveItem(index, 0)
 	refresh_ui()
 
-
-func _on_add_button_pressed() -> void:
-	add_item_by_name("2",4)
-	add_item_by_name("1",5)
-
 func _on_remove_button_pressed() -> void:
 	remove_item_by_name("2",5)
 
@@ -123,3 +118,7 @@ func _on_right_button_button_down() -> void:
 		return
 	now_page = now_page + 1
 	refresh_ui()
+
+
+func _on_button_pressed() -> void:
+	add_item_by_name("fish",4)

@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://b3i4o3cmggb2s"]
+
+[ext_resource type="Texture2D" uid="uid://drcxh6n300fsb" path="res://res/image/献祭节点像素背景画生成.png" id="1_l8ux4"]
+
+[node name="MapAltar" type="Node2D" unique_id=1063524427]
+
+[node name="献祭节点像素背景画生成" type="Sprite2D" parent="." unique_id=1962858572]
+position = Vector2(650, 393)
+scale = Vector2(0.4938872, 0.49388716)
+texture = ExtResource("1_l8ux4")

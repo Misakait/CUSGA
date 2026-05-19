@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://b3m1p2y3nixre"]
+
+[ext_resource type="Texture2D" uid="uid://yf0anxfeav0f" path="res://res/image/黑暗破败感像素背景画.png" id="1_mrowe"]
+
+[node name="MapDesert" type="Node2D" unique_id=847919400]
+
+[node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=295229518]
+position = Vector2(638, 387.99997)
+scale = Vector2(0.49388713, 0.49388713)
+texture = ExtResource("1_mrowe")
