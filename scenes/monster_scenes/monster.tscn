@@ -95,9 +95,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -88.0
+offset_left = -65.0
 offset_top = -91.0
-offset_right = 88.0
+offset_right = 66.0
 offset_bottom = 30.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -107,6 +107,7 @@ theme_override_font_sizes/font_size = 20
 text = "怪物名"
 horizontal_alignment = 1
 vertical_alignment = 1
+clip_text = true
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1411665323]
 collision_layer = 8
