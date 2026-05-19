@@ -186,10 +186,11 @@ mouse_filter = 2
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
-[node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]
 [node name="CraftingUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
 [node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
 layout_mode = 0
+
+[node name="MapSystem" parent="." unique_id=223958387 instance=ExtResource("2_rvslj")]
