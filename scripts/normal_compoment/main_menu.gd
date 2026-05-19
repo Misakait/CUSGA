@@ -16,6 +16,9 @@ func _on_card_be_snapper(node_name: Variant) -> void:
 			print("Setting!")
 		"ExitCard":
 			print("Exit?How dare you!!")
+			ScreenTransitions.fade_out()
+			await ScreenTransitions.fade_complete
+			get_tree().quit()
 		"Warehouse":
 			GlobalEventBus.scene_requested.emit("warehouse")
 			print("Warehouse!!")
