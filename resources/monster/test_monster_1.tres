@@ -1,10 +1,27 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dtnx6pd1ups8n"]
 
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_gvgr5"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_noehs"]
+[ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="2_a84qo"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+
+[sub_resource type="Resource" id="LootDrop_1"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("2_a84qo")
+DropChance = 15.0
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_loot"]
+script = ExtResource("loot_table_script")
+Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
 [resource]
 script = ExtResource("1_noehs")
 MonsterName = "测试怪物1"
 ElementalProperty = 3
+LootTable = SubResource("Resource_loot")
 MaxHealth = 100
+SkillCards = Array[ExtResource("1_gvgr5")]([ExtResource("2_a84qo")])
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

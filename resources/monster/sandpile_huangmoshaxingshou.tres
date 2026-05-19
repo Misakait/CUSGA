@@ -1,0 +1,81 @@
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://fijoyjne00v83"]
+
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
+[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
+[ext_resource type="Resource" uid="uid://b684kjvx8hx3u" path="res://resources/skill_cards/earth_phys_chenyansuiqianjun.tres" id="4_skill_1"]
+[ext_resource type="Resource" uid="uid://3xl8k60evcqc" path="res://resources/skill_cards/earth_phys_houtuzhensifang.tres" id="5_skill_2"]
+[ext_resource type="Resource" uid="uid://d1uf17bymmvyc" path="res://resources/skill_cards/earth_phys_panshizhuang.tres" id="6_skill_3"]
+[ext_resource type="Resource" uid="uid://s11456dosopn" path="res://resources/skill_cards/earth_phys_tuji.tres" id="7_skill_4"]
+[ext_resource type="Resource" uid="uid://dd7mnum2hfn5d" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="8_skill_5"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
+
+[sub_resource type="Resource" id="Resource_stats"]
+script = ExtResource("3_stats")
+BasePhysAtk = 13.0
+PhysAtkGrowth = 2.0
+BasePhysDef = 14.0
+PhysDefGrowth = 2.0
+BaseMagPower = 9.0
+MagPowerGrowth = 2.0
+BaseMagResist = 13.0
+MagResistGrowth = 1.8
+BaseSpeed = 90.0
+SpeedGrowth = 3.5
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="LootDrop_1"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("4_skill_1")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_2"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("5_skill_2")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_3"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("6_skill_3")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_4"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("7_skill_4")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_5"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("8_skill_5")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_loot"]
+script = ExtResource("loot_table_script")
+Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[resource]
+script = ExtResource("2_monster")
+MonsterName = "荒漠沙行兽"
+InitialAttributes = SubResource("Resource_stats")
+ElementalProperty = 4
+MaxHealth = 145
+LootTable = SubResource("Resource_loot")
+SkillCards = Array[ExtResource("1_skillcard")]([ExtResource("4_skill_1"), ExtResource("5_skill_2"), ExtResource("6_skill_3"), ExtResource("7_skill_4"), ExtResource("8_skill_5")])
+metadata/_custom_type_script = "uid://dh28trwcjvre6"

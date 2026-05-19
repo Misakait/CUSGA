@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://ej8a6u5yg82x"]
+[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://bwu05hfq7ylil"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="2_cardeffect"]
@@ -7,7 +7,6 @@
 
 [sub_resource type="Resource" id="Resource_damage"]
 script = ExtResource("3_damageeffect")
-BaseDamage = 10
 Type = 1
 Element = 3
 

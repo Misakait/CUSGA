@@ -1,0 +1,90 @@
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://k2919ahej8cx9"]
+
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
+[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
+[ext_resource type="Resource" uid="uid://dmmhu7qhj6f8o" path="res://resources/skill_cards/water_phys_hongtaoxijuanlai.tres" id="4_skill_1"]
+[ext_resource type="Resource" uid="uid://b5jb56ukvkytf" path="res://resources/skill_cards/water_phys_langji.tres" id="5_skill_2"]
+[ext_resource type="Resource" uid="uid://blwmjy1nct70x" path="res://resources/skill_cards/water_phys_liubozhuang.tres" id="6_skill_3"]
+[ext_resource type="Resource" uid="uid://dh26gd0jj0ig4" path="res://resources/skill_cards/water_phys_shuiji.tres" id="7_skill_4"]
+[ext_resource type="Resource" uid="uid://b8vf4b5lexs4e" path="res://resources/skill_cards/water_magic_hanxiyin.tres" id="8_skill_5"]
+[ext_resource type="Resource" uid="uid://oavd64ktuwrc" path="res://resources/skill_cards/water_magic_langjue.tres" id="9_skill_6"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
+
+[sub_resource type="Resource" id="Resource_stats"]
+script = ExtResource("3_stats")
+BasePhysAtk = 11.0
+PhysAtkGrowth = 2.0
+BasePhysDef = 10.0
+PhysDefGrowth = 1.2
+BaseMagPower = 17.0
+MagPowerGrowth = 2.8
+BaseMagResist = 13.0
+MagResistGrowth = 1.6
+BaseSpeed = 125.0
+SpeedGrowth = 5.5
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="LootDrop_1"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("4_skill_1")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_2"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("5_skill_2")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_3"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("6_skill_3")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_4"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("7_skill_4")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_5"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("8_skill_5")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="LootDrop_6"]
+script = ExtResource("loot_drop_script")
+Item = ExtResource("9_skill_6")
+DropChance = 15.0
+MinAmount = 1
+MaxAmount = 1
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_loot"]
+script = ExtResource("loot_table_script")
+Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5"), SubResource("LootDrop_6")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[resource]
+script = ExtResource("2_monster")
+MonsterName = "深渊鱼魔"
+InitialAttributes = SubResource("Resource_stats")
+ElementalProperty = 3
+MaxHealth = 135
+LootTable = SubResource("Resource_loot")
+SkillCards = Array[ExtResource("1_skillcard")]([ExtResource("4_skill_1"), ExtResource("5_skill_2"), ExtResource("6_skill_3"), ExtResource("7_skill_4"), ExtResource("8_skill_5"), ExtResource("9_skill_6")])
+metadata/_custom_type_script = "uid://dh28trwcjvre6"
