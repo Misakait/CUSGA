@@ -14,6 +14,11 @@
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="11_f5jq7"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
 [ext_resource type="Script" uid="uid://dhw7i7lc8tobr" path="res://entities/components/LootComponent.cs" id="13_kt6in"]
+[ext_resource type="Script" uid="uid://b7el5njnasp45" path="res://entities/components/MonsterSkillComponent.cs" id="16_1lcr1"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="17_3855q"]
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="18_gxwrs"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="19_ia034"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="20_ve02a"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
@@ -56,6 +61,21 @@ corner_radius_bottom_left = 4
 [sub_resource type="Resource" id="Resource_1lcr1"]
 script = ExtResource("2_gqard")
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
+
+[sub_resource type="Resource" id="Resource_8mndn"]
+script = ExtResource("19_ia034")
+CardId = null
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+
+[sub_resource type="Resource" id="Resource_svjq7"]
+script = ExtResource("17_3855q")
+Skill = SubResource("Resource_8mndn")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="Resource_nmmph"]
+script = ExtResource("20_ve02a")
+Skills = Array[ExtResource("17_3855q")]([SubResource("Resource_svjq7")])
+metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
 [node name="Monster" type="Node2D" unique_id=1392813721]
 script = ExtResource("1_1wyrm")
@@ -169,3 +189,7 @@ metadata/_custom_type_script = "uid://delpo10ufxcco"
 unique_name_in_owner = true
 script = ExtResource("13_kt6in")
 metadata/_custom_type_script = "uid://dhw7i7lc8tobr"
+
+[node name="SkillComponent" type="Node" parent="Components" unique_id=1880625831]
+script = ExtResource("16_1lcr1")
+SkillSet = SubResource("Resource_nmmph")
