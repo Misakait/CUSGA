@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ResourceCardData" format=3 uid="uid://bnhd0g54vqry3"]
 
-[ext_resource type="Texture2D" uid="uid://cnalyffgt1551" path="res://res/items/树枝(1).png" id="1_umerh"]
+[ext_resource type="Texture2D" uid="uid://cnalyffgt1551" path="res://res/items/branch.png" id="1_umerh"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="1_whnqu"]
 
 [resource]

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ResourceCardData" format=3 uid="uid://sokcwukqcau4"]
 
-[ext_resource type="Texture2D" uid="uid://beuq16m56b1jn" path="res://res/items/小石子(1).png" id="1_05c4q"]
+[ext_resource type="Texture2D" uid="uid://beuq16m56b1jn" path="res://res/items/littlerock.png" id="1_05c4q"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="1_xj001"]
 
 [resource]
