@@ -15,9 +15,6 @@ sp2d = NodePath("Sprite2D")
 my_card_name = NodePath("Sprite2D/CardName")
 my_card_description = NodePath("Sprite2D/CardDescription")
 my_card_cost = NodePath("Sprite2D/CardCost")
-card_name_scale = null
-card_description_scale = null
-card_cost_scale = null
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
 scale = Vector2(1.5, 1.5)
@@ -52,7 +49,6 @@ offset_right = 117.33336
 offset_bottom = 8.666672
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.5, 0.5)
 autowrap_mode = 3
 clip_text = true
 text_overrun_behavior = 3
@@ -62,7 +58,6 @@ offset_left = 32.666668
 offset_top = -36.0
 offset_right = 88.66667
 offset_bottom = -13.0
-scale = Vector2(0.5, 0.5)
 clip_text = true
 
 [node name="ItemBox" type="Sprite2D" parent="Sprite2D" unique_id=1355555981]

@@ -12,10 +12,15 @@
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
 [ext_resource type="PackedScene" uid="uid://bpd2bncemempm" path="res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn" id="7_mrmfi"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
+[ext_resource type="PackedScene" uid="uid://b3i4o3cmggb2s" path="res://scenes/map_scenes/map_son_scenes/map_altar.tscn" id="9_2viwr"]
 [ext_resource type="Script" uid="uid://5dcs4o1t3h0" path="res://scripts/map_scripts/map_button/up_button.gd" id="9_bl6s4"]
+[ext_resource type="PackedScene" uid="uid://c4wjpuecdg4cl" path="res://scenes/map_scenes/map_son_scenes/map_shop.tscn" id="10_7lejn"]
 [ext_resource type="Script" uid="uid://ceces3oo175j7" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
+[ext_resource type="PackedScene" uid="uid://b3m1p2y3nixre" path="res://scenes/map_scenes/map_son_scenes/map_desert.tscn" id="11_kxp2x"]
+[ext_resource type="PackedScene" uid="uid://tatgubna8cvp" path="res://scenes/map_scenes/map_son_scenes/map_snowfield.tscn" id="12_lyes2"]
 [ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="12_rc7jg"]
 [ext_resource type="Texture2D" uid="uid://bsd554u1puu6u" path="res://res/UI/上-f597.png" id="13_2viwr"]
+[ext_resource type="PackedScene" uid="uid://b22mlxgtsdm06" path="res://scenes/map_scenes/map_son_scenes/map_volcanic.tscn" id="13_667l1"]
 [ext_resource type="Script" uid="uid://htnvjes8g8ym" path="res://scripts/map_scripts/map_button/right_button.gd" id="13_m5w21"]
 [ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_00bk6"]
 [ext_resource type="Script" uid="uid://c7yg358eqvkoy" path="res://scripts/map_scripts/map_button/down_button.gd" id="14_in5uc"]
@@ -66,6 +71,46 @@ scene_dir = "res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn"
 scene_pkg = ExtResource("7_mrmfi")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
+[sub_resource type="Resource" id="Resource_rhltn"]
+script = ExtResource("2_aulaq")
+scene_name = "altar_room"
+scene_count = 1
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_altar.tscn"
+scene_pkg = ExtResource("9_2viwr")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_a4yqg"]
+script = ExtResource("2_aulaq")
+scene_name = "shop"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_shop.tscn"
+scene_pkg = ExtResource("10_7lejn")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_6hss4"]
+script = ExtResource("2_aulaq")
+scene_name = "desert"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_desert.tscn"
+scene_pkg = ExtResource("11_kxp2x")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_gi0q2"]
+script = ExtResource("2_aulaq")
+scene_name = "snowfield"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_snowfield.tscn"
+scene_pkg = ExtResource("12_lyes2")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
+[sub_resource type="Resource" id="Resource_0pxkt"]
+script = ExtResource("2_aulaq")
+scene_name = "volcanic"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_volcanic.tscn"
+scene_pkg = ExtResource("13_667l1")
+metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
 texture = ExtResource("14_00bk6")
 
@@ -75,7 +120,7 @@ canvas_layer = NodePath("CanvasLayer")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
-map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4")])
+map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4"), SubResource("Resource_rhltn"), SubResource("Resource_a4yqg"), SubResource("Resource_6hss4"), SubResource("Resource_gi0q2"), SubResource("Resource_0pxkt")])
 
 [node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("2_2r3ie")

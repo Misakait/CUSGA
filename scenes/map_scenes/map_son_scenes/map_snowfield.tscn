@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://tatgubna8cvp"]
+
+[ext_resource type="Texture2D" uid="uid://bf60q8evt0wm2" path="res://res/image/黑暗破败感像素背景画 (3).png" id="1_lqndg"]
+
+[node name="MapSnowfield" type="Node2D" unique_id=2009567524]
+
+[node name="黑暗破败感像素背景画(3)" type="Sprite2D" parent="." unique_id=1879453017]
+position = Vector2(657.0001, 373)
+scale = Vector2(0.54263324, 0.54263324)
+texture = ExtResource("1_lqndg")

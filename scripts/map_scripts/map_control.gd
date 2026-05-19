@@ -16,14 +16,16 @@ func _ready() -> void:
 		&"on_entered_room",
 		Callable(self, "_on_map_instantiator_entered_room")
 	)
+
 	
 	#将局外仓库里的东西带入游戏
 	for i in ItemsControl.warehouse_to_player.size():
 		var item_data: ItemData = ItemsControl.warehouse_to_player[i]
 		var amount: int = ItemsControl.warehouse_to_player_cnt[i]
 		player._inventory.AddItem(item_data,amount)
+
 	ItemsControl.warehouse_to_player.clear()
 	ItemsControl.warehouse_to_player_cnt.clear()
-	
+
 func _on_map_instantiator_entered_room(position: Vector2i, scene: Node2D) -> void:
 	emit_signal(&"on_entered_room", position, scene)
