@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="4_lratd"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
-[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="4_tdjg7"]
+[ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="4_tdjg7"]
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_ypuhc"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="6_tdjg7"]
@@ -60,6 +60,7 @@ texture = ExtResource("2_i74xl")
 
 [node name="TreePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1169852947]
 position = Vector2(500, 500)
+scale = Vector2(2, 2)
 script = ExtResource("3_qunfr")
 TerrainData = SubResource("Resource_s8yer")
 LocalGridPos = Vector2i(1, 1)

@@ -17,20 +17,21 @@ public partial class GatheringInteraction : TerrainInteraction
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var ops = new List<TerrainOp>(5)
+        var ops = new List<TerrainOp>
         {
             new PassTimeOp(TimeCost),
             new MarkHarvestedOp()
         };
-
-        int extraYield = context.Player.Equipment.GetGatheringYieldBonus(GatheringTag);
-        var loots = DropTable?.RollLoot(extraYield) ?? [];
-
-        if (loots.Count > 0)
+        if (context.Terrain.IsHarvested)
         {
-            ops.Add(new SpawnLootOp(loots));
-        }
+            int extraYield = context.Player.Equipment.GetGatheringYieldBonus(GatheringTag);
+            var loots = DropTable?.RollLoot(extraYield) ?? [];
 
+            if (loots.Count > 0)
+            {
+                ops.Add(new SpawnLootOp(loots));
+            }
+        }
         ops.Add(new CheckGatheringEncounterOp(GatheringTag));
         ops.Add(new RemoveSourceCardOp());
 
