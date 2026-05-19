@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="2_l6wee"]
 [ext_resource type="Script" uid="uid://b1nwu3fjhbo5n" path="res://core/combat/buffs/BurnStatusData.cs" id="3_eo14m"]
 [ext_resource type="Script" uid="uid://eb5trb48cjvk" path="res://core/combat/effects/ApplyStatusCardEffect.cs" id="3_htuqe"]
+[ext_resource type="Texture2D" uid="uid://cjg0lew5helqj" path="res://res/skillcard/fire_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_l6wee"]
 script = ExtResource("2_htuqe")
@@ -41,5 +42,6 @@ script = ExtResource("1_xiuvs")
 Skill = SubResource("Resource_htuqe")
 CardId = null
 CardName = "炸弹"
+CardIcon = ExtResource("icon_skillcard")
 Description = "爆炸扩散伤害中间灼烧。"
 metadata/_custom_type_script = "uid://bejho62d28qir"
