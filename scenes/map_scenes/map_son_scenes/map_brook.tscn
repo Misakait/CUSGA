@@ -1,10 +1,24 @@
 [gd_scene format=3 uid="uid://bd3oumuesx70"]
 
+[ext_resource type="Script" uid="uid://dop5mxunkxcir" path="res://scripts/map_scripts/map_son_scripts/map_brook.gd" id="1_0ct7l"]
 [ext_resource type="Texture2D" uid="uid://bxmddcfa1ssjt" path="res://res/background/溪流-a1ed.png" id="1_jbof8"]
+[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="2_qrbni"]
+[ext_resource type="Resource" uid="uid://baru50meo8ob7" path="res://res/terrain/berryubush.tres" id="3_nw8mf"]
 
 [node name="MapBrook" type="Node2D" unique_id=1398827748]
+script = ExtResource("1_0ct7l")
 
 [node name="溪流A1Ed" type="Sprite2D" parent="." unique_id=1181270498]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_jbof8")
+
+[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=396950083]
+
+[node name="BushPoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1785265144]
+position = Vector2(600, 500)
+scale = Vector2(10, 10)
+script = ExtResource("2_qrbni")
+TerrainData = ExtResource("3_nw8mf")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="TerrainCardData" format=3 uid="uid://baru50meo8ob7"]
+
+[ext_resource type="Texture2D" uid="uid://penrjupl0ugr" path="res://res/environment/berrybush.png" id="1_2gc3c"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="1_bj5ep"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="1_xf1tu"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="2_aesy1"]
+[ext_resource type="Resource" uid="uid://clm71w485dbvb" path="res://items/items/berry.tres" id="2_suoqm"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="3_2gc3c"]
+[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="3_suoqm"]
+
+[sub_resource type="Resource" id="Resource_2gc3c"]
+script = ExtResource("1_bj5ep")
+Item = ExtResource("2_suoqm")
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_bix7n"]
+script = ExtResource("1_bj5ep")
+Item = ExtResource("3_2gc3c")
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_1ulld"]
+script = ExtResource("2_aesy1")
+Drops = Array[ExtResource("1_bj5ep")]([SubResource("Resource_2gc3c"), SubResource("Resource_bix7n")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[sub_resource type="Resource" id="Resource_ebyru"]
+script = ExtResource("3_suoqm")
+GatheringTag = &"bush"
+DropTable = SubResource("Resource_1ulld")
+metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
+
+[resource]
+script = ExtResource("1_xf1tu")
+InteractionBehavior = SubResource("Resource_ebyru")
+CardId = &"bushterra"
+CardName = "灌木从"
+CardIcon = ExtResource("1_2gc3c")
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"

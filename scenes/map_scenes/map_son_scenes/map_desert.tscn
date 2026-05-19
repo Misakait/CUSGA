@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="7_53hot"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="8_yut5j"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="9_uowok"]
+[ext_resource type="Resource" uid="uid://csca2n182ytfs" path="res://res/terrain/sand.tres" id="10_7xg47"]
 
 [sub_resource type="Resource" id="Resource_bn557"]
 script = ExtResource("4_704vg")
@@ -51,5 +52,13 @@ position = Vector2(600, 500)
 scale = Vector2(3, 3)
 script = ExtResource("2_ehudh")
 TerrainData = SubResource("Resource_xoror")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"
+
+[node name="StonePoint2" type="Marker2D" parent="TerrainSpawnPoints" unique_id=211907696]
+position = Vector2(722, 329)
+scale = Vector2(3, 3)
+script = ExtResource("2_ehudh")
+TerrainData = ExtResource("10_7xg47")
 LocalGridPos = Vector2i(1, 1)
 metadata/_custom_type_script = "uid://dt4oa225q36ss"

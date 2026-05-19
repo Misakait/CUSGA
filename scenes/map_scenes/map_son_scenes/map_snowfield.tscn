@@ -2,6 +2,24 @@
 
 [ext_resource type="Script" uid="uid://cw3ppj00qmjxn" path="res://scripts/map_scripts/map_son_scripts/map_snowfield.gd" id="1_4olyq"]
 [ext_resource type="Texture2D" uid="uid://bf60q8evt0wm2" path="res://res/image/黑暗破败感像素背景画 (3).png" id="1_lqndg"]
+[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_5vvcd"]
+[ext_resource type="Texture2D" uid="uid://cakl1fn186udi" path="res://res/environment/altar.png" id="4_15fsb"]
+[ext_resource type="Resource" uid="uid://bcj54fja7ut2b" path="res://resources/monster/irondeposit_kuangtiekuilai.tres" id="5_020ap"]
+[ext_resource type="Script" uid="uid://bkye6rkc5nwly" path="res://resources/interaction/BossInteraction.cs" id="6_u8dgw"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="7_1h7wk"]
+
+[sub_resource type="Resource" id="Resource_c7p7q"]
+script = ExtResource("6_u8dgw")
+Monster = ExtResource("5_020ap")
+metadata/_custom_type_script = "uid://bkye6rkc5nwly"
+
+[sub_resource type="Resource" id="Resource_s7rpl"]
+script = ExtResource("7_1h7wk")
+InteractionBehavior = SubResource("Resource_c7p7q")
+CardId = &"boss_terrain"
+CardName = "BOSS"
+CardIcon = ExtResource("4_15fsb")
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapSnowfield" type="Node2D" unique_id=2009567524]
 script = ExtResource("1_4olyq")
@@ -11,3 +29,13 @@ z_index = -1
 position = Vector2(657.0001, 373)
 scale = Vector2(0.54263324, 0.54263324)
 texture = ExtResource("1_lqndg")
+
+[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=1144429361]
+
+[node name="BossPoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1269938240]
+position = Vector2(600, 500)
+scale = Vector2(10, 10)
+script = ExtResource("3_5vvcd")
+TerrainData = SubResource("Resource_s7rpl")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"
