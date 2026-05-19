@@ -1,7 +1,7 @@
-[gd_resource type="Resource" format=3 uid="uid://mq7g5ojandul"]
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3 uid="uid://mq7g5ojandul"]
 
-[ext_resource type="Script" path="res://resources/recipe/CraftingIngredient.cs" id="1_lf4fy"]
-[ext_resource type="Script" path="res://resources/recipe/CraftingRecipe.cs" id="2_8jrp2"]
+[ext_resource type="Script" uid="uid://bxu7bsfkejd6t" path="res://resources/recipe/CraftingIngredient.cs" id="1_lf4fy"]
+[ext_resource type="Script" uid="uid://crlbihv7x1gu2" path="res://resources/recipe/CraftingRecipe.cs" id="2_8jrp2"]
 [ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="2_qgq4x"]
 [ext_resource type="Resource" uid="uid://cf4li0yku7unk" path="res://resources/item/card/res_cards/charcoal.tres" id="3_6xg12"]
 [ext_resource type="Resource" uid="uid://vlltwh1x74yg" path="res://resources/item/card/res_cards/torch.tres" id="4_ussx3"]
@@ -20,6 +20,6 @@ metadata/_custom_type_script = "uid://bxu7bsfkejd6t"
 [resource]
 script = ExtResource("2_8jrp2")
 RecipeName = "火把合成表"
-Inputs = [SubResource("Resource_layrg"), SubResource("Resource_ohais")]
+Inputs = Array[ExtResource("1_lf4fy")]([SubResource("Resource_layrg"), SubResource("Resource_ohais")])
 OutputItem = ExtResource("4_ussx3")
 metadata/_custom_type_script = "uid://crlbihv7x1gu2"

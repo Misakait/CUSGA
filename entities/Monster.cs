@@ -26,6 +26,7 @@ public partial class Monster : Node2D
     private Area2D _area2D;
     private Label _cardNameLabel;
     private Label _elementLabel;
+    private Node _tooltipPanel;
 
     public override void _Ready()
     {
@@ -48,6 +49,8 @@ public partial class Monster : Node2D
             _area2D.MouseExited += OnMouseExited;
         }
 
+        _tooltipPanel = FindTooltipPanel();
+
         if (BaseData != null)
         {
             Initialize(BaseData);
@@ -60,23 +63,54 @@ public partial class Monster : Node2D
 
     private void OnMouseEntered()
     {
-        var tooltipPanels = GetTree().GetNodesInGroup("tooltip_panel");
-        if (tooltipPanels.Count > 0)
+        if (_tooltipPanel == null || !IsInstanceValid(_tooltipPanel))
         {
-            var panel = tooltipPanels[0];
+            _tooltipPanel = FindTooltipPanel();
+        }
+
+        if (_tooltipPanel != null && IsInstanceValid(_tooltipPanel))
+        {
             string name = BaseData != null ? BaseData.MonsterName : "未知怪物";
-            panel.Call("show_tooltip", name, "敌人");
+            _tooltipPanel.Call("show_tooltip", name, "敌人");
         }
     }
 
     private void OnMouseExited()
     {
-        var tooltipPanels = GetTree().GetNodesInGroup("tooltip_panel");
-        if (tooltipPanels.Count > 0)
+        if (_tooltipPanel == null || !IsInstanceValid(_tooltipPanel))
         {
-            var panel = tooltipPanels[0];
-            panel.Call("hide_tooltip");
+            _tooltipPanel = FindTooltipPanel();
         }
+
+        if (_tooltipPanel != null && IsInstanceValid(_tooltipPanel))
+        {
+            _tooltipPanel.Call("hide_tooltip");
+        }
+    }
+
+    private Node FindTooltipPanel()
+    {
+        var panels = GetTree().GetNodesInGroup("tooltip_panel");
+        if (panels == null || panels.Count == 0)
+        {
+            return null;
+        }
+
+        Node current = this;
+        while (current != null)
+        {
+            foreach (var panel in panels)
+            {
+                if (panel is Node panelNode && current.IsAncestorOf(panelNode))
+                {
+                    return panelNode;
+                }
+            }
+
+            current = current.GetParent();
+        }
+
+        return panels[0] as Node;
     }
 
     private void OnHealthChanged(int currentValue, int maxValue)
