@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://df073d6fcoxrr"
-path="res://.godot/imported/石碗(1).png-75a0032ca7be6a174d9d61b93160b87c.ctex"
+uid="uid://dwxwpgglpbay6"
+path="res://.godot/imported/snowpile.png-513d54a37f3be533ec53e0f0f60f2f35.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/石碗(1).png"
-dest_files=["res://.godot/imported/石碗(1).png-75a0032ca7be6a174d9d61b93160b87c.ctex"]
+source_file="res://res/environment/snowpile.png"
+dest_files=["res://.godot/imported/snowpile.png-513d54a37f3be533ec53e0f0f60f2f35.ctex"]
 
 [params]
 

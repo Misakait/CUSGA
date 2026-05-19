@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c5fxq2q06sif1"
-path="res://.godot/imported/金锭(1).png-5976f3d10d46147d507965327cc148dc.ctex"
+uid="uid://mw8tt8ni0pp8"
+path="res://.godot/imported/sleepingbag.png-211aabef4858ba5b10cfedee6e9b69d9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/金锭(1).png"
-dest_files=["res://.godot/imported/金锭(1).png-5976f3d10d46147d507965327cc148dc.ctex"]
+source_file="res://res/items/sleepingbag.png"
+dest_files=["res://.godot/imported/sleepingbag.png-211aabef4858ba5b10cfedee6e9b69d9.ctex"]
 
 [params]
 

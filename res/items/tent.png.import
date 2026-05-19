@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://mw8tt8ni0pp8"
-path="res://.godot/imported/睡袋.png-5cb51f6086275d2bb62650eefb939cce.ctex"
+uid="uid://21uqekbhdylb"
+path="res://.godot/imported/tent.png-284a5f16450584eb48e065123c49fb62.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/睡袋.png"
-dest_files=["res://.godot/imported/睡袋.png-5cb51f6086275d2bb62650eefb939cce.ctex"]
+source_file="res://res/items/tent.png"
+dest_files=["res://.godot/imported/tent.png-284a5f16450584eb48e065123c49fb62.ctex"]
 
 [params]
 

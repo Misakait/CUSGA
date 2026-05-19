@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxrgpm2yty6tr"
-path="res://.godot/imported/石锤(1).png-4056eb7bfdbe4d904089fd31f165a46c.ctex"
+path="res://.godot/imported/StoneHammer.png-8a543fe023e5efc77b9fbf9ed3477eae.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/石锤(1).png"
-dest_files=["res://.godot/imported/石锤(1).png-4056eb7bfdbe4d904089fd31f165a46c.ctex"]
+source_file="res://res/tool/StoneHammer.png"
+dest_files=["res://.godot/imported/StoneHammer.png-8a543fe023e5efc77b9fbf9ed3477eae.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgxjqxpni4w35"
-path="res://.godot/imported/铁砧.png-766fb977e5c3e00ff223fd5730ff5451.ctex"
+path="res://.godot/imported/anvil.png-5878e956fbf1f8714eb003e287d15ae1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/铁砧.png"
-dest_files=["res://.godot/imported/铁砧.png-766fb977e5c3e00ff223fd5730ff5451.ctex"]
+source_file="res://res/environment/anvil.png"
+dest_files=["res://.godot/imported/anvil.png-5878e956fbf1f8714eb003e287d15ae1.ctex"]
 
 [params]
 

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dmuj5aflkcyf8"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_ipkea"]
+[ext_resource type="Texture2D" uid="uid://dgxjqxpni4w35" path="res://res/environment/anvil.png" id="1_s0566"]
+
+[resource]
+script = ExtResource("1_ipkea")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"anvil"])
+CardId = &"anvil"
+CardName = "铁砧"
+CardIcon = ExtResource("1_s0566")
+Description = "可以锻造装备"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

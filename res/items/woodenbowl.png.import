@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5u45m0kghb"
-path="res://.godot/imported/粉末.png-ca7f8dd4c3681a5aa611a9bda07fce6b.ctex"
+uid="uid://bg0pjha1uxmpb"
+path="res://.godot/imported/woodenbowl.png-4bbff81519cf002469feb5e41073c4cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/粉末.png"
-dest_files=["res://.godot/imported/粉末.png-ca7f8dd4c3681a5aa611a9bda07fce6b.ctex"]
+source_file="res://res/items/woodenbowl.png"
+dest_files=["res://.godot/imported/woodenbowl.png-4bbff81519cf002469feb5e41073c4cc.ctex"]
 
 [params]
 

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b45whiys4vgca"]
+
+[ext_resource type="Texture2D" uid="uid://ckuu0hm5wbhug" path="res://res/environment/merchant.png" id="1_3fnvn"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_gvkt2"]
+
+[resource]
+script = ExtResource("1_gvkt2")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"merchant"])
+CardId = &"merchant"
+CardName = "商人"
+CardIcon = ExtResource("1_3fnvn")
+Description = "为什么不能直接抢？"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

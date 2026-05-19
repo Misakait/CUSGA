@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bg0pjha1uxmpb"
-path="res://.godot/imported/木碗(1).png-5709b3ed46c69f398ec0207a8e59867f.ctex"
+uid="uid://cakl1fn186udi"
+path="res://.godot/imported/altar.png-53a6e2a30738b1e3d4220d3c0706cf2d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/木碗(1).png"
-dest_files=["res://.godot/imported/木碗(1).png-5709b3ed46c69f398ec0207a8e59867f.ctex"]
+source_file="res://res/environment/altar.png"
+dest_files=["res://.godot/imported/altar.png-53a6e2a30738b1e3d4220d3c0706cf2d.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://t1751nx6fmvk"
-path="res://.godot/imported/irondeposit.png-e4c6a9231d6ff707c631cc2469f4c449.ctex"
+uid="uid://171jkhu4hw5m"
+path="res://.godot/imported/workbench.png-d11e5f9aa774870a236ad935dc4b3465.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/irondeposit.png"
-dest_files=["res://.godot/imported/irondeposit.png-e4c6a9231d6ff707c631cc2469f4c449.ctex"]
+source_file="res://res/environment/workbench.png"
+dest_files=["res://.godot/imported/workbench.png-d11e5f9aa774870a236ad935dc4b3465.ctex"]
 
 [params]
 

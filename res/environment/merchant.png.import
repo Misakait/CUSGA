@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwxwpgglpbay6"
-path="res://.godot/imported/雪堆.png-cf06c050516950eec973216e4b1806c5.ctex"
+uid="uid://ckuu0hm5wbhug"
+path="res://.godot/imported/merchant.png-c3c7f67ab9e5dd2fda393bf90e79f579.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/environment/雪堆.png"
-dest_files=["res://.godot/imported/雪堆.png-cf06c050516950eec973216e4b1806c5.ctex"]
+source_file="res://res/environment/merchant.png"
+dest_files=["res://.godot/imported/merchant.png-c3c7f67ab9e5dd2fda393bf90e79f579.ctex"]
 
 [params]
 

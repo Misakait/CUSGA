@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cakl1fn186udi"
-path="res://.godot/imported/献祭节点.png-92974373a6af57dde48edc5d74f72c89.ctex"
+uid="uid://b5u45m0kghb"
+path="res://.godot/imported/powder.png-2708b1d0ef4a08f428624c470cba5416.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/environment/献祭节点.png"
-dest_files=["res://.godot/imported/献祭节点.png-92974373a6af57dde48edc5d74f72c89.ctex"]
+source_file="res://res/items/powder.png"
+dest_files=["res://.godot/imported/powder.png-2708b1d0ef4a08f428624c470cba5416.ctex"]
 
 [params]
 

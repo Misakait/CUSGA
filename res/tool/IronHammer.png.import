@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cr2wg04u4yr11"
-path="res://.godot/imported/皮革.png-8d7eea14fae3766739440d2d57b97509.ctex"
+uid="uid://3qbv2fgepjd3"
+path="res://.godot/imported/IronHammer.png-9a27b06b10a18831c84893833c74b8ca.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/皮革.png"
-dest_files=["res://.godot/imported/皮革.png-8d7eea14fae3766739440d2d57b97509.ctex"]
+source_file="res://res/tool/IronHammer.png"
+dest_files=["res://.godot/imported/IronHammer.png-9a27b06b10a18831c84893833c74b8ca.ctex"]
 
 [params]
 

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dlt7n0fuitp6k"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_bxpy2"]
+[ext_resource type="Texture2D" uid="uid://cr2wg04u4yr11" path="res://res/items/leather.png" id="1_w7pmn"]
+
+[resource]
+script = ExtResource("1_bxpy2")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"leather"])
+CardId = &"leather"
+CardName = "皮革"
+CardIcon = ExtResource("1_w7pmn")
+Description = "摸起来手感不错"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

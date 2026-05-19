@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bdnl3rc3gx6sq"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_lv0sf"]
+
+[resource]
+script = ExtResource("1_lv0sf")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"StoneHammer"])
+CardId = &"StoneHammer"
+CardName = "石锤"
+Description = "锤石！锤怪！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

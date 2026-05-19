@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ckuu0hm5wbhug"
-path="res://.godot/imported/商人.png-f67a5a4b434dccd00810fab4595ac65a.ctex"
+uid="uid://dny0nww8143n4"
+path="res://.godot/imported/ironingot.png-6571802cf733690d1c002025f16b66c4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/environment/商人.png"
-dest_files=["res://.godot/imported/商人.png-f67a5a4b434dccd00810fab4595ac65a.ctex"]
+source_file="res://res/items/ironingot.png"
+dest_files=["res://.godot/imported/ironingot.png-6571802cf733690d1c002025f16b66c4.ctex"]
 
 [params]
 

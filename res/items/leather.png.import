@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dp5404a1ejwgw"
-path="res://.godot/imported/沙子.png-f89a1622a4aa870c3f9b66170184ceaf.ctex"
+uid="uid://cr2wg04u4yr11"
+path="res://.godot/imported/leather.png-8695f5a1ce3c6bf3a1b1f3291d5ad0b7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/沙子.png"
-dest_files=["res://.godot/imported/沙子.png-f89a1622a4aa870c3f9b66170184ceaf.ctex"]
+source_file="res://res/items/leather.png"
+dest_files=["res://.godot/imported/leather.png-8695f5a1ce3c6bf3a1b1f3291d5ad0b7.ctex"]
 
 [params]
 

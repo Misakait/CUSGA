@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c6hmx3sy5ekyn"]
 
-[ext_resource type="Texture2D" uid="uid://b4kmuglmjkq4y" path="res://res/items/golddeposit.png" id="1_16vva"]
+[ext_resource type="Texture2D" uid="uid://b4kmuglmjkq4y" path="res://res/environment/golddeposit.png" id="1_16vva"]
 [ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_6kfdu"]
 
 [resource]

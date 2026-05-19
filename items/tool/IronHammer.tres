@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cq3vpwaa6gy6t"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_k7gul"]
+[ext_resource type="Texture2D" uid="uid://3qbv2fgepjd3" path="res://res/tool/IronHammer.png" id="1_pqcp6"]
+
+[resource]
+script = ExtResource("1_k7gul")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronHammer"])
+CardId = &"IronHammer"
+CardName = "铁锤"
+CardIcon = ExtResource("1_pqcp6")
+Description = "80！80！"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

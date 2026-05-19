@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3qbv2fgepjd3"
-path="res://.godot/imported/铁锤(1).png-d984a276e2dfea6ca151d01f0596c36b.ctex"
+uid="uid://dp5404a1ejwgw"
+path="res://.godot/imported/sand.png-43a51db2d6ef18585aeb7dee15b0d4ef.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/铁锤(1).png"
-dest_files=["res://.godot/imported/铁锤(1).png-d984a276e2dfea6ca151d01f0596c36b.ctex"]
+source_file="res://res/items/sand.png"
+dest_files=["res://.godot/imported/sand.png-43a51db2d6ef18585aeb7dee15b0d4ef.ctex"]
 
 [params]
 

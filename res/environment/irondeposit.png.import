@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvc5kivl2kq62"
-path="res://.godot/imported/treasurechest.png-4ff1798450396273b7a0f7f7ceac939d.ctex"
+uid="uid://t1751nx6fmvk"
+path="res://.godot/imported/irondeposit.png-ae571c9ae55c80ca340756c5ae05a53e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/treasurechest.png"
-dest_files=["res://.godot/imported/treasurechest.png-4ff1798450396273b7a0f7f7ceac939d.ctex"]
+source_file="res://res/environment/irondeposit.png"
+dest_files=["res://.godot/imported/irondeposit.png-ae571c9ae55c80ca340756c5ae05a53e.ctex"]
 
 [params]
 

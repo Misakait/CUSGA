@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://171jkhu4hw5m"
-path="res://.godot/imported/工作台.png-2539d7fa8289fef7ee7c31292d290453.ctex"
+uid="uid://cvc5kivl2kq62"
+path="res://.godot/imported/treasurechest.png-d17b6493dc0285c31a273d405cd5b46e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/工作台.png"
-dest_files=["res://.godot/imported/工作台.png-2539d7fa8289fef7ee7c31292d290453.ctex"]
+source_file="res://res/environment/treasurechest.png"
+dest_files=["res://.godot/imported/treasurechest.png-d17b6493dc0285c31a273d405cd5b46e.ctex"]
 
 [params]
 

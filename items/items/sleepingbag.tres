@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://vvrvkqsj2pri"]
+
+[ext_resource type="Texture2D" uid="uid://mw8tt8ni0pp8" path="res://res/items/sleepingbag.png" id="1_8x37l"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_jf1xx"]
+
+[resource]
+script = ExtResource("1_jf1xx")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"sleepingbag"])
+CardId = &"sleepingbag"
+CardName = "睡袋"
+CardIcon = ExtResource("1_8x37l")
+Description = "裹尸袋"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

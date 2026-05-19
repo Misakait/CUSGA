@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b4kmuglmjkq4y"
-path="res://.godot/imported/golddeposit.png-cd59c69a10138cbe55a0540b351d1cdc.ctex"
+uid="uid://c5fxq2q06sif1"
+path="res://.godot/imported/goldingot.png-e67daa32275886429d98ee7ab4ea8645.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/golddeposit.png"
-dest_files=["res://.godot/imported/golddeposit.png-cd59c69a10138cbe55a0540b351d1cdc.ctex"]
+source_file="res://res/items/goldingot.png"
+dest_files=["res://.godot/imported/goldingot.png-e67daa32275886429d98ee7ab4ea8645.ctex"]
 
 [params]
 

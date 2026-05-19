@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://d0v6eit0u5ap4"]
+
+[ext_resource type="Texture2D" uid="uid://171jkhu4hw5m" path="res://res/environment/workbench.png" id="1_10yl4"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_5gt43"]
+
+[resource]
+script = ExtResource("2_5gt43")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"workbench"])
+CardId = &"workbench"
+CardName = "工作台"
+CardIcon = ExtResource("1_10yl4")
+Description = "你好像在其他游戏里见过这东西"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

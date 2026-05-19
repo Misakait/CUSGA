@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://21uqekbhdylb"
-path="res://.godot/imported/帐篷.png-baa86ac85f5f3e22852b73461b9b591d.ctex"
+uid="uid://df073d6fcoxrr"
+path="res://.godot/imported/stonebowl.png-39cfb13167cb5373f411f062671d3032.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/帐篷.png"
-dest_files=["res://.godot/imported/帐篷.png-baa86ac85f5f3e22852b73461b9b591d.ctex"]
+source_file="res://res/items/stonebowl.png"
+dest_files=["res://.godot/imported/stonebowl.png-39cfb13167cb5373f411f062671d3032.ctex"]
 
 [params]
 

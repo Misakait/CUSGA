@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c3nuq0e03c76e"]
 
-[ext_resource type="Texture2D" uid="uid://cvc5kivl2kq62" path="res://res/items/treasurechest.png" id="1_xvswu"]
+[ext_resource type="Texture2D" uid="uid://cvc5kivl2kq62" path="res://res/environment/treasurechest.png" id="1_xvswu"]
 [ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_0o777"]
 
 [resource]
