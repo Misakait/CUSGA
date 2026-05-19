@@ -36,20 +36,32 @@ public partial class HUDController : Control
         //     _backpackButton.Pressed -= OnBackpackButtonPressed;
     }
 
-    public override void _UnhandledInput(InputEvent @event)
+    public override void _Input(InputEvent @event)
     {
-        if (@event.IsActionPressed("toggle_crafting"))
+        if (IsActionPressedOnce(@event, "toggle_crafting"))
         {
             _gameplayPort.RequestToggleCrafting();
             GetViewport().SetInputAsHandled();
-            return;
         }
+    }
 
+    public override void _UnhandledInput(InputEvent @event)
+    {
         if (@event.IsActionPressed("toggle_inventory"))
         {
             _gameplayPort.RequestToggleInventory();
             GetViewport().SetInputAsHandled();
         }
+    }
+
+    private static bool IsActionPressedOnce(InputEvent @event, string action)
+    {
+        if (!@event.IsActionPressed(action))
+        {
+            return false;
+        }
+
+        return @event is not InputEventKey keyEvent || !keyEvent.Echo;
     }
 
     // private void OnBackpackButtonPressed()
