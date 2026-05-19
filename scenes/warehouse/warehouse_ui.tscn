@@ -1,0 +1,120 @@
+[gd_scene format=3 uid="uid://bgs8y0wsqp31u"]
+
+[ext_resource type="Script" uid="uid://cb33m7jllskkl" path="res://core/ui/warehouse/WarehouseUI.cs" id="1_warehouse_ui"]
+[ext_resource type="PackedScene" uid="uid://rukl64pxxdie" path="res://scenes/inventory/SlotUI.tscn" id="2_slot"]
+[ext_resource type="Texture2D" uid="uid://dapo07qjenafe" path="res://res/image/61e6dae9ecdf4ea59d601bc75c0c5e02.png" id="3_close"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.09, 0.1, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.39, 0.43, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="WarehouseUI" type="Control" unique_id=1540976827]
+custom_minimum_size = Vector2(800, 430)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 863.0
+offset_bottom = 430.0
+script = ExtResource("1_warehouse_ui")
+SlotPrefab = ExtResource("2_slot")
+
+[node name="MainPanel" type="PanelContainer" parent="." unique_id=3241438]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainPanel" unique_id=2142674348]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleBar" type="HBoxContainer" parent="MainPanel/VBoxContainer" unique_id=44174835]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainPanel/VBoxContainer/TitleBar" unique_id=1234056364]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "火山密库"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="MainPanel/VBoxContainer/TitleBar" unique_id=1058313754]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+icon = ExtResource("3_close")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ContentSplit" type="HBoxContainer" parent="MainPanel/VBoxContainer" unique_id=2127003516]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="BackpackSection" type="VBoxContainer" parent="MainPanel/VBoxContainer/ContentSplit" unique_id=477758328]
+custom_minimum_size = Vector2(388, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackpackLabel" type="Label" parent="MainPanel/VBoxContainer/ContentSplit/BackpackSection" unique_id=36330796]
+layout_mode = 2
+text = "背包"
+horizontal_alignment = 1
+
+[node name="BackpackScroll" type="ScrollContainer" parent="MainPanel/VBoxContainer/ContentSplit/BackpackSection" unique_id=203198234]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackpackMargin" type="MarginContainer" parent="MainPanel/VBoxContainer/ContentSplit/BackpackSection/BackpackScroll" unique_id=1857983622]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PlayerSlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ContentSplit/BackpackSection/BackpackScroll/BackpackMargin" unique_id=1969222455]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 7
+
+[node name="WarehouseSection" type="VBoxContainer" parent="MainPanel/VBoxContainer/ContentSplit" unique_id=804118872]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WarehouseLabel" type="Label" parent="MainPanel/VBoxContainer/ContentSplit/WarehouseSection" unique_id=1472336108]
+layout_mode = 2
+text = "全局仓库"
+horizontal_alignment = 1
+
+[node name="WarehouseScroll" type="ScrollContainer" parent="MainPanel/VBoxContainer/ContentSplit/WarehouseSection" unique_id=1497301449]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WarehouseMargin" type="MarginContainer" parent="MainPanel/VBoxContainer/ContentSplit/WarehouseSection/WarehouseScroll" unique_id=1927158010]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="WarehouseSlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ContentSplit/WarehouseSection/WarehouseScroll/WarehouseMargin" unique_id=2138161770]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 9

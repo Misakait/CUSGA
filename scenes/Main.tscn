@@ -20,6 +20,7 @@
 [ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
 [ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
+[ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -187,6 +188,10 @@ layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
 [node name="CraftingUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
+layout_mode = 2
+GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
+
+[node name="WarehouseUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1206096657 instance=ExtResource("18_warehouse_ui")]
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 

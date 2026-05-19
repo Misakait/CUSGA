@@ -2,15 +2,10 @@ extends Node2D
 @export var inventory_grid: Node2D
 @export var inventory_component: Node2D
 @export var inventory_control: Control
-var _slots
 var target_snapper
 
 func _ready() -> void:
 	target_snapper = inventory_grid.binder.target_snapper
-	_slots = inventory_component._slots
-	#print(inventory_grid)
-	#print(inventory_component)
-	#print(inventory_control)
 
 func _on_inventory_grid_card_be_snapper(node_name) -> void:
 	#print("你传过来的是：",node_name,"  my_position: ",get_parent().name)
@@ -29,7 +24,7 @@ func user_inventory_func(node_name):
 			#print("node_name: ",node_name," card: ",card)
 			var node_num: int = get_num_form_name(node_name)
 			var card_num: int = get_num_form_name(card)
-			var item_stack = _slots[node_num-1]
+			var item_stack = inventory_component.GetStackAt(node_num-1)
 			if item_stack:
 				var item = item_stack.Item
 				var item_cnt: int = item_stack.Amount

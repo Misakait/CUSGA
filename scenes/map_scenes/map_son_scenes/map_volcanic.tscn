@@ -1,6 +1,22 @@
 [gd_scene format=3 uid="uid://b22mlxgtsdm06"]
 
 [ext_resource type="Texture2D" uid="uid://boog6afolkqkw" path="res://res/image/黑暗破败感像素背景画 (4).png" id="1_c03ys"]
+[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="2_b1ffg"]
+[ext_resource type="Texture2D" uid="uid://7dhjom6a4x28" path="res://res/image/银狼.png" id="3_b1ffg"]
+[ext_resource type="Script" uid="uid://dqnapmglm6cgw" path="res://resources/interaction/VaultInteraction.cs" id="4_3yw2j"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_woxxq"]
+
+[sub_resource type="Resource" id="Resource_16ixg"]
+script = ExtResource("4_3yw2j")
+metadata/_custom_type_script = "uid://dqnapmglm6cgw"
+
+[sub_resource type="Resource" id="Resource_qbqyj"]
+script = ExtResource("5_woxxq")
+InteractionBehavior = SubResource("Resource_16ixg")
+CardId = &"vault"
+CardName = "火山密库"
+CardIcon = ExtResource("3_b1ffg")
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [node name="MapVolcanic" type="Node2D" unique_id=254171053]
 
@@ -8,3 +24,12 @@
 position = Vector2(637, 376)
 scale = Vector2(0.49608147, 0.4960815)
 texture = ExtResource("1_c03ys")
+
+[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=998632821]
+
+[node name="TreePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1187455748]
+position = Vector2(500, 500)
+script = ExtResource("2_b1ffg")
+TerrainData = SubResource("Resource_qbqyj")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"
