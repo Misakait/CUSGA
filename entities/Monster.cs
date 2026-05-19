@@ -63,13 +63,10 @@ public partial class Monster : Node2D
 
     private void OnMouseEntered()
     {
-        if (_tooltipPanel == null || !IsInstanceValid(_tooltipPanel))
+        var tooltipPanels = GetTree().GetNodesInGroup("tooltip_panel");
+        if (tooltipPanels.Count > 0)
         {
-            _tooltipPanel = FindTooltipPanel();
-        }
-
-        if (_tooltipPanel != null && IsInstanceValid(_tooltipPanel))
-        {
+            var panel = tooltipPanels[0];
             string name = BaseData != null ? BaseData.MonsterName : "未知怪物";
             _tooltipPanel.Call("show_tooltip", name, "敌人");
         }

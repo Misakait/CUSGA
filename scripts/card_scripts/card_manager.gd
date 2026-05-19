@@ -42,6 +42,8 @@ var drag_offset: Vector2 # 用于记录拖拽偏移量
 #var currently_hovered_slot: Node2D = null # 记录当前被悬停的卡槽，修改为下面
 var currently_highlighted_entities: Array[Node] = [] # 记录当前被悬停的卡槽
 
+const MONSTER_BASE_SCALE_META := "_card_hover_base_scale"
+
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
 	player_hand_referencd = $"../PlayerHand"
@@ -123,12 +125,22 @@ func update_hovered_targets(new_slot: Node2D):
 
 ## 辅助函数：统一处理实体的视觉放大和时间轴高亮
 func set_entity_highlight(entity: Node, is_highlighted: bool):
-	if not entity: return
+	if not entity:
+		return
 
-	var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
-
-	# 处理缩放动画
-	if entity.has_node("Sprite2D"):
+	# 处理缩放动画（怪物：放大整个节点，确保 HealthBar/CardName/Element 同步缩放）
+	if _is_monster_entity(entity):
+		var monster = entity as Node2D
+		var base_scale = _get_monster_base_scale(monster)
+		var ratio = _get_monster_hover_ratio()
+		var target_scale = base_scale if not is_highlighted else Vector2(base_scale.x * ratio.x, base_scale.y * ratio.y)
+		var tween = create_tween()
+		tween.tween_property(monster, "scale", target_scale, scale_tween_duration)
+		if not is_highlighted:
+			_clear_monster_base_scale(monster)
+	elif entity.has_node("Sprite2D"):
+		# 兼容其它实体：保持旧逻辑，仅缩放贴图
+		var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
 		var tween = create_tween()
 		tween.tween_property(entity.get_node("Sprite2D"), "scale", target_scale, scale_tween_duration)
 
@@ -136,6 +148,28 @@ func set_entity_highlight(entity: Node, is_highlighted: bool):
 	var timeline = get_node_or_null("../UI/ActionTimeline")
 	if timeline:
 		timeline.highlight_entity(entity, is_highlighted)
+
+func _is_monster_entity(entity: Node) -> bool:
+	return entity is Node2D \
+		and entity.has_node("Sprite2D") \
+		and entity.has_node("HealthBar")
+
+func _get_monster_base_scale(monster: Node2D) -> Vector2:
+	if monster.has_meta(MONSTER_BASE_SCALE_META):
+		return monster.get_meta(MONSTER_BASE_SCALE_META)
+	var base_scale: Vector2 = monster.scale
+	monster.set_meta(MONSTER_BASE_SCALE_META, base_scale)
+	return base_scale
+
+func _clear_monster_base_scale(monster: Node2D) -> void:
+	if monster.has_meta(MONSTER_BASE_SCALE_META):
+		monster.remove_meta(MONSTER_BASE_SCALE_META)
+
+func _get_monster_hover_ratio() -> Vector2:
+	return Vector2(
+		monster_hover_scale.x / monster_normal_scale.x if monster_normal_scale.x != 0 else 1.0,
+		monster_hover_scale.y / monster_normal_scale.y if monster_normal_scale.y != 0 else 1.0
+	)
 
 ## 检查卡牌状态是否可用（例如是否被锁上变暗）。
 ## 这里判断了两种条件：
