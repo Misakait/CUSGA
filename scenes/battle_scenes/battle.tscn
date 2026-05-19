@@ -17,16 +17,16 @@
 [ext_resource type="Resource" uid="uid://dyu838ljiy5ul" path="res://resources/monster/fishingspot_shiyuyao.tres" id="10_51ekj"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
-[ext_resource type="Resource" uid="uid://d2c7gjrmwif5p" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="12_7g460"]
-[ext_resource type="Resource" uid="uid://dxlw3te7j2j3g" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="13_317fs"]
-[ext_resource type="Resource" uid="uid://bhi0612m3hkrk" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="14_3juot"]
+[ext_resource type="Resource" uid="uid://b456pcaqtdwdt" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="12_7g460"]
+[ext_resource type="Resource" uid="uid://cu2ny67k2n4kw" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="13_317fs"]
+[ext_resource type="Resource" uid="uid://fw437tvm57oi" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="14_3juot"]
 [ext_resource type="Resource" uid="uid://c4jt68gm3gqch" path="res://resources/skill_cards/wood_magic_mushu.tres" id="15_f7hr6"]
 [ext_resource type="Resource" uid="uid://b00bphksugewp" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="16_2op3e"]
 [ext_resource type="Resource" uid="uid://pnag0n3qvdqi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="17_jxr1f"]
 [ext_resource type="Resource" uid="uid://bm12fxxsffifx" path="res://resources/skill_cards/wood_phys_cangtengci.tres" id="18_kgjmv"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="18_sep7c"]
 [ext_resource type="Resource" uid="uid://7n264o8lhym" path="res://resources/skill_cards/wood_phys_chouzhi.tres" id="19_7ebbf"]
-[ext_resource type="Resource" uid="uid://bfm558uuelsly" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="20_lbcxr"]
+[ext_resource type="Resource" uid="uid://be5di47bb32wj" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="20_lbcxr"]
 [ext_resource type="Resource" uid="uid://c0vrkahtswjay" path="res://resources/skill_cards/wood_phys_manzhijiao.tres" id="21_s3yaj"]
 [ext_resource type="Resource" uid="uid://d0eylh2xvavit" path="res://resources/skill_cards/wood_phys_muji.tres" id="22_bjehq"]
 [ext_resource type="Resource" uid="uid://eqqny3xwg1e2" path="res://resources/skill_cards/wood_phys_wanzhiluanpuxi.tres" id="23_waaxm"]
@@ -120,6 +120,7 @@ theme_override_font_sizes/font_size = 23
 text = "结束回合"
 
 [node name="DrawCard" type="Button" parent="Button" unique_id=871572952]
+visible = false
 offset_left = 1112.0
 offset_top = 321.0
 offset_right = 1229.0

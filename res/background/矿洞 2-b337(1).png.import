@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bu5r2memnkf45"
-path="res://.godot/imported/cookedmeat.png-9347437a6eac1c29e0e6f7d1e4278db7.ctex"
+uid="uid://cjy0my28e1i3s"
+path="res://.godot/imported/矿洞 2-b337(1).png-16bc13f60bd07a8c851dd44e49ddee2b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/items/cookedmeat.png"
-dest_files=["res://.godot/imported/cookedmeat.png-9347437a6eac1c29e0e6f7d1e4278db7.ctex"]
+source_file="res://res/background/矿洞 2-b337(1).png"
+dest_files=["res://.godot/imported/矿洞 2-b337(1).png-16bc13f60bd07a8c851dd44e49ddee2b.ctex"]
 
 [params]
 
