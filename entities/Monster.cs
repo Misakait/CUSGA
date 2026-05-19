@@ -24,6 +24,8 @@ public partial class Monster : Node2D
 
     private ProgressBar _healthBar;
     private Area2D _area2D;
+    private Label _cardNameLabel;
+    private Label _elementLabel;
 
     public override void _Ready()
     {
@@ -36,6 +38,8 @@ public partial class Monster : Node2D
         Health.ValueChanged += OnHealthChanged;
 
         _healthBar = GetNode<ProgressBar>("HealthBar");
+        _cardNameLabel = GetNodeOrNull<Label>("CardName");
+        _elementLabel = GetNodeOrNull<Label>("Element");
 
         _area2D = GetNode<Area2D>("Area2D");
         if (_area2D != null)
@@ -47,6 +51,10 @@ public partial class Monster : Node2D
         if (BaseData != null)
         {
             Initialize(BaseData);
+        }
+        else
+        {
+            UpdateCardUi(null);
         }
     }
 
@@ -104,6 +112,7 @@ public partial class Monster : Node2D
         Attributes.InitializeWithData(data.InitialAttributes);
         Faction.Faction = data.Faction;
         Health.InitializeMax(data.MaxHealth);
+        UpdateCardUi(data);
 
         // 实例化图纸里配置的美术预制体
         // if (data.ModelScene != null)
@@ -118,6 +127,34 @@ public partial class Monster : Node2D
         // {
         //     BehaviorTree.AddChild(behaviorTree);
         // }
+    }
+
+    private void UpdateCardUi(MonsterData data)
+    {
+        if (_cardNameLabel != null)
+        {
+            _cardNameLabel.Text = data?.MonsterName ?? string.Empty;
+        }
+
+        if (_elementLabel != null)
+        {
+            _elementLabel.Text = data != null
+                ? GetElementDisplayName(data.ElementalProperty)
+                : string.Empty;
+        }
+    }
+
+    private static string GetElementDisplayName(ElementType element)
+    {
+        return element switch
+        {
+            ElementType.Wood => "木",
+            ElementType.Metal => "金",
+            ElementType.Water => "水",
+            ElementType.Earth => "土",
+            ElementType.Fire => "火",
+            _ => "无"
+        };
     }
 
     // 获取怪物的技能卡池（直接复用玩家技能卡资源）
