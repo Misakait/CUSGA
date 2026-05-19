@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="2_cardeffect"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="3_damageeffect"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="4_combat"]
+[ext_resource type="Texture2D" uid="uid://c7g8f2ax6j8fe" path="res://res/skillcard/gold_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_damage"]
 script = ExtResource("3_damageeffect")
@@ -24,4 +25,5 @@ cost = 60
 CardTags = Array[String](["高额伤害"])
 CardId = null
 CardName = "玄金镇神魂"
+CardIcon = ExtResource("icon_skillcard")
 Description = "对单体敌人造成70点金属性法术伤害。"

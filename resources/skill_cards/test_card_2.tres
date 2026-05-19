@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_rt7uw"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_3i3k0"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_uxcp8"]
+[ext_resource type="Texture2D" uid="uid://cjg0lew5helqj" path="res://res/skillcard/fire_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_7wn03"]
 script = ExtResource("2_3i3k0")
@@ -26,5 +27,6 @@ Skill = SubResource("Resource_yxabe")
 cost = 20
 CardId = null
 CardName = "测试卡2"
+CardIcon = ExtResource("icon_skillcard")
 Description = "对随机敌人造成20点火属性法术伤害。"
 metadata/_custom_type_script = "uid://bejho62d28qir"

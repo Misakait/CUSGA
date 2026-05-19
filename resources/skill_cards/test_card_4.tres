@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_mpgfb"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_jusv1"]
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="4_lwned"]
+[ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_46jgr"]
 script = ExtResource("2_mpgfb")
@@ -26,5 +27,6 @@ cost = 0
 CardTags = Array[String](["自残"])
 CardId = null
 CardName = "测试卡4"
+CardIcon = ExtResource("icon_skillcard")
 Description = "对自己造成20点伤害"
 metadata/_custom_type_script = "uid://bejho62d28qir"

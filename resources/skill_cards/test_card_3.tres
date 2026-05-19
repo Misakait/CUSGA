@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_v80vg"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_78w7t"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_78w7t"]
+[ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_874ny"]
 script = ExtResource("2_78w7t")
@@ -25,5 +26,6 @@ Skill = SubResource("Resource_trse8")
 cost = 30
 CardId = null
 CardName = "测试卡3"
+CardIcon = ExtResource("icon_skillcard")
 Description = "对所有敌人造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。"
 metadata/_custom_type_script = "uid://bejho62d28qir"

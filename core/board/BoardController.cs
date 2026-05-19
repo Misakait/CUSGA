@@ -86,6 +86,7 @@ public partial class BoardController : Node2D
 
     public void RemoveCard(BoardCardView card)
     {
+        GD.Print($"Removing card: {card?.GetCardData()?.CardName}");
         if (card == null || !IsInstanceValid(card))
         {
             return;
@@ -101,6 +102,7 @@ public partial class BoardController : Node2D
 
         EmitSignal(SignalName.CardRemoved, card);
         card.QueueFree();
+        GD.Print($"Removed card: {card?.GetCardData()?.CardName}");
     }
 
     public void ClearAllCards()
