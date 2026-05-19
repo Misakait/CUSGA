@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://btnhntslo4vhi"]
+[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://7tyhdfqftigv"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="2_cardeffect"]

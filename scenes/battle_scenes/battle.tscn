@@ -3,35 +3,37 @@
 [ext_resource type="Script" uid="uid://d0ltsey5svvgs" path="res://scripts/battle_scripts/battle_manager.gd" id="1_ckntb"]
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="2_navvr"]
 [ext_resource type="Script" uid="uid://chbi747pg2cok" path="res://scripts/card_scripts/deck_manager.gd" id="2_ychmy"]
-[ext_resource type="Resource" uid="uid://b7onaix7yqka8" path="res://resources/skill_cards/bmob.tres" id="3_ajc51"]
-[ext_resource type="Resource" uid="uid://dejj5ququif3b" path="res://resources/skill_cards/test_card_1.tres" id="4_aorj5"]
-[ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="4_b6b28"]
-[ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="5_i4gjj"]
+[ext_resource type="Resource" uid="uid://b5jb56ukvkytf" path="res://resources/skill_cards/water_phys_langji.tres" id="4_317fs"]
+[ext_resource type="Resource" uid="uid://bfjlkpl2x20d3" path="res://resources/skill_cards/fire_magic_jinhuoyin.tres" id="5_3juot"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="6_ajc51"]
-[ext_resource type="Resource" uid="uid://b1xcn5llorviu" path="res://resources/skill_cards/senketsu.tres" id="7_0ajq7"]
-[ext_resource type="Resource" uid="uid://dpvgpsxnxw8rg" path="res://resources/skill_cards/test_card_4.tres" id="8_1t3o5"]
+[ext_resource type="Resource" uid="uid://yhi2jn8coif" path="res://resources/skill_cards/earth_magic_zhentujue.tres" id="7_f7hr6"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
 [ext_resource type="Script" uid="uid://chjm56tp6xjqk" path="res://scripts/battle_scripts/monster_manager.gd" id="8_xseyc"]
+[ext_resource type="Resource" uid="uid://cabsg0rwbu7gp" path="res://resources/skill_cards/fire_magic_lieyantunbafang.tres" id="9_2op3e"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="9_b6vuc"]
 [ext_resource type="Script" uid="uid://bxcdktnfciqv1" path="res://scripts/battle_scripts/control_lock.gd" id="9_sugqx"]
 [ext_resource type="Resource" uid="uid://dyu838ljiy5ul" path="res://resources/monster/fishingspot_shiyuyao.tres" id="10_51ekj"]
+[ext_resource type="Resource" uid="uid://b15to0sscgk31" path="res://resources/skill_cards/metal_magic_xuanjinzhenshenhun.tres" id="10_jxr1f"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
+[ext_resource type="Resource" uid="uid://bwu05hfq7ylil" path="res://resources/skill_cards/water_magic_yanyusuoqianchuan.tres" id="11_kgjmv"]
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
-[ext_resource type="Resource" uid="uid://b456pcaqtdwdt" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="12_7g460"]
-[ext_resource type="Resource" uid="uid://cu2ny67k2n4kw" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="13_317fs"]
-[ext_resource type="Resource" uid="uid://fw437tvm57oi" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="14_3juot"]
+[ext_resource type="Resource" uid="uid://dbcl1b88wkcg3" path="res://resources/skill_cards/water_magic_xuanshuimielingtai.tres" id="12_7ebbf"]
+[ext_resource type="Resource" uid="uid://d2c7gjrmwif5p" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="12_7g460"]
+[ext_resource type="Resource" uid="uid://dxlw3te7j2j3g" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="13_317fs"]
+[ext_resource type="Resource" uid="uid://bhi0612m3hkrk" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="14_3juot"]
 [ext_resource type="Resource" uid="uid://c4jt68gm3gqch" path="res://resources/skill_cards/wood_magic_mushu.tres" id="15_f7hr6"]
 [ext_resource type="Resource" uid="uid://b00bphksugewp" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="16_2op3e"]
 [ext_resource type="Resource" uid="uid://pnag0n3qvdqi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="17_jxr1f"]
 [ext_resource type="Resource" uid="uid://bm12fxxsffifx" path="res://resources/skill_cards/wood_phys_cangtengci.tres" id="18_kgjmv"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="18_sep7c"]
 [ext_resource type="Resource" uid="uid://7n264o8lhym" path="res://resources/skill_cards/wood_phys_chouzhi.tres" id="19_7ebbf"]
-[ext_resource type="Resource" uid="uid://be5di47bb32wj" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="20_lbcxr"]
+[ext_resource type="Resource" uid="uid://bfm558uuelsly" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="20_lbcxr"]
 [ext_resource type="Resource" uid="uid://c0vrkahtswjay" path="res://resources/skill_cards/wood_phys_manzhijiao.tres" id="21_s3yaj"]
 [ext_resource type="Resource" uid="uid://d0eylh2xvavit" path="res://resources/skill_cards/wood_phys_muji.tres" id="22_bjehq"]
 [ext_resource type="Resource" uid="uid://eqqny3xwg1e2" path="res://resources/skill_cards/wood_phys_wanzhiluanpuxi.tres" id="23_waaxm"]
 [ext_resource type="Resource" uid="uid://6kyroqk4ggrq" path="res://resources/monster/river_zhulangshuiling.tres" id="24_bo8du"]
 [ext_resource type="Resource" uid="uid://cfs0mj4pmfb0h" path="res://resources/monster/treasurechest_mibaoshiying.tres" id="25_7g460"]
+[ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="37_3juot"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 [ext_resource type="Script" uid="uid://b74g378xtw11y" path="res://scripts/ui_scripts/action_timeline.gd" id="timeline_script"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="tooltip_panel_scene"]
@@ -90,7 +92,7 @@ corner_radius_bottom_left = 4
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("3_ajc51"), ExtResource("4_b6b28"), ExtResource("5_i4gjj"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("4_aorj5"), ExtResource("7_0ajq7"), ExtResource("7_0ajq7"), ExtResource("8_1t3o5"), ExtResource("8_1t3o5")])
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("22_bjehq"), ExtResource("4_317fs"), ExtResource("5_3juot"), ExtResource("13_317fs"), ExtResource("7_f7hr6"), ExtResource("16_2op3e"), ExtResource("9_2op3e"), ExtResource("10_jxr1f"), ExtResource("11_kgjmv"), ExtResource("12_7ebbf"), ExtResource("16_2op3e")])
 starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("10_51ekj"), SubResource("Resource_ascsg"), ExtResource("24_bo8du"), ExtResource("25_7g460")])
 card_scene = SubResource("Resource_navvr")
 
@@ -221,6 +223,11 @@ script = ExtResource("timeline_script")
 script = ExtResource("11_to08p")
 
 [node name="Player" parent="PlayerManager" unique_id=1931166684 instance=ExtResource("18_sep7c")]
+
+[node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=1458998012]
+z_index = -1
+position = Vector2(640, 360)
+texture = ExtResource("37_3juot")
 
 [connection signal="pressed" from="Button/TurnEnd" to="." method="_on_turn_end_pressed"]
 [connection signal="pressed" from="Button/DrawCard" to="." method="_on_draw_card_pressed"]
