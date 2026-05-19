@@ -6,7 +6,9 @@ const Main_scene_path = "res://scenes/Main.tscn"
 func _on_card_be_snapper(node_name: Variant) -> void:
 	match node_name:
 		"StartCard":
-
+			ScreenTransitions.fade_out()
+			await ScreenTransitions.fade_complete
+			
 			get_tree().change_scene_to_file(Main_scene_path)
 
 			print("Start!")

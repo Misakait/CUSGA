@@ -23,7 +23,6 @@ func _ready() -> void:
 	initing = true
 	init_add_grid()
 	initing = false
-	print("1")
 	get_user_card()
 
 func init_add_grid():

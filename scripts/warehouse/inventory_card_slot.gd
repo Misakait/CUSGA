@@ -23,7 +23,6 @@ func _on_inventory_grid_card_be_snapper(node) -> void:
 
 			var node_name = get_name_from_name(node)
 			var card_name = get_name_from_name(card)
-			print("node_name: ",node_name,"  card_name: ",card_name)
 
 			if node_name == "card" and card_name == "card":
 				inventory_inventory_func(node,card)
