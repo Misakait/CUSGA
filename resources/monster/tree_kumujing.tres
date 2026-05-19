@@ -1,12 +1,12 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://d1c4jp3rhojb5"]
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dgdt3gjyutgjn"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
-[ext_resource type="Resource" uid="uid://b456pcaqtdwdt" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="4_skill_1"]
-[ext_resource type="Resource" uid="uid://be5di47bb32wj" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="5_skill_2"]
-[ext_resource type="Resource" uid="uid://cu2ny67k2n4kw" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="6_skill_3"]
-[ext_resource type="Resource" uid="uid://fw437tvm57oi" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="7_skill_4"]
+[ext_resource type="Resource" uid="uid://d2c7gjrmwif5p" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="4_skill_1"]
+[ext_resource type="Resource" uid="uid://bfm558uuelsly" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="5_skill_2"]
+[ext_resource type="Resource" uid="uid://dxlw3te7j2j3g" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="6_skill_3"]
+[ext_resource type="Resource" uid="uid://bhi0612m3hkrk" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="7_skill_4"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 

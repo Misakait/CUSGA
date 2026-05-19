@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b3m1p2y3nixre"]
 
-[ext_resource type="Script" uid="uid://hvqhimys3jy6" path="res://scripts/map_scripts/map_son_scripts/map_desert.gd" id="1_ehudh"]
-[ext_resource type="Texture2D" uid="uid://yf0anxfeav0f" path="res://res/image/黑暗破败感像素背景画.png" id="1_mrowe"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_son_scripts/map_desert.gd" id="1_ehudh"]
+[ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="2_7xg47"]
 [ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="2_ehudh"]
 [ext_resource type="Texture2D" uid="uid://dmc67lipd6gs2" path="res://res/environment/石壁-a1f5.png" id="3_dt3d6"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_704vg"]
@@ -41,9 +41,8 @@ script = ExtResource("1_ehudh")
 
 [node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=295229518]
 z_index = -1
-position = Vector2(638, 387.99997)
-scale = Vector2(0.49388713, 0.49388713)
-texture = ExtResource("1_mrowe")
+position = Vector2(640, 360)
+texture = ExtResource("2_7xg47")
 
 [node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=231279159]
 
