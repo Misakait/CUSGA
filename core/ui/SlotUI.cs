@@ -10,11 +10,14 @@ public partial class SlotUI : PanelContainer
     private int _myIndex; // 该格子背包里的真实坐标
     private ItemStack _itemStackInThisSlot; // 当前渲染的数据引用
     private InventoryComponent _inventoryComponent; //  Player 身上的 InventoryComponent 引用
+    private bool _isPointerInside;
 
 
     public override void _Ready()
     {
         Resized += OnResized;
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
     }
     private void OnResized()
     {
@@ -43,10 +46,15 @@ public partial class SlotUI : PanelContainer
     }
     public override void _ExitTree()
     {
+        MouseEntered -= OnMouseEntered;
+        MouseExited -= OnMouseExited;
+
         if (_itemStackInThisSlot != null)
         {
             _itemStackInThisSlot.OnStackChanged -= UpdateVisuals;
         }
+
+        ItemTooltipPresenter.Hide(this);
     }
 
     // 开始拖拽
@@ -71,6 +79,7 @@ public partial class SlotUI : PanelContainer
         SetDragPreview(preview);
 
         GetNode<TextureRect>("%ItemIcon").Modulate = new Color(1, 1, 1, 0.3f);
+        ItemTooltipPresenter.Hide(this);
         return dataPackage;
     }
     private Control CreateDragPreview()
@@ -160,7 +169,25 @@ public partial class SlotUI : PanelContainer
             amountLabel.Text = stack.Amount > 1 ? stack.Amount.ToString() : "";
         }
         icon.Modulate = Colors.White;
+
+        if (_isPointerInside)
+        {
+            ItemTooltipPresenter.Show(this, stack);
+        }
     }
+
+    private void OnMouseEntered()
+    {
+        _isPointerInside = true;
+        ItemTooltipPresenter.Show(this, _itemStackInThisSlot);
+    }
+
+    private void OnMouseExited()
+    {
+        _isPointerInside = false;
+        ItemTooltipPresenter.Hide(this);
+    }
+
     public override void _Notification(int what)
     {
         if (what == NotificationDragEnd)

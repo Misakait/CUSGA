@@ -15,12 +15,15 @@ public partial class EquipmentSlotUI : PanelContainer
     private Label _amountLabel = null!;
     private Label _slotLabel = null!;
     private bool _isReady = false;
+    private bool _isPointerInside = false;
 
     public override void _Ready()
     {
         _icon = GetNode<TextureRect>("%ItemIcon");
         _amountLabel = GetNode<Label>("%AmountLabel");
         _slotLabel = GetNode<Label>("%SlotLabel");
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
         _isReady = true;
         RefreshView();
     }
@@ -47,10 +50,15 @@ public partial class EquipmentSlotUI : PanelContainer
 
     public override void _ExitTree()
     {
+        MouseEntered -= OnMouseEntered;
+        MouseExited -= OnMouseExited;
+
         if (_stack != null)
         {
             _stack.OnStackChanged -= UpdateVisuals;
         }
+
+        ItemTooltipPresenter.Hide(this);
     }
 
     public override Variant _GetDragData(Vector2 atPosition)
@@ -70,6 +78,7 @@ public partial class EquipmentSlotUI : PanelContainer
 
         SetDragPreview(CreateDragPreview());
         _icon.Modulate = new Color(1, 1, 1, 0.3f);
+        ItemTooltipPresenter.Hide(this);
         return dataPackage;
     }
 
@@ -156,6 +165,11 @@ public partial class EquipmentSlotUI : PanelContainer
             _amountLabel.Text = stack.Amount > 1 ? stack.Amount.ToString() : "";
         }
         _icon.Modulate = Colors.White;
+
+        if (_isPointerInside)
+        {
+            ItemTooltipPresenter.Show(this, stack);
+        }
     }
 
     private void RefreshView()
@@ -167,6 +181,18 @@ public partial class EquipmentSlotUI : PanelContainer
 
         _slotLabel.Text = GetSlotLabel(_slot);
         UpdateVisuals(_stack);
+    }
+
+    private void OnMouseEntered()
+    {
+        _isPointerInside = true;
+        ItemTooltipPresenter.Show(this, _stack);
+    }
+
+    private void OnMouseExited()
+    {
+        _isPointerInside = false;
+        ItemTooltipPresenter.Hide(this);
     }
 
     private static string GetSlotLabel(EquipmentSlot slot)
