@@ -1,8 +1,10 @@
-[gd_scene format=3 uid="uid://de5k2tq6ff5rl"]
+[gd_scene format=3 uid="uid://bw1xbxfvgkjvh"]
 
+[ext_resource type="Script" uid="uid://3qf7y4wgm6b8" path="res://scripts/map_scripts/map_son_scripts/map_lake.gd" id="1_hck72"]
 [ext_resource type="Texture2D" uid="uid://gv00rjut3ibe" path="res://res/background/湖泊-a1e9.png" id="1_nghgd"]
 
 [node name="MapLake" type="Node2D" unique_id=2032427002]
+script = ExtResource("1_hck72")
 
 [node name="湖泊A1e9" type="Sprite2D" parent="." unique_id=520945129]
 z_index = -1

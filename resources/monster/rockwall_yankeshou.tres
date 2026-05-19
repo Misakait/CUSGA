@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://cu0renun503jq"]
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://c41yc5wjcn8ms"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
-[ext_resource type="Resource" uid="uid://kxrggdaafx5w" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="4_skill_1"]
-[ext_resource type="Resource" uid="uid://dd7mnum2hfn5d" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="5_skill_2"]
-[ext_resource type="Resource" uid="uid://djo6yad7ek2f2" path="res://resources/skill_cards/earth_magic_shachenlongtiandi.tres" id="6_skill_3"]
-[ext_resource type="Resource" uid="uid://4r0o8edoq8hv" path="res://resources/skill_cards/earth_magic_shixiao.tres" id="7_skill_4"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Resource" uid="uid://bwkqqpawhi0ab" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="4_skill_1"]
+[ext_resource type="Resource" uid="uid://dlxtu5dh513yr" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="5_skill_2"]
+[ext_resource type="Resource" uid="uid://b6wd1mp171v3h" path="res://resources/skill_cards/earth_magic_shachenlongtiandi.tres" id="6_skill_3"]
+[ext_resource type="Resource" uid="uid://ch4ke3honxuo7" path="res://resources/skill_cards/earth_magic_shixiao.tres" id="7_skill_4"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
@@ -28,32 +28,24 @@ metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 script = ExtResource("loot_drop_script")
 Item = ExtResource("4_skill_1")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_2"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("5_skill_2")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_3"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("6_skill_3")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_4"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("7_skill_4")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="Resource_loot"]
@@ -66,7 +58,7 @@ script = ExtResource("2_monster")
 MonsterName = "岩壳兽"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 4
-MaxHealth = 140
 LootTable = SubResource("Resource_loot")
+MaxHealth = 140
 SkillCards = Array[ExtResource("1_skillcard")]([ExtResource("4_skill_1"), ExtResource("5_skill_2"), ExtResource("6_skill_3"), ExtResource("7_skill_4")])
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
