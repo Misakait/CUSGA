@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="1_cf8n2"]
 [ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_h115g"]
+[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/image/技能卡模板2.png" id="2_112t3"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="2_brt88"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_hh660"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="4_brt88"]
@@ -13,6 +14,7 @@
 [ext_resource type="Script" uid="uid://5wtui6vmqah3" path="res://scripts/warehouse/inventory_card_slot.gd" id="12_ejbtm"]
 [ext_resource type="Script" uid="uid://dh406btb4xi6r" path="res://scripts/warehouse/inventory_user_card_slot.gd" id="13_ybp5e"]
 [ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="15_cvm3i"]
+[ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="15_jlw2o"]
 [ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_jlw2o"]
 
 [sub_resource type="Resource" id="Resource_nwke5"]
@@ -32,6 +34,32 @@ metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 script = ExtResource("1_h115g")
 inventory_grid = NodePath("InventoryGrid")
 inventory_control = NodePath("InventoryControl")
+
+[node name="UserBackpack" type="Node2D" parent="." unique_id=755537978]
+
+[node name="Label" type="Label" parent="UserBackpack" unique_id=1703488242]
+offset_left = 64.0
+offset_top = 24.0
+offset_right = 394.0
+offset_bottom = 66.0
+theme_override_font_sizes/font_size = 30
+text = "将这五样东西放入带入游戏："
+
+[node name="Backpack" type="Node2D" parent="." unique_id=740345446]
+
+[node name="Label" type="Label" parent="Backpack" unique_id=173964698]
+offset_left = 64.0
+offset_top = 216.0
+offset_right = 184.0
+offset_bottom = 258.0
+theme_override_font_sizes/font_size = 30
+text = "你的仓库："
+
+[node name="技能卡模板2" type="Sprite2D" parent="Backpack" unique_id=891559400]
+show_behind_parent = true
+position = Vector2(640, 495.99997)
+scale = Vector2(9.599998, 4.48)
+texture = ExtResource("2_112t3")
 
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=351214287 node_paths=PackedStringArray("snap_nodes")]
 script = ExtResource("1_cf8n2")
@@ -507,10 +535,10 @@ texture = ExtResource("2_hh660")
 [node name="UserSnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1693080624]
 
 [node name="Button" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1071966649]
-offset_left = 144.0
-offset_top = 248.0
-offset_right = 152.0
-offset_bottom = 256.0
+offset_left = 128.0
+offset_top = 129.0
+offset_right = 136.0
+offset_bottom = 137.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -524,10 +552,10 @@ scale = Vector2(0.77946424, 0.77375007)
 
 [node name="Button2" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1993838325]
 clip_contents = true
-offset_left = 272.0
-offset_top = 248.0
-offset_right = 280.0
-offset_bottom = 256.0
+offset_left = 256.0
+offset_top = 129.0
+offset_right = 264.0
+offset_bottom = 137.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -540,10 +568,10 @@ scale = Vector2(0.6875, 0.6875)
 
 [node name="Button3" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1231413564]
 clip_contents = true
-offset_left = 400.0
-offset_top = 248.0
-offset_right = 408.0
-offset_bottom = 256.0
+offset_left = 384.0
+offset_top = 129.0
+offset_right = 392.0
+offset_bottom = 137.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -556,10 +584,10 @@ scale = Vector2(0.6875, 0.6875)
 
 [node name="Button4" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1432439624]
 clip_contents = true
-offset_left = 530.0
-offset_top = 247.0
-offset_right = 538.0
-offset_bottom = 255.0
+offset_left = 514.0
+offset_top = 128.0
+offset_right = 522.0
+offset_bottom = 136.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -572,10 +600,10 @@ scale = Vector2(0.6875, 0.6875)
 
 [node name="Button5" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=759552614]
 clip_contents = true
-offset_left = 659.0
-offset_top = 248.0
-offset_right = 667.0
-offset_bottom = 256.0
+offset_left = 643.0
+offset_top = 129.0
+offset_right = 651.0
+offset_bottom = 137.0
 size_flags_horizontal = 6
 size_flags_vertical = 6
 size_flags_stretch_ratio = 0.0
@@ -590,28 +618,31 @@ inventory_control = NodePath("../../..")
 [node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button5/SnapPoint1" unique_id=154071194]
 scale = Vector2(0.6875, 0.6875)
 
-[node name="Button" type="Button" parent="InventoryControl" unique_id=2078876008]
-layout_mode = 0
-offset_left = 600.0
-offset_top = 119.0
-offset_right = 698.0
-offset_bottom = 165.0
-
 [node name="LeftButton" type="Button" parent="InventoryControl" unique_id=1189218979]
 layout_mode = 0
-offset_left = 1082.0
-offset_top = 270.0
-offset_right = 1132.0
-offset_bottom = 320.0
+offset_left = 1024.0
+offset_top = 208.0
+offset_right = 1080.0
+offset_bottom = 258.0
 icon = ExtResource("15_cvm3i")
+
+[node name="物品框F82c" type="Sprite2D" parent="InventoryControl/LeftButton" unique_id=175879452]
+position = Vector2(28.50001, 26.49999)
+scale = Vector2(0.39285728, 0.53000015)
+texture = ExtResource("15_jlw2o")
 
 [node name="RightButton" type="Button" parent="InventoryControl" unique_id=380072651]
 layout_mode = 0
-offset_left = 1205.0
-offset_top = 270.0
-offset_right = 1255.0
-offset_bottom = 320.0
+offset_left = 1151.0
+offset_top = 208.0
+offset_right = 1206.0
+offset_bottom = 258.0
 icon = ExtResource("16_jlw2o")
+
+[node name="物品框F82c" type="Sprite2D" parent="InventoryControl/RightButton" unique_id=779572255]
+position = Vector2(28.000017, 26.49999)
+scale = Vector2(0.4, 0.53000015)
+texture = ExtResource("15_jlw2o")
 
 [node name="Page" type="Label" parent="InventoryControl" unique_id=1829247889]
 layout_mode = 0
@@ -622,7 +653,7 @@ offset_bottom = 704.0
 text = "0 / 0"
 
 [node name="Panel" type="Node2D" parent="InventoryControl" unique_id=1606179904]
-position = Vector2(911, 170)
+position = Vector2(888, 144)
 scale = Vector2(0.8, 0.8)
 
 [node name="Background" type="Sprite2D" parent="InventoryControl/Panel" unique_id=904486948]
@@ -655,21 +686,21 @@ size_flags_vertical = 3
 theme_override_font_sizes/font_size = 23
 text = "返回主菜单"
 
-[node name="DeleteButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1027492698]
+[node name="FishButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=2078876008]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 23
-text = "丢弃"
+text = "免费给你鱼"
 
 [node name="RefreshButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=614834854]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 23
-text = "整理"
+text = "整理背包"
 
 [connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
-[connection signal="pressed" from="InventoryControl/Button" to="InventoryControl" method="_on_button_pressed"]
 [connection signal="button_down" from="InventoryControl/LeftButton" to="InventoryControl" method="_on_left_button_button_down"]
 [connection signal="button_down" from="InventoryControl/RightButton" to="InventoryControl" method="_on_right_button_button_down"]
 [connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/ExitButton" to="." method="_on_exit_button_button_down"]
+[connection signal="pressed" from="InventoryControl/Panel/ButtonControl/VBoxContainer/FishButton" to="InventoryControl" method="_on_button_pressed"]
 [connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/RefreshButton" to="InventoryControl" method="_on_refresh_button_button_down"]

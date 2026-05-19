@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://l77q4v3wqe2j"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_lh7rn"]
+[ext_resource type="Texture2D" uid="uid://blcm8gqxk1ph3" path="res://res/tool/StoneSword.png" id="1_tdqd8"]
+
+[resource]
+script = ExtResource("1_lh7rn")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"StoneSword"])
+CardId = &"StoneSword"
+CardName = "石剑"
+CardIcon = ExtResource("1_tdqd8")
+Description = "一把石剑"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

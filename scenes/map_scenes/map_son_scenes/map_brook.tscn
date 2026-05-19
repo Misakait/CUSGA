@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://bd3oumuesx70"]
+
+[ext_resource type="Texture2D" uid="uid://bxmddcfa1ssjt" path="res://res/background/溪流-a1ed.png" id="1_jbof8"]
+
+[node name="MapBrook" type="Node2D" unique_id=1398827748]
+
+[node name="溪流A1Ed" type="Sprite2D" parent="." unique_id=1181270498]
+position = Vector2(640, 360)
+scale = Vector2(16, 16)
+texture = ExtResource("1_jbof8")

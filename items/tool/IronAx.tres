@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dq1kxwpkqbgak"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_6epln"]
+[ext_resource type="Texture2D" uid="uid://gg1hxonbe6rj" path="res://res/tool/IronAx.png" id="1_8v2j5"]
+
+[resource]
+script = ExtResource("1_6epln")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"IronAx"])
+CardId = &"IronAx"
+CardName = "铁斧"
+CardIcon = ExtResource("1_8v2j5")
+Description = "泛着冷冷的寒光"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

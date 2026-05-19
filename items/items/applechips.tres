@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bytw3tj28crxq"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_l3ffi"]
+[ext_resource type="Texture2D" uid="uid://c5djv0tgl31db" path="res://res/items/applechips.png" id="1_xg8o6"]
+
+[resource]
+script = ExtResource("1_l3ffi")
+MaxStackSize = 12
+ItemTags = Array[StringName]([&"applechips"])
+CardId = &"applechips"
+CardName = "苹果片"
+CardIcon = ExtResource("1_xg8o6")
+Description = "感觉很好吃"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

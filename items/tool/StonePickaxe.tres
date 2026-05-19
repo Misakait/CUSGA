@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://d2krm7lkvwere"]
+
+[ext_resource type="Texture2D" uid="uid://bqmqqgki1rlpu" path="res://res/tool/StonePickaxe.png" id="1_8bsum"]
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_hr4y8"]
+
+[resource]
+script = ExtResource("1_hr4y8")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"StonePickaxe"])
+CardId = &"StonePickaxe"
+CardName = "石镐"
+CardIcon = ExtResource("1_8bsum")
+Description = "用石镐挖石头，真奇怪"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"

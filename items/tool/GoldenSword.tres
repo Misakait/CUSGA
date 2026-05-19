@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bpnbkglgu4iqy"]
+
+[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_5ve86"]
+[ext_resource type="Texture2D" uid="uid://c2j02363pk87g" path="res://res/tool/GoldenSword.png" id="1_bj4ui"]
+
+[resource]
+script = ExtResource("1_5ve86")
+MaxStackSize = 1
+ItemTags = Array[StringName]([&"GoldenSword"])
+CardId = &"GoldenSword"
+CardName = "金剑"
+CardIcon = ExtResource("1_bj4ui")
+Description = "看起来很华丽"
+metadata/_custom_type_script = "uid://b5jfoakosaapj"
