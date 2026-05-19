@@ -46,6 +46,7 @@ metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 [node name="MapDesert" type="Node2D" unique_id=847919400]
 
 [node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=295229518]
+z_index = -1
 position = Vector2(638, 387.99997)
 scale = Vector2(0.49388713, 0.49388713)
 texture = ExtResource("1_mrowe")

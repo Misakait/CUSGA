@@ -60,11 +60,8 @@ position = Vector2(158, 509)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("10_168ci")
-card_name_text = "开始游戏"
 card_name_scale = Vector2(0.5, 0.5)
-card_description_text = "开始你的游戏"
 card_description_scale = Vector2(0.5, 0.5)
-card_cost_text = "0"
 card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="SettingsCard" parent="MainMenuCardManager" unique_id=188621514 instance=ExtResource("2_gdjtc")]
@@ -72,22 +69,16 @@ position = Vector2(461, 506)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("11_8ljqf")
-card_name_text = "设置"
 card_name_scale = Vector2(0.5, 0.5)
-card_description_text = "进入设置界面"
 card_description_scale = Vector2(0.5, 0.5)
-card_cost_text = "0"
 card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="Warehouse" parent="MainMenuCardManager" unique_id=401739906 instance=ExtResource("2_gdjtc")]
 position = Vector2(787, 505)
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("12_3flcn")
-card_name_text = "仓库"
 card_name_scale = Vector2(0.5, 0.5)
-card_description_text = "进入仓库界面"
 card_description_scale = Vector2(0.5, 0.5)
-card_cost_text = "0"
 card_cost_scale = Vector2(0.5, 0.5)
 
 [node name="ExitCard" parent="MainMenuCardManager" unique_id=1486621402 instance=ExtResource("2_gdjtc")]
@@ -95,11 +86,8 @@ position = Vector2(1099, 508)
 tween_duration = 0.2
 sprite_texture = ExtResource("8_eliqi")
 sprite_icon = ExtResource("13_f27sh")
-card_name_text = "退出游戏"
 card_name_scale = Vector2(0.5, 0.5)
-card_description_text = "退出这个游戏"
 card_description_scale = Vector2(0.5, 0.5)
-card_cost_text = "0"
 card_cost_scale = Vector2(0.5, 0.5)
 
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="." method="_on_card_be_snapper"]

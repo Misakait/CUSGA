@@ -5,6 +5,6 @@
 [node name="MapLake" type="Node2D" unique_id=2032427002]
 
 [node name="湖泊A1e9" type="Sprite2D" parent="." unique_id=520945129]
+z_index = -1
 position = Vector2(640, 360)
-scale = Vector2(16, 16)
 texture = ExtResource("1_nghgd")

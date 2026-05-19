@@ -5,6 +5,7 @@
 [node name="MapSnowfield" type="Node2D" unique_id=2009567524]
 
 [node name="黑暗破败感像素背景画(3)" type="Sprite2D" parent="." unique_id=1879453017]
+z_index = -1
 position = Vector2(657.0001, 373)
 scale = Vector2(0.54263324, 0.54263324)
 texture = ExtResource("1_lqndg")

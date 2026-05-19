@@ -5,6 +5,7 @@
 [node name="MapShop" type="Node2D" unique_id=1430291595]
 
 [node name="黑暗破败感像素背景画(1)" type="Sprite2D" parent="." unique_id=1075638526]
+z_index = -1
 position = Vector2(640.3326, 379.37497)
 scale = Vector2(0.49106583, 0.4910658)
 texture = ExtResource("1_r1sjj")

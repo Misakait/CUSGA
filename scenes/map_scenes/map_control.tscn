@@ -28,6 +28,7 @@
 [ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 [ext_resource type="Script" uid="uid://c64fkkngl08fo" path="res://scripts/map_scripts/map_button/left_button.gd" id="15_7fije"]
 [ext_resource type="PackedScene" uid="uid://bd3oumuesx70" path="res://scenes/map_scenes/map_son_scenes/map_brook.tscn" id="15_667l1"]
+[ext_resource type="PackedScene" uid="uid://doi30pgmescy5" path="res://scenes/map_scenes/map_son_scenes/map_underlake.tscn" id="16_a4yqg"]
 [ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_m5w21"]
 [ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_rhltn"]
 [ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/下-f65b.png" id="18_fcbp0"]
@@ -132,6 +133,10 @@ metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
 [sub_resource type="Resource" id="Resource_ncygy"]
 script = ExtResource("2_aulaq")
+scene_name = "underlake"
+scene_count = 2
+scene_dir = "res://scenes/map_scenes/map_son_scenes/map_underlake.tscn"
+scene_pkg = ExtResource("16_a4yqg")
 metadata/_custom_type_script = "uid://u4nusf1kaw5a"
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
@@ -337,6 +342,7 @@ if_show_the_scene = true
 subviewport = NodePath("../CanvasLayer/PanelContainer/SubViewportContainer/SubViewport")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=841791713]
+layer = 0
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer" unique_id=1707377844]
 clip_children = 1
