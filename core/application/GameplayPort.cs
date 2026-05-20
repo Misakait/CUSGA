@@ -112,12 +112,16 @@ public partial class GameplayPort : Node
 
     public void RequestEncounter(TerrainInstance terrain, Array<MonsterData> monsters, string message)
     {
-        GD.Print($"RequestEncounter: terrain={terrain}, monsters={monsters}, message={message}");
+        Array<MonsterData> scaledMonsters = EncounterManager.Instance != null
+            ? EncounterManager.Instance.ScaleEncounterMonsters(terrain, monsters ?? [])
+            : monsters ?? [];
+
+        GD.Print($"RequestEncounter: terrain={terrain}, monsters={scaledMonsters}, message={message}");
         EmitSignal(
             SignalName.EncounterRequested,
             terrain,
             PlayerBattleDeck.GetSkillCards(),
-            monsters ?? [],
+            scaledMonsters,
             message ?? string.Empty
         );
     }
