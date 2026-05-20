@@ -78,6 +78,7 @@ GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), S
 
 [node name="DebugLoadoutSeeder" type="Node" parent="." unique_id=1135409514]
 script = ExtResource("13_debug")
+ClearInventoryBeforeApply = false
 Loadout = ExtResource("14_loadout")
 
 [node name="UI" type="Node" parent="." unique_id=705485533]
