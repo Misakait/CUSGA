@@ -16,6 +16,27 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_normal"]
+bg_color = Color(0.43, 0.12, 0.12, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_hover"]
+bg_color = Color(0.62, 0.17, 0.16, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_pressed"]
+bg_color = Color(0.28, 0.08, 0.08, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="WarehouseUI" type="Control" unique_id=1540976827]
 custom_minimum_size = Vector2(800, 430)
 layout_mode = 3
@@ -52,6 +73,12 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_close_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_close_pressed")
 icon = ExtResource("3_close")
 icon_alignment = 1
 expand_icon = true
