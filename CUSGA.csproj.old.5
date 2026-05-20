@@ -4,6 +4,9 @@
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
   <Target Name="InstallHusky" BeforeTargets="Restore;BeforeBuild" Condition="'$(CI)' != 'true'">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" />
     <Exec Command="dotnet tool run husky install" StandardOutputImportance="Low" />

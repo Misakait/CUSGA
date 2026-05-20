@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/map_scripts/map_son_scripts/map_desert.gd" id="1_ehudh"]
 [ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="2_7xg47"]
-[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="2_ehudh"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
 [ext_resource type="Texture2D" uid="uid://dmc67lipd6gs2" path="res://res/environment/石壁-a1f5.png" id="3_dt3d6"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_704vg"]
 [ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="5_dt3d6"]
@@ -10,6 +10,8 @@
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="8_yut5j"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="9_uowok"]
 [ext_resource type="Resource" uid="uid://csca2n182ytfs" path="res://res/terrain/sand.tres" id="10_7xg47"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="11_pool"]
+[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="12_variance"]
 
 [sub_resource type="Resource" id="Resource_bn557"]
 script = ExtResource("4_704vg")
@@ -37,28 +39,47 @@ CardName = "石头地形"
 CardIcon = ExtResource("3_dt3d6")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
+[sub_resource type="Resource" id="Variance_desert"]
+script = ExtResource("12_variance")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.85
+MaxMaxHealth = 1.25
+MaxPhysAtk = 1.25
+MaxPhysDef = 1.25
+MaxMagPower = 1.25
+MaxMagResist = 1.25
+MaxSpeed = 1.15
+
+[sub_resource type="Resource" id="Pool_stone"]
+script = ExtResource("11_pool")
+TerrainData = SubResource("Resource_xoror")
+Weight = 1.0
+
+[sub_resource type="Resource" id="Pool_sand"]
+script = ExtResource("11_pool")
+TerrainData = ExtResource("10_7xg47")
+Weight = 1.0
+
+[sub_resource type="Resource" id="Profile_desert"]
+script = ExtResource("2_profile")
+TerrainPool = Array[ExtResource("11_pool")]([SubResource("Pool_stone"), SubResource("Pool_sand")])
+MinCount = 2
+MaxCount = 4
+GridColumns = 6
+GridRows = 4
+PlacementMin = Vector2(360, 220)
+PlacementMax = Vector2(920, 560)
+EncounterVarianceRange = SubResource("Variance_desert")
+
 [node name="MapDesert" type="Node2D" unique_id=847919400]
 script = ExtResource("1_ehudh")
+terrain_profile = SubResource("Profile_desert")
 
 [node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=295229518]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("2_7xg47")
-
-[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=231279159]
-
-[node name="StonePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=502136326]
-position = Vector2(600, 500)
-scale = Vector2(3, 3)
-script = ExtResource("2_ehudh")
-TerrainData = SubResource("Resource_xoror")
-LocalGridPos = Vector2i(1, 1)
-metadata/_custom_type_script = "uid://dt4oa225q36ss"
-
-[node name="StonePoint2" type="Marker2D" parent="TerrainSpawnPoints" unique_id=211907696]
-position = Vector2(722, 329)
-scale = Vector2(3, 3)
-script = ExtResource("2_ehudh")
-TerrainData = ExtResource("10_7xg47")
-LocalGridPos = Vector2i(1, 1)
-metadata/_custom_type_script = "uid://dt4oa225q36ss"

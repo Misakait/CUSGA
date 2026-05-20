@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d3fipnri5ucw2" path="res://scripts/map_scripts/map_son_scripts/map_forest.gd" id="1_0xvl1"]
 [ext_resource type="Texture2D" uid="uid://b5nqjgxrn0ntx" path="res://res/background/森林 2-a201(1).png" id="2_tdjg7"]
-[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_qunfr"]
+[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="3_profile"]
 [ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="4_lratd"]
 [ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
@@ -10,6 +10,23 @@
 [ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_ypuhc"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="6_tdjg7"]
+[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="7_pool"]
+[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="8_variance"]
+
+[sub_resource type="Resource" id="Variance_forest"]
+script = ExtResource("8_variance")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.9
+MaxMaxHealth = 1.2
+MaxPhysAtk = 1.2
+MaxPhysDef = 1.2
+MaxMagPower = 1.2
+MaxMagResist = 1.2
+MaxSpeed = 1.2
 
 [sub_resource type="Resource" id="Resource_tvqcv"]
 script = ExtResource("5_lratd")
@@ -44,8 +61,18 @@ CardName = " 树木地形"
 CardIcon = ExtResource("4_tdjg7")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
+[sub_resource type="Resource" id="Pool_tree"]
+script = ExtResource("7_pool")
+TerrainData = SubResource("Resource_s8yer")
+
+[sub_resource type="Resource" id="Profile_forest"]
+script = ExtResource("3_profile")
+TerrainPool = [SubResource("Pool_tree")]
+EncounterVarianceRange = SubResource("Variance_forest")
+
 [node name="MapForest" type="Node2D" unique_id=1619393080]
 script = ExtResource("1_0xvl1")
+terrain_profile = SubResource("Profile_forest")
 
 [node name="Label" type="Label" parent="." unique_id=938128314]
 offset_right = 40.0
@@ -55,13 +82,3 @@ offset_bottom = 23.0
 z_index = 1
 position = Vector2(640, 360)
 texture = ExtResource("2_tdjg7")
-
-[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=269879055]
-
-[node name="TreePoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1169852947]
-position = Vector2(500, 500)
-scale = Vector2(2, 2)
-script = ExtResource("3_qunfr")
-TerrainData = SubResource("Resource_s8yer")
-LocalGridPos = Vector2i(1, 1)
-metadata/_custom_type_script = "uid://dt4oa225q36ss"

@@ -2,23 +2,40 @@
 
 [ext_resource type="Script" uid="uid://dop5mxunkxcir" path="res://scripts/map_scripts/map_son_scripts/map_brook.gd" id="1_0ct7l"]
 [ext_resource type="Texture2D" uid="uid://bxmddcfa1ssjt" path="res://res/background/溪流-a1ed.png" id="1_jbof8"]
-[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="2_qrbni"]
+[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
 [ext_resource type="Resource" uid="uid://baru50meo8ob7" path="res://res/terrain/berryubush.tres" id="3_nw8mf"]
+[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="4_pool"]
+[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="5_variance"]
+
+[sub_resource type="Resource" id="Variance_brook"]
+script = ExtResource("5_variance")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.9
+MaxMaxHealth = 1.15
+MaxPhysAtk = 1.15
+MaxPhysDef = 1.15
+MaxMagPower = 1.15
+MaxMagResist = 1.15
+MaxSpeed = 1.15
+
+[sub_resource type="Resource" id="Pool_bush"]
+script = ExtResource("4_pool")
+TerrainData = ExtResource("3_nw8mf")
+
+[sub_resource type="Resource" id="Profile_brook"]
+script = ExtResource("2_profile")
+TerrainPool = [SubResource("Pool_bush")]
+EncounterVarianceRange = SubResource("Variance_brook")
 
 [node name="MapBrook" type="Node2D" unique_id=1398827748]
 script = ExtResource("1_0ct7l")
+terrain_profile = SubResource("Profile_brook")
 
 [node name="溪流A1Ed" type="Sprite2D" parent="." unique_id=1181270498]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_jbof8")
-
-[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=396950083]
-
-[node name="BushPoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=1785265144]
-position = Vector2(600, 500)
-scale = Vector2(10, 10)
-script = ExtResource("2_qrbni")
-TerrainData = ExtResource("3_nw8mf")
-LocalGridPos = Vector2i(1, 1)
-metadata/_custom_type_script = "uid://dt4oa225q36ss"
