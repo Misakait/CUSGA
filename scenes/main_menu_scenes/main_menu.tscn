@@ -22,12 +22,15 @@ metadata/_custom_type_script = "uid://bynkigeqbxcpj"
 script = ExtResource("7_gdjtc")
 metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
 
-[node name="MainMenu" type="Node2D" unique_id=1637248230]
+[node name="MainMenu" type="Node2D" unique_id=1637248230 node_paths=PackedStringArray("card_manager")]
 script = ExtResource("1_168ci")
+card_manager = NodePath("MainMenuCardManager")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=873487231]
+z_index = -1
 offset_right = 1283.0
 offset_bottom = 720.0
+mouse_filter = 2
 color = Color(0.2509804, 0.2509804, 0.2509804, 1)
 
 [node name="SnapperBinder" type="Node2D" parent="." unique_id=987922898 node_paths=PackedStringArray("snap_nodes")]
@@ -99,4 +102,16 @@ card_name_scale = Vector2(0.5, 0.5)
 card_description_scale = Vector2(0.5, 0.5)
 card_cost_scale = Vector2(0.5, 0.5)
 
+[node name="Button" type="Button" parent="." unique_id=2137438872]
+offset_left = 843.0
+offset_top = 135.0
+offset_right = 1009.0
+offset_bottom = 277.0
+text = "debug：显示信息"
+
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="." method="_on_card_be_snapper"]
+[connection signal="pressed" from="Button" to="MainMenuCardManager" method="_on_button_pressed"]
+[connection signal="pressed" from="Button" to="MainMenuCardManager/StartCard" method="_on_button_pressed"]
+[connection signal="pressed" from="Button" to="MainMenuCardManager/SettingsCard" method="_on_button_pressed"]
+[connection signal="pressed" from="Button" to="MainMenuCardManager/Warehouse" method="_on_button_pressed"]
+[connection signal="pressed" from="Button" to="MainMenuCardManager/ExitCard" method="_on_button_pressed"]

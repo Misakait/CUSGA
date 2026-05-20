@@ -1,9 +1,10 @@
-@tool
+
 extends Node2D
 
 signal hovering_card(card)
 signal not_hovering_card(card)
 
+@export var anim: CardAnimator
 
 
 @export_group("放大效果")
@@ -40,6 +41,9 @@ var hovering := false
 var dragging := false
 var tween: Tween
 
+var par
+var be_inited: bool = false
+var enter: bool = false
 func _ready():
 
 	#如果有parent，初始化parent
@@ -65,6 +69,8 @@ func refresh_myself():
 	my_card_cost.scale = card_cost_scale
 
 func _on_area_2d_mouse_entered():
+	enter = true
+	
 	emit_signal("hovering_card", self)
 
 	# 如果自己不是正在拖拽的卡牌，且没有其他卡牌在拖拽，才放大
@@ -74,6 +80,8 @@ func _on_area_2d_mouse_entered():
 		animate_scale(hover_scale)
 
 func _on_area_2d_mouse_exited():
+	enter = false
+	
 	emit_signal("not_hovering_card", self)
 
 	if not dragging :
@@ -93,11 +101,13 @@ func finish_drag():
 		animate_scale(normal_scale)
 
 func init_parent() -> void:
-	var par = get_parent()
+	par = get_parent()
+	if par.name == "root":
+		par = null
 	if par != null:
 		par.original_position[self] = global_position
-		connect("hovering_card", Callable(par, "_on_hovering_card"))
-		connect("not_hovering_card", Callable(par, "_on_not_hovering_card"))
+		hovering_card.connect(par._on_hovering_card)
+		not_hovering_card.connect(par._on_not_hovering_card)
 
 func animate_scale(target: Vector2):
 	# 停止之前的动画，重新创建
@@ -107,7 +117,24 @@ func animate_scale(target: Vector2):
 	tween.tween_property($Sprite2D, "scale", target, tween_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func is_other_card_hovering():
-	if get_parent():
+	if get_parent().name != "root":
 		var cf = get_parent()
 		return cf.hovering_card != null and cf.hovering_card != self
 	return false
+
+func init():
+	if anim:	
+		#print("animator!!")
+		#if par != null:
+			#global_position = par.original_position[self]
+		anim.scale_bounce(Vector2(0.2, 0.2), Vector2(1.0, 1.0), 1.5)
+		if be_inited:
+			_on_area_2d_mouse_exited()
+		be_inited = true
+	else:
+		print("animator doesnt exit!")
+		print(anim)
+
+#调试用
+func _on_button_pressed() -> void:
+	print(enter)

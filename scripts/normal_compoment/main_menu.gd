@@ -1,6 +1,7 @@
 extends Node
 
 const Main_scene_path = "res://scenes/Main.tscn"
+@export var card_manager: Node2D
 
 #这里是接口
 func _on_card_be_snapper(node_name: Variant) -> void:
@@ -20,7 +21,17 @@ func _on_card_be_snapper(node_name: Variant) -> void:
 			await ScreenTransitions.fade_complete
 			get_tree().quit()
 		"Warehouse":
+			
 			GlobalEventBus.scene_requested.emit("warehouse")
 			print("Warehouse!!")
 		"_":
 			print("出现了不该出现的卡牌，去SnapPoint看看吧！")
+			
+func init():
+	if card_manager:
+		if card_manager.has_method("init"):
+			card_manager.init()
+		else:
+			print("card_manager doesnt have init()")
+	else:
+		print("card_manager doesnt exit!")

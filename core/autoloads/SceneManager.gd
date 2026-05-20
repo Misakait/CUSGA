@@ -21,6 +21,9 @@ func _ready() -> void:
 		_current_id = "main_menu"
 	
 	GlobalEventBus.scene_requested.connect(_on_scene_requested)
+	
+	if initial_scene.has_method("init"):
+		initial_scene.init()
 
 func _on_scene_requested(scene_id: String) -> void:
 	if scene_id == _current_id:

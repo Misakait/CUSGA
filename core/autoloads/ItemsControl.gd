@@ -39,7 +39,6 @@ func load_items_recursively(dir_path: String, items: Dictionary):
 					var item = load(full_path)
 					if item is ItemData:
 						items[item.CardId] = item
-						print("加载物品: ", item.CardId, " 路径: ", full_path)
 
 			file_name = dir.get_next()
 		dir.list_dir_end()

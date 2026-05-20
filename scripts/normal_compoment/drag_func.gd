@@ -85,3 +85,20 @@ func _on_not_hovering_card(that_card):
 	hovering_card = raycast_check_for_card()
 	if hovering_card:
 		hovering_card._on_area_2d_mouse_entered()
+
+func init():
+	for child: Node2D in get_children():
+		if child.has_method("init"):
+			child.init()
+			if !original_position.has(child):
+				print(child,"未先被初始化！")
+			else:
+				child.global_position = original_position[child]
+		else:
+			print("card_manager: my child doesnt have init()")
+	
+
+
+func _on_button_pressed() -> void:
+	print(original_position.keys())
+	pass # Replace with function body.
