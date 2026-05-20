@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="TerrainCardData" format=3 uid="uid://ujmnmjtck3bs"]
+
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="1_1g886"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="1_br5hh"]
+[ext_resource type="Texture2D" uid="uid://cakl1fn186udi" path="res://res/environment/altar.png" id="1_g0jrd"]
+[ext_resource type="Resource" uid="uid://b5tdf8uxke014" path="res://items/element/water.tres" id="2_g0jrd"]
+[ext_resource type="Resource" uid="uid://cpm5luho4crhu" path="res://items/items/fish.tres" id="3_ls27w"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="4_jjotv"]
+[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="5_tdn3y"]
+
+[sub_resource type="Resource" id="Resource_k7ejw"]
+script = ExtResource("1_br5hh")
+Item = ExtResource("2_g0jrd")
+MinAmount = 2
+MaxAmount = 3
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_qv8fx"]
+script = ExtResource("1_br5hh")
+Item = ExtResource("3_ls27w")
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_l10py"]
+script = ExtResource("4_jjotv")
+Drops = Array[ExtResource("1_br5hh")]([SubResource("Resource_k7ejw"), SubResource("Resource_qv8fx")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[sub_resource type="Resource" id="Resource_2fvi8"]
+script = ExtResource("5_tdn3y")
+GatheringTag = &"lake"
+DropTable = SubResource("Resource_l10py")
+metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
+
+[resource]
+script = ExtResource("1_1g886")
+InteractionBehavior = SubResource("Resource_2fvi8")
+CardId = &"lake_res"
+CardName = "地下湖采集点"
+CardIcon = ExtResource("1_g0jrd")
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"

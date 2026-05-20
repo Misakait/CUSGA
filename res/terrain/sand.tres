@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="TerrainCardData" format=3 uid="uid://csca2n182ytfs"]
+
+[ext_resource type="Texture2D" uid="uid://dp5404a1ejwgw" path="res://res/items/sand.png" id="1_2lf7b"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="1_b0p4r"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="1_l4qi2"]
+[ext_resource type="Resource" uid="uid://b7ptrlcnbc7bw" path="res://items/items/sand.tres" id="2_2lf7b"]
+[ext_resource type="Resource" uid="uid://dppaaom3xxsak" path="res://items/environment/sandpile.tres" id="3_tml74"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="4_hrn4a"]
+[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="5_cfkty"]
+
+[sub_resource type="Resource" id="Resource_8j2mo"]
+script = ExtResource("1_l4qi2")
+Item = ExtResource("2_2lf7b")
+MaxAmount = 6
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_gsjvx"]
+script = ExtResource("1_l4qi2")
+Item = ExtResource("3_tml74")
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_8iy12"]
+script = ExtResource("4_hrn4a")
+Drops = Array[ExtResource("1_l4qi2")]([SubResource("Resource_8j2mo"), SubResource("Resource_gsjvx")])
+metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+
+[sub_resource type="Resource" id="Resource_swtaf"]
+script = ExtResource("5_cfkty")
+GatheringTag = &"sand"
+DropTable = SubResource("Resource_8iy12")
+metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
+
+[resource]
+script = ExtResource("1_b0p4r")
+InteractionBehavior = SubResource("Resource_swtaf")
+CardId = &"sandterrain"
+CardName = "沙堆"
+CardIcon = ExtResource("1_2lf7b")
+metadata/_custom_type_script = "uid://bpfhfc81wwi3i"

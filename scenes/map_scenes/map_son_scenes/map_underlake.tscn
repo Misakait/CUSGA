@@ -1,10 +1,24 @@
 [gd_scene format=3 uid="uid://doi30pgmescy5"]
 
 [ext_resource type="Texture2D" uid="uid://dvlj64tnqalut" path="res://res/background/地下湖-a1e3(1).png" id="1_7gdgy"]
+[ext_resource type="Script" uid="uid://dbntkrhdwvbb" path="res://scripts/map_scripts/map_son_scripts/map_underlake.gd" id="1_wjabj"]
+[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_v33td"]
+[ext_resource type="Resource" uid="uid://ujmnmjtck3bs" path="res://res/terrain/under_lake.tres" id="4_dblj8"]
 
 [node name="MapUnderlake" type="Node2D" unique_id=1027647085]
+script = ExtResource("1_wjabj")
 
 [node name="地下湖A1e3(1)" type="Sprite2D" parent="." unique_id=2020835610]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_7gdgy")
+
+[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=1975899018]
+
+[node name="ResPoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=2066378367]
+position = Vector2(600, 500)
+scale = Vector2(10, 10)
+script = ExtResource("3_v33td")
+TerrainData = ExtResource("4_dblj8")
+LocalGridPos = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://dt4oa225q36ss"
