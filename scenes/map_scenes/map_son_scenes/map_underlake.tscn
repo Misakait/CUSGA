@@ -2,23 +2,47 @@
 
 [ext_resource type="Texture2D" uid="uid://dvlj64tnqalut" path="res://res/background/地下湖-a1e3(1).png" id="1_7gdgy"]
 [ext_resource type="Script" uid="uid://dbntkrhdwvbb" path="res://scripts/map_scripts/map_son_scripts/map_underlake.gd" id="1_wjabj"]
-[ext_resource type="Script" uid="uid://dt4oa225q36ss" path="res://core/map/TerrainSpawnPoint.cs" id="3_v33td"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="3_pool"]
 [ext_resource type="Resource" uid="uid://ujmnmjtck3bs" path="res://res/terrain/under_lake.tres" id="4_dblj8"]
+[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="5_variance"]
+
+[sub_resource type="Resource" id="Variance_underlake"]
+script = ExtResource("5_variance")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.9
+MaxMaxHealth = 1.2
+MaxPhysAtk = 1.2
+MaxPhysDef = 1.2
+MaxMagPower = 1.2
+MaxMagResist = 1.2
+MaxSpeed = 1.2
+
+[sub_resource type="Resource" id="Pool_underlake"]
+script = ExtResource("3_pool")
+TerrainData = ExtResource("4_dblj8")
+Weight = 1.0
+
+[sub_resource type="Resource" id="Profile_underlake"]
+script = ExtResource("2_profile")
+TerrainPool = Array[ExtResource("3_pool")]([SubResource("Pool_underlake")])
+MinCount = 1
+MaxCount = 3
+GridColumns = 6
+GridRows = 4
+PlacementMin = Vector2(360, 220)
+PlacementMax = Vector2(920, 560)
+EncounterVarianceRange = SubResource("Variance_underlake")
 
 [node name="MapUnderlake" type="Node2D" unique_id=1027647085]
 script = ExtResource("1_wjabj")
+terrain_profile = SubResource("Profile_underlake")
 
 [node name="地下湖A1e3(1)" type="Sprite2D" parent="." unique_id=2020835610]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_7gdgy")
-
-[node name="TerrainSpawnPoints" type="Node2D" parent="." unique_id=1975899018]
-
-[node name="ResPoint" type="Marker2D" parent="TerrainSpawnPoints" unique_id=2066378367]
-position = Vector2(600, 500)
-scale = Vector2(10, 10)
-script = ExtResource("3_v33td")
-TerrainData = ExtResource("4_dblj8")
-LocalGridPos = Vector2i(1, 1)
-metadata/_custom_type_script = "uid://dt4oa225q36ss"

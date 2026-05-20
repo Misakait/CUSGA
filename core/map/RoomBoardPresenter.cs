@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 using CUSGA.core.board;
 using CUSGA.resources.interaction;
@@ -18,6 +17,7 @@ public partial class RoomBoardPresenter : Node
     private Node _mapSystem = null!;
     private BoardController _boardController = null!;
     private RoomTerrainStore _terrainStore = null!;
+    private readonly RoomTerrainLayoutGenerator _layoutGenerator = new(new Random());
 
     private Callable _roomEnteredCallable;
 
@@ -75,47 +75,38 @@ public partial class RoomBoardPresenter : Node
 
         _boardController.ClearAllCards();
         GD.Print($"[RoomBoardPresenter] Enter room {roomPos}, scene={roomScene.Name}");
-        foreach (TerrainSpawnPoint spawnPoint in FindTerrainSpawnPoints(roomScene))
-        {
-            if (!spawnPoint.SpawnOnEnter)
-            {
-                continue;
-            }
 
-            if (spawnPoint.TerrainData == null)
+        if (!_terrainStore.HasRoom(roomPos))
+        {
+            CreateInitialRoomLayout(roomPos, roomScene);
+        }
+
+        foreach (TerrainInstance terrain in _terrainStore.GetRoomTerrainsOrEmpty(roomPos).Values)
+        {
+            if (terrain.TerrainData == null)
             {
-                GD.PushWarning($"TerrainSpawnPoint '{spawnPoint.Name}' 缺少 TerrainData。");
                 continue;
             }
-            GD.Print($"[RoomBoardPresenter] Spawn point {spawnPoint.Name}, local={spawnPoint.LocalGridPos}, terrain={spawnPoint.TerrainData.CardName}");
-            TerrainInstance terrain = _terrainStore.GetOrCreate(
-                roomPos,
-                spawnPoint.LocalGridPos,
-                spawnPoint.TerrainData
-            );
 
             if (HideHarvestedTerrain && terrain.IsHarvested)
             {
                 continue;
             }
 
-            _boardController.SpawnTerrainCard(terrain, spawnPoint.GlobalPosition);
+            _boardController.SpawnTerrainCard(terrain, terrain.BoardPosition);
         }
     }
 
-    private static IEnumerable<TerrainSpawnPoint> FindTerrainSpawnPoints(Node root)
+    private void CreateInitialRoomLayout(Vector2I roomPos, Node2D roomScene)
     {
-        foreach (Node child in root.GetChildren())
+        Variant profileValue = roomScene.Get("terrain_profile");
+        if (profileValue.VariantType == Variant.Type.Nil ||
+            profileValue.AsGodotObject() is not RoomTerrainProfile profile)
         {
-            if (child is TerrainSpawnPoint spawnPoint)
-            {
-                yield return spawnPoint;
-            }
-
-            foreach (TerrainSpawnPoint nested in FindTerrainSpawnPoints(child))
-            {
-                yield return nested;
-            }
+            _terrainStore.CreateRoomLayout(roomPos, []);
+            return;
         }
+
+        _terrainStore.CreateRoomLayout(roomPos, _layoutGenerator.Generate(profile));
     }
 }
