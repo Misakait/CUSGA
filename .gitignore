@@ -4,3 +4,5 @@
 .idea/
 addons/
 node_modules/
+tests/CUSGA.Tests/bin/Debug/net8.0/
+tests/CUSGA.Tests/obj/
