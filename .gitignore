@@ -3,3 +3,4 @@
 /android/
 .idea/
 addons/
+node_modules/
