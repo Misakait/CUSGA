@@ -37,7 +37,7 @@ The MCP server returns "not initialized." Ask the user: _"I notice this project 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **CUSGA** (2861 symbols, 6244 relationships, 178 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **CUSGA** (2837 symbols, 6214 relationships, 175 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
