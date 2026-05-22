@@ -137,4 +137,5 @@ func init():
 
 #调试用
 func _on_button_pressed() -> void:
-	print(enter)
+	#print("dragging: ",dragging)
+	pass

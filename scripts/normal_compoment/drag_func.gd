@@ -37,7 +37,9 @@ func start_drag():
 		binder.target_snapper.release_card(card)
 	
 func finish_drag():
+	#print("finish_drag!")
 	if card != null : 
+		print(card.global_position)
 		card.finish_drag()
 		var snapped := false
 		
@@ -53,7 +55,7 @@ func finish_drag():
 			# 没有吸附成功 → 回到原位
 			var tween = card.create_tween()
 			tween.tween_property(card, "global_position", original_position[card], 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	card = null
+	#card = null
 
 #光线投射，检查并获取鼠标下的卡牌
 func raycast_check_for_card():
@@ -87,18 +89,25 @@ func _on_not_hovering_card(that_card):
 		hovering_card._on_area_2d_mouse_entered()
 
 func init():
+	#子节点init()
 	for child: Node2D in get_children():
 		if child.has_method("init"):
 			child.init()
 			if !original_position.has(child):
-				print(child,"未先被初始化！")
+				#print(child,"未先被初始化！")
+				pass
 			else:
 				child.global_position = original_position[child]
+				#print(child," ",child.global_position,"orignial_position:" ,original_position[child])
 		else:
 			print("card_manager: my child doesnt have init()")
+			
+	#重置binder.target_snapper的snapped_card
+	finish_drag()
 	
 
 
 func _on_button_pressed() -> void:
-	print(original_position.keys())
+	print("binder.starget_snapper.snapped_cards: ",binder.target_snapper.snapped_cards)
+	print("card: ",card)
 	pass # Replace with function body.

@@ -32,6 +32,8 @@ func snap_card(card) -> void:
 		var tween = card.create_tween()
 		tween.tween_property(card, "global_position", pos, tween_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		snapped_cards[card] = pos
+	else:
+		release_card(card)
 
 func release_card(card) -> void:
 	if snapped_cards.has(card):
