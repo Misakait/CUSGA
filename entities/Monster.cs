@@ -65,13 +65,18 @@ public partial class Monster : Node2D
 
     private void OnMouseEntered()
     {
-        var tooltipPanels = GetTree().GetNodesInGroup("tooltip_panel");
-        if (tooltipPanels.Count > 0)
+        if (_tooltipPanel == null || !IsInstanceValid(_tooltipPanel))
         {
-            var panel = tooltipPanels[0];
-            string name = BaseData != null ? BaseData.MonsterName : "未知怪物";
-            _tooltipPanel.Call("show_tooltip", name, "敌人");
+            _tooltipPanel = FindTooltipPanel();
         }
+
+        if (_tooltipPanel == null || !IsInstanceValid(_tooltipPanel))
+        {
+            return;
+        }
+
+        string name = BaseData != null ? BaseData.MonsterName : "未知怪物";
+        _tooltipPanel.Call("show_tooltip", name, "敌人");
     }
 
     private void OnMouseExited()
@@ -109,7 +114,7 @@ public partial class Monster : Node2D
             current = current.GetParent();
         }
 
-        return panels[0] as Node;
+        return panels[0];
     }
 
     private void OnHealthChanged(int currentValue, int maxValue)
