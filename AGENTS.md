@@ -5,8 +5,6 @@
 
 ## 1. Compilation & Validation Rules (CRITICAL SANDBOX CONSTRAINT)
 
-## 1. Compilation & Validation Rules (CRITICAL SANDBOX CONSTRAINT)
-
 - **The Trap**: Running standard `dotnet test` or `dotnet build` triggers local Husky hooks that attempt to write to `.git/config`. Your sandbox lacks these permissions and will fatally crash.
 - **NEVER DO**: You must NEVER trigger or attempt to modify `.git/config` hooks under any circumstances.
 - **ALWAYS DO (Dynamic Evaluation)**: When you need to verify compilation, you **MUST** prepend `env CI=true` to bypass hooks. However, you must dynamically determine the correct target based on the project structure:
@@ -21,6 +19,7 @@
 - **Inline Complexity**: Add inline comments for any complex, non-obvious, or algorithmic logic (e.g., Crafting settlement, combat state transitions).
 - **Explain the "Why"**: Comments must focus on explaining WHY a specific approach was taken, not merely narrating WHAT the code is doing.
 - **Zero-Sacrifice Clarity**: Keep the code clean, but NEVER sacrifice necessary explanatory comments for the sake of brevity.
+- **Native Comment Language**: Write all code comments in Chinese language.
 
 ---
 
@@ -63,7 +62,7 @@ The MCP server returns "not initialized." Ask the user: _"I notice this project 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **CUSGA** (2956 symbols, 6588 relationships, 185 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **CUSGA** (3041 symbols, 6733 relationships, 187 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
