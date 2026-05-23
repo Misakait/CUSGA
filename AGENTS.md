@@ -1,3 +1,29 @@
+# CUSGA Project - AI Agent Core Directives
+
+> **CRITICAL: READ BEFORE EXECUTING ANY COMMANDS OR WRITING CODE.**
+> The following project-specific rules take absolute precedence over your default behaviors.
+
+## 1. Compilation & Validation Rules (CRITICAL SANDBOX CONSTRAINT)
+
+## 1. Compilation & Validation Rules (CRITICAL SANDBOX CONSTRAINT)
+
+- **The Trap**: Running standard `dotnet test` or `dotnet build` triggers local Husky hooks that attempt to write to `.git/config`. Your sandbox lacks these permissions and will fatally crash.
+- **NEVER DO**: You must NEVER trigger or attempt to modify `.git/config` hooks under any circumstances.
+- **ALWAYS DO (Dynamic Evaluation)**: When you need to verify compilation, you **MUST** prepend `env CI=true` to bypass hooks. However, you must dynamically determine the correct target based on the project structure:
+  - First, survey the workspace. Are there `.sln` files or multiple `.csproj` files?
+  - If it's a simple project, build the specific project (e.g., `env CI=true dotnet build [TargetProject].csproj --no-restore`).
+  - If it's a complex solution and the change spans multiple areas, build the solution (e.g., `env CI=true dotnet build [SolutionName].sln --no-restore`).
+  - _Do NOT blindly copy these examples; adapt the target file to the actual context._
+
+## 2. Documentation & Commenting Standards
+
+- **XML/Standard Docs**: Always include standard XML docs (or equivalent docstrings) for all public classes, methods, and functions. You must explicitly explain parameters and return values.
+- **Inline Complexity**: Add inline comments for any complex, non-obvious, or algorithmic logic (e.g., Crafting settlement, combat state transitions).
+- **Explain the "Why"**: Comments must focus on explaining WHY a specific approach was taken, not merely narrating WHAT the code is doing.
+- **Zero-Sacrifice Clarity**: Keep the code clean, but NEVER sacrifice necessary explanatory comments for the sake of brevity.
+
+---
+
 <!-- CODEGRAPH_START -->
 
 ## CodeGraph
@@ -35,6 +61,7 @@ The MCP server returns "not initialized." Ask the user: _"I notice this project 
 <!-- CODEGRAPH_END -->
 
 <!-- gitnexus:start -->
+
 # GitNexus — Code Intelligence
 
 This project is indexed by GitNexus as **CUSGA** (2867 symbols, 6291 relationships, 178 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
@@ -58,22 +85,22 @@ This project is indexed by GitNexus as **CUSGA** (2867 symbols, 6291 relationshi
 
 ## Resources
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/CUSGA/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/CUSGA/clusters` | All functional areas |
-| `gitnexus://repo/CUSGA/processes` | All execution flows |
-| `gitnexus://repo/CUSGA/process/{name}` | Step-by-step execution trace |
+| Resource                               | Use for                                  |
+| -------------------------------------- | ---------------------------------------- |
+| `gitnexus://repo/CUSGA/context`        | Codebase overview, check index freshness |
+| `gitnexus://repo/CUSGA/clusters`       | All functional areas                     |
+| `gitnexus://repo/CUSGA/processes`      | All execution flows                      |
+| `gitnexus://repo/CUSGA/process/{name}` | Step-by-step execution trace             |
 
 ## CLI
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Task                                         | Read this skill file                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
+| Blast radius / "What breaks if I change X?"  | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?"             | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
+| Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
+| Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
+| Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
 
 <!-- gitnexus:end -->
