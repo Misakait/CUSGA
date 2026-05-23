@@ -7,6 +7,6 @@ public sealed partial class MonsterSpawnOpOp(MonsterData Monster) : TerrainOp
 {
     public override void Apply(WorldInteractionContext context)
     {
-        context.GameplayPort.RequestEncounter(context.Terrain, Monster, "Boss Battle!");
+        context.Gameplay.RequestEncounter(context.Terrain, Monster, "Boss Battle!");
     }
 }

@@ -14,6 +14,6 @@ public sealed partial class SpawnLootOp(Godot.Collections.Array<ItemStack> drops
             return;
         }
 
-        context.BoardController.SpawnLootCards(Drops, context.Card.GlobalPosition);
+        context.Board.SpawnLootCards(Drops, context.SourceGlobalPosition);
     }
 }

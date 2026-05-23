@@ -8,6 +8,6 @@ public sealed partial class EnterVaultOp : TerrainOp
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        context.GameplayPort.RequestOpenWarehouse();
+        context.Gameplay.RequestOpenWarehouse();
     }
 }

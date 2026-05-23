@@ -8,6 +8,7 @@ using CUSGA.entities;
 using CUSGA.resources.interaction;
 using CUSGA.core.application;
 using CUSGA.resources.interaction.operations;
+using CUSGA.resources.encounters;
 using CUSGA.resources.item.card;
 using CUSGA.resources.monsters;
 using Godot.Collections;
@@ -26,7 +27,6 @@ public partial class WorldInteractionCoordinator : Node
     private BoardController _boardController = null!;
     private GameplayPort _gameplayPort = null!;
     private Control _backpackFlyTarget;
-    private Node _globalEventBus;
     private Node _screenTransitions;
     private bool _isTransitioning;
 
@@ -35,7 +35,6 @@ public partial class WorldInteractionCoordinator : Node
         _boardController = GetNode<BoardController>(BoardControllerPath);
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
         _backpackFlyTarget = GetNodeOrNull<Control>(BackpackFlyTargetPath);
-        _globalEventBus = GetNodeOrNull<Node>("/root/GlobalEventBus");
         _encounterManager = GetNode<EncounterManager>(EncounterManagerPath);
         _screenTransitions = GetNodeOrNull<Node>(ScreenTransitionsPath);
 
@@ -257,7 +256,6 @@ public partial class WorldInteractionCoordinator : Node
         var buildCtx = new TerrainInteractionBuildContext
         {
             Player = _gameplayPort.Player,
-            Card = card,
             Terrain = terrain
         };
 
@@ -265,18 +263,60 @@ public partial class WorldInteractionCoordinator : Node
 
         var worldCtx = new WorldInteractionContext
         {
-            GameplayPort = _gameplayPort,
-            BoardController = _boardController,
-            Card = card,
+            Gameplay = new GameplayInteractionPort(_gameplayPort),
+            Board = new BoardInteractionPort(_boardController, card),
+            Encounters = new EncounterInteractionPort(_encounterManager),
             Terrain = terrain,
-            GlobalEventBus = _globalEventBus,
-            BackpackFlyTarget = _backpackFlyTarget,
-            EncounterManager = _encounterManager,
+            SourceGlobalPosition = card.GlobalPosition,
         };
         GD.Print($"[WorldInteractionCoordinator] Ops count = {ops.Count}");
         foreach (TerrainOp op in ops)
         {
             op.Apply(worldCtx);
+        }
+    }
+
+    private sealed class GameplayInteractionPort(GameplayPort gameplayPort) : IInteractionGameplayPort
+    {
+        public void RequestOpenFarmingPanel(TerrainInstance terrain)
+        {
+            gameplayPort.RequestOpenFarmingPanel(terrain);
+        }
+
+        public void RequestOpenWarehouse()
+        {
+            gameplayPort.RequestOpenWarehouse();
+        }
+
+        public void RequestEncounter(TerrainInstance terrain, MonsterData monster, string message)
+        {
+            gameplayPort.RequestEncounter(terrain, monster, message);
+        }
+
+        public void RequestEncounter(TerrainInstance terrain, Array<MonsterData> monsters, string message)
+        {
+            gameplayPort.RequestEncounter(terrain, monsters, message);
+        }
+    }
+
+    private sealed class BoardInteractionPort(BoardController boardController, BoardCardView sourceCard) : IInteractionBoardPort
+    {
+        public void SpawnLootCards(Array<ItemStack> drops, Vector2 spawnOrigin)
+        {
+            boardController.SpawnLootCards(drops, spawnOrigin);
+        }
+
+        public void RemoveSourceCard()
+        {
+            boardController.RemoveCard(sourceCard);
+        }
+    }
+
+    private sealed class EncounterInteractionPort(EncounterManager encounterManager) : IInteractionEncounterPort
+    {
+        public GatheringEncounterResult ResolveGatheringEncounter(StringName resourceTag)
+        {
+            return encounterManager.ResolveGatheringEncounter(resourceTag);
         }
     }
 }

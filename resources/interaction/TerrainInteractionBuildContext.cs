@@ -6,6 +6,5 @@ namespace CUSGA.resources.interaction;
 public partial class TerrainInteractionBuildContext : RefCounted
 {
     public required Player Player { get; init; }
-    public required BoardCardView Card { get; init; }
     public required TerrainInstance Terrain { get; init; }
 }

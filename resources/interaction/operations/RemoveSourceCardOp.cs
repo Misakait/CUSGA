@@ -4,6 +4,6 @@ public sealed partial class RemoveSourceCardOp : TerrainOp
 {
     public override void Apply(WorldInteractionContext context)
     {
-        context.BoardController.RemoveCard(context.Card);
+        context.Board.RemoveSourceCard();
     }
 }

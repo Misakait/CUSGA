@@ -6,6 +6,6 @@ public sealed partial class OpenFarmingPanelOp : TerrainOp
 {
     public override void Apply(WorldInteractionContext context)
     {
-        context.GameplayPort.RequestOpenFarmingPanel(context.Terrain);
+        context.Gameplay.RequestOpenFarmingPanel(context.Terrain);
     }
 }
