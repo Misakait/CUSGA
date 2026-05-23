@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://55q6p6bk1ll7" path="res://scenes/map_scenes/map_control.tscn" id="2_rvslj"]
 [ext_resource type="PackedScene" uid="uid://bti37y31fdnfr" path="res://scenes/board_card_scene/BoardCardView.tscn" id="4_vcsgt"]
 [ext_resource type="Script" uid="uid://cdboqt73nndy5" path="res://core/application/GameplayPort.cs" id="6_c01mt"]
-[ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/ganeflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
+[ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/gameflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://d0aq30etvrhiu" path="res://core/application/EncounterManager.cs" id="8_ft6cd"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="8_jlsqs"]
 [ext_resource type="Resource" uid="uid://b7sk1cm7siws7" path="res://resources/monster/tree_kumujing.tres" id="9_1iba3"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://dkr5sf10iqq3b" path="res://core/ui/hud/HUDController.cs" id="9_wp0k4"]
 [ext_resource type="Script" uid="uid://cmpt04ncsoqpu" path="res://core/ui/hud/BackpackButton.cs" id="10_lhr70"]
 [ext_resource type="Resource" uid="uid://cs11m2jpfad1e" path="res://resources/monster/rockwall_yankeshou.tres" id="10_yxlcp"]
+[ext_resource type="Resource" uid="uid://ina1t5oexech" path="res://resources/monster/berrybush_ducongyao.tres" id="11_ebg2g"]
 [ext_resource type="Script" uid="uid://ti4khreb8ppy" path="res://core/ui/hud/TimePanelUI.cs" id="11_qmy6f"]
 [ext_resource type="Script" uid="uid://2pdyihf4cpq1" path="res://core/ui/hud/HealthBarUI.cs" id="12_mwfav"]
 [ext_resource type="Script" uid="uid://dqlllnjrxs4n7" path="res://core/debug/DebugLoadoutSeeder.cs" id="13_debug"]
@@ -33,6 +34,12 @@ metadata/_custom_type_script = "uid://b2503x8ewmybj"
 script = ExtResource("9_bb450")
 TriggerTag = &"stone"
 MonsterToSpawn = Array[Object]([ExtResource("10_yxlcp")])
+metadata/_custom_type_script = "uid://b2503x8ewmybj"
+
+[sub_resource type="Resource" id="Resource_2ofn6"]
+script = ExtResource("9_bb450")
+TriggerTag = &"bush"
+MonsterToSpawn = Array[Object]([ExtResource("11_ebg2g")])
 metadata/_custom_type_script = "uid://b2503x8ewmybj"
 
 [node name="Main" type="Node" unique_id=646455833]
@@ -72,7 +79,7 @@ EncounterManagerPath = NodePath("../EncounterManager")
 
 [node name="EncounterManager" type="Node" parent="Gameplay" unique_id=2003392084]
 script = ExtResource("8_ft6cd")
-GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3")])
+GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3"), SubResource("Resource_2ofn6")])
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 
