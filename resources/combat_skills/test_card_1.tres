@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://bsdh1i48rj756"]
+
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_lqd6v"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_dqhnu"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_xwuh1"]
+[ext_resource type="Script" uid="uid://ilmgwp6hkfi" path="res://core/combat/status/AttributeModifierData.cs" id="4_8lhwl"]
+[ext_resource type="Script" uid="uid://eb5trb48cjvk" path="res://core/combat/effects/ApplyStatusCardEffect.cs" id="4_xwuh1"]
+[ext_resource type="Script" uid="uid://dswxdym0jp2hb" path="res://core/combat/buffs/AttributeModifierStatusData.cs" id="5_lwroi"]
+[ext_resource type="Texture2D" uid="uid://dwl4y02inrubl" path="res://res/skillcard/wood_skill_card.png" id="icon_skillcard"]
+
+[sub_resource type="Resource" id="Resource_nx2k3"]
+script = ExtResource("2_dqhnu")
+Element = 1
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
+
+[sub_resource type="Resource" id="Resource_lwroi"]
+script = ExtResource("4_8lhwl")
+Type = 4
+ValuePerStack = 100.0
+metadata/_custom_type_script = "uid://ilmgwp6hkfi"
+
+[sub_resource type="Resource" id="Resource_l2nwx"]
+script = ExtResource("5_lwroi")
+Modifiers = Array[ExtResource("4_8lhwl")]([SubResource("Resource_lwroi")])
+Id = null
+MaxStacks = 999
+Policy = 2
+InitOwnerTurnDuration = 999
+InitGlobalTurnDuration = 999
+InitRoundDuration = 999
+metadata/_custom_type_script = "uid://dswxdym0jp2hb"
+
+[sub_resource type="Resource" id="Resource_xwuh1"]
+script = ExtResource("4_xwuh1")
+Status = SubResource("Resource_l2nwx")
+TargetScope = 0
+metadata/_custom_type_script = "uid://eb5trb48cjvk"
+
+[resource]
+script = ExtResource("3_xwuh1")
+Element = 1
+Effects = Array[ExtResource("1_lqd6v")]([SubResource("Resource_nx2k3"), SubResource("Resource_xwuh1")])
+CardId = null
+CardName = "测试卡一"
+CardIcon = ExtResource("icon_skillcard")
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

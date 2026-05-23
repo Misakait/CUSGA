@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://1herjth5mi6x"]
+
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="2_cardeffect"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="3_damageeffect"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="4_combat"]
+
+[sub_resource type="Resource" id="Resource_damage"]
+script = ExtResource("3_damageeffect")
+BaseDamage = 70
+Type = 1
+Element = 2
+
+[resource]
+script = ExtResource("4_combat")
+Element = 2
+Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
+CardId = null

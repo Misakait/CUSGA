@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://c8gpfngui0dov"]
+
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_y5eyg"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_htuqe"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="2_l6wee"]
+[ext_resource type="Script" uid="uid://b1nwu3fjhbo5n" path="res://core/combat/buffs/BurnStatusData.cs" id="3_eo14m"]
+[ext_resource type="Script" uid="uid://eb5trb48cjvk" path="res://core/combat/effects/ApplyStatusCardEffect.cs" id="3_htuqe"]
+
+[sub_resource type="Resource" id="Resource_l6wee"]
+script = ExtResource("2_htuqe")
+Element = 5
+TargetScope = 1
+SecondaryDamageMultiplier = 0.5
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
+
+[sub_resource type="Resource" id="Resource_bkq4h"]
+script = ExtResource("3_eo14m")
+Id = &"bomb_burn"
+MaxStacks = 3
+metadata/_custom_type_script = "uid://b1nwu3fjhbo5n"
+
+[sub_resource type="Resource" id="Resource_eo14m"]
+script = ExtResource("3_htuqe")
+Status = SubResource("Resource_bkq4h")
+TargetScope = 2
+metadata/_custom_type_script = "uid://eb5trb48cjvk"
+
+[resource]
+script = ExtResource("2_l6wee")
+Element = 5
+TargetingType = 6
+Effects = Array[ExtResource("1_y5eyg")]([SubResource("Resource_l6wee"), SubResource("Resource_eo14m")])
+CardId = &"Bomb"
+CardName = "Bomb"
+Description = "扩散炸弹，主单位全额伤害加燃烧效果，次级单位受半额伤害"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

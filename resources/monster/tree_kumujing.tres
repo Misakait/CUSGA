@@ -1,14 +1,19 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://b7sk1cm7siws7"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://d2c7gjrmwif5p" path="res://resources/skill_cards/wood_magic_cuiwumansiye.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://bfm558uuelsly" path="res://resources/skill_cards/wood_phys_gumuhanshanyue.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://dxlw3te7j2j3g" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://bhi0612m3hkrk" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="7_skill_4"]
+[ext_resource type="Resource" uid="uid://jed7y61gnu5" path="res://resources/combat_skills/wood_magic_cuiwumansiye.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://l6g66xpbeh7b" path="res://resources/combat_skills/wood_phys_gumuhanshanyue.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://c7r1w1a2u17f3" path="res://resources/combat_skills/wood_magic_dutengyin.tres" id="combat_skill_3"]
+[ext_resource type="Resource" uid="uid://bwhmgvi4f76mj" path="res://resources/combat_skills/wood_magic_lingmushishengji.tres" id="combat_skill_4"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
@@ -52,6 +57,31 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_1"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_1")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_2"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_2")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_3"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_3")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_4"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_4")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillSet_migrated"]
+script = ExtResource("monster_skill_set_script")
+Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1"), SubResource("MonsterSkillEntry_migrated_2"), SubResource("MonsterSkillEntry_migrated_3"), SubResource("MonsterSkillEntry_migrated_4")])
+metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "枯木精"
@@ -59,5 +89,5 @@ InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 1
 LootTable = SubResource("Resource_loot")
 MaxHealth = 95
-SkillCards = Array[ExtResource("1_skillcard")]([ExtResource("4_skill_1"), ExtResource("5_skill_2"), ExtResource("6_skill_3"), ExtResource("7_skill_4")])
+SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

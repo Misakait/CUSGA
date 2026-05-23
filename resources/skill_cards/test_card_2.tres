@@ -1,29 +1,12 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://biq5mpj4n1rqp"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_bhrvp"]
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_rt7uw"]
-[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_3i3k0"]
-[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_uxcp8"]
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_2.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://cjg0lew5helqj" path="res://res/skillcard/fire_skill_card.png" id="icon_skillcard"]
-
-[sub_resource type="Resource" id="Resource_7wn03"]
-script = ExtResource("2_3i3k0")
-BaseDamage = 20
-Type = 1
-Element = 5
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
-
-[sub_resource type="Resource" id="Resource_yxabe"]
-script = ExtResource("3_uxcp8")
-Element = 5
-TargetingType = 5
-Effects = Array[ExtResource("1_rt7uw")]([SubResource("Resource_7wn03")])
-CardId = null
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 
 [resource]
 script = ExtResource("1_bhrvp")
-Skill = SubResource("Resource_yxabe")
+Skill = ExtResource("combat_skill")
 cost = 20
 CardId = null
 CardName = "测试卡2"

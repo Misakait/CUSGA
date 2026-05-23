@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_jusv1"]
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="4_lwned"]
 [ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_4.tres" id="combat_skill"]
 
 [sub_resource type="Resource" id="Resource_46jgr"]
 script = ExtResource("2_mpgfb")
@@ -22,7 +23,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 
 [resource]
 script = ExtResource("4_lwned")
-Skill = SubResource("Resource_trse8")
+Skill = ExtResource("combat_skill")
 cost = 0
 CardTags = Array[String](["自残"])
 CardId = null

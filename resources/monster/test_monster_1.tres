@@ -5,6 +5,9 @@
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="2_a84qo"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_2.tres" id="combat_skill_1"]
 
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
@@ -17,11 +20,21 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_1"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_1")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillSet_migrated"]
+script = ExtResource("monster_skill_set_script")
+Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1")])
+metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
+
 [resource]
 script = ExtResource("1_noehs")
 MonsterName = "测试怪物1"
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
 MaxHealth = 100
-SkillCards = Array[ExtResource("1_gvgr5")]([ExtResource("2_a84qo")])
+SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
