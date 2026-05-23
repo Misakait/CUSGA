@@ -1,7 +1,11 @@
 using CUSGA.core.application;
+using CUSGA.core.crafting;
+using CUSGA.core.inventory;
 using CUSGA.core.map;
 using CUSGA.resources.encounters;
 using CUSGA.resources.interaction;
+using CUSGA.resources.crafting;
+using CUSGA.resources.item;
 using CUSGA.resources.monsters;
 using CUSGA.resources.stats;
 using Godot;
@@ -12,6 +16,9 @@ var tests = new TerrainRandomizationTests();
 tests.GeneratedLayoutUsesProfileAndCarriesVarianceMultiplier();
 tests.StorePersistsGeneratedTerrainBoardPositionsAndVariance();
 tests.EncounterMonsterScalerDuplicatesAndScalesAllEncounterStats();
+tests.CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot();
+tests.CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult();
+tests.CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit();
 
 Console.WriteLine("All CUSGA tests passed.");
 
@@ -125,6 +132,58 @@ internal sealed class TerrainRandomizationTests
         Assert.Approximately(10f, baseStats.BasePhysAtk);
     }
 
+    public void CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot()
+    {
+        var material = CreateItemDataStub(maxStackSize: 99);
+        var filler = CreateItemDataStub(maxStackSize: 99);
+        var output = CreateItemDataStub(maxStackSize: 2);
+        var inventory = new TestCraftingInventory(
+            Stack(material, 5),
+            Stack(filler, 1)
+        );
+        var recipe = CreateRecipe(output, outputAmount: 2, Ingredient(material, 5));
+        var service = new CraftingService();
+
+        Assert.True(service.CanCraft(inventory, recipe));
+    }
+
+    public void CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult()
+    {
+        var material = CreateItemDataStub(maxStackSize: 99);
+        var filler = CreateItemDataStub(maxStackSize: 99);
+        var output = CreateItemDataStub(maxStackSize: 2);
+        var inventory = new TestCraftingInventory(
+            Stack(material, 5),
+            Stack(filler, 1)
+        );
+        var recipe = CreateRecipe(output, outputAmount: 3, Ingredient(material, 5));
+        var service = new CraftingService();
+
+        Assert.False(service.CanCraft(inventory, recipe));
+        Assert.Equal(0, service.MaxCraftableQuantity(inventory, recipe));
+    }
+
+    public void CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit()
+    {
+        var material = CreateItemDataStub(maxStackSize: 99);
+        var filler = CreateItemDataStub(maxStackSize: 99);
+        var output = CreateItemDataStub(maxStackSize: 2);
+        var inventory = new TestCraftingInventory(
+            Stack(material, 5),
+            Stack(filler, 1)
+        );
+        var recipe = CreateRecipe(output, outputAmount: 3, Ingredient(material, 5));
+        var service = new CraftingService();
+
+        bool crafted = service.TryCraft(inventory, recipe, 1, out CraftingFailureReason failureReason);
+
+        Assert.False(crafted);
+        Assert.Equal(CraftingFailureReason.NotEnoughSpace, failureReason);
+        Assert.Equal(5, inventory.CountWhere(item => item == material));
+        Assert.Equal(1, inventory.CountWhere(item => item == filler));
+        Assert.Equal(0, inventory.CountWhere(item => item == output));
+    }
+
     private static TerrainCardData CreateTerrainCardDataStub()
     {
         return (TerrainCardData)RuntimeHelpers.GetUninitializedObject(typeof(TerrainCardData));
@@ -185,6 +244,42 @@ internal sealed class TerrainRandomizationTests
         return (StartingStats)RuntimeHelpers.GetUninitializedObject(typeof(StartingStats));
     }
 
+    private static ItemData CreateItemDataStub(int maxStackSize)
+    {
+        var item = (ItemData)RuntimeHelpers.GetUninitializedObject(typeof(ItemData));
+        item.MaxStackSize = maxStackSize;
+        return item;
+    }
+
+    private static CraftingRecipe CreateRecipe(
+        ItemData outputItem,
+        int outputAmount,
+        params CraftingIngredient[] inputs)
+    {
+        var recipe = (CraftingRecipe)RuntimeHelpers.GetUninitializedObject(typeof(CraftingRecipe));
+        recipe.OutputItem = outputItem;
+        recipe.OutputAmount = outputAmount;
+        recipe.Inputs = [.. inputs];
+        return recipe;
+    }
+
+    private static CraftingIngredient Ingredient(ItemData item, int amount)
+    {
+        var ingredient = (CraftingIngredient)RuntimeHelpers.GetUninitializedObject(
+            typeof(CraftingIngredient)
+        );
+        ingredient.RequiredItem = item;
+        ingredient.Amount = amount;
+        return ingredient;
+    }
+
+    private static ItemStack Stack(ItemData item, int amount)
+    {
+        var stack = new ItemStack();
+        stack.SetItem(item, amount);
+        return stack;
+    }
+
     private static RoomTerrainStore CreateRoomTerrainStoreStub()
     {
         var store = (RoomTerrainStore)RuntimeHelpers.GetUninitializedObject(typeof(RoomTerrainStore));
@@ -213,6 +308,120 @@ internal sealed class TerrainRandomizationTests
     }
 }
 
+internal sealed class TestCraftingInventory : ICraftingInventory
+{
+    private readonly ItemStack[] _slots;
+
+    public TestCraftingInventory(params ItemStack[] slots)
+    {
+        _slots = slots;
+    }
+
+    public IReadOnlyList<ItemStack> Slots => _slots;
+
+    public bool CanStore(ItemData item)
+    {
+        return item != null;
+    }
+
+    public int CountWhere(Func<ItemData, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        int total = 0;
+        foreach (ItemStack slot in _slots)
+        {
+            if (!slot.IsEmpty && predicate(slot.Item))
+            {
+                total += slot.Amount;
+            }
+        }
+
+        return total;
+    }
+
+    public int AddItem(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0 || item.ActualMaxStackSize <= 0)
+        {
+            return amount;
+        }
+
+        int remaining = amount;
+        foreach (ItemStack slot in _slots)
+        {
+            if (!slot.IsEmpty && slot.Item == item && !slot.IsFull)
+            {
+                remaining = slot.Add(remaining);
+                if (remaining <= 0)
+                {
+                    return 0;
+                }
+            }
+        }
+
+        foreach (ItemStack slot in _slots)
+        {
+            if (!slot.IsEmpty)
+            {
+                continue;
+            }
+
+            int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize);
+            slot.SetItem(item, amountToAdd);
+            remaining -= amountToAdd;
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+        }
+
+        return remaining;
+    }
+
+    public bool TryRemoveItems(IReadOnlyDictionary<ItemData, int> itemsToRemove)
+    {
+        if (itemsToRemove == null || itemsToRemove.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var itemToRemove in itemsToRemove)
+        {
+            if (itemToRemove.Key == null
+                || itemToRemove.Value <= 0
+                || CountWhere(item => item == itemToRemove.Key) < itemToRemove.Value)
+            {
+                return false;
+            }
+        }
+
+        foreach (var itemToRemove in itemsToRemove)
+        {
+            RemoveItem(itemToRemove.Key, itemToRemove.Value);
+        }
+
+        return true;
+    }
+
+    private void RemoveItem(ItemData item, int amountToRemove)
+    {
+        int remainingToRemove = amountToRemove;
+        for (int i = _slots.Length - 1; i >= 0 && remainingToRemove > 0; i--)
+        {
+            ItemStack slot = _slots[i];
+            if (slot.IsEmpty || slot.Item != item)
+            {
+                continue;
+            }
+
+            int removed = Math.Min(slot.Amount, remainingToRemove);
+            slot.SetItem(slot.Item, slot.Amount - removed);
+            remainingToRemove -= removed;
+        }
+    }
+}
+
 internal static class Assert
 {
     public static void True(bool condition, string? message = null)
@@ -220,6 +429,14 @@ internal static class Assert
         if (!condition)
         {
             throw new InvalidOperationException(message ?? "Expected condition to be true.");
+        }
+    }
+
+    public static void False(bool condition, string? message = null)
+    {
+        if (condition)
+        {
+            throw new InvalidOperationException(message ?? "Expected condition to be false.");
         }
     }
 

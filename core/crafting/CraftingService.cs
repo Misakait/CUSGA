@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using CUSGA.core.inventory;
 using CUSGA.resources.crafting;
 using CUSGA.resources.item;
 using Godot;
@@ -189,76 +189,9 @@ public sealed class CraftingService
             return false;
         }
 
-        // 复制出一份虚拟背包
-        var virtualSlots = inventory.Slots
-            .Select(stack => new VirtualStack(stack?.Item, stack?.Amount ?? 0))
-            .ToList();
-
-        // 模拟扣除材料
-        foreach (var requirement in requirements)
-        {
-            int remainingToRemove = requirement.Value;
-            // 从背包后面往前找这种材料
-            for (int i = virtualSlots.Count - 1; i >= 0 && remainingToRemove > 0; i--)
-            {
-                var slot = virtualSlots[i];
-                if (slot.Item != requirement.Key)
-                {
-                    continue;
-                }
-
-                int removed = Math.Min(slot.Amount, remainingToRemove);
-                slot.Amount -= removed;
-                remainingToRemove -= removed;
-                if (slot.Amount <= 0)
-                {
-                    slot.Clear();
-                }
-            }
-            // 如果整个背包扣完还不够，说明材料不足，返回 false
-            if (remainingToRemove > 0)
-            {
-                return false;
-            }
-        }
-
-        // 模拟把产物放进背包
-        int remainingOutput = (int)outputAmount;
-        // 优先塞进已有的同类堆叠
-        foreach (var slot in virtualSlots)
-        {
-            if (slot.Item == recipe.OutputItem && slot.Amount < recipe.OutputItem.ActualMaxStackSize)
-            {
-                int amountToAdd = Math.Min(remainingOutput, recipe.OutputItem.ActualMaxStackSize - slot.Amount);
-                slot.Amount += amountToAdd;
-                remainingOutput -= amountToAdd;
-                if (remainingOutput <= 0)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // 如果同类堆叠塞不下，就找空格子
-        foreach (var slot in virtualSlots)
-        {
-            if (slot.Item != null)
-            {
-                continue;
-            }
-
-            int amountToAdd = Math.Min(remainingOutput, recipe.OutputItem.ActualMaxStackSize);
-            slot.Item = recipe.OutputItem;
-            slot.Amount = amountToAdd;
-            remainingOutput -= amountToAdd;
-            if (remainingOutput <= 0)
-            {
-                return true;
-            }
-        }
-
-        // 扣完材料之后，背包仍然没有足够空间容纳产物。
-        return false;
+        var virtualInventory = new VirtualInventory(inventory.Slots);
+        return virtualInventory.Remove(requirements)
+            && virtualInventory.CanAdd(recipe.OutputItem, (int)outputAmount);
     }
 
     private static bool IsRecipeValid(CraftingRecipe recipe)
@@ -277,6 +210,112 @@ public sealed class CraftingService
         }
 
         return true;
+    }
+
+    private sealed class VirtualInventory
+    {
+        private readonly List<VirtualStack> _slots;
+
+        public VirtualInventory(IReadOnlyList<ItemStack> slots)
+        {
+            _slots = [];
+            foreach (var stack in slots)
+            {
+                _slots.Add(new VirtualStack(stack?.Item, stack?.Amount ?? 0));
+            }
+        }
+
+        public bool Remove(IReadOnlyDictionary<ItemData, int> requirements)
+        {
+            foreach (var requirement in requirements)
+            {
+                if (!Remove(requirement.Key, requirement.Value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool CanAdd(ItemData item, int amount)
+        {
+            if (item == null || amount <= 0 || item.ActualMaxStackSize <= 0)
+            {
+                return false;
+            }
+
+            int remaining = FillExistingStacks(item, amount);
+            return remaining <= 0 || FillEmptySlots(item, remaining) <= 0;
+        }
+
+        private bool Remove(ItemData item, int amount)
+        {
+            int remaining = amount;
+            for (int i = _slots.Count - 1; i >= 0 && remaining > 0; i--)
+            {
+                var slot = _slots[i];
+                if (slot.Item != item)
+                {
+                    continue;
+                }
+
+                int removed = Math.Min(slot.Amount, remaining);
+                slot.Amount -= removed;
+                remaining -= removed;
+                if (slot.Amount <= 0)
+                {
+                    slot.Clear();
+                }
+            }
+
+            return remaining <= 0;
+        }
+
+        private int FillExistingStacks(ItemData item, int amount)
+        {
+            int remaining = amount;
+            foreach (var slot in _slots)
+            {
+                if (slot.Item != item || slot.Amount >= item.ActualMaxStackSize)
+                {
+                    continue;
+                }
+
+                int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize - slot.Amount);
+                slot.Amount += amountToAdd;
+                remaining -= amountToAdd;
+                if (remaining <= 0)
+                {
+                    return 0;
+                }
+            }
+
+            return remaining;
+        }
+
+        private int FillEmptySlots(ItemData item, int amount)
+        {
+            int remaining = amount;
+            foreach (var slot in _slots)
+            {
+                if (slot.Item != null)
+                {
+                    continue;
+                }
+
+                int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize);
+                slot.Item = item;
+                slot.Amount = amountToAdd;
+                remaining -= amountToAdd;
+                if (remaining <= 0)
+                {
+                    return 0;
+                }
+            }
+
+            return remaining;
+        }
     }
 
     private sealed class VirtualStack
