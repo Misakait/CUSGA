@@ -302,16 +302,16 @@ func _handle_enemy_turn():
 		var tween = create_tween()
 		tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_turn_scale, scale_tween_duration)
 
-	# 怪物回合：优先从技能池中随机释放一张技能卡
-	var skill_card = null
-	if active_entity and active_entity.has_method("GetRandomSkillCard"):
-		skill_card = active_entity.GetRandomSkillCard()
+	# 怪物回合只读取 CombatSkillData；玩家 SkillCardData 在玩家出牌路径处理。
+	var combat_skill = null
+	if active_entity and active_entity.has_method("GetRandomCombatSkill"):
+		combat_skill = active_entity.GetRandomCombatSkill()
 
-	if skill_card:
-		var action = Action.new(active_entity, [], skill_card, "skill", "CARD")
+	if combat_skill:
+		var action = Action.new(active_entity, [], combat_skill, "skill", "SKILL")
 		enqueue_action(action)
 	else:
-		# 兜底：没有技能卡时执行基础攻击
+		# 兜底：没有技能时执行基础攻击
 		var action = Action.new(active_entity, [player_manager], null, "attack", "ATTACK")
 		enqueue_action(action)
 
@@ -368,17 +368,23 @@ func _handle_execute_actions():
 func _execute_single_action(action: Action):
 	print(action.source, " 执行行动 ", action.action_type, " 目标 ", action.targets)
 
-	if action.action_type == "CARD":
-		# 如果是玩家打出的卡牌，提取 C# 侧的卡牌逻辑并应用其效果(ApplyEffect)
+	if action.action_type == "CARD" or action.action_type == "SKILL":
+		# 玩家卡牌和怪物技能共享目标解析；结算时分别调用 SkillCardData 或 CombatSkillData。
 		var target = action.targets[0] if action.targets.size() > 0 else null
-		if action.card_data and action.card_data.has_method("ApplyEffect"):
+		var combat_skill = null
+		if action.action_type == "CARD" and action.card_data and action.card_data.get("Skill") != null:
+			combat_skill = action.card_data.Skill
+		elif action.action_type == "SKILL":
+			combat_skill = action.card_data
+
+		if combat_skill:
 			var ContextClass = load(CONTEXT_SCRIPT_PATH)
 			var context = null
 
 			# 尝试安全地获取技能目标的枚举值，默认为自身
 			var targeting_type: int = SkillTargetingType.SELF
-			if action.card_data.get("Skill") != null and action.card_data.Skill.get("TargetingType") != null:
-				targeting_type = action.card_data.Skill.TargetingType
+			if combat_skill.get("TargetingType") != null:
+				targeting_type = combat_skill.TargetingType
 
 			# ---------------------------------------------------------
 			# 【重要：C# 实体解包】
@@ -492,8 +498,10 @@ func _execute_single_action(action: Action):
 					else:
 						context = ContextClass.Self(real_source)
 
-			if context != null:
+			if context != null and action.action_type == "CARD" and action.card_data and action.card_data.has_method("ApplyEffect"):
 				action.card_data.ApplyEffect(context)
+			elif context != null and action.action_type == "SKILL" and combat_skill.has_method("Execute"):
+				combat_skill.Execute(context)
 
 	elif action.action_type == "ATTACK":
 		# 敌人基础攻击的临时占位逻辑

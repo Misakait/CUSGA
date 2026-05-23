@@ -5,7 +5,7 @@ using CUSGA.entities.components;
 using CUSGA.core.constants;
 using CUSGA.core.combat;
 using CUSGA.core.attributes;
-using CUSGA.resources.item.card;
+using CUSGA.core.combat.skills;
 using System;
 
 namespace CUSGA.entities;
@@ -20,6 +20,7 @@ public partial class Monster : Node2D
     public AttributeComponent Attributes { get; private set; }
     public FactionComponent Faction { get; private set; }
     public StatusComponent Status { get; private set; }
+    public MonsterSkillComponent SkillComponent { get; private set; }
     private LootComponent Loot { get; set; }
 
     private ProgressBar _healthBar;
@@ -35,6 +36,7 @@ public partial class Monster : Node2D
         Health = GetNode<HealthComponent>("Components/HealthComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
         Loot = GetNodeOrNull<LootComponent>("Components/LootComponent");
+        SkillComponent = GetNodeOrNull<MonsterSkillComponent>("Components/SkillComponent");
         Health.Depleted += HandleDeath;
         Health.ValueChanged += OnHealthChanged;
 
@@ -143,6 +145,10 @@ public partial class Monster : Node2D
         Attributes.InitializeWithData(data.InitialAttributes);
         Faction.Faction = data.Faction;
         Health.InitializeMax(data.MaxHealth);
+        if (data.SkillSet != null)
+        {
+            SkillComponent?.Initialize(data.SkillSet);
+        }
         UpdateCardUi(data);
 
         // 实例化图纸里配置的美术预制体
@@ -188,22 +194,21 @@ public partial class Monster : Node2D
         };
     }
 
-    // 获取怪物的技能卡池（直接复用玩家技能卡资源）
-    public Array<SkillCardData> GetSkillCards()
+    /// <summary>
+    /// 从技能组件获取当前怪物配置的战斗技能。
+    /// </summary>
+    /// <returns>当前怪物可用的有效战斗技能数组。</returns>
+    public Array<CombatSkillData> GetCombatSkills()
     {
-        return BaseData?.SkillCards ?? [];
+        return SkillComponent?.GetCombatSkills() ?? [];
     }
 
-    // 从技能卡池中随机选取一张，用于怪物回合自动施放
-    public SkillCardData GetRandomSkillCard()
+    /// <summary>
+    /// 为怪物自动回合选择一个战斗技能。
+    /// </summary>
+    /// <returns>已配置的战斗技能；没有技能组件或没有技能时返回 null。</returns>
+    public CombatSkillData GetRandomCombatSkill()
     {
-        var cards = GetSkillCards();
-        if (cards == null || cards.Count == 0)
-        {
-            return null;
-        }
-
-        var index = (int)(GD.Randi() % (uint)cards.Count);
-        return cards[index];
+        return SkillComponent?.GetRandomCombatSkill();
     }
 }

@@ -57,7 +57,7 @@ public sealed class EncounterMonsterScaler(Func<MonsterData> monsterFactory, Fun
         scaled.LootTable = source.LootTable;
         scaled.BehaviorTreeScene = source.BehaviorTreeScene;
         scaled.Faction = source.Faction;
-        scaled.SkillCards = source.SkillCards;
+        scaled.SkillSet = source.SkillSet;
         scaled.MaxHealth = ScaleInt(source.MaxHealth, terrain.MaxHealth, day.MaxHealth);
 
         if (source.InitialAttributes != null)

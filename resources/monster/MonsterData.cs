@@ -2,9 +2,8 @@ using Godot;
 using Godot.Collections;
 using CUSGA.resources.loot;
 using CUSGA.core.constants;
-using CUSGA.entities.components;
+using CUSGA.resources.monster;
 using CUSGA.resources.stats;
-using CUSGA.resources.item.card;
 
 namespace CUSGA.resources.monsters;
 
@@ -24,6 +23,6 @@ public partial class MonsterData : Resource
     [Export] public MonsterFaction Faction { get; set; }
     [Export] public int MaxHealth { get; set; }
 
-    // 直接复用玩家技能卡（SkillCardData）作为怪物技能池
-    [Export] public Array<SkillCardData> SkillCards { get; set; } = [];
+    // 怪物只配置战斗技能集合，玩家卡牌资源只在玩家牌组和 UI 表现边界使用
+    [Export] public MonsterSkillSetData SkillSet { get; set; }
 }

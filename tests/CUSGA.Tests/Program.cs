@@ -1,11 +1,14 @@
 using CUSGA.core.application;
+using CUSGA.core.combat.skills;
 using CUSGA.core.crafting;
 using CUSGA.core.inventory;
 using CUSGA.core.map;
+using CUSGA.entities.components;
 using CUSGA.resources.encounters;
 using CUSGA.resources.interaction;
 using CUSGA.resources.crafting;
 using CUSGA.resources.item;
+using CUSGA.resources.monster;
 using CUSGA.resources.monsters;
 using CUSGA.resources.stats;
 using Godot;
@@ -16,6 +19,8 @@ var tests = new TerrainRandomizationTests();
 tests.GeneratedLayoutUsesProfileAndCarriesVarianceMultiplier();
 tests.StorePersistsGeneratedTerrainBoardPositionsAndVariance();
 tests.EncounterMonsterScalerDuplicatesAndScalesAllEncounterStats();
+tests.MonsterSkillComponentReturnsConfiguredCombatSkills();
+tests.MonsterSkillComponentRandomSkillComesFromConfiguredSkillSet();
 tests.CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot();
 tests.CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult();
 tests.CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit();
@@ -106,6 +111,7 @@ internal sealed class TerrainRandomizationTests
         monster.MonsterName = "Scaled";
         monster.MaxHealth = 100;
         monster.InitialAttributes = baseStats;
+        monster.SkillSet = CreateMonsterSkillSet(CreateMonsterSkillEntry(CreateCombatSkillDataStub()));
 
         var scaler = new EncounterMonsterScaler(
             CreateMonsterDataStub,
@@ -130,6 +136,39 @@ internal sealed class TerrainRandomizationTests
         Assert.Approximately(30f, scaledMonster.InitialAttributes.BaseSpeed);
         Assert.Equal(100, monster.MaxHealth);
         Assert.Approximately(10f, baseStats.BasePhysAtk);
+        Assert.Same(monster.SkillSet, scaledMonster.SkillSet);
+    }
+
+    public void MonsterSkillComponentReturnsConfiguredCombatSkills()
+    {
+        var firstSkill = CreateCombatSkillDataStub();
+        var secondSkill = CreateCombatSkillDataStub();
+        var component = new MonsterSkillComponent();
+        component.Initialize(
+            CreateMonsterSkillSet(
+                CreateMonsterSkillEntry(firstSkill),
+                null,
+                CreateMonsterSkillEntry(null),
+                CreateMonsterSkillEntry(secondSkill)
+            )
+        );
+
+        var skills = component.GetCombatSkills();
+
+        Assert.Equal(2, skills.Count);
+        Assert.Same(firstSkill, skills[0]);
+        Assert.Same(secondSkill, skills[1]);
+    }
+
+    public void MonsterSkillComponentRandomSkillComesFromConfiguredSkillSet()
+    {
+        var skill = CreateCombatSkillDataStub();
+        var component = new MonsterSkillComponent();
+        component.Initialize(CreateMonsterSkillSet(CreateMonsterSkillEntry(skill)));
+
+        CombatSkillData selected = component.GetRandomCombatSkill();
+
+        Assert.Same(skill, selected);
     }
 
     public void CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot()
@@ -237,6 +276,34 @@ internal sealed class TerrainRandomizationTests
     private static MonsterData CreateMonsterDataStub()
     {
         return (MonsterData)RuntimeHelpers.GetUninitializedObject(typeof(MonsterData));
+    }
+
+    private static MonsterSkillSetData CreateMonsterSkillSet(params MonsterSkillEntryData?[] entries)
+    {
+        var skillSet = (MonsterSkillSetData)RuntimeHelpers.GetUninitializedObject(
+            typeof(MonsterSkillSetData)
+        );
+        skillSet.Skills = [];
+        foreach (var entry in entries)
+        {
+            skillSet.Skills.Add(entry!);
+        }
+
+        return skillSet;
+    }
+
+    private static MonsterSkillEntryData CreateMonsterSkillEntry(CombatSkillData? skill)
+    {
+        var entry = (MonsterSkillEntryData)RuntimeHelpers.GetUninitializedObject(
+            typeof(MonsterSkillEntryData)
+        );
+        entry.Skill = skill;
+        return entry;
+    }
+
+    private static CombatSkillData CreateCombatSkillDataStub()
+    {
+        return (CombatSkillData)RuntimeHelpers.GetUninitializedObject(typeof(CombatSkillData));
     }
 
     private static StartingStats CreateStartingStatsStub()
@@ -461,6 +528,14 @@ internal static class Assert
         if (ReferenceEquals(expectedDifferent, actual))
         {
             throw new InvalidOperationException("Expected different object instances.");
+        }
+    }
+
+    public static void Same(object expected, object actual)
+    {
+        if (!ReferenceEquals(expected, actual))
+        {
+            throw new InvalidOperationException("Expected same object instance.");
         }
     }
 }
