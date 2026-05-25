@@ -55,6 +55,8 @@ var speed: float:
 ## BattleManager 每次会在 CALCULATE_TURN 中将全体人员的 action_value 逐步扣除，谁先归零谁先行动。
 var action_value: float = 0.0
 
+@export var default_action_total: float = 10000.0 ## 未进入战斗管理器时的行动值总量兜底
+
 # 兜底变量，当没有找到全局玩家或临时玩家时使用
 var _fallback_hp: int = 1000
 var _fallback_max_hp: int = 1000
@@ -131,9 +133,11 @@ func _on_energy_changed(_current: int, _max_val: int) -> void:
 	refresh_energy()
 
 ## 回合开始时被 BattleManager 调用，用于重置该实体的行动条
-func reset_action_value() -> void:
-	# 核心公式：10000 / 速度
-	action_value = 10000.0 / speed
+func reset_action_value(action_total: float = -1.0) -> void:
+	# 允许 BattleManager 传入统一的行动值总量，单独测试时走本地兜底
+	var total = action_total if action_total > 0 else default_action_total
+	# 核心公式：行动值总量 / 速度
+	action_value = total / speed
 
 func recover_hp(amount:int):
 	if health_component and health_component.has_method("Add"):

@@ -29,6 +29,10 @@ signal battle_ended(is_victory: bool)
 
 #region 其他参数
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
+const SKILL_TARGETING_TYPE_BRIDGE := preload("res://scripts/battle_scripts/skill_targeting_type_bridge.gd")
+
+# 通过桥接器读取 C# 枚举，避免在 GDScript 中重复维护顺序。
+@onready var _skill_targeting_type_map: Dictionary = SKILL_TARGETING_TYPE_BRIDGE.get_map()
 
 ## 战斗状态机的状态定义
 enum BattleState {
@@ -39,16 +43,6 @@ enum BattleState {
 	EXECUTE_ACTIONS, ## 执行行动队列（结算动画与效果）
 	TURN_END,        ## 回合结束清理与胜负判定
 	COMBAT_END       ## 战斗完全结束
-}
-## C# 中 SkillTargetingType 枚举的 GDScript 映射常量，避免魔法数字
-enum SkillTargetingType {
-	SELF = 0,               ## 自身
-	SINGLE_ENEMY = 1,       ## 单体敌人
-	ALL_ENEMIES = 2,        ## 全体敌人
-	ANY_SINGLE_UNIT = 3,    ## 任意单体
-	ALL_UNITS = 4,          ## 全体单位
-	RANDOM_ENEMY = 5,       ## 随机单体敌人
-	SPREAD_FROM_ENEMY = 6   ## 从单体敌人扩散
 }
 var current_state: BattleState = BattleState.COMBAT_START ## 当前战斗状态
 
@@ -104,13 +98,24 @@ func _pick_random_from(list: Array):
 		return null
 	return list.pick_random()
 
+func _is_active_entity_valid() -> bool:
+	# 避免引用已被销毁的节点，防止战斗流程中断
+	if active_entity == null:
+		return false
+	if not is_instance_valid(active_entity):
+		active_entity = null
+		return false
+	return true
+
 func _ready():
 	#初始化摸牌堆
 	deck_manager.initialize_deck(starting_deck_data)
-	#初始化怪物
-	monster_manager.initialize_monsters(starting_monster_data)
+
+	# 先连接信号，确保初次生成怪物时不会漏掉回调
 	monster_manager.monsters_spawned.connect(_on_monsters_spawned)
 	monster_manager.monster_defeated.connect(_on_monster_defeated)
+	#初始化怪物
+	monster_manager.initialize_monsters(starting_monster_data)
 
 #未测试
 	_connect_combatant_attribute_signals(player_manager)
@@ -160,14 +165,14 @@ func _on_combatant_attribute_changed(event: RefCounted, combatant: Variant):
 
 			# 更新行动轴UI，平滑重排
 			if action_timeline:
-				action_timeline.update_timeline(get_all_combatants(), active_entity)
+				action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 
 ## 处理中途生成的怪物（为新怪物分配初始行动值）
 
 ## 处理怪物死亡，立即刷新时间轴
 func _on_monster_defeated(monster):
 	if action_timeline:
-		action_timeline.update_timeline(get_all_combatants(), active_entity)
+		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 
 func _on_monsters_spawned():
 	for monster in monster_manager.active_monsters:
@@ -186,7 +191,7 @@ func _on_monsters_spawned():
 		_connect_combatant_attribute_signals(monster)
 
 	if action_timeline:
-		action_timeline.update_timeline(get_all_combatants(), active_entity)
+		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 
 ## 统一的状态切换入口，负责状态流转的分发
 func change_state(new_state: BattleState):
@@ -208,10 +213,10 @@ func change_state(new_state: BattleState):
 			_handle_combat_end()
 
 ## 处理战斗初始化：为所有场上实体分配初始的 action_value（行动值）。
-## action_value = 10000 / 速度，值越小说明越快到达行动点。
+## action_value = action_total / 速度，值越小说明越快到达行动点。
 func _handle_combat_start():
 	print("--- 战斗开始 ---")
-	player_manager.reset_action_value()
+	player_manager.reset_action_value(action_total)
 	for monster in monster_manager.active_monsters:
 		var speed = 100.0
 		var real_entity = monster.get_combat_entity() if monster.has_method("get_combat_entity") else monster
@@ -226,7 +231,7 @@ func _handle_combat_start():
 
 	# 初始化完成后，进入计算回合阶段
 	if action_timeline:
-		action_timeline.update_timeline(get_all_combatants(), active_entity)
+		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 	change_state(BattleState.CALCULATE_TURN)
 
 ## 计算行动顺位（ATB系统）：找出当前场上 action_value 最小的实体。
@@ -251,7 +256,7 @@ func _handle_calculate_turn():
 	# 记录当前获得回合的实体并进入对应回合
 	active_entity = min_av_entity
 	if action_timeline:
-		action_timeline.update_timeline(get_all_combatants(), active_entity)
+		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 
 	_notify_turn_started()
 
@@ -262,7 +267,7 @@ func _handle_calculate_turn():
 
 #专门用于分发回合开始/结束信号的函数
 func _notify_turn_status(method_name: String):
-	if not active_entity:
+	if not _is_active_entity_valid():
 		return
 
 	var current_actor = active_entity.get_combat_entity() if active_entity.has_method("get_combat_entity") else active_entity
@@ -288,8 +293,12 @@ func _notify_turn_ended():
 ## 玩家回合逻辑：重置玩家行动值、恢复能量、抽牌并解锁控制让玩家出牌。
 func _handle_player_turn():
 	print("--- 玩家回合开始 ---")
-	active_entity.reset_action_value()
+	if not _is_active_entity_valid():
+		change_state(BattleState.CALCULATE_TURN)
+		return
+	player_manager.reset_action_value(action_total)
 	player_manager.recover_energy(player_manager.max_energy)
+	# need_draw_interval=false 时不会 yield，避免 await 非协程返回值
 	deck_manager.draw_cards(turn_draw_count, false)
 	control_lock.unlock()
 
@@ -297,6 +306,10 @@ func _handle_player_turn():
 func _handle_enemy_turn():
 	print("--- 敌人回合开始 ---")
 	control_lock.lock()
+
+	if not _is_active_entity_valid():
+		change_state(BattleState.CALCULATE_TURN)
+		return
 
 	if active_entity and active_entity.has_node("Sprite2D"):
 		var tween = create_tween()
@@ -327,7 +340,7 @@ func _handle_enemy_turn():
 	active_entity.set_meta("action_value", action_total / speed)
 
 	if action_timeline:
-		action_timeline.update_timeline(get_all_combatants(), active_entity)
+		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 	change_state(BattleState.EXECUTE_ACTIONS)
 
 ## 将一个产生的行动压入队列。
@@ -343,6 +356,9 @@ func _handle_execute_actions():
 
 	# 队列为空时判断去向
 	if action_queue.is_empty():
+		if not _is_active_entity_valid():
+			change_state(BattleState.CALCULATE_TURN)
+			return
 		if active_entity == player_manager:
 			# 玩家出牌动画演示完毕，返还控制权让玩家继续出牌
 			current_state = BattleState.PLAYER_TURN
@@ -382,9 +398,18 @@ func _execute_single_action(action: Action):
 			var context = null
 
 			# 尝试安全地获取技能目标的枚举值，默认为自身
-			var targeting_type: int = SkillTargetingType.SELF
+			# 这里用字典映射，避免 GDScript 自己维护一份枚举顺序
+			var target_self = _skill_targeting_type_map.get("Self", 0)
+			var target_single_enemy = _skill_targeting_type_map.get("SingleEnemy", 1)
+			var target_all_enemies = _skill_targeting_type_map.get("AllEnemies", 2)
+			var target_any_single = _skill_targeting_type_map.get("AnySingleUnit", 3)
+			var target_all_units = _skill_targeting_type_map.get("AllUnits", 4)
+			var target_random_enemy = _skill_targeting_type_map.get("RandomEnemy", 5)
+			var target_spread_from_enemy = _skill_targeting_type_map.get("SpreadFromEnemy", 6)
+
+			var targeting_type: int = target_self
 			if combat_skill.get("TargetingType") != null:
-				targeting_type = combat_skill.TargetingType
+				targeting_type = int(combat_skill.TargetingType)
 
 			# ---------------------------------------------------------
 			# 【重要：C# 实体解包】
@@ -400,11 +425,11 @@ func _execute_single_action(action: Action):
 
 			# 基于解析到的类型，动态收集场上目标并分配至对应上下文工厂
 			match targeting_type:
-				SkillTargetingType.SELF:
+				target_self:
 					# 目标为自身：直接传入卡牌施放者
 					context = ContextClass.Self(real_source)
 
-				SkillTargetingType.SINGLE_ENEMY:
+				target_single_enemy:
 					# 单体敌人：若未显式指定目标，则自动从敌方中随机选择
 					if not real_target:
 						var enemy = _pick_random_from(_get_enemies_for_source(action.source))
@@ -415,7 +440,7 @@ func _execute_single_action(action: Action):
 						push_warning("单体技能未找到目标，退化为以自身为目标")
 						context = ContextClass.Self(real_source)
 
-				SkillTargetingType.ANY_SINGLE_UNIT:
+				target_any_single:
 					# 任意单体：若未显式指定目标，则从场上所有单位中随机选择
 					if not real_target:
 						var any_unit = _pick_random_from(get_all_combatants())
@@ -426,7 +451,7 @@ func _execute_single_action(action: Action):
 						push_warning("任意单体技能未找到目标，退化为以自身为目标")
 						context = ContextClass.Self(real_source)
 
-				SkillTargetingType.ALL_ENEMIES:
+				target_all_enemies:
 					# 全体敌人：根据施放者阵营动态选择敌对单位
 					var enemies: Array[Node] = []
 					for enemy in _get_enemies_for_source(action.source):
@@ -438,7 +463,7 @@ func _execute_single_action(action: Action):
 					else:
 						context = ContextClass.FromPrimaryTargets(real_source, enemies)
 
-				SkillTargetingType.ALL_UNITS:
+				target_all_units:
 					# 全体单位：复用写好的 get_all_combatants() 获取包含玩家在内的所有人
 					var all_units: Array[Node] = []
 					for unit in get_all_combatants():
@@ -450,7 +475,7 @@ func _execute_single_action(action: Action):
 					else:
 						context = ContextClass.FromPrimaryTargets(real_source, all_units)
 
-				SkillTargetingType.RANDOM_ENEMY:
+				target_random_enemy:
 					# 随机单体敌人：根据施放者阵营动态选择敌对单位
 					var random_enemy = _pick_random_from(_get_enemies_for_source(action.source))
 					random_enemy = _unwrap_combat_entity(random_enemy)
@@ -459,7 +484,7 @@ func _execute_single_action(action: Action):
 					else:
 						context = ContextClass.Self(real_source)
 
-				SkillTargetingType.SPREAD_FROM_ENEMY:
+				target_spread_from_enemy:
 					# 扩散类型：获取主目标，并根据其在怪物列表中的位置，提取相邻（左右）的敌人作为次要目标
 					var spread_primary = target
 					if not spread_primary:
@@ -516,10 +541,13 @@ func _handle_turn_end():
 	print("--- 回合结束 ---")
 	_notify_turn_ended()
 
-	if active_entity == player_manager:
+	# 防止回合结束时引用已销毁的行动者节点
+	var has_valid_actor := _is_active_entity_valid()
+
+	if has_valid_actor and active_entity == player_manager:
 		deck_manager.discard_hand() # 玩家回合结束必定弃置所有手牌
-	else:
-		if active_entity and active_entity.has_node("Sprite2D"):
+	elif has_valid_actor:
+		if active_entity.has_node("Sprite2D"):
 			var tween = create_tween()
 			tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_normal_scale, scale_tween_duration)
 
@@ -529,7 +557,7 @@ func _handle_turn_end():
 	else:
 		# 未结束则转入重新计算回合权
 		if action_timeline:
-			action_timeline.update_timeline(get_all_combatants(), active_entity)
+			action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 		change_state(BattleState.CALCULATE_TURN)
 
 ## 战斗结束结算（可扩展弹出结算界面或回到大地图）
@@ -552,4 +580,4 @@ func _on_draw_card_pressed() -> void:
 	# 同样必须是玩家回合阶段才允许使用
 	if control_lock.is_lock or current_state != BattleState.PLAYER_TURN:
 		return
-	deck_manager.draw_cards(3)
+	await deck_manager.draw_cards(3)

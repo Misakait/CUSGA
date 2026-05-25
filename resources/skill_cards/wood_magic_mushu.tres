@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://cw5iyxehw12fh"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
-[ext_resource type="Resource" path="res://resources/combat_skills/wood_magic_mushu.tres" id="combat_skill"]
+[ext_resource type="Resource" uid="uid://dywne4daeg1qm" path="res://resources/combat_skills/wood_magic_mushu.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://dwl4y02inrubl" path="res://res/skillcard/wood_skill_card.png" id="icon_skillcard"]
 
 [resource]

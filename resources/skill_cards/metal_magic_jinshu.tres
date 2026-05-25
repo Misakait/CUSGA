@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://domcrxhndidx4"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
-[ext_resource type="Resource" path="res://resources/combat_skills/metal_magic_jinshu.tres" id="combat_skill"]
+[ext_resource type="Resource" uid="uid://cgdb0tw0b7xxc" path="res://resources/combat_skills/metal_magic_jinshu.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://c7g8f2ax6j8fe" path="res://res/skillcard/gold_skill_card.png" id="icon_skillcard"]
 
 [resource]

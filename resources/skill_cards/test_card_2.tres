@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://biq5mpj4n1rqp"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_bhrvp"]
-[ext_resource type="Resource" path="res://resources/combat_skills/test_card_2.tres" id="combat_skill"]
+[ext_resource type="Resource" uid="uid://cygjacjot10mm" path="res://resources/combat_skills/test_card_2.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://cjg0lew5helqj" path="res://res/skillcard/fire_skill_card.png" id="icon_skillcard"]
 
 [resource]

@@ -11,17 +11,10 @@ extends Node2D
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
+const SKILL_TARGETING_TYPE_BRIDGE := preload("res://scripts/battle_scripts/skill_targeting_type_bridge.gd")
 
-## 引入 C# 端的枚举，用于判断多目标高亮
-enum SkillTargetingType {
-	SELF = 0,
-	SINGLE_ENEMY = 1,
-	ALL_ENEMIES = 2,
-	ANY_SINGLE_UNIT = 3,
-	ALL_UNITS = 4,
-	RANDOM_ENEMY = 5,
-	SPREAD_FROM_ENEMY = 6
-}
+# 通过桥接器读取 C# 枚举，避免在 GDScript 中重复维护顺序。
+@onready var _skill_targeting_type_map: Dictionary = SKILL_TARGETING_TYPE_BRIDGE.get_map()
 
 @export_group("视觉缩放参数")
 @export var card_normal_scale: Vector2 = Vector2(1.0, 1.0) ## 卡牌正常大小
@@ -71,30 +64,39 @@ func update_hovered_targets(new_slot: Node2D):
 	# 如果悬停在有效卡槽上，并且手里抓着牌，开始计算波及范围
 	if new_slot and card_being_dragged and card_being_dragged.data:
 		var target = new_slot.get_parent()
-		var targeting_type: int = SkillTargetingType.SINGLE_ENEMY
+		# 这里用字典映射，避免 GDScript 自己维护一份枚举顺序
+		var target_self = _skill_targeting_type_map.get("Self", 0)
+		var target_single_enemy = _skill_targeting_type_map.get("SingleEnemy", 1)
+		var target_all_enemies = _skill_targeting_type_map.get("AllEnemies", 2)
+		var target_any_single = _skill_targeting_type_map.get("AnySingleUnit", 3)
+		var target_all_units = _skill_targeting_type_map.get("AllUnits", 4)
+		var target_random_enemy = _skill_targeting_type_map.get("RandomEnemy", 5)
+		var target_spread_from_enemy = _skill_targeting_type_map.get("SpreadFromEnemy", 6)
+
+		var targeting_type: int = target_single_enemy
 
 		# 尝试安全获取目标类型
 		if card_being_dragged.data.get("Skill") != null and card_being_dragged.data.Skill.get("TargetingType") != null:
-			targeting_type = card_being_dragged.data.Skill.TargetingType
+			targeting_type = int(card_being_dragged.data.Skill.TargetingType)
 
 		match targeting_type:
-			SkillTargetingType.SELF:
+			target_self:
 				intended_targets.append(player_manager)
 
-			SkillTargetingType.SINGLE_ENEMY, SkillTargetingType.ANY_SINGLE_UNIT:
+			target_single_enemy, target_any_single:
 				if target:
 					intended_targets.append(target)
 
-			SkillTargetingType.ALL_ENEMIES, SkillTargetingType.RANDOM_ENEMY:
+			target_all_enemies, target_random_enemy:
 				# 全体和随机都会高亮所有敌人，以提示波及范围
 				if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
 					intended_targets.assign(battle_manager.monster_manager.active_monsters)
 
-			SkillTargetingType.ALL_UNITS:
+			target_all_units:
 				# 所有人，包括玩家
 				intended_targets.assign(battle_manager.get_all_combatants())
 
-			SkillTargetingType.SPREAD_FROM_ENEMY:
+			target_spread_from_enemy:
 				# 扩散逻辑：主目标 + 左右相邻
 				if target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
 					var monsters = battle_manager.monster_manager.active_monsters
@@ -218,11 +220,12 @@ func start_drag(card):
 func is_self_target_card(card: SkillCard) -> bool:
 	if not card or not card.data:
 		return false
-	var targeting_type: int = SkillTargetingType.SINGLE_ENEMY
+	var target_self = _skill_targeting_type_map.get("Self", 0)
+	var targeting_type: int = _skill_targeting_type_map.get("SingleEnemy", 1)
 	# 尝试安全获取目标类型
 	if card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
-		targeting_type = card.data.Skill.TargetingType
-	return targeting_type == SkillTargetingType.SELF
+		targeting_type = int(card.data.Skill.TargetingType)
+	return targeting_type == target_self
 
 ## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
 func finish_drag():
@@ -236,15 +239,12 @@ func finish_drag():
 		player_manager.consume_energy(card_being_dragged.data.cost)
 		# 让DeckManager将卡牌推入战斗状态机的 Action Queue (行动队列)
 		deck_manager.play_card(card_being_dragged, card_slot_found.get_parent())
-		# 将其从玩家手牌节点中移除并走丢弃动画
-		player_hand_referencd.remove_card_from_hand(card_being_dragged)
 	else:
 		# 如果拖动后没进入有效区域(比如丢到空白处)，则卡牌原路弹回玩家手中
 		# 特例：当卡牌是【对自己使用】类型时，允许直接在空白处施放
 		if allow_self_cast_on_empty and is_self_target_card(card_being_dragged):
 			player_manager.consume_energy(card_being_dragged.data.cost)
 			deck_manager.play_card(card_being_dragged)
-			player_hand_referencd.remove_card_from_hand(card_being_dragged)
 		else:
 			player_hand_referencd.add_card_to_hand(card_being_dragged)
 

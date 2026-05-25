@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://dd7mnum2hfn5d"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="combat_skill"]
+[ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://d2nx8sb4geywa" path="res://res/skillcard/earth_skill_card.png" id="icon_skillcard"]
 
 [resource]
