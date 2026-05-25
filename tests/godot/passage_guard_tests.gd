@@ -38,6 +38,21 @@ class FakeWorldInteractionCoordinator:
 		emit_signal(&"PassageGuardEncounterFinished", next_result)
 
 
+class FakeMapControl:
+	extends Node
+
+	var player: Node
+
+
+class FakeEquipmentComponent:
+	extends Node
+
+	var encounter_multiplier: float = 1.0
+
+	func GetNightEncounterChanceMultiplier() -> float:
+		return encounter_multiplier
+
+
 class FakeScreenTransitions:
 	extends Node
 
@@ -89,6 +104,8 @@ func _run() -> void:
 	await _test_background_resolver_uses_map_instantiator_current_scene()
 	_test_passage_guard_state_treats_edges_as_undirected()
 	_test_passage_guard_probability_applies_modifiers()
+	_test_torch_multiplier_reduces_night_guard_rolls()
+	_test_torch_multiplier_keeps_default_guard_rolls()
 	_test_passage_guard_monster_resolver_keeps_visible_room_encounter_stable()
 
 	if _failures.is_empty():
@@ -204,6 +221,32 @@ func _test_passage_guard_probability_applies_modifiers() -> void:
 	tags.free()
 
 
+func _test_torch_multiplier_reduces_night_guard_rolls() -> void:
+	var harness := _create_guard_roll_harness(0.0)
+	var controller: Node = harness["controller"]
+	var from := Vector2i(0, 0)
+	var to := Vector2i(0, 1)
+
+	controller._roll_night_guards()
+
+	_assert(not controller.is_guarded(from, to), "携带火把时，夜晚通道驻守生成概率应当被装备乘数降低。")
+	harness["root"].queue_free()
+	await process_frame
+
+
+func _test_torch_multiplier_keeps_default_guard_rolls() -> void:
+	var harness := _create_guard_roll_harness(1.0)
+	var controller: Node = harness["controller"]
+	var from := Vector2i(0, 0)
+	var to := Vector2i(0, 1)
+
+	controller._roll_night_guards()
+
+	_assert(controller.is_guarded(from, to), "没有装备遭遇修正时，夜晚通道驻守生成应当保持原始概率。")
+	harness["root"].queue_free()
+	await process_frame
+
+
 func _test_passage_guard_monster_resolver_keeps_visible_room_encounter_stable() -> void:
 	var monster := MonsterData.new()
 	monster.MonsterName = "木精"
@@ -255,6 +298,55 @@ func _create_guard_battle_harness(is_victory: bool) -> Dictionary:
 		"root": root,
 		"controller": controller,
 		"coordinator": coordinator,
+	}
+
+
+func _create_guard_roll_harness(encounter_multiplier: float) -> Dictionary:
+	var root := FakeMapControl.new()
+	root.name = "PassageGuardRollHarness"
+	get_root().add_child(root)
+
+	var map_position_create := FakeMapPositionCreate.new()
+	map_position_create.name = "MapPositionCreate"
+	map_position_create.map = [["forest", "forest"]]
+	map_position_create.scene_to_scene = {
+		Vector2i(0, 0): [0, 1, 0, 0],
+		Vector2i(0, 1): [0, 0, 0, 1],
+	}
+	root.add_child(map_position_create)
+
+	var map_types := FakeMapTypes.new()
+	map_types.name = "MapTypes"
+	map_types.attribute = map_attribute.new()
+	map_types.attribute.scene_name = "forest"
+	root.add_child(map_types)
+
+	var player := Node.new()
+	player.name = "Player"
+	var components := Node.new()
+	components.name = "Components"
+	player.add_child(components)
+	var tags: Node = TagComponentScript.new()
+	tags.name = "TagComponent"
+	components.add_child(tags)
+	var equipment := FakeEquipmentComponent.new()
+	equipment.name = "EquipmentComponent"
+	equipment.encounter_multiplier = encounter_multiplier
+	components.add_child(equipment)
+	root.player = player
+	root.add_child(player)
+
+	var controller: Node = PassageGuardControllerScript.new()
+	controller.name = "PassageGuardController"
+	controller.settings = PassageGuardSettings.new()
+	controller.settings.BaseGuardChance = 1.0
+	controller.map_position_create_path = ^"../MapPositionCreate"
+	controller.map_types_path = ^"../MapTypes"
+	root.add_child(controller)
+
+	return {
+		"root": root,
+		"controller": controller,
 	}
 
 

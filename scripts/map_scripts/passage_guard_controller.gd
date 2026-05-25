@@ -97,6 +97,7 @@ func _roll_night_guards() -> void:
 
 	var tag_component := _get_player_tag_component()
 	var guard_chance: float = _probability_provider.Calculate(settings, tag_component)
+	guard_chance *= _get_player_night_encounter_chance_multiplier()
 	var scene_to_scene: Dictionary = _map_position_create.scene_to_scene
 	for from in scene_to_scene.keys():
 		var connections: Array = scene_to_scene[from]
@@ -154,6 +155,24 @@ func _get_guard_pool_for_position(position: Vector2i) -> Array[PassageGuardEncou
 	return map_attr.guard_encounter_pool
 
 func _get_player_tag_component() -> Node:
+	var player := _get_player()
+	if player == null:
+		return null
+
+	return player.get_node_or_null("Components/TagComponent")
+
+func _get_player_night_encounter_chance_multiplier() -> float:
+	var player := _get_player()
+	if player == null:
+		return 1.0
+
+	var equipment_component := player.get_node_or_null("Components/EquipmentComponent")
+	if equipment_component == null or not equipment_component.has_method(&"GetNightEncounterChanceMultiplier"):
+		return 1.0
+
+	return max(0.0, float(equipment_component.call(&"GetNightEncounterChanceMultiplier")))
+
+func _get_player() -> Node:
 	var map_control := get_parent()
 	if map_control == null:
 		return null
@@ -161,7 +180,7 @@ func _get_player_tag_component() -> Node:
 	if player == null:
 		return null
 
-	return player.get_node_or_null("Components/TagComponent")
+	return player
 
 func _is_canonical_edge(from: Vector2i, to: Vector2i) -> bool:
 	if from.x != to.x:

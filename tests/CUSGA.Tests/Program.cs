@@ -1,13 +1,16 @@
 using CUSGA.core.application;
 using CUSGA.core.combat.skills;
+using CUSGA.core.constants;
 using CUSGA.core.crafting;
 using CUSGA.core.inventory;
 using CUSGA.core.map;
+using CUSGA.core.autoloads;
 using CUSGA.entities.components;
 using CUSGA.resources.encounters;
 using CUSGA.resources.interaction;
 using CUSGA.resources.crafting;
 using CUSGA.resources.item;
+using CUSGA.resources.item.equipment;
 using CUSGA.resources.monster;
 using CUSGA.resources.monsters;
 using CUSGA.resources.stats;
@@ -24,6 +27,11 @@ tests.MonsterSkillComponentRandomSkillComesFromConfiguredSkillSet();
 tests.CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot();
 tests.CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult();
 tests.CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit();
+tests.NewEquipmentSlotsAcceptCurrentItemTags();
+tests.MagicItemSlotRequiresExplicitMagicItemTag();
+tests.EquipmentDataCanAllowBothRingSlots();
+tests.EquippedTorchAppliesEncounterMultiplierUntilUnequipped();
+tests.GatheringEncounterModifierOnlyReducesNightChance();
 
 Console.WriteLine("All CUSGA tests passed.");
 
@@ -223,6 +231,133 @@ internal sealed class TerrainRandomizationTests
         Assert.Equal(0, inventory.CountWhere(item => item == output));
     }
 
+    /// <summary>
+    /// 验证当前资源标签能被新的装备槽识别。
+    /// </summary>
+    public void NewEquipmentSlotsAcceptCurrentItemTags()
+    {
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("LeatherHandguard_left"), 1),
+            EquipmentSlot.LeftHandguard
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("LeatherHandguard_right"), 1),
+            EquipmentSlot.RightHandguard
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("flametorch"), 1),
+            EquipmentSlot.Torch
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("IronNecklace"), 1),
+            EquipmentSlot.Pendant
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("IronRing"), 1),
+            EquipmentSlot.Ring1
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("IronRing"), 1),
+            EquipmentSlot.Ring2
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("IronBelt"), 1),
+            EquipmentSlot.Belt
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("lifepotion", "lifepotion", TagConsts.MagicItem.ToString()), 1),
+            EquipmentSlot.MagicItem
+        ));
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("fire", "fire", TagConsts.MagicItem.ToString()), 1),
+            EquipmentSlot.MagicItem
+        ));
+    }
+
+    /// <summary>
+    /// 验证魔法物品槽必须依赖明确的魔法物品标签，避免材料名称片段误判。
+    /// </summary>
+    public void MagicItemSlotRequiresExplicitMagicItemTag()
+    {
+        Assert.True(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("paper_talisman", "paper_talisman", TagConsts.MagicItem.ToString()), 1),
+            EquipmentSlot.MagicItem
+        ));
+        Assert.False(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("goldingot"), 1),
+            EquipmentSlot.MagicItem
+        ));
+        Assert.False(EquipmentComponent.CanEquipStack(
+            Stack(CreateTaggedItemDataStub("woodenbowl"), 1),
+            EquipmentSlot.MagicItem
+        ));
+    }
+
+    /// <summary>
+    /// 验证戒指资源可以明确配置两个戒指槽。
+    /// </summary>
+    public void EquipmentDataCanAllowBothRingSlots()
+    {
+        var ring = CreateEquipmentDataStub(EquipmentSlot.Ring1, EquipmentSlot.Ring2);
+        var stack = Stack(ring, 1);
+
+        Assert.True(EquipmentComponent.CanEquipStack(stack, EquipmentSlot.Ring1));
+        Assert.True(EquipmentComponent.CanEquipStack(stack, EquipmentSlot.Ring2));
+    }
+
+    /// <summary>
+    /// 验证火把只在装备期间提供遭遇概率修正。
+    /// </summary>
+    public void EquippedTorchAppliesEncounterMultiplierUntilUnequipped()
+    {
+        var equipment = new EquipmentComponent
+        {
+            TorchNightEncounterChanceMultiplier = 0.4f
+        };
+        var torch = Stack(CreateTaggedItemDataStub("flametorch"), 1);
+
+        Assert.True(equipment.Equip(torch, EquipmentSlot.Torch));
+        Assert.Approximately(0.4f, equipment.GetNightEncounterChanceMultiplier());
+
+        equipment.Unequip(EquipmentSlot.Torch);
+
+        Assert.Approximately(1.0f, equipment.GetNightEncounterChanceMultiplier());
+    }
+
+    /// <summary>
+    /// 验证遭遇概率修正只在夜晚生效。
+    /// </summary>
+    public void GatheringEncounterModifierOnlyReducesNightChance()
+    {
+        var time = new TimeSystem();
+        time._EnterTree();
+        try
+        {
+            var manager = new EncounterManager
+            {
+                GatheringRules =
+                [
+                    CreateGatheringEncounterRule(
+                        "wood",
+                        CreateMonsterDataStub()
+                    )
+                ],
+                BaseGatheringSpawnChance = 1.0f,
+                NightChanceMultiplier = 1.0f
+            };
+
+            Assert.True(manager.ResolveGatheringEncounter("wood", 0.0f).Triggered);
+
+            time.PassTime(TimeSystem.PhaseLength);
+
+            Assert.False(manager.ResolveGatheringEncounter("wood", 0.0f).Triggered);
+        }
+        finally
+        {
+            time._ExitTree();
+        }
+    }
+
     private static TerrainCardData CreateTerrainCardDataStub()
     {
         return (TerrainCardData)RuntimeHelpers.GetUninitializedObject(typeof(TerrainCardData));
@@ -316,6 +451,48 @@ internal sealed class TerrainRandomizationTests
         var item = (ItemData)RuntimeHelpers.GetUninitializedObject(typeof(ItemData));
         item.MaxStackSize = maxStackSize;
         return item;
+    }
+
+    private static ItemData CreateTaggedItemDataStub(string cardId, params string[] tags)
+    {
+        var item = CreateItemDataStub(maxStackSize: 99);
+        item.ItemTags = [];
+        if (tags.Length == 0)
+        {
+            item.ItemTags.Add(new StringName(cardId));
+        }
+        else
+        {
+            foreach (string tag in tags)
+            {
+                item.ItemTags.Add(new StringName(tag));
+            }
+        }
+        item.CardId = new StringName(cardId);
+        return item;
+    }
+
+    private static EquipmentData CreateEquipmentDataStub(params EquipmentSlot[] validSlots)
+    {
+        var item = (EquipmentData)RuntimeHelpers.GetUninitializedObject(typeof(EquipmentData));
+        item.MaxStackSize = 1;
+        item.ValidSlots = [.. validSlots];
+        item.GrantedTags = [];
+        item.AttributeBonuses = [];
+        return item;
+    }
+
+    private static GatheringEncounterRule CreateGatheringEncounterRule(
+        StringName triggerTag,
+        MonsterData monster)
+    {
+        var rule = (GatheringEncounterRule)RuntimeHelpers.GetUninitializedObject(
+            typeof(GatheringEncounterRule)
+        );
+        rule.TriggerTag = triggerTag;
+        rule.MonsterToSpawn = [monster];
+        rule.SpawnMessage = "test";
+        return rule;
     }
 
     private static CraftingRecipe CreateRecipe(

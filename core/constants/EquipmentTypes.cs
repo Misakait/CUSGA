@@ -9,7 +9,15 @@ public enum EquipmentSlot
     Weapon,      // 武器
     Axe,         // 斧头槽
     Pickaxe,     // 镐子槽
-    FishingRod   // 鱼竿槽
+    FishingRod,  // 鱼竿槽
+    LeftHandguard,   // 左护手
+    RightHandguard,  // 右护手
+    Torch,           // 火把
+    Pendant,         // 吊坠
+    Ring1,           // 戒指一
+    Ring2,           // 戒指二
+    Belt,            // 腰带
+    MagicItem        // 魔法物品
 }
 
 public enum EquipmentSet

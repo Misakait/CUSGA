@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_7lhfe")
 MaxStackSize = 12
-ItemTags = Array[StringName]([&"lifepotion"])
+ItemTags = Array[StringName]([&"lifepotion", &"MagicItem"])
 CardId = &"lifepotion"
 CardName = "生命药剂"
 CardIcon = ExtResource("1_g1li1")

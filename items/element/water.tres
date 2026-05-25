@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_33ouh")
 MaxStackSize = 5
-ItemTags = Array[StringName]([&"water"])
+ItemTags = Array[StringName]([&"water", &"MagicItem"])
 CardId = &"water"
 CardName = "水"
 CardIcon = ExtResource("1_6wim7")

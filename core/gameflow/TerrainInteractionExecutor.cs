@@ -38,7 +38,7 @@ public sealed class TerrainInteractionExecutor(
         {
             Gameplay = new GameplayInteractionPort(gameplayPort),
             Board = new BoardInteractionPort(boardController, card),
-            Encounters = new EncounterInteractionPort(encounterManager),
+            Encounters = new EncounterInteractionPort(encounterManager, gameplayPort),
             Terrain = terrain,
             SourceGlobalPosition = card.GlobalPosition,
         };
@@ -86,11 +86,15 @@ public sealed class TerrainInteractionExecutor(
         }
     }
 
-    private sealed class EncounterInteractionPort(EncounterManager encounterManager) : IInteractionEncounterPort
+    private sealed class EncounterInteractionPort(
+        EncounterManager encounterManager,
+        GameplayPort gameplayPort) : IInteractionEncounterPort
     {
         public GatheringEncounterResult ResolveGatheringEncounter(StringName resourceTag)
         {
-            return encounterManager.ResolveGatheringEncounter(resourceTag);
+            float encounterChanceMultiplier =
+                gameplayPort.Player?.Equipment?.GetNightEncounterChanceMultiplier() ?? 1.0f;
+            return encounterManager.ResolveGatheringEncounter(resourceTag, encounterChanceMultiplier);
         }
     }
 }

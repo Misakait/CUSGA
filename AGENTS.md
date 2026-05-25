@@ -61,6 +61,7 @@ Use codegraph for **structural** questions — what calls what, what would break
 ### Rules of thumb
 
 - **Trust codegraph results.** They come from a full AST parse. Do NOT re-verify them with grep — that's slower, less accurate, and wastes context.
+- **GDScript caveat:** CodeGraph and GitNexus do not index `.gd` files in this project. For GDScript symbols, scene scripts, and Godot runtime behavior, use native search/read tools such as `rg` and validate with focused `godot-mono --headless` runners.
 - **Don't grep first** when looking up a symbol by name. `codegraph_search` is faster and returns kind + location + signature in one call.
 - **Don't chain `codegraph_search` + `codegraph_node`** when you just want context — `codegraph_context` is one call.
 - **`codegraph_explore` is the heavy hitter** for unfamiliar areas — it returns full source from all relevant files in one call, but is token-heavy. If your harness supports parallel subagents (e.g., Claude Code's Task tool), spawn one for explore-class questions to keep main session context clean.
@@ -75,7 +76,7 @@ The MCP server returns "not initialized." Ask the user: _"I notice this project 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **CUSGA** (3159 symbols, 6973 relationships, 196 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **CUSGA** (3192 symbols, 7136 relationships, 199 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

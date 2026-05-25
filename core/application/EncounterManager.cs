@@ -33,14 +33,36 @@ public partial class EncounterManager : Node
         Instance = this;
     }
 
+    /// <summary>
+    /// 结算采集遭遇。
+    /// </summary>
+    /// <param name="resourceTag">本次采集资源对应的标签。</param>
+    /// <returns>遭遇结果；未触发时返回空结果。</returns>
     public GatheringEncounterResult ResolveGatheringEncounter(StringName resourceTag)
+    {
+        return ResolveGatheringEncounter(resourceTag, 1.0f);
+    }
+
+    /// <summary>
+    /// 结算采集遭遇，并允许装备系统在夜晚压低遭遇概率。
+    /// </summary>
+    /// <param name="resourceTag">本次采集资源对应的标签。</param>
+    /// <param name="nightEncounterChanceMultiplier">夜晚装备遭遇概率乘数。</param>
+    /// <returns>遭遇结果；未触发时返回空结果。</returns>
+    public GatheringEncounterResult ResolveGatheringEncounter(
+        StringName resourceTag,
+        float nightEncounterChanceMultiplier)
     {
         if (resourceTag.IsEmpty)
         {
             return GatheringEncounterResult.None();
         }
 
-        float timeModifier = TimeSystem.Instance.IsNight ? NightChanceMultiplier : 1.0f;
+        bool isNight = TimeSystem.Instance?.IsNight == true;
+        float timeModifier = isNight ? NightChanceMultiplier : 1.0f;
+        float equipmentModifier = isNight
+            ? Mathf.Max(nightEncounterChanceMultiplier, 0.0f)
+            : 1.0f;
 
         foreach (var rule in GatheringRules)
         {
@@ -54,7 +76,10 @@ public partial class EncounterManager : Node
                 continue;
             }
 
-            float finalChance = BaseGatheringSpawnChance * timeModifier * Mathf.Max(rule.ExtraChanceMultiplier, 0.0f);
+            float finalChance = BaseGatheringSpawnChance
+                * timeModifier
+                * equipmentModifier
+                * Mathf.Max(rule.ExtraChanceMultiplier, 0.0f);
             // float finalChance = 1.0f;
             GD.Print($"Resolving gathering encounter for tag: {resourceTag}, finalChance: {finalChance}");
             if (GD.Randf() <= finalChance)

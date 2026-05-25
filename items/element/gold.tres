@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_imgsg")
 MaxStackSize = 5
-ItemTags = Array[StringName]([&"gold"])
+ItemTags = Array[StringName]([&"gold", &"MagicItem"])
 CardId = &"gold"
 CardName = "金"
 CardIcon = ExtResource("1_i4bbb")

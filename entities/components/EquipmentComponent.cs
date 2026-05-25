@@ -26,6 +26,9 @@ public partial class EquipmentComponent : Node
     // 当前激活的套装阶级
     private readonly List<SetBonusTier> _activeSetTiers = [];
 
+    [Export(PropertyHint.Range, "0,1,0.05")]
+    public float TorchNightEncounterChanceMultiplier { get; set; } = 0.5f;
+
     public static StringName DragSourceSystem => TagConsts.SystemEquipment;
 
     public override void _Ready()
@@ -34,16 +37,17 @@ public partial class EquipmentComponent : Node
         _tagComponent = GetParent().GetNode<TagComponent>("TagComponent");
     }
 
+    /// <summary>
+    /// 将物品装备到指定槽位。
+    /// </summary>
+    /// <param name="stack">要装备的物品堆叠。</param>
+    /// <param name="slot">目标装备槽。</param>
+    /// <returns>装备成功时返回 true。</returns>
     public bool Equip(ItemStack stack, EquipmentSlot slot)
     {
-        if (stack.Item is not EquipmentData equipData)
+        if (!CanEquipStack(stack, slot))
         {
-            return false;
-        }
-
-        if (!equipData.ValidSlots.Contains(slot))
-        {
-            GD.PrintErr($"这件装备不能放在 {slot} 槽位！");
+            GD.PrintErr($"这件物品不能放在 {slot} 槽位！");
             return false;
         }
 
@@ -90,12 +94,34 @@ public partial class EquipmentComponent : Node
         return _equippedItems.TryGetValue(slot, out stack);
     }
 
+    /// <summary>
+    /// 判断物品堆叠是否可以放入指定装备槽。
+    /// </summary>
+    /// <param name="stack">要检查的物品堆叠。</param>
+    /// <param name="slot">目标装备槽。</param>
+    /// <returns>物品能装备到目标槽时返回 true。</returns>
     public static bool CanEquipStack(ItemStack stack, EquipmentSlot slot)
     {
-        return stack != null
-            && !stack.IsEmpty
-            && stack.Item is EquipmentData equipData
-            && equipData.ValidSlots.Contains(slot);
+        if (stack == null || stack.IsEmpty)
+        {
+            return false;
+        }
+
+        if (stack.Item is EquipmentData equipData)
+        {
+            if (equipData.ValidSlots.Contains(slot))
+            {
+                return true;
+            }
+
+            // 有明确装备槽配置时，以资源配置为准，避免标签兜底绕过设计数据。
+            if (equipData.ValidSlots.Count > 0)
+            {
+                return false;
+            }
+        }
+
+        return CanEquipTaggedItem(stack, slot);
     }
 
     public bool CanEquipFromInventory(InventoryComponent sourceInventory, int fromIndex, EquipmentSlot slot)
@@ -223,6 +249,21 @@ public partial class EquipmentComponent : Node
         Equip(fromStack, toSlot);
 
         return true;
+    }
+
+    /// <summary>
+    /// 获取夜晚遭遇概率乘数。
+    /// </summary>
+    /// <returns>装备有效火把时返回火把乘数；否则返回 1。</returns>
+    public float GetNightEncounterChanceMultiplier()
+    {
+        if (!_equippedItems.TryGetValue(EquipmentSlot.Torch, out var stack)
+            || !IsTorchStack(stack))
+        {
+            return 1.0f;
+        }
+
+        return Mathf.Clamp(TorchNightEncounterChanceMultiplier, 0.0f, 1.0f);
     }
 
     private void ApplyItemEffects(ItemStack stack)
@@ -363,5 +404,90 @@ public partial class EquipmentComponent : Node
         }
 
         return bonus;
+    }
+
+    private static bool CanEquipTaggedItem(ItemStack stack, EquipmentSlot slot)
+    {
+        return slot switch
+        {
+            EquipmentSlot.Helmet => HasAnyIdentifier(stack, "Helmet"),
+            EquipmentSlot.Chest => HasAnyIdentifier(stack, "Breastplate", "Chest"),
+            EquipmentSlot.Legs => HasAnyIdentifier(stack, "Legguard", "Legs"),
+            EquipmentSlot.Boots => HasAnyIdentifier(stack, "Shoes", "Boots"),
+            EquipmentSlot.Weapon => HasAnyIdentifier(stack, "Sword", "Weapon", "Truncheon", "Hammer", "Shovel"),
+            EquipmentSlot.Axe => HasAnyIdentifier(stack, "Axe"),
+            EquipmentSlot.Pickaxe => HasAnyIdentifier(stack, "Pickaxe"),
+            EquipmentSlot.FishingRod => HasAnyIdentifier(stack, "FishingRod"),
+            EquipmentSlot.LeftHandguard => HasAnyIdentifier(stack, "Handguard_left", "LeftHandguard"),
+            EquipmentSlot.RightHandguard => HasAnyIdentifier(stack, "Handguard_right", "RightHandguard"),
+            EquipmentSlot.Torch => IsTorchStack(stack),
+            EquipmentSlot.Pendant => HasAnyIdentifier(stack, "Necklace", "Pendant"),
+            EquipmentSlot.Ring1 or EquipmentSlot.Ring2 => HasAnyIdentifier(stack, "Ring"),
+            EquipmentSlot.Belt => HasAnyIdentifier(stack, "Belt"),
+            EquipmentSlot.MagicItem => IsMagicItemStack(stack),
+            _ => false
+        };
+    }
+
+    private static bool IsTorchStack(ItemStack stack)
+    {
+        return HasAnyIdentifier(stack, "flametorch", "torch");
+    }
+
+    private static bool IsMagicItemStack(ItemStack stack)
+    {
+        return HasExactTag(stack, TagConsts.MagicItem);
+    }
+
+    private static bool HasAnyIdentifier(ItemStack stack, params string[] fragments)
+    {
+        if (stack?.Item == null)
+        {
+            return false;
+        }
+
+        if (ContainsAnyFragment(stack.Item.CardId, fragments))
+        {
+            return true;
+        }
+
+        foreach (var tag in stack.Item.ItemTags)
+        {
+            if (ContainsAnyFragment(tag, fragments))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasExactTag(ItemStack stack, StringName expectedTag)
+    {
+        if (stack?.Item == null || expectedTag == null || expectedTag.IsEmpty)
+        {
+            return false;
+        }
+
+        return stack.Item.ItemTags.Contains(expectedTag);
+    }
+
+    private static bool ContainsAnyFragment(StringName identifier, params string[] fragments)
+    {
+        if (identifier == null || identifier.IsEmpty)
+        {
+            return false;
+        }
+
+        string text = identifier.ToString();
+        foreach (string fragment in fragments)
+        {
+            if (text.Contains(fragment, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

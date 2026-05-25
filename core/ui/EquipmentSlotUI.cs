@@ -213,6 +213,14 @@ public partial class EquipmentSlotUI : PanelContainer
             EquipmentSlot.Axe => "斧头",
             EquipmentSlot.Pickaxe => "镐子",
             EquipmentSlot.FishingRod => "鱼竿",
+            EquipmentSlot.LeftHandguard => "左护手",
+            EquipmentSlot.RightHandguard => "右护手",
+            EquipmentSlot.Torch => "火把",
+            EquipmentSlot.Pendant => "吊坠",
+            EquipmentSlot.Ring1 => "戒指一",
+            EquipmentSlot.Ring2 => "戒指二",
+            EquipmentSlot.Belt => "腰带",
+            EquipmentSlot.MagicItem => "魔法物品",
             _ => slot.ToString()
         };
     }
