@@ -53,64 +53,77 @@ func _process(delta: float) -> void:
 
 		# 检测是否拖拽到了某个卡槽上，将命中结果交由多目标高亮方法处理
 		var card_slot_found = raycast_check_for_card_slot()
-		update_hovered_targets(card_slot_found)
+		# 同步检测当前位置是否在手牌区，避免自我施放卡在回收路径上误触高亮
+		var release_in_hand_area: bool = false
+		if player_hand_referencd and player_hand_referencd.has_method("is_release_in_hand_area"):
+			release_in_hand_area = player_hand_referencd.is_release_in_hand_area(card_being_dragged.global_position)
+		update_hovered_targets(card_slot_found, release_in_hand_area)
 
 	check_cards_energy()
 
 ## 根据拖拽的卡牌类型，动态计算并更新受影响范围的实体高亮
-func update_hovered_targets(new_slot: Node2D):
+## @param new_slot 鼠标射线命中的卡槽节点，可能为空。
+## @param release_in_hand_area 当前拖拽位置是否回到手牌区（用于避免误判）。
+## @return void 无返回值。
+func update_hovered_targets(new_slot: Node2D, release_in_hand_area: bool = false):
 	var intended_targets: Array[Node] = []
 
-	# 如果悬停在有效卡槽上，并且手里抓着牌，开始计算波及范围
-	if new_slot and card_being_dragged and card_being_dragged.data:
-		var target = new_slot.get_parent()
-		# 这里用字典映射，避免 GDScript 自己维护一份枚举顺序
-		var target_self = _skill_targeting_type_map.get("Self", 0)
-		var target_single_enemy = _skill_targeting_type_map.get("SingleEnemy", 1)
-		var target_all_enemies = _skill_targeting_type_map.get("AllEnemies", 2)
-		var target_any_single = _skill_targeting_type_map.get("AnySingleUnit", 3)
-		var target_all_units = _skill_targeting_type_map.get("AllUnits", 4)
-		var target_random_enemy = _skill_targeting_type_map.get("RandomEnemy", 5)
-		var target_spread_from_enemy = _skill_targeting_type_map.get("SpreadFromEnemy", 6)
+	# 只有在手里抓着牌时才计算高亮，避免无意义的 UI 抖动
+	if card_being_dragged and card_being_dragged.data:
+		# 如果悬停在有效卡槽上，开始计算波及范围
+		if new_slot:
+			var target = new_slot.get_parent()
+			# 这里用字典映射，避免 GDScript 自己维护一份枚举顺序
+			var target_self = _skill_targeting_type_map.get("Self", 0)
+			var target_single_enemy = _skill_targeting_type_map.get("SingleEnemy", 1)
+			var target_all_enemies = _skill_targeting_type_map.get("AllEnemies", 2)
+			var target_any_single = _skill_targeting_type_map.get("AnySingleUnit", 3)
+			var target_all_units = _skill_targeting_type_map.get("AllUnits", 4)
+			var target_random_enemy = _skill_targeting_type_map.get("RandomEnemy", 5)
+			var target_spread_from_enemy = _skill_targeting_type_map.get("SpreadFromEnemy", 6)
 
-		var targeting_type: int = target_single_enemy
+			var targeting_type: int = target_single_enemy
 
-		# 尝试安全获取目标类型
-		if card_being_dragged.data.get("Skill") != null and card_being_dragged.data.Skill.get("TargetingType") != null:
-			targeting_type = int(card_being_dragged.data.Skill.TargetingType)
+			# 尝试安全获取目标类型
+			if card_being_dragged.data.get("Skill") != null and card_being_dragged.data.Skill.get("TargetingType") != null:
+				targeting_type = int(card_being_dragged.data.Skill.TargetingType)
 
-		match targeting_type:
-			target_self:
+			match targeting_type:
+				target_self:
+					intended_targets.append(player_manager)
+
+				target_single_enemy, target_any_single:
+					if target:
+						intended_targets.append(target)
+
+				target_all_enemies, target_random_enemy:
+					# 全体和随机都会高亮所有敌人，以提示波及范围
+					if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
+						intended_targets.assign(battle_manager.monster_manager.active_monsters)
+
+				target_all_units:
+					# 所有人，包括玩家
+					intended_targets.assign(battle_manager.get_all_combatants())
+
+				target_spread_from_enemy:
+					# 扩散逻辑：主目标 + 左右相邻
+					if target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
+						var monsters = battle_manager.monster_manager.active_monsters
+						var target_index = monsters.find(target)
+
+						if target_index != -1:
+							intended_targets.append(target) # 本身
+							if target_index > 0:
+								intended_targets.append(monsters[target_index - 1]) # 左侧
+							if target_index < monsters.size() - 1:
+								intended_targets.append(monsters[target_index + 1]) # 右侧
+				_:
+					if target:
+						intended_targets.append(target)
+		else:
+			# 当没有命中卡槽时，若当前是自我施放卡且位置可释放，则提前高亮玩家（用于行动条提示）
+			if allow_self_cast_on_empty and not release_in_hand_area and is_self_target_card(card_being_dragged):
 				intended_targets.append(player_manager)
-
-			target_single_enemy, target_any_single:
-				if target:
-					intended_targets.append(target)
-
-			target_all_enemies, target_random_enemy:
-				# 全体和随机都会高亮所有敌人，以提示波及范围
-				if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
-					intended_targets.assign(battle_manager.monster_manager.active_monsters)
-
-			target_all_units:
-				# 所有人，包括玩家
-				intended_targets.assign(battle_manager.get_all_combatants())
-
-			target_spread_from_enemy:
-				# 扩散逻辑：主目标 + 左右相邻
-				if target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
-					var monsters = battle_manager.monster_manager.active_monsters
-					var target_index = monsters.find(target)
-
-					if target_index != -1:
-						intended_targets.append(target) # 本身
-						if target_index > 0:
-							intended_targets.append(monsters[target_index - 1]) # 左侧
-						if target_index < monsters.size() - 1:
-							intended_targets.append(monsters[target_index + 1]) # 右侧
-			_:
-				if target:
-					intended_targets.append(target)
 
 	# 1. 找出需要取消高亮的实体（在旧数组中，但不在新数组中）
 	for entity in currently_highlighted_entities:
@@ -228,9 +241,15 @@ func is_self_target_card(card: SkillCard) -> bool:
 	return targeting_type == target_self
 
 ## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
+## @return void 无返回值。
 func finish_drag():
 	var tween = create_tween()
 	tween.tween_property(card_being_dragged, "scale", card_hover_scale, scale_tween_duration)
+
+	# 先判断是否回到手牌区，用于避免自我施放卡在回收时误触。
+	var release_in_hand_area: bool = false
+	if player_hand_referencd and player_hand_referencd.has_method("is_release_in_hand_area"):
+		release_in_hand_area = player_hand_referencd.is_release_in_hand_area(card_being_dragged.global_position)
 
 	# 通过射线获取是否命中了一个接收区域
 	var card_slot_found = raycast_check_for_card_slot()
@@ -242,14 +261,15 @@ func finish_drag():
 	else:
 		# 如果拖动后没进入有效区域(比如丢到空白处)，则卡牌原路弹回玩家手中
 		# 特例：当卡牌是【对自己使用】类型时，允许直接在空白处施放
-		if allow_self_cast_on_empty and is_self_target_card(card_being_dragged):
+		if allow_self_cast_on_empty and is_self_target_card(card_being_dragged) and not release_in_hand_area:
 			player_manager.consume_energy(card_being_dragged.data.cost)
 			deck_manager.play_card(card_being_dragged)
 		else:
 			player_hand_referencd.add_card_to_hand(card_being_dragged)
 
 	# 松开鼠标时，恢复最后悬停的怪物的缩放
-	update_hovered_targets(null)
+	# 这里强制按“在手牌区”处理，确保不再触发自我施放高亮
+	update_hovered_targets(null, true)
 
 	card_being_dragged = null
 

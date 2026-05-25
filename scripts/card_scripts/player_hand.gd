@@ -10,6 +10,9 @@ const HAND_Y_POSITION = 620 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
 const ROW_SPACING_Y = -80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
 
+@export_group("手牌释放判定参数")
+@export var hand_release_area_padding: Vector2 = Vector2(120.0, 80.0) ## 为了避免玩家拖回手牌区时被误判为施放，这里给判定范围留出缓冲
+
 var player_hand_card:Array[Node2D] = [] #玩家手牌。
 var center_screen_x
 
@@ -21,6 +24,31 @@ var center_screen_x
 
 func _ready() -> void:
 	center_screen_x = get_viewport().size.x / 2
+
+## 判断释放位置是否位于手牌区域（含缓冲），用于避免玩家拖回手牌区时被误判为施放。
+## @param release_position 释放时的全局坐标。
+## @return bool 如果释放点位于手牌区域则返回 true，否则返回 false。
+func is_release_in_hand_area(release_position: Vector2) -> bool:
+	# 这里用行数推导手牌的纵向范围，避免手牌数量变化时判定失真。
+	var card_count = player_hand_card.size()
+	var row_count = int(ceil(float(card_count) / float(MAX_CARDS_PER_ROW)))
+	row_count = max(row_count, 1)
+
+	var first_row_y = HAND_Y_POSITION
+	var last_row_y = HAND_Y_POSITION + (row_count - 1) * ROW_SPACING_Y
+	var top_y = min(first_row_y, last_row_y)
+	var bottom_y = max(first_row_y, last_row_y)
+
+	# 给手牌区域增加缓冲，避免手回收时轻微偏移导致误触施放。
+	var min_y = top_y - hand_release_area_padding.y
+	var max_y = bottom_y + hand_release_area_padding.y
+
+	# X 轴用屏幕宽度做包围，减少手牌左右滑动造成的判定误差。
+	var viewport_width = get_viewport_rect().size.x
+	var min_x = -hand_release_area_padding.x
+	var max_x = viewport_width + hand_release_area_padding.x
+
+	return release_position.x >= min_x and release_position.x <= max_x and release_position.y >= min_y and release_position.y <= max_y
 
 func draw_card_data(card_data) -> bool:
 	if player_hand_card.size()>=12:
@@ -62,17 +90,17 @@ func calculate_card_position(index) -> Vector2:
 	var row = index / MAX_CARDS_PER_ROW
 	# 计算当前卡牌在当前行是第几个 (0 到 MAX_CARDS_PER_ROW-1)
 	var col = index % MAX_CARDS_PER_ROW
-	
+
 	# 计算当前行实际有多少张卡牌（为了让不满一行的卡牌也能居中）
 	var cards_in_current_row = min(MAX_CARDS_PER_ROW, player_hand_card.size() - row * MAX_CARDS_PER_ROW)
-	
+
 	# 计算 X 坐标：使得当前行的卡牌整体居中
 	var total_width = (cards_in_current_row - 1) * CARD_WIDTH
 	var x_offset = center_screen_x + col * CARD_WIDTH - total_width / 2.0
-	
+
 	# 计算 Y 坐标：第一行是 HAND_Y_POSITION，第二行增加 ROW_SPACING_Y
 	var y_offset = HAND_Y_POSITION + row * ROW_SPACING_Y
-	
+
 	return Vector2(x_offset, y_offset)
 
 func animate_card_to_position(card, new_position):
@@ -82,10 +110,10 @@ func animate_card_to_position(card, new_position):
 # 弃牌动画与销毁
 func play_discard_animation(card: Node2D):
 	# 待定：如果卡牌有 Area2D ，在这里禁用交互，防止飞出时被误触
-	
+
 	var screen_center = get_viewport_rect().size / 2.0
 	var tween = get_tree().create_tween()
-	
+
 	tween.set_parallel(true)
 	tween.tween_property(card, "position", screen_center, card_discard_speed).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(card, "modulate:a", 0.0, card_discard_speed)

@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
 [ext_resource type="Resource" uid="uid://dbcl1b88wkcg3" path="res://resources/skill_cards/water_magic_xuanshuimielingtai.tres" id="12_7ebbf"]
 [ext_resource type="Resource" uid="uid://dxlw3te7j2j3g" path="res://resources/skill_cards/wood_magic_dutengyin.tres" id="13_317fs"]
+[ext_resource type="Resource" uid="uid://dpvgpsxnxw8rg" path="res://resources/skill_cards/test_card_4.tres" id="13_qhmct"]
 [ext_resource type="Resource" uid="uid://8i240itphi1k" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="16_2op3e"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="18_sep7c"]
 [ext_resource type="Resource" uid="uid://d0eylh2xvavit" path="res://resources/skill_cards/wood_phys_muji.tres" id="22_bjehq"]
@@ -82,7 +83,7 @@ corner_radius_bottom_left = 4
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("22_bjehq"), ExtResource("4_317fs"), ExtResource("5_3juot"), ExtResource("13_317fs"), ExtResource("7_f7hr6"), ExtResource("16_2op3e"), ExtResource("9_2op3e"), ExtResource("10_jxr1f"), ExtResource("11_kgjmv"), ExtResource("12_7ebbf"), ExtResource("16_2op3e")])
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("22_bjehq"), ExtResource("4_317fs"), ExtResource("5_3juot"), ExtResource("13_317fs"), ExtResource("7_f7hr6"), ExtResource("16_2op3e"), ExtResource("9_2op3e"), ExtResource("10_jxr1f"), ExtResource("11_kgjmv"), ExtResource("12_7ebbf"), ExtResource("16_2op3e"), ExtResource("13_qhmct"), ExtResource("13_qhmct"), ExtResource("13_qhmct"), ExtResource("13_qhmct"), ExtResource("13_qhmct"), ExtResource("13_qhmct")])
 starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("10_51ekj"), SubResource("Resource_ascsg"), ExtResource("24_bo8du"), ExtResource("25_7g460")])
 card_scene = SubResource("Resource_navvr")
 

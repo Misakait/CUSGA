@@ -1,10 +1,8 @@
-[gd_resource type="Resource" script_class="CombatSkillData" format=3]
+[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://cs8bi8184gbdh"]
 
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_46jgr"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_mpgfb"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_jusv1"]
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="4_lwned"]
-[ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_46jgr"]
 script = ExtResource("2_mpgfb")
