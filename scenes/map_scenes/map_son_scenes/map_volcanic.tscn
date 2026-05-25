@@ -1,13 +1,16 @@
 [gd_scene format=3 uid="uid://b22mlxgtsdm06"]
 
-[ext_resource type="Script" path="res://scripts/map_scripts/map_son_scripts/map_volcanic.gd" id="1_pe143"]
-[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
+[ext_resource type="Script" uid="uid://k4sqlory2k80" path="res://scripts/map_scripts/map_son_scripts/map_volcanic.gd" id="1_pe143"]
 [ext_resource type="Texture2D" uid="uid://d3sfyr5m8abmv" path="res://res/background/火山-b1ed(1).png" id="2_pe143"]
+[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
 [ext_resource type="Script" uid="uid://dqnapmglm6cgw" path="res://resources/interaction/VaultInteraction.cs" id="4_3yw2j"]
 [ext_resource type="Texture2D" uid="uid://bv1k70f7dwhhm" path="res://res/image/button_glod.png" id="4_pe143"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_woxxq"]
-[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="6_pool"]
-[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="7_variance"]
+[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="6_pool"]
+[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="7_variance"]
+
+[sub_resource type="Resource" id="Variance_volcanic"]
+script = ExtResource("7_variance")
 
 [sub_resource type="Resource" id="Resource_16ixg"]
 script = ExtResource("4_3yw2j")
@@ -21,18 +24,13 @@ CardName = "火山密库"
 CardIcon = ExtResource("4_pe143")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
-[sub_resource type="Resource" id="Variance_volcanic"]
-script = ExtResource("7_variance")
-
 [sub_resource type="Resource" id="Pool_vault"]
 script = ExtResource("6_pool")
 TerrainData = SubResource("Resource_qbqyj")
-Weight = 1.0
 
 [sub_resource type="Resource" id="Profile_volcanic"]
 script = ExtResource("2_profile")
-TerrainPool = Array[ExtResource("6_pool")]([SubResource("Pool_vault")])
-MinCount = 1
+TerrainPool = [SubResource("Pool_vault")]
 MaxCount = 1
 GridColumns = 1
 GridRows = 1
@@ -44,7 +42,7 @@ EncounterVarianceRange = SubResource("Variance_volcanic")
 script = ExtResource("1_pe143")
 terrain_profile = SubResource("Profile_volcanic")
 
-[node name="黑暗破败感像素背景画(4)" type="Sprite2D" parent="." unique_id=2113510690]
+[node name="Background" type="Sprite2D" parent="." unique_id=2113510690]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("2_pe143")

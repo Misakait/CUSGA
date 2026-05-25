@@ -4,7 +4,7 @@
 
 [node name="MapHotspring" type="Node2D" unique_id=2083360387]
 
-[node name="治愈泉水2A1f1" type="Sprite2D" parent="." unique_id=1198609484]
+[node name="Background" type="Sprite2D" parent="." unique_id=1198609484]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_q2j0r")

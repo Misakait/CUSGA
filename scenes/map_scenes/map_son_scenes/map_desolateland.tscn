@@ -4,7 +4,7 @@
 
 [node name="Map" type="Node2D" unique_id=437034678]
 
-[node name="荒芜之地B1e7(1)" type="Sprite2D" parent="." unique_id=2107337267]
+[node name="Background" type="Sprite2D" parent="." unique_id=2107337267]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_h082a")

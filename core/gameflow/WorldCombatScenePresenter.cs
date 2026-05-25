@@ -19,8 +19,37 @@ public sealed class WorldCombatScenePresenter(
 
     public async Task EnterCombatAsync(Array<SkillCardData> battleDeck, Array<MonsterData> monsters)
     {
+        await EnterCombatAsync(battleDeck, monsters, null);
+    }
+
+    /// <summary>
+    /// 进入战斗并等待战斗结果。
+    /// </summary>
+    /// <param name="battleDeck">玩家本场战斗使用的技能卡组。</param>
+    /// <param name="monsters">本场战斗生成的怪物数组。</param>
+    /// <returns>战斗胜利时返回 true；无法进入战斗或失败时返回 false。</returns>
+    public async Task<bool> EnterCombatAndWaitForResultAsync(
+        Array<SkillCardData> battleDeck,
+        Array<MonsterData> monsters)
+    {
         if (_isTransitioning)
         {
+            return false;
+        }
+
+        var completion = new TaskCompletionSource<bool>();
+        await EnterCombatAsync(battleDeck, monsters, completion);
+        return await completion.Task;
+    }
+
+    private async Task EnterCombatAsync(
+        Array<SkillCardData> battleDeck,
+        Array<MonsterData> monsters,
+        TaskCompletionSource<bool> completion)
+    {
+        if (_isTransitioning)
+        {
+            completion?.TrySetResult(false);
             return;
         }
 
@@ -31,15 +60,16 @@ public sealed class WorldCombatScenePresenter(
             await screenTransitions.FadeOutAsync();
 
             Node battleInstance = CreateBattleInstance(battleDeck, monsters);
-            Sprite2D battleBackground = TryDuplicateCurrentMapBackground();
+            Sprite2D battleBackground = CurrentMapBackgroundResolver.DuplicateCurrentBackground(mapSystem);
             if (battleBackground != null)
             {
                 battleInstance.AddChild(battleBackground);
             }
 
-            battleInstance.Connect(BattleEndedSignal, Callable.From<bool>(
-                isVictory => OnBattleEnded(battleInstance, isVictory)
-            ));
+            battleInstance.Connect(
+                BattleEndedSignal,
+                Callable.From<bool>(isVictory => OnBattleEnded(battleInstance, isVictory, completion))
+            );
 
             worldRoot.AddChild(battleInstance);
             worldView.HideWorldView();
@@ -52,7 +82,7 @@ public sealed class WorldCombatScenePresenter(
         }
     }
 
-    private async void OnBattleEnded(Node battleInstance, bool isVictory)
+    private async void OnBattleEnded(Node battleInstance, bool isVictory, TaskCompletionSource<bool> completion)
     {
         if (_isTransitioning)
         {
@@ -73,6 +103,7 @@ public sealed class WorldCombatScenePresenter(
             worldView.ShowWorldView();
 
             await screenTransitions.FadeInAsync();
+            completion?.TrySetResult(isVictory);
         }
         finally
         {
@@ -97,43 +128,4 @@ public sealed class WorldCombatScenePresenter(
         return battleInstance;
     }
 
-    private Sprite2D TryDuplicateCurrentMapBackground()
-    {
-        if (mapSystem == null)
-        {
-            return null;
-        }
-
-        Node mapInstantiator = mapSystem.GetNodeOrNull<Node>("MapInstantiator");
-        if (mapInstantiator == null)
-        {
-            return null;
-        }
-
-        foreach (Node child in mapInstantiator.GetChildren())
-        {
-            if (child is not Node2D roomScene)
-            {
-                continue;
-            }
-
-            Sprite2D background = roomScene.GetNodeOrNull<Sprite2D>("Background");
-            if (background == null)
-            {
-                continue;
-            }
-
-            if (background.Duplicate() is not Sprite2D duplicated)
-            {
-                return null;
-            }
-
-            duplicated.Name = "MapBackground";
-            duplicated.ZIndex = -100;
-            duplicated.ZAsRelative = false;
-            return duplicated;
-        }
-
-        return null;
-    }
 }

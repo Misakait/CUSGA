@@ -4,7 +4,7 @@
 
 [node name="MapAltar" type="Node2D" unique_id=1063524427]
 
-[node name="神秘空间2A1Fc" type="Sprite2D" parent="." unique_id=2004665351]
+[node name="Background" type="Sprite2D" parent="." unique_id=2004665351]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_l8ux4")

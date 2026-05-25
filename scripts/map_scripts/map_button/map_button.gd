@@ -3,11 +3,23 @@ extends Node2D
 @onready var map_instantiator = $"../MapInstantiator"
 @onready var map_position_create =  $"../MapPositionCreate"
 @onready var map_little = $"../MapLittle"
+@onready var passage_guard_controller = $"../PassageGuardController"
+@onready var screen_transitions = get_node_or_null("/root/ScreenTransitions")
+@onready var time_system = get_node_or_null("/root/TimeSystem")
 
 @export var UpButton:Node2D
 @export var RightButton: Node2D
 @export var DownButton: Node2D
 @export var LeftButton: Node2D
+
+const DIR_OFFSETS: Array[Vector2i] = [
+	Vector2i(-1, 0),
+	Vector2i(0, 1),
+	Vector2i(1, 0),
+	Vector2i(0, -1),
+]
+const NORMAL_LABELS: Array[String] = ["往北走", "往东走", "往南走", "往西走"]
+const DIRECTION_ICON_NAMES: Array[String] = ["UpIcon", "RightIcon", "DownIcon", "LeftIcon"]
 
 var current_position: Vector2i = Vector2i(1,1)
 var connect_scene = [0,0,0,0]
@@ -18,128 +30,145 @@ var posy: int = 1
 var scene_button: Dictionary
 
 func _ready() -> void:
+	if passage_guard_controller != null and passage_guard_controller.has_signal(&"guard_state_changed"):
+		passage_guard_controller.connect(&"guard_state_changed", Callable(self, "_on_guard_state_changed"))
 	update_scene_button(current_position)
 
 func update_scene_button(position: Vector2i):
+	if passage_guard_controller != null:
+		passage_guard_controller.begin_room(position)
 
 	#更新自身位置
 	current_position = position
 	posx = position.x
 	posy = position.y
 
-	connect_scene = map_position_create.scene_to_scene[position]
+	connect_scene = map_position_create.scene_to_scene.get(position, [0,0,0,0])
 
 	#检测相连房间
 	for the_scene in range(0,4):
-
 		check_these_button(the_scene)
 
-
 func check_these_button(the_scene: int):
-	if connect_scene[the_scene] == 0:
-		match the_scene:
-			0:
-				if UpButton:
-					UpButton.visible = false
-				else:
-					print("没有UpButton,去map_button看看吧")
-			1:
-				if RightButton:
-					RightButton.visible = false
-				else:
-					print("没有RightButton,去map_button看看吧")
-			2:
-				if DownButton:
-					DownButton.visible = false
-				else:
-					print("没有DownButton,去map_button看看吧")
-			3:
-				if LeftButton:
-					LeftButton.visible = false
-				else:
-					print("没有LeftButton,去map_button看看吧")
-			_:
-				print("如果你看到这个，那就说明map_button节点出问题了")
-	else:
-		match the_scene:
-			0:
-				if UpButton:
-					UpButton.visible = true
-				else:
-					print("没有UpButton,去map_button看看吧")
-			1:
-				if RightButton:
-					RightButton.visible = true
-				else:
-					print("没有RightButton,去map_button看看吧")
-			2:
-				if DownButton:
-					DownButton.visible = true
-				else:
-					print("没有DownButton,去map_button看看吧")
-			3:
-				if LeftButton:
-					LeftButton.visible = true
-				else:
-					print("没有LeftButton,去map_button看看吧")
-			_:
-				print("如果你看到这个，那就说明map_button节点出问题了")
+	var button := _button_for_direction(the_scene)
+	if button == null:
+		print("如果你看到这个，那就说明map_button节点出问题了")
+		return
+
+	button.visible = the_scene < connect_scene.size() and int(connect_scene[the_scene]) == 1
+	if button.visible:
+		_apply_passage_button_state(the_scene)
+
+func _on_guard_state_changed() -> void:
+	update_scene_button(current_position)
 
 #上按钮
 func _on_up_button_pressed() -> void:
-	#print("你点我干什么，我是上")
-	map_little.build_little_map(posx-1, posy)
-	map_little.change_this_cell_color(posx-1, posy)
-	map_little.return_this_cell_color(posx, posy)
-
-	ScreenTransitions.fade_out()
-	await ScreenTransitions.fade_complete
-
-	#注意：load_scene_at会改变当前posx与posy的值
-	map_instantiator.load_scene_at(Vector2i(posx-1 , posy))
-	_pass_map_move_time()
+	await _try_move_to(_target_for_direction(0))
 
 #右按钮
 func _on_right_button_pressed() -> void:
-	#print("卧槽，我是右")
-	map_little.build_little_map(posx, posy+1)
-	map_little.change_this_cell_color(posx, posy+1)
-	map_little.return_this_cell_color(posx, posy)
-
-	ScreenTransitions.fade_out()
-	await ScreenTransitions.fade_complete
-
-	#注意：load_scene_at会改变当前posx与posy的值
-	map_instantiator.load_scene_at(Vector2i(posx , posy+1))
-	_pass_map_move_time()
+	await _try_move_to(_target_for_direction(1))
 
 #下按钮
 func _on_down_button_pressed() -> void:
-	#print("点我点我，我是下")
-	map_little.build_little_map(posx+1, posy)
-	map_little.change_this_cell_color(posx+1, posy)
-	map_little.return_this_cell_color(posx, posy)
-
-	ScreenTransitions.fade_out()
-	await ScreenTransitions.fade_complete
-
-	#注意：load_scene_at会改变当前posx与posy的值
-	map_instantiator.load_scene_at(Vector2i(posx+1 , posy))
-	_pass_map_move_time()
+	await _try_move_to(_target_for_direction(2))
 
 #左按钮
 func _on_left_button_pressed() -> void:
-	#print("我tm的是左啊")
-	map_little.build_little_map(posx, posy-1)
-	map_little.change_this_cell_color(posx, posy-1)
-	map_little.return_this_cell_color(posx, posy)
+	await _try_move_to(_target_for_direction(3))
 
-	ScreenTransitions.fade_out()
-	await ScreenTransitions.fade_complete
+func _try_move_to(target_position: Vector2i) -> void:
+	if passage_guard_controller != null and passage_guard_controller.is_guarded(current_position, target_position):
+		var is_victory: bool = await passage_guard_controller.request_guard_battle(current_position, target_position)
+		if not is_victory:
+			update_scene_button(current_position)
+			return
 
-	#注意：load_scene_at会改变当前posx与posy的值
-	map_instantiator.load_scene_at(Vector2i(posx , posy-1))
+	await _move_to(target_position)
+
+func _move_to(target_position: Vector2i) -> void:
+	var previous_position := current_position
+	map_little.build_little_map(target_position.x, target_position.y)
+	map_little.change_this_cell_color(target_position.x, target_position.y)
+	map_little.return_this_cell_color(previous_position.x, previous_position.y)
+
+	if screen_transitions == null:
+		push_error("MapButton 未找到 ScreenTransitions，无法切换地图。")
+		return
+
+	screen_transitions.fade_out()
+	await screen_transitions.fade_complete
+
 	_pass_map_move_time()
+	# 注意：load_scene_at 会改变当前 posx 与 posy；先结算耗时，保证目标房间按最新昼夜状态初始化。
+	map_instantiator.load_scene_at(target_position)
+
+func _apply_passage_button_state(direction: int) -> void:
+	var button := _button_for_direction(direction)
+	if button == null:
+		return
+
+	var target := _target_for_direction(direction)
+	var is_guarded: bool = passage_guard_controller != null and passage_guard_controller.is_guarded(current_position, target)
+	if not is_guarded:
+		_set_button_label(button, NORMAL_LABELS[direction])
+		_set_direction_icon_visible(button, direction, true)
+		return
+
+	var monsters: Array = passage_guard_controller.get_guard_encounter(current_position, target)
+	var label := _format_monster_names(monsters)
+	if label.is_empty():
+		label = "驻守怪物"
+
+	_set_button_label(button, label)
+	_set_direction_icon_visible(button, direction, false)
+
+func _target_for_direction(direction: int) -> Vector2i:
+	return current_position + DIR_OFFSETS[direction]
+
+func _button_for_direction(direction: int) -> Node2D:
+	match direction:
+		0:
+			return UpButton
+		1:
+			return RightButton
+		2:
+			return DownButton
+		3:
+			return LeftButton
+		_:
+			return null
+
+func _set_button_label(button: Node, text: String) -> void:
+	var label := button.find_child("Label", true, false)
+	if label is Label:
+		label.text = text
+		return
+
+	var rich_label := button.find_child("RichTextLabel", true, false)
+	if rich_label is RichTextLabel:
+		rich_label.text = text
+
+func _set_direction_icon_visible(button: Node, direction: int, is_visible: bool) -> void:
+	var icon := button.find_child(DIRECTION_ICON_NAMES[direction], true, false)
+	if icon is CanvasItem:
+		icon.visible = is_visible
+
+func _format_monster_names(monsters: Array) -> String:
+	var names := PackedStringArray()
+	for monster in monsters:
+		if monster == null:
+			continue
+		var monster_name := String(monster.MonsterName)
+		if not monster_name.is_empty():
+			names.append(monster_name)
+
+	return "\n".join(names)
 
 func _pass_map_move_time() -> void:
-	TimeSystem.PassMapMoveTime()
+	if time_system == null:
+		push_error("MapButton 未找到 TimeSystem，无法结算地图移动耗时。")
+		return
+
+	time_system.PassMapMoveTime()

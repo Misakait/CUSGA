@@ -4,7 +4,7 @@
 
 [node name="MapMagmalake" type="Node2D" unique_id=880757283]
 
-[node name="岩浆湖B1f1" type="Sprite2D" parent="." unique_id=37526928]
+[node name="Background" type="Sprite2D" parent="." unique_id=37526928]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_dte6y")

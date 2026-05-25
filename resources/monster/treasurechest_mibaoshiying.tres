@@ -1,6 +1,5 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://cfs0mj4pmfb0h"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://s11456dosopn" path="res://resources/skill_cards/earth_phys_tuji.tres" id="4_skill_1"]
@@ -8,15 +7,15 @@
 [ext_resource type="Resource" uid="uid://bbduwbnithwpx" path="res://resources/skill_cards/earth_phys_yanbengji.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://kxrggdaafx5w" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://djo6yad7ek2f2" path="res://resources/skill_cards/earth_magic_shachenlongtiandi.tres" id="8_skill_5"]
+[ext_resource type="Resource" uid="uid://cani7w0ijgqr3" path="res://resources/combat_skills/earth_phys_tuji.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://bwbg6v5bljtvu" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="combat_skill_3"]
+[ext_resource type="Resource" uid="uid://c0uvi2exrh6s4" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="combat_skill_4"]
+[ext_resource type="Resource" uid="uid://brx8b7fw1yvqk" path="res://resources/combat_skills/earth_magic_shachenlongtiandi.tres" id="combat_skill_5"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_tuji.tres" id="combat_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="combat_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="combat_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="combat_skill_4"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_shachenlongtiandi.tres" id="combat_skill_5"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")

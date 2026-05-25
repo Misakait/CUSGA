@@ -2,9 +2,11 @@ extends Node2D
 
 @export var map_type_attribute: Array[map_attribute]
 #地图名字与数量
-var map_cnt: Dictionary[String,int]
+var map_cnt: Dictionary[String,int] = {}
 #地图名字与对应场景路径
-var map_road: Dictionary[String,String]
+var map_road: Dictionary[String,String] = {}
+#地图名字与地图类型配置
+var map_attr_by_name: Dictionary[String,map_attribute] = {}
 
 func _ready() -> void:
 	build_map_types()
@@ -15,6 +17,7 @@ func build_map_types():
 		var scene_name: String = map_attr.scene_name
 		var scene_cnt: int = map_attr.scene_count
 		map_cnt[scene_name] = scene_cnt
+		map_attr_by_name[scene_name] = map_attr
 
 func build_map_road():
 	for map_attr in map_type_attribute:
@@ -36,3 +39,8 @@ func from_name_get_road(scene_name: String):
 		print("出现了未定义的地图类型:",scene_name)
 		return "wrong"
 	return "void"
+
+func from_name_get_attribute(scene_name: String) -> map_attribute:
+	if map_attr_by_name.has(scene_name):
+		return map_attr_by_name[scene_name]
+	return null

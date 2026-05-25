@@ -13,6 +13,8 @@ namespace CUSGA.core.gameflow;
 
 public partial class WorldInteractionCoordinator : Node
 {
+    [Signal] public delegate void PassageGuardEncounterFinishedEventHandler(bool isVictory);
+
     [Export] public NodePath BoardControllerPath { get; set; } = null!;
     [Export] public NodePath GameplayPortPath { get; set; } = null!;
     [Export] public NodePath BackpackFlyTargetPath { get; set; } = null!;
@@ -79,6 +81,20 @@ public partial class WorldInteractionCoordinator : Node
     private async void OnEncounterRequested(TerrainInstance terrain, Array<SkillCardData> battleDeck, Array<MonsterData> monsters, string message)
     {
         await _combatScenePresenter.EnterCombatAsync(battleDeck, monsters);
+    }
+
+    /// <summary>
+    /// 为地图通道驻守怪物发起战斗，并在战斗结束后发出结果信号。
+    /// </summary>
+    /// <param name="monsters">通道驻守 encounter 配置出的怪物数组。</param>
+    public async void RequestPassageGuardEncounter(Array<MonsterData> monsters)
+    {
+        GD.Print("RequestPassageGuardEncounter: monsters = ", monsters);
+        bool isVictory = await _combatScenePresenter.EnterCombatAndWaitForResultAsync(
+            _gameplayPort.PlayerBattleDeck.GetSkillCards(),
+            monsters ?? []
+        );
+        EmitSignal(SignalName.PassageGuardEncounterFinished, isVictory);
     }
 
     private void OnBoardCardClicked(BoardCardView card)

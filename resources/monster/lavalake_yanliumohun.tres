@@ -1,75 +1,61 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://d0ipus1j12737"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://dvnow0kdffkmr" path="res://resources/skill_cards/fire_magic_huoshu.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://5lcr6dvyubf" path="res://resources/skill_cards/fire_magic_shenhuolianfanqu.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://dslvwu33l084u" path="res://resources/skill_cards/fire_phys_liaoyuanfensiye.tres" id="6_skill_3"]
-[ext_resource type="Resource" uid="uid://bs5mj7ipjx85h" path="res://resources/skill_cards/fire_magic_jinhuoyin.tres" id="7_skill_4"]
-[ext_resource type="Resource" uid="uid://c8bq51lwq45pb" path="res://resources/skill_cards/fire_magic_lieyantunbafang.tres" id="8_skill_5"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Resource" uid="uid://bfjlkpl2x20d3" path="res://resources/skill_cards/fire_magic_jinhuoyin.tres" id="7_skill_4"]
+[ext_resource type="Resource" uid="uid://cabsg0rwbu7gp" path="res://resources/skill_cards/fire_magic_lieyantunbafang.tres" id="8_skill_5"]
+[ext_resource type="Resource" uid="uid://dq7dfq2gwoh86" path="res://resources/combat_skills/fire_magic_huoshu.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://hf0t8kgswp54" path="res://resources/combat_skills/fire_magic_shenhuolianfanqu.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://ul0ypn5o3r2u" path="res://resources/combat_skills/fire_phys_liaoyuanfensiye.tres" id="combat_skill_3"]
+[ext_resource type="Resource" uid="uid://c5gn7fo2cs5iy" path="res://resources/combat_skills/fire_magic_jinhuoyin.tres" id="combat_skill_4"]
+[ext_resource type="Resource" uid="uid://biu7vvxupxojf" path="res://resources/combat_skills/fire_magic_lieyantunbafang.tres" id="combat_skill_5"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
-[ext_resource type="Resource" path="res://resources/combat_skills/fire_magic_huoshu.tres" id="combat_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/fire_magic_shenhuolianfanqu.tres" id="combat_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/fire_phys_liaoyuanfensiye.tres" id="combat_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/fire_magic_jinhuoyin.tres" id="combat_skill_4"]
-[ext_resource type="Resource" path="res://resources/combat_skills/fire_magic_lieyantunbafang.tres" id="combat_skill_5"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BasePhysAtk = 12.0
-PhysAtkGrowth = 2.5
 BasePhysDef = 7.0
 PhysDefGrowth = 1.2
 BaseMagPower = 20.0
 MagPowerGrowth = 3.2
 BaseMagResist = 9.0
-MagResistGrowth = 1.0
 BaseSpeed = 115.0
-SpeedGrowth = 5.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("4_skill_1")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_2"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("5_skill_2")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_3"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("6_skill_3")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_4"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("7_skill_4")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_5"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("8_skill_5")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="Resource_loot"]
@@ -112,7 +98,7 @@ script = ExtResource("2_monster")
 MonsterName = "炎流魔魂"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 5
-MaxHealth = 120
 LootTable = SubResource("Resource_loot")
+MaxHealth = 120
 SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

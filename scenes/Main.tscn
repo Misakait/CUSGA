@@ -80,6 +80,7 @@ EncounterManagerPath = NodePath("../EncounterManager")
 [node name="EncounterManager" type="Node" parent="Gameplay" unique_id=2003392084]
 script = ExtResource("8_ft6cd")
 GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3"), SubResource("Resource_2ofn6")])
+BaseGatheringSpawnChance = 1.0
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 

@@ -15,14 +15,14 @@ var _current_id: String = ""
 
 func _ready() -> void:
 	# 抓住游戏启动时加载的首个场景（Project Settings → Main Scene），缓存它
-	var initial_scene: Node2D = get_tree().current_scene
+	var initial_scene: Node = get_tree().current_scene
 	if initial_scene:
 		_cache["main_menu"] = initial_scene
 		_current_id = "main_menu"
 	
 	GlobalEventBus.scene_requested.connect(_on_scene_requested)
 	
-	if initial_scene.has_method("init"):
+	if initial_scene and initial_scene.has_method("init"):
 		initial_scene.init()
 
 func _on_scene_requested(scene_id: String) -> void:
@@ -38,7 +38,7 @@ func _on_scene_requested(scene_id: String) -> void:
 
 func _switch_to(target_id: String, target_path: String) -> void:
 	# 1. 把当前场景从树中移除（但不销毁！引用还在 _cache 里）
-	var current: Node2D = _cache.get(_current_id) as Node2D
+	var current: Node = _cache.get(_current_id) as Node
 	if current and current.get_parent():
 		
 		ScreenTransitions.fade_out()
@@ -49,7 +49,7 @@ func _switch_to(target_id: String, target_path: String) -> void:
 		current.get_parent().remove_child(current)
 	
 	# 2. 获取或创建目标场景
-	var target: Node2D = _cache.get(target_id) as Node2D
+	var target: Node = _cache.get(target_id) as Node
 	if target == null:
 		var packed: PackedScene = load(target_path) as PackedScene
 		if not packed:

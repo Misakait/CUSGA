@@ -12,6 +12,19 @@
   - If it's a simple project, build the specific project (e.g., `env CI=true dotnet build [TargetProject].csproj --no-restore`).
   - If it's a complex solution and the change spans multiple areas, build the solution (e.g., `env CI=true dotnet build [SolutionName].sln --no-restore`).
   - _Do NOT blindly copy these examples; adapt the target file to the actual context._
+- **Godot Runtime Validation**: When a change touches GDScript, `.tscn` scenes, Godot resources, C# `[GlobalClass]` types, autoload access, or scene/runtime integration, validate with `godot-mono --headless` in addition to `dotnet build`.
+  - Build Godot's C# solution and refresh global classes with:
+    - `godot-mono --headless --path . --build-solutions --quit`
+  - Parse-check every changed GDScript file when practical:
+    - `godot-mono --headless --path . --check-only --script res://path/to/script.gd`
+  - Run focused Godot runtime test runners when they exist for the changed area:
+    - `godot-mono --headless --path . --script res://tests/godot/passage_guard_tests.gd`
+  - Smoke-test the changed scene path, and usually the main scene too:
+    - `godot-mono --headless --path . --scene res://scenes/Main.tscn --quit-after 5`
+    - `godot-mono --headless --path . --scene res://path/to/changed_scene.tscn --quit-after 5`
+  - In sandboxed environments, `godot-mono --headless --build-solutions` may need approval/escalation because Godot writes editor settings/build logs under the user config directory and opens a local editor messaging socket. If it fails with permission errors, rerun the same command with the proper escalation flow instead of treating it as a project failure.
+  - Treat `SCRIPT ERROR`, `Parse Error`, `Failed to load script`, and C# build failures as blockers. Resource UID warnings may be pre-existing; only treat them as blockers when they involve files touched by the current change.
+  - Do not rely on plain `dotnet run` for Godot-dependent test runners; it can fail to locate `GodotSharp` outside the Godot runtime. Prefer `godot-mono --headless` for runtime/script/scene validation and `env CI=true dotnet build ... --no-restore` for compile validation.
 
 ## 2. Documentation & Commenting Standards
 
@@ -62,7 +75,7 @@ The MCP server returns "not initialized." Ask the user: _"I notice this project 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **CUSGA** (3041 symbols, 6733 relationships, 187 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **CUSGA** (3159 symbols, 6973 relationships, 196 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

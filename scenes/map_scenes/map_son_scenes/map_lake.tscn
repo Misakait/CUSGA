@@ -6,7 +6,7 @@
 [node name="MapLake" type="Node2D" unique_id=2032427002]
 script = ExtResource("1_hck72")
 
-[node name="湖泊A1e9" type="Sprite2D" parent="." unique_id=520945129]
+[node name="Background" type="Sprite2D" parent="." unique_id=520945129]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_nghgd")

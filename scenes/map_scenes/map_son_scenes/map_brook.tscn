@@ -35,7 +35,7 @@ EncounterVarianceRange = SubResource("Variance_brook")
 script = ExtResource("1_0ct7l")
 terrain_profile = SubResource("Profile_brook")
 
-[node name="溪流A1Ed" type="Sprite2D" parent="." unique_id=1181270498]
+[node name="Background" type="Sprite2D" parent="." unique_id=1181270498]
 z_index = -1
 position = Vector2(640, 360)
 texture = ExtResource("1_jbof8")

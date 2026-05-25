@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PassageGuardSettings" format=3 uid="uid://ktq36y7kngt7"]
+
+[ext_resource type="Script" uid="uid://dmorhqh3c3tca" path="res://resources/map/PassageGuardProbabilityModifier.cs" id="1_aj4bc"]
+[ext_resource type="Script" uid="uid://dxikihvo53lvh" path="res://resources/map/PassageGuardSettings.cs" id="1_settings"]
+
+[resource]
+script = ExtResource("1_settings")
+BaseGuardChance = 1.0
+HomeProtectionTag = null

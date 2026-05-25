@@ -2,13 +2,22 @@
 
 [ext_resource type="Script" uid="uid://cw3ppj00qmjxn" path="res://scripts/map_scripts/map_son_scripts/map_snowfield.gd" id="1_4olyq"]
 [ext_resource type="Texture2D" uid="uid://bf60q8evt0wm2" path="res://res/image/黑暗破败感像素背景画 (3).png" id="1_lqndg"]
-[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="3_profile"]
+[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="3_profile"]
 [ext_resource type="Texture2D" uid="uid://cakl1fn186udi" path="res://res/environment/altar.png" id="4_15fsb"]
-[ext_resource type="Resource" uid="uid://bcj54fja7ut2b" path="res://resources/monster/irondeposit_kuangtiekuilai.tres" id="5_020ap"]
+[ext_resource type="Resource" uid="uid://dmqk3gkyjg53t" path="res://resources/monster/irondeposit_kuangtiekuilai.tres" id="5_020ap"]
 [ext_resource type="Script" uid="uid://bkye6rkc5nwly" path="res://resources/interaction/BossInteraction.cs" id="6_u8dgw"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="7_1h7wk"]
-[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_pool"]
-[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="9_variance"]
+[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_pool"]
+[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="9_variance"]
+
+[sub_resource type="Resource" id="Variance_snowfield"]
+script = ExtResource("9_variance")
+MaxMaxHealth = 1.35
+MaxPhysAtk = 1.35
+MaxPhysDef = 1.35
+MaxMagPower = 1.35
+MaxMagResist = 1.35
+MaxSpeed = 1.2
 
 [sub_resource type="Resource" id="Resource_c7p7q"]
 script = ExtResource("6_u8dgw")
@@ -23,30 +32,13 @@ CardName = "BOSS"
 CardIcon = ExtResource("4_15fsb")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
-[sub_resource type="Resource" id="Variance_snowfield"]
-script = ExtResource("9_variance")
-MinMaxHealth = 1.0
-MinPhysAtk = 1.0
-MinPhysDef = 1.0
-MinMagPower = 1.0
-MinMagResist = 1.0
-MinSpeed = 1.0
-MaxMaxHealth = 1.35
-MaxPhysAtk = 1.35
-MaxPhysDef = 1.35
-MaxMagPower = 1.35
-MaxMagResist = 1.35
-MaxSpeed = 1.2
-
 [sub_resource type="Resource" id="Pool_snow_boss"]
 script = ExtResource("8_pool")
 TerrainData = SubResource("Resource_s7rpl")
-Weight = 1.0
 
 [sub_resource type="Resource" id="Profile_snowfield"]
 script = ExtResource("3_profile")
-TerrainPool = Array[ExtResource("8_pool")]([SubResource("Pool_snow_boss")])
-MinCount = 1
+TerrainPool = [SubResource("Pool_snow_boss")]
 MaxCount = 1
 GridColumns = 1
 GridRows = 1
@@ -58,7 +50,7 @@ EncounterVarianceRange = SubResource("Variance_snowfield")
 script = ExtResource("1_4olyq")
 terrain_profile = SubResource("Profile_snowfield")
 
-[node name="黑暗破败感像素背景画(3)" type="Sprite2D" parent="." unique_id=1879453017]
+[node name="Background" type="Sprite2D" parent="." unique_id=1879453017]
 z_index = -1
 position = Vector2(657.0001, 373)
 scale = Vector2(0.54263324, 0.54263324)
