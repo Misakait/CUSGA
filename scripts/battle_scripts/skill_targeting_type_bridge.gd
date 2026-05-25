@@ -1,3 +1,5 @@
+## 技能目标类型桥接器：运行时解析 C# 枚举并缓存映射，避免 GDScript 侧重复维护。
+## 返回值说明：通过 `get_map`/`get_value` 获取枚举名称到整型值的映射。
 extends RefCounted
 class_name SkillTargetingTypeBridge
 
@@ -18,11 +20,18 @@ const FALLBACK_VALUES := {
 
 static var _cached_map: Dictionary = {}
 
+## 获取枚举映射字典。
+## 返回值：key 为枚举名（String），value 为枚举整型值（int）。
 static func get_map() -> Dictionary:
 	if _cached_map.is_empty():
 		_cached_map = _load_from_source()
 	return _cached_map
 
+## 获取指定枚举名对应的整型值。
+## 参数：
+## - name：枚举名称。
+## - fallback：当名称不存在时的兜底值。
+## 返回值：目标枚举的整型值，或兜底值。
 static func get_value(name: String, fallback: int = -1) -> int:
 	var map := get_map()
 	return map.get(name, fallback)
@@ -49,15 +58,22 @@ static func _load_from_source() -> Dictionary:
 				in_enum = true
 			continue
 
-		if "}" in line:
-			break
-
 		if line.is_empty() or line.begins_with("//"):
 			continue
 
 		var comment_index := line.find("//")
 		if comment_index >= 0:
 			line = line.substr(0, comment_index).strip_edges()
+
+		if line.is_empty():
+			continue
+
+		if "}" in line:
+			break
+
+		# 跳过枚举块起始花括号或特性行，避免隐式枚举值被错误偏移。
+		if line.begins_with("{") or line.begins_with("["):
+			continue
 
 		if line.ends_with(","):
 			line = line.substr(0, line.length() - 1).strip_edges()
@@ -85,6 +101,7 @@ static func _load_from_source() -> Dictionary:
 
 	return map
 
+## 清理运行时缓存，方便热更新或调试。
 static func clear_cache() -> void:
 	# 允许运行时清理缓存，方便调试或热更新枚举。
 	_cached_map.clear()
