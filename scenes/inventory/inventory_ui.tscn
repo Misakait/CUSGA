@@ -61,7 +61,7 @@ horizontal_alignment = 1
 [node name="EquipmentSlotGrid" type="GridContainer" parent="MainPanel/VBoxContainer/ContentSplit/CharacterSection" unique_id=1140641077]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 2
+columns = 4
 
 [node name="AttributeSummaryUI" parent="MainPanel/VBoxContainer/ContentSplit/CharacterSection" unique_id=204883332 instance=ExtResource("5_vxqlk")]
 unique_name_in_owner = true
