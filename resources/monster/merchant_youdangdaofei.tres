@@ -1,20 +1,19 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dcf6yco4sdvxg"]
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://c0kroxoo3v0ex"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://defad2x2jo3sb" path="res://resources/skill_cards/metal_phys_jinji.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://cihx76k7aic7i" path="res://resources/skill_cards/metal_phys_liejinzhan.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://dlyeiar0v2cl2" path="res://resources/skill_cards/metal_phys_qianfengpodishi.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://cp4mf81epfamo" path="res://resources/skill_cards/metal_phys_qiege.tres" id="7_skill_4"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Resource" uid="uid://ea6rweqaxs31" path="res://resources/combat_skills/metal_phys_jinji.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://yw520olplgxu" path="res://resources/combat_skills/metal_phys_liejinzhan.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://sr2lune03r0n" path="res://resources/combat_skills/metal_phys_qianfengpodishi.tres" id="combat_skill_3"]
+[ext_resource type="Resource" uid="uid://bhemhd0rpix5c" path="res://resources/combat_skills/metal_phys_qiege.tres" id="combat_skill_4"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
-[ext_resource type="Resource" path="res://resources/combat_skills/metal_phys_jinji.tres" id="combat_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/metal_phys_liejinzhan.tres" id="combat_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/metal_phys_qianfengpodishi.tres" id="combat_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/metal_phys_qiege.tres" id="combat_skill_4"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
@@ -34,32 +33,24 @@ metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 script = ExtResource("loot_drop_script")
 Item = ExtResource("4_skill_1")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_2"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("5_skill_2")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_3"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("6_skill_3")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="LootDrop_4"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("7_skill_4")
 DropChance = 15.0
-MinAmount = 1
-MaxAmount = 1
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
 [sub_resource type="Resource" id="Resource_loot"]
@@ -97,7 +88,7 @@ script = ExtResource("2_monster")
 MonsterName = "游荡盗匪"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 2
-MaxHealth = 110
 LootTable = SubResource("Resource_loot")
+MaxHealth = 110
 SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

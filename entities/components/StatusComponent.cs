@@ -161,7 +161,6 @@ public partial class StatusComponent : Node
     /// </summary>
     public void OnTurnStarted(Node currentActor)
     {
-        GD.Print("OnTurnStarted: ", currentActor.Name);
         ProcessTurnPhase(
             currentActor,
             DurationTickTiming.Start,
@@ -178,7 +177,6 @@ public partial class StatusComponent : Node
     /// </summary>
     public void OnTurnEnded(Node currentActor)
     {
-        GD.Print("OnTurnEnded", currentActor.Name);
         ProcessTurnPhase(
             currentActor,
             DurationTickTiming.End,

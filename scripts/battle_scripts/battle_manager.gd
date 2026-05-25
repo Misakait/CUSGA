@@ -30,6 +30,7 @@ signal battle_ended(is_victory: bool)
 #region 其他参数
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
 const SKILL_TARGETING_TYPE_BRIDGE := preload("res://scripts/battle_scripts/skill_targeting_type_bridge.gd")
+const SKILL_CARD_DIR_PATH : String = "res://resources/skill_cards" ## 技能卡资源目录，用于反查怪物技能的显示名
 
 # 通过桥接器读取 C# 枚举，避免在 GDScript 中重复维护顺序。
 @onready var _skill_targeting_type_map: Dictionary = SKILL_TARGETING_TYPE_BRIDGE.get_map()
@@ -52,6 +53,10 @@ var action_queue: Array[Action] = []
 
 ## 当前正在行动的实体（玩家 player_manager 或某个特定的怪物实体）
 var active_entity: Variant = null
+
+## 通过技能卡资源反查怪物技能显示名的缓存
+var _combat_skill_display_name_map: Dictionary = {}
+var _combat_skill_display_name_map_ready: bool = false
 #endregion
 
 ## 获取当前场上所有的战斗实体，用于传给 UI 行动轴等系统
@@ -106,6 +111,92 @@ func _is_active_entity_valid() -> bool:
 		active_entity = null
 		return false
 	return true
+
+## 获取行动来源的显示标签（玩家 / 敌人），用于统一日志格式。
+## @param action_source 行动来源节点（PlayerManager 或怪物节点）。
+## @return String 返回“玩家”或“敌人”。
+func _get_action_actor_label(action_source: Variant) -> String:
+	if action_source == player_manager:
+		return "玩家"
+	return "敌人"
+
+## 获取行动所使用的卡牌显示名，便于在日志中统一输出。
+## @param card_data 卡牌或技能资源。
+## @return String 返回可显示的卡名，若不可用则返回空字符串。
+func _get_action_card_display_name(card_data: Resource) -> String:
+	if not card_data:
+		return ""
+
+	if card_data.get("DisplayName") != null and not str(card_data.DisplayName).is_empty():
+		return str(card_data.DisplayName)
+
+	if card_data.get("CardName") != null and not str(card_data.CardName).is_empty():
+		return str(card_data.CardName)
+
+	if card_data.get("CardId") != null and not str(card_data.CardId).is_empty():
+		return str(card_data.CardId)
+
+	# 兜底：怪物技能往往没有 CardName，需要通过技能卡资源反查中文名
+	var res_path = str(card_data.resource_path)
+	if not res_path.is_empty():
+		var mapped_name = _get_combat_skill_display_name_from_map(res_path)
+		if not mapped_name.is_empty():
+			return mapped_name
+
+	if card_data.resource_name != null and not str(card_data.resource_name).is_empty():
+		return str(card_data.resource_name)
+
+	if not res_path.is_empty():
+		return res_path.get_file().get_basename()
+
+	return ""
+
+## 根据 CombatSkillData 的资源路径反查显示名。
+## @param combat_skill_path CombatSkillData 的资源路径。
+## @return String 返回中文显示名，找不到则返回空字符串。
+func _get_combat_skill_display_name_from_map(combat_skill_path: String) -> String:
+	if combat_skill_path.is_empty():
+		return ""
+
+	if not _combat_skill_display_name_map_ready:
+		_build_combat_skill_display_name_map()
+
+	if _combat_skill_display_name_map.has(combat_skill_path):
+		return str(_combat_skill_display_name_map[combat_skill_path])
+
+	return ""
+
+## 构建 CombatSkillData -> 技能卡显示名 的映射缓存。
+## @return void 无返回值。
+func _build_combat_skill_display_name_map() -> void:
+	if _combat_skill_display_name_map_ready:
+		return
+
+	_combat_skill_display_name_map_ready = true
+	_combat_skill_display_name_map.clear()
+
+	var dir = DirAccess.open(SKILL_CARD_DIR_PATH)
+	if dir == null:
+		push_warning("无法打开技能卡目录：" + SKILL_CARD_DIR_PATH)
+		return
+
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir():
+			if file_name.ends_with(".tres") or file_name.ends_with(".res"):
+				var res_path = SKILL_CARD_DIR_PATH + "/" + file_name
+				var skill_card = load(res_path)
+				if skill_card and skill_card.get("Skill") != null:
+					var combat_skill = skill_card.Skill
+					if combat_skill and combat_skill.resource_path != null:
+						var combat_skill_path = str(combat_skill.resource_path)
+						var display_name = _get_action_card_display_name(skill_card)
+						if not combat_skill_path.is_empty() and not display_name.is_empty():
+							_combat_skill_display_name_map[combat_skill_path] = display_name
+		file_name = dir.get_next()
+
+	dir.list_dir_end()
 
 func _ready():
 	#初始化摸牌堆
@@ -381,8 +472,17 @@ func _handle_execute_actions():
 	_handle_execute_actions()
 
 ## 真正结算和表现单一行动的逻辑
+## @param action 行动数据，包含来源/目标/卡牌等信息。
+## @return void 无返回值。
 func _execute_single_action(action: Action):
 	print(action.source, " 执行行动 ", action.action_type, " 目标 ", action.targets)
+
+	# 使用可读性更高的显示名输出，便于战斗日志定位敌人使用的技能卡
+	if action.action_type == "SKILL":
+		var action_card_name := _get_action_card_display_name(action.card_data)
+		if not action_card_name.is_empty():
+			var actor_label = _get_action_actor_label(action.source)
+			print(actor_label + "打出了卡牌：" + action_card_name)
 
 	if action.action_type == "CARD" or action.action_type == "SKILL":
 		# 玩家卡牌和怪物技能共享目标解析；结算时分别调用 SkillCardData 或 CombatSkillData。

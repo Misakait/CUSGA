@@ -1,6 +1,5 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://c2tmacjdpus4l"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://oavd64ktuwrc" path="res://resources/skill_cards/water_magic_langjue.tres" id="4_skill_1"]
@@ -8,15 +7,15 @@
 [ext_resource type="Resource" uid="uid://cg5byo4q3xhhv" path="res://resources/skill_cards/water_magic_shuishu.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://dbcl1b88wkcg3" path="res://resources/skill_cards/water_magic_xuanshuimielingtai.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://bwu05hfq7ylil" path="res://resources/skill_cards/water_magic_yanyusuoqianchuan.tres" id="8_skill_5"]
+[ext_resource type="Resource" uid="uid://cnisnjgq8jyc" path="res://resources/combat_skills/water_magic_langjue.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://flns0homh8dl" path="res://resources/combat_skills/water_magic_ningshuijue.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://gxtgsrxjyrx4" path="res://resources/combat_skills/water_magic_shuishu.tres" id="combat_skill_3"]
+[ext_resource type="Resource" uid="uid://c2v6lt2ko2e8o" path="res://resources/combat_skills/water_magic_xuanshuimielingtai.tres" id="combat_skill_4"]
+[ext_resource type="Resource" uid="uid://bxxw57m8kfsk5" path="res://resources/combat_skills/water_magic_yanyusuoqianchuan.tres" id="combat_skill_5"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
-[ext_resource type="Resource" path="res://resources/combat_skills/water_magic_langjue.tres" id="combat_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/water_magic_ningshuijue.tres" id="combat_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/water_magic_shuishu.tres" id="combat_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/water_magic_xuanshuimielingtai.tres" id="combat_skill_4"]
-[ext_resource type="Resource" path="res://resources/combat_skills/water_magic_yanyusuoqianchuan.tres" id="combat_skill_5"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
