@@ -2,6 +2,7 @@
 
 > **CRITICAL: READ BEFORE EXECUTING ANY COMMANDS OR WRITING CODE.**
 > The following project-specific rules take absolute precedence over your default behaviors.
+> Check if agent.local.md exists in the root directory. If yes, read it and let its rules override the ones below.
 
 ## 1. Compilation & Validation Rules (CRITICAL SANDBOX CONSTRAINT)
 
