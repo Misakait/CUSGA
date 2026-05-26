@@ -29,11 +29,8 @@ signal battle_ended(is_victory: bool)
 
 #region 其他参数
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
-const SKILL_TARGETING_TYPE_BRIDGE := preload("res://scripts/battle_scripts/skill_targeting_type_bridge.gd")
+const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 const SKILL_CARD_DIR_PATH : String = "res://resources/skill_cards" ## 技能卡资源目录，用于反查怪物技能的显示名
-
-# 通过桥接器读取 C# 枚举，避免在 GDScript 中重复维护顺序。
-@onready var _skill_targeting_type_map: Dictionary = SKILL_TARGETING_TYPE_BRIDGE.get_map()
 
 ## 战斗状态机的状态定义
 enum BattleState {
@@ -497,15 +494,14 @@ func _execute_single_action(action: Action):
 			var ContextClass = load(CONTEXT_SCRIPT_PATH)
 			var context = null
 
-			# 尝试安全地获取技能目标的枚举值，默认为自身
-			# 这里用字典映射，避免 GDScript 自己维护一份枚举顺序
-			var target_self = _skill_targeting_type_map.get("Self", 0)
-			var target_single_enemy = _skill_targeting_type_map.get("SingleEnemy", 1)
-			var target_all_enemies = _skill_targeting_type_map.get("AllEnemies", 2)
-			var target_any_single = _skill_targeting_type_map.get("AnySingleUnit", 3)
-			var target_all_units = _skill_targeting_type_map.get("AllUnits", 4)
-			var target_random_enemy = _skill_targeting_type_map.get("RandomEnemy", 5)
-			var target_spread_from_enemy = _skill_targeting_type_map.get("SpreadFromEnemy", 6)
+			# 使用编辑器生成的原生枚举，避免战斗结算期间读取和解析 C# 源文件。
+			var target_self = SKILL_TARGETING_TYPE.Value.Self
+			var target_single_enemy = SKILL_TARGETING_TYPE.Value.SingleEnemy
+			var target_all_enemies = SKILL_TARGETING_TYPE.Value.AllEnemies
+			var target_any_single = SKILL_TARGETING_TYPE.Value.AnySingleUnit
+			var target_all_units = SKILL_TARGETING_TYPE.Value.AllUnits
+			var target_random_enemy = SKILL_TARGETING_TYPE.Value.RandomEnemy
+			var target_spread_from_enemy = SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
 
 			var targeting_type: int = target_self
 			if combat_skill.get("TargetingType") != null:

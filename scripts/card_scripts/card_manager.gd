@@ -11,10 +11,7 @@ extends Node2D
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
-const SKILL_TARGETING_TYPE_BRIDGE := preload("res://scripts/battle_scripts/skill_targeting_type_bridge.gd")
-
-# 通过桥接器读取 C# 枚举，避免在 GDScript 中重复维护顺序。
-@onready var _skill_targeting_type_map: Dictionary = SKILL_TARGETING_TYPE_BRIDGE.get_map()
+const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 
 @export_group("视觉缩放参数")
 @export var card_normal_scale: Vector2 = Vector2(1.0, 1.0) ## 卡牌正常大小
@@ -73,14 +70,14 @@ func update_hovered_targets(new_slot: Node2D, release_in_hand_area: bool = false
 		# 如果悬停在有效卡槽上，开始计算波及范围
 		if new_slot:
 			var target = new_slot.get_parent()
-			# 这里用字典映射，避免 GDScript 自己维护一份枚举顺序
-			var target_self = _skill_targeting_type_map.get("Self", 0)
-			var target_single_enemy = _skill_targeting_type_map.get("SingleEnemy", 1)
-			var target_all_enemies = _skill_targeting_type_map.get("AllEnemies", 2)
-			var target_any_single = _skill_targeting_type_map.get("AnySingleUnit", 3)
-			var target_all_units = _skill_targeting_type_map.get("AllUnits", 4)
-			var target_random_enemy = _skill_targeting_type_map.get("RandomEnemy", 5)
-			var target_spread_from_enemy = _skill_targeting_type_map.get("SpreadFromEnemy", 6)
+			# 使用编辑器生成的原生枚举，避免运行时解析 C# 文本。
+			var target_self = SKILL_TARGETING_TYPE.Value.Self
+			var target_single_enemy = SKILL_TARGETING_TYPE.Value.SingleEnemy
+			var target_all_enemies = SKILL_TARGETING_TYPE.Value.AllEnemies
+			var target_any_single = SKILL_TARGETING_TYPE.Value.AnySingleUnit
+			var target_all_units = SKILL_TARGETING_TYPE.Value.AllUnits
+			var target_random_enemy = SKILL_TARGETING_TYPE.Value.RandomEnemy
+			var target_spread_from_enemy = SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
 
 			var targeting_type: int = target_single_enemy
 
@@ -233,8 +230,8 @@ func start_drag(card):
 func is_self_target_card(card: SkillCard) -> bool:
 	if not card or not card.data:
 		return false
-	var target_self = _skill_targeting_type_map.get("Self", 0)
-	var targeting_type: int = _skill_targeting_type_map.get("SingleEnemy", 1)
+	var target_self = SKILL_TARGETING_TYPE.Value.Self
+	var targeting_type: int = SKILL_TARGETING_TYPE.Value.SingleEnemy
 	# 尝试安全获取目标类型
 	if card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
 		targeting_type = int(card.data.Skill.TargetingType)

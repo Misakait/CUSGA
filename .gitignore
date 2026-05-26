@@ -2,7 +2,9 @@
 .godot/
 /android/
 .idea/
-addons/
+addons/*
+!addons/skill_targeting_type_codegen/
+!addons/skill_targeting_type_codegen/**
 node_modules/
 tests/CUSGA.Tests/bin/Debug/net8.0/
 tests/CUSGA.Tests/obj/

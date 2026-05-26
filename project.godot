@@ -51,7 +51,7 @@ project/assembly_name="CUSGA"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/skill_targeting_type_codegen/plugin.cfg")
 
 [input]
 
