@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cbruma8ubj7lv"]
 
 [ext_resource type="Script" uid="uid://cxrvy4dp5urht" path="res://scripts/card_scripts/card_slot.gd" id="1_e7mht"]
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_e7mht"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="2_e7mht"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugqx"]
 size = Vector2(150, 210)

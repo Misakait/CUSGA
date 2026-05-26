@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgio8ure28d70"
-path="res://.godot/imported/卡牌插画模板.png-dca9024be1555a3b27226df351d5df05.ctex"
+uid="uid://dh2hqbgi3mpdv"
+path="res://.godot/imported/PhyPowerIcon.png-6ccab0cc3fcd109f9cca701a70bb38a6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/image/卡牌插画模板.png"
-dest_files=["res://.godot/imported/卡牌插画模板.png-dca9024be1555a3b27226df351d5df05.ctex"]
+source_file="res://res/monstercard/PhyPowerIcon.png"
+dest_files=["res://.godot/imported/PhyPowerIcon.png-6ccab0cc3fcd109f9cca701a70bb38a6.ctex"]
 
 [params]
 

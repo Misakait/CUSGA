@@ -195,7 +195,7 @@ script = ExtResource("11_to08p")
 
 [node name="Player" parent="PlayerManager" unique_id=1931166684 instance=ExtResource("18_sep7c")]
 
-[node name="黑暗破败感像素背景画" type="Sprite2D" parent="." unique_id=1458998012]
+[node name="测试背景" type="Sprite2D" parent="." unique_id=1458998012]
 visible = false
 z_index = -1000
 position = Vector2(640, 360)

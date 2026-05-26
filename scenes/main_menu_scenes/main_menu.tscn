@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://b5466od6j2iun" path="res://scripts/normal_compoment/drag_func.gd" id="6_gdjtc"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="7_gdjtc"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="7_r5auf"]
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="8_eliqi"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="8_eliqi"]
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="9_eliqi"]
 [ext_resource type="Texture2D" uid="uid://cki12g8ntwybh" path="res://res/UI/开始.png" id="10_168ci"]
 [ext_resource type="Texture2D" uid="uid://0wfyybb2allh" path="res://res/UI/设置.png" id="11_8ljqf"]

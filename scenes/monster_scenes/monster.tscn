@@ -7,13 +7,18 @@
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="3_f5jq7"]
 [ext_resource type="Script" uid="uid://qp3tco60xl2b" path="res://entities/components/FactionComponent.cs" id="3_tgvxs"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="4_twqyq"]
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="5_bgonl"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
-[ext_resource type="Texture2D" uid="uid://bhp1kn0sgqewf" path="res://res/image/卡牌模板2.png" id="8_bgonl"]
+[ext_resource type="Texture2D" uid="uid://bhp1kn0sgqewf" path="res://res/monstercard/卡牌模板2.png" id="8_bgonl"]
+[ext_resource type="Texture2D" uid="uid://dh2hqbgi3mpdv" path="res://res/monstercard/PhyPowerIcon.png" id="9_3855q"]
+[ext_resource type="Theme" uid="uid://cltloypjdpw1h" path="res://res/theme/MonsterCard.tres" id="9_gxwrs"]
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="11_f5jq7"]
+[ext_resource type="Texture2D" uid="uid://c8ryvx8t0btr3" path="res://res/monstercard/MagPowerIcon.png" id="11_ia034"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
+[ext_resource type="Texture2D" uid="uid://coexdqa0rbbyi" path="res://res/monstercard/PhyDefIcon.png" id="12_ve02a"]
+[ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="13_8mndn"]
 [ext_resource type="Script" uid="uid://dhw7i7lc8tobr" path="res://entities/components/LootComponent.cs" id="13_kt6in"]
+[ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="14_svjq7"]
 [ext_resource type="Script" uid="uid://b7el5njnasp45" path="res://entities/components/MonsterSkillComponent.cs" id="16_1lcr1"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="17_3855q"]
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="18_gxwrs"]
@@ -95,10 +100,15 @@ collision_mask = 8
 shape = SubResource("RectangleShape2D_ooags")
 
 [node name="HealthBar" type="ProgressBar" parent="." unique_id=1848201292]
-offset_left = -65.0
-offset_top = 36.0
-offset_right = 65.0
-offset_bottom = 61.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -75.0
+offset_top = -144.0
+offset_right = 75.0
+offset_bottom = -119.0
+grow_horizontal = 2
+size_flags_horizontal = 4
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
@@ -124,14 +134,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -65.0
-offset_top = -42.0
+offset_top = -74.0
 offset_right = 66.0
-offset_bottom = 40.0
+offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 1
-theme_override_font_sizes/font_size = 20
+theme = ExtResource("9_gxwrs")
 text = "怪物名"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -144,9 +152,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -65.0
-offset_top = -72.0
+offset_top = -88.0
 offset_right = 66.0
-offset_bottom = -28.0
+offset_bottom = -44.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -156,6 +164,91 @@ text = "属"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
+
+[node name="Attribute" type="VBoxContainer" parent="." unique_id=1050689439]
+offset_left = -65.0
+offset_top = 2.0
+offset_right = 65.0
+offset_bottom = 93.0
+theme = ExtResource("9_gxwrs")
+
+[node name="power" type="HBoxContainer" parent="Attribute" unique_id=1710520375]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+alignment = 1
+
+[node name="PhyTexture" type="TextureRect" parent="Attribute/power" unique_id=652186400]
+layout_mode = 2
+texture = ExtResource("9_3855q")
+expand_mode = 2
+
+[node name="PhyLabel" type="Label" parent="Attribute/power" unique_id=1682421191]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="split" type="Label" parent="Attribute/power" unique_id=1931687392]
+layout_mode = 2
+text = "  "
+
+[node name="MagTexture" type="TextureRect" parent="Attribute/power" unique_id=1996645392]
+layout_mode = 2
+texture = ExtResource("11_ia034")
+expand_mode = 2
+
+[node name="MagLabel" type="Label" parent="Attribute/power" unique_id=1517144689]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="def" type="HBoxContainer" parent="Attribute" unique_id=2137366164]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+alignment = 1
+
+[node name="PhyTexture" type="TextureRect" parent="Attribute/def" unique_id=1466205426]
+layout_mode = 2
+texture = ExtResource("12_ve02a")
+expand_mode = 2
+
+[node name="PhyLabel" type="Label" parent="Attribute/def" unique_id=2090486056]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="split" type="Label" parent="Attribute/def" unique_id=1913533421]
+layout_mode = 2
+text = "  "
+
+[node name="MagTexture" type="TextureRect" parent="Attribute/def" unique_id=1780260873]
+layout_mode = 2
+texture = ExtResource("13_8mndn")
+expand_mode = 2
+
+[node name="MagLabel" type="Label" parent="Attribute/def" unique_id=999046299]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="speed" type="HBoxContainer" parent="Attribute" unique_id=1868972931]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+alignment = 1
+
+[node name="Texture" type="TextureRect" parent="Attribute/speed" unique_id=1998929715]
+layout_mode = 2
+texture = ExtResource("14_svjq7")
+expand_mode = 2
+
+[node name="Label" type="Label" parent="Attribute/speed" unique_id=881537671]
+layout_mode = 2
+theme = ExtResource("9_gxwrs")
+theme_override_font_sizes/font_size = 15
+text = "100"
 
 [node name="Components" type="Node" parent="." unique_id=1744515292]
 

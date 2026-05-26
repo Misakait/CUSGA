@@ -1,6 +1,5 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dmqk3gkyjg53t"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://domcrxhndidx4" path="res://resources/skill_cards/metal_magic_jinshu.tres" id="4_skill_1"]

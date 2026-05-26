@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnjy64ygxba7l"
-path="res://.godot/imported/技能卡模板2.png-720976a3709e97960c968c53d3f998ef.ctex"
+uid="uid://bhp1kn0sgqewf"
+path="res://.godot/imported/卡牌模板2.png-ccacb1bc9a8fbc7eb178b4e7cf08baa5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/image/技能卡模板2.png"
-dest_files=["res://.godot/imported/技能卡模板2.png-720976a3709e97960c968c53d3f998ef.ctex"]
+source_file="res://res/monstercard/卡牌模板2.png"
+dest_files=["res://.godot/imported/卡牌模板2.png-ccacb1bc9a8fbc7eb178b4e7cf08baa5.ctex"]
 
 [params]
 

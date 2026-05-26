@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ca8m4rlwkbbvq"]
 
 [ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/skill_card.gd" id="1_wvnnh"]
-[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/image/技能卡模板2.png" id="2_wvnnh"]
+[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="2_wvnnh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
 size = Vector2(140, 100)

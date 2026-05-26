@@ -19,7 +19,7 @@
 [ext_resource type="Resource" uid="uid://dyu838ljiy5ul" path="res://resources/monster/fishingspot_shiyuyao.tres" id="9_31j1n"]
 [ext_resource type="Script" uid="uid://5dcs4o1t3h0" path="res://scripts/map_scripts/map_button/up_button.gd" id="9_bl6s4"]
 [ext_resource type="PackedScene" uid="uid://c4wjpuecdg4cl" path="res://scenes/map_scenes/map_son_scenes/map_shop.tscn" id="10_7lejn"]
-[ext_resource type="Script" uid="uid://ceces3oo175j7" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
+[ext_resource type="Script" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
 [ext_resource type="PackedScene" uid="uid://b3m1p2y3nixre" path="res://scenes/map_scenes/map_son_scenes/map_desert.tscn" id="11_kxp2x"]
 [ext_resource type="PackedScene" uid="uid://tatgubna8cvp" path="res://scenes/map_scenes/map_son_scenes/map_snowfield.tscn" id="12_lyes2"]
 [ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="12_rc7jg"]
@@ -29,7 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_00bk6"]
 [ext_resource type="Script" uid="uid://c7yg358eqvkoy" path="res://scripts/map_scripts/map_button/down_button.gd" id="14_in5uc"]
 [ext_resource type="PackedScene" uid="uid://da11xb6fh4350" path="res://scenes/map_scenes/map_son_scenes/map_hotspring.tscn" id="14_lyes2"]
-[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
+[ext_resource type="Script" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 [ext_resource type="Script" uid="uid://c64fkkngl08fo" path="res://scripts/map_scripts/map_button/left_button.gd" id="15_7fije"]
 [ext_resource type="PackedScene" uid="uid://bd3oumuesx70" path="res://scenes/map_scenes/map_son_scenes/map_brook.tscn" id="15_667l1"]
 [ext_resource type="PackedScene" uid="uid://doi30pgmescy5" path="res://scenes/map_scenes/map_son_scenes/map_underlake.tscn" id="16_a4yqg"]
@@ -42,7 +42,7 @@
 [ext_resource type="Script" uid="uid://coflsqr203xqh" path="res://scripts/map_scripts/passage_guard_controller.gd" id="19_pguard"]
 [ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="20_gky4a"]
 [ext_resource type="Resource" uid="uid://ktq36y7kngt7" path="res://resources/map/default_passage_guard_settings.tres" id="20_pguard"]
-[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/image/技能卡模板2.png" id="21_667l1"]
+[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="21_667l1"]
 
 [sub_resource type="Resource" id="Resource_6iqtf"]
 script = ExtResource("4_y6xvl")

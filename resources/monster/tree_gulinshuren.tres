@@ -8,7 +8,6 @@
 [ext_resource type="Resource" uid="uid://8i240itphi1k" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://chqp3ixoqp4oi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="8_skill_5"]
 [ext_resource type="Resource" uid="uid://bm12fxxsffifx" path="res://resources/skill_cards/wood_phys_cangtengci.tres" id="9_skill_6"]
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="10_4mpmq"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 

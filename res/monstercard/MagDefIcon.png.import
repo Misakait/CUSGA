@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dibw3vo71446y"
-path="res://.godot/imported/卡牌模板.png-46e0660d9b070323beb3a82ece0f31dd.ctex"
+uid="uid://be05pavvds5nd"
+path="res://.godot/imported/MagDefIcon.png-123871e87391d2c8b1839e31b8417257.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/image/卡牌模板.png"
-dest_files=["res://.godot/imported/卡牌模板.png-46e0660d9b070323beb3a82ece0f31dd.ctex"]
+source_file="res://res/monstercard/MagDefIcon.png"
+dest_files=["res://.godot/imported/MagDefIcon.png-123871e87391d2c8b1839e31b8417257.ctex"]
 
 [params]
 

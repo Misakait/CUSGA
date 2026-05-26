@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="1_cf8n2"]
 [ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_h115g"]
-[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/image/技能卡模板2.png" id="2_112t3"]
+[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="2_112t3"]
 [ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="2_brt88"]
 [ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_hh660"]
 [ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="4_brt88"]
@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_brt88"]
 [ext_resource type="Script" uid="uid://bpnde7bm8ueu8" path="res://scripts/warehouse/inventory_grid.gd" id="8_wqctc"]
 [ext_resource type="Script" uid="uid://cipxx54emufku" path="res://scripts/warehouse/inventory_control.gd" id="9_3jafb"]
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="9_nwke5"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="9_nwke5"]
 [ext_resource type="Script" uid="uid://5wtui6vmqah3" path="res://scripts/warehouse/inventory_card_slot.gd" id="12_ejbtm"]
 [ext_resource type="Script" uid="uid://dh406btb4xi6r" path="res://scripts/warehouse/inventory_user_card_slot.gd" id="13_ybp5e"]
 [ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="15_cvm3i"]

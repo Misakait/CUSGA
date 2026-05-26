@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cwtu13o7ivvl4"]
 
 [ext_resource type="Script" uid="uid://bqfor6mukto2l" path="res://scripts/normal_compoment/main_menu_card/main_menu_card.gd" id="1_h86l4"]
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板.png" id="2_w33iv"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="2_w33iv"]
 [ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="3_ecajb"]
 [ext_resource type="Script" uid="uid://dtxetmw6n0hf6" path="res://scripts/anim/CardAnimator.gd" id="4_becae"]
 

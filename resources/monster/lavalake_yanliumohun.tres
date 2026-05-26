@@ -2,12 +2,11 @@
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
-[ext_resource type="Resource" path="res://resources/skill_cards/fire_magic_huoshu.tres" id="4_skill_1"]
-[ext_resource type="Resource" path="res://resources/skill_cards/fire_magic_shenhuolianfanqu.tres" id="5_skill_2"]
-[ext_resource type="Resource" path="res://resources/skill_cards/fire_phys_liaoyuanfensiye.tres" id="6_skill_3"]
+[ext_resource type="Resource" uid="uid://dvnow0kdffkmr" path="res://resources/skill_cards/fire_magic_huoshu.tres" id="4_skill_1"]
+[ext_resource type="Resource" uid="uid://5lcr6dvyubf" path="res://resources/skill_cards/fire_magic_shenhuolianfanqu.tres" id="5_skill_2"]
+[ext_resource type="Resource" uid="uid://dslvwu33l084u" path="res://resources/skill_cards/fire_phys_liaoyuanfensiye.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://bfjlkpl2x20d3" path="res://resources/skill_cards/fire_magic_jinhuoyin.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://cabsg0rwbu7gp" path="res://resources/skill_cards/fire_magic_lieyantunbafang.tres" id="8_skill_5"]
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="9_htu0j"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 

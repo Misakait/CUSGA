@@ -81,6 +81,11 @@ public partial class SkillCardData : ItemData
 
     public ElementType Element => Skill?.Element ?? ElementType.None;
 
+    /// <summary>
+    /// 执行卡牌效果结算。
+    /// </summary>
+    /// <param name="context">技能执行上下文，包含施放者与目标。</param>
+    /// <returns>无返回值。</returns>
     public void ApplyEffect(SkillExecutionContext context)
     {
         if (Skill == null)
@@ -95,7 +100,13 @@ public partial class SkillCardData : ItemData
             return;
         }
 
-        GD.Print($"打出了卡牌：{CardName}");
+        var logName = !string.IsNullOrWhiteSpace(DisplayName) ? DisplayName : CardName;
+        if (string.IsNullOrWhiteSpace(logName))
+        {
+            logName = CardId.ToString();
+        }
+
+        GD.Print($"玩家打出了卡牌：{logName}");
         Skill.Execute(context);
     }
 }

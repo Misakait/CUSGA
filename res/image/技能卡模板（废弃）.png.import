@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dr8ibnwnis3sp"
-path="res://.godot/imported/技能卡模板.png-9d54f1430b20ee62d61062ba70f131ee.ctex"
+path="res://.godot/imported/技能卡模板（废弃）.png-76ab305ba49a80e58bcd7643bf10ec15.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/image/技能卡模板.png"
-dest_files=["res://.godot/imported/技能卡模板.png-9d54f1430b20ee62d61062ba70f131ee.ctex"]
+source_file="res://res/image/技能卡模板（废弃）.png"
+dest_files=["res://.godot/imported/技能卡模板（废弃）.png-76ab305ba49a80e58bcd7643bf10ec15.ctex"]
 
 [params]
 
