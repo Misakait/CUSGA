@@ -81,7 +81,7 @@ dotnet format CUSGA.sln
 
 ## 开发说明
 
-- 主场景配置在 `project.godot` 的 `run/main_scene`（当前为 `scenes/Main.tscn`）。
+- 主场景配置在 `project.godot` 的 `run/main_scene`（Godot 使用 UID 引用；当前为 `uid://qwckbjjp11ca`，对应场景文件 `scenes/main_menu_scenes/main_menu.tscn`）。
 - 自动加载节点（Autoload）包括：`GlobalEventBus`、`TimeSystem`、`WeatherManager`、`ItemsControl`、`GlobalWarehouse`、`SceneManager`、`ScreenTransitions`。
 - `addons/skill_targeting_type_codegen` 会将 C# 枚举同步生成到 `scripts/generated/SkillTargetingType.gd`。
 
