@@ -18,14 +18,14 @@
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
-BasePhysAtk = 7.0
-PhysAtkGrowth = 2.0
-BasePhysDef = 6.0
-PhysDefGrowth = 1.2
-BaseMagPower = 11.0
-MagPowerGrowth = 2.8
-BaseMagResist = 11.0
-MagResistGrowth = 1.6
+BasePhysAtk = 70.0
+PhysAtkGrowth = 20.0
+BasePhysDef = 120.0
+PhysDefGrowth = 24.0
+BaseMagPower = 110.0
+MagPowerGrowth = 28.0
+BaseMagResist = 220.0
+MagResistGrowth = 32.0
 BaseSpeed = 120.0
 SpeedGrowth = 5.5
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"

@@ -109,10 +109,10 @@ internal sealed class TerrainRandomizationTests
     public void EncounterMonsterScalerDuplicatesAndScalesAllEncounterStats()
     {
         var baseStats = CreateStartingStatsStub();
-        baseStats.BasePhysAtk = 10f;
-        baseStats.BasePhysDef = 20f;
-        baseStats.BaseMagPower = 30f;
-        baseStats.BaseMagResist = 40f;
+        baseStats.BasePhysAtk = 100f;
+        baseStats.BasePhysDef = 400f;
+        baseStats.BaseMagPower = 300f;
+        baseStats.BaseMagResist = 800f;
         baseStats.BaseSpeed = 50f;
 
         var monster = CreateMonsterDataStub();
@@ -137,13 +137,13 @@ internal sealed class TerrainRandomizationTests
         Assert.NotSame(monster, scaledMonster);
         Assert.NotSame(baseStats, scaledMonster.InitialAttributes);
         Assert.Equal(180, scaledMonster.MaxHealth);
-        Assert.Approximately(24f, scaledMonster.InitialAttributes.BasePhysAtk);
-        Assert.Approximately(72f, scaledMonster.InitialAttributes.BasePhysDef);
-        Assert.Approximately(144f, scaledMonster.InitialAttributes.BaseMagPower);
-        Assert.Approximately(240f, scaledMonster.InitialAttributes.BaseMagResist);
+        Assert.Approximately(240f, scaledMonster.InitialAttributes.BasePhysAtk);
+        Assert.Approximately(1440f, scaledMonster.InitialAttributes.BasePhysDef);
+        Assert.Approximately(1440f, scaledMonster.InitialAttributes.BaseMagPower);
+        Assert.Approximately(4800f, scaledMonster.InitialAttributes.BaseMagResist);
         Assert.Approximately(30f, scaledMonster.InitialAttributes.BaseSpeed);
         Assert.Equal(100, monster.MaxHealth);
-        Assert.Approximately(10f, baseStats.BasePhysAtk);
+        Assert.Approximately(100f, baseStats.BasePhysAtk);
         Assert.Same(monster.SkillSet, scaledMonster.SkillSet);
     }
 

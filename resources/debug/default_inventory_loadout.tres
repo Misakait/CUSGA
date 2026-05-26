@@ -50,7 +50,7 @@ CardName = "Debug 头盔"
 Description = "开局已装备，测试卸下和属性变化。"
 CardIcon = ExtResource("30_helmet")
 BonusAttribute = 1
-BonusRange = Vector2i(2, 3)
+BonusRange = Vector2i(40, 60)
 
 [sub_resource type="Resource" id="Equipped_boots"]
 script = ExtResource("3_equip")
@@ -66,7 +66,7 @@ script = ExtResource("3_equip")
 CardName = "Debug 木剑"
 Description = "拖到武器槽测试物攻变化。"
 CardIcon = ExtResource("34_weapon")
-BonusRange = Vector2i(7, 10)
+BonusRange = Vector2i(70, 100)
 
 [sub_resource type="Resource" id="Equip_chest"]
 script = ExtResource("3_equip")
@@ -75,7 +75,7 @@ CardName = "Debug 铁甲"
 Description = "拖到胸甲槽测试物防变化。"
 CardIcon = ExtResource("31_chest")
 BonusAttribute = 1
-BonusRange = Vector2i(4, 6)
+BonusRange = Vector2i(80, 120)
 
 [sub_resource type="Resource" id="Equip_legs"]
 script = ExtResource("3_equip")
@@ -84,7 +84,7 @@ CardName = "Debug 护腿"
 Description = "拖到护腿槽测试物防变化。"
 CardIcon = ExtResource("32_legs")
 BonusAttribute = 1
-BonusRange = Vector2i(2, 4)
+BonusRange = Vector2i(40, 80)
 
 [sub_resource type="Resource" id="Equip_axe"]
 script = ExtResource("3_equip")
@@ -92,7 +92,7 @@ Slot = 5
 CardName = "Debug 斧头"
 Description = "拖到斧头槽测试工具装备。"
 CardIcon = ExtResource("35_branch")
-BonusRange = Vector2i(2, 4)
+BonusRange = Vector2i(20, 40)
 
 [sub_resource type="Resource" id="Equip_pickaxe"]
 script = ExtResource("3_equip")
@@ -100,7 +100,7 @@ Slot = 6
 CardName = "Debug 镐子"
 Description = "拖到镐子槽测试工具装备。"
 CardIcon = ExtResource("36_stone")
-BonusRange = Vector2i(1, 3)
+BonusRange = Vector2i(10, 30)
 
 [sub_resource type="Resource" id="Equip_rod"]
 script = ExtResource("3_equip")
@@ -172,9 +172,9 @@ metadata/_custom_type_script = "uid://boejtq5adncuh"
 
 [sub_resource type="Resource" id="StartingStats_debug"]
 script = ExtResource("4_stats")
-BasePhysAtk = 12.0
-BasePhysDef = 6.0
-BaseMagPower = 9.0
+BasePhysAtk = 120.0
+BasePhysDef = 120.0
+BaseMagPower = 90.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [resource]

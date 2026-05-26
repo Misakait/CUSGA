@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://bhp1kn0sgqewf" path="res://res/monstercard/卡牌模板2.png" id="8_bgonl"]
 [ext_resource type="Texture2D" uid="uid://dh2hqbgi3mpdv" path="res://res/monstercard/PhyPowerIcon.png" id="9_3855q"]
 [ext_resource type="Theme" uid="uid://cltloypjdpw1h" path="res://res/theme/MonsterCard.tres" id="9_gxwrs"]
+[ext_resource type="Script" uid="uid://sgouf3hurg2x" path="res://scripts/card_scripts/monster_attribute.gd" id="10_nmmph"]
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="11_f5jq7"]
 [ext_resource type="Texture2D" uid="uid://c8ryvx8t0btr3" path="res://res/monstercard/MagPowerIcon.png" id="11_ia034"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
@@ -166,86 +167,87 @@ horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
 
-[node name="Attribute" type="VBoxContainer" parent="." unique_id=1050689439]
+[node name="MonsterAttribute" type="VBoxContainer" parent="." unique_id=1050689439]
 offset_left = -65.0
 offset_top = 2.0
 offset_right = 65.0
 offset_bottom = 93.0
 theme = ExtResource("9_gxwrs")
+script = ExtResource("10_nmmph")
 
-[node name="power" type="HBoxContainer" parent="Attribute" unique_id=1710520375]
+[node name="power" type="HBoxContainer" parent="MonsterAttribute" unique_id=1710520375]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 alignment = 1
 
-[node name="PhyTexture" type="TextureRect" parent="Attribute/power" unique_id=652186400]
+[node name="PhyTexture" type="TextureRect" parent="MonsterAttribute/power" unique_id=652186400]
 layout_mode = 2
 texture = ExtResource("9_3855q")
 expand_mode = 2
 
-[node name="PhyLabel" type="Label" parent="Attribute/power" unique_id=1682421191]
+[node name="PhyLabel" type="Label" parent="MonsterAttribute/power" unique_id=1682421191]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="split" type="Label" parent="Attribute/power" unique_id=1931687392]
+[node name="split" type="Label" parent="MonsterAttribute/power" unique_id=1931687392]
 layout_mode = 2
 text = "  "
 
-[node name="MagTexture" type="TextureRect" parent="Attribute/power" unique_id=1996645392]
+[node name="MagTexture" type="TextureRect" parent="MonsterAttribute/power" unique_id=1996645392]
 layout_mode = 2
 texture = ExtResource("11_ia034")
 expand_mode = 2
 
-[node name="MagLabel" type="Label" parent="Attribute/power" unique_id=1517144689]
+[node name="MagLabel" type="Label" parent="MonsterAttribute/power" unique_id=1517144689]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="def" type="HBoxContainer" parent="Attribute" unique_id=2137366164]
+[node name="def" type="HBoxContainer" parent="MonsterAttribute" unique_id=2137366164]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 alignment = 1
 
-[node name="PhyTexture" type="TextureRect" parent="Attribute/def" unique_id=1466205426]
+[node name="PhyTexture" type="TextureRect" parent="MonsterAttribute/def" unique_id=1466205426]
 layout_mode = 2
 texture = ExtResource("12_ve02a")
 expand_mode = 2
 
-[node name="PhyLabel" type="Label" parent="Attribute/def" unique_id=2090486056]
+[node name="PhyLabel" type="Label" parent="MonsterAttribute/def" unique_id=2090486056]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="split" type="Label" parent="Attribute/def" unique_id=1913533421]
+[node name="split" type="Label" parent="MonsterAttribute/def" unique_id=1913533421]
 layout_mode = 2
 text = "  "
 
-[node name="MagTexture" type="TextureRect" parent="Attribute/def" unique_id=1780260873]
+[node name="MagTexture" type="TextureRect" parent="MonsterAttribute/def" unique_id=1780260873]
 layout_mode = 2
 texture = ExtResource("13_8mndn")
 expand_mode = 2
 
-[node name="MagLabel" type="Label" parent="Attribute/def" unique_id=999046299]
+[node name="MagLabel" type="Label" parent="MonsterAttribute/def" unique_id=999046299]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="speed" type="HBoxContainer" parent="Attribute" unique_id=1868972931]
+[node name="speed" type="HBoxContainer" parent="MonsterAttribute" unique_id=1868972931]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 alignment = 1
 
-[node name="Texture" type="TextureRect" parent="Attribute/speed" unique_id=1998929715]
+[node name="Texture" type="TextureRect" parent="MonsterAttribute/speed" unique_id=1998929715]
 layout_mode = 2
 texture = ExtResource("14_svjq7")
 expand_mode = 2
 
-[node name="Label" type="Label" parent="Attribute/speed" unique_id=881537671]
+[node name="Label" type="Label" parent="MonsterAttribute/speed" unique_id=881537671]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 15

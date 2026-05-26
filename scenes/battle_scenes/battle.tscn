@@ -29,6 +29,7 @@
 [ext_resource type="Theme" uid="uid://cltloypjdpw1h" path="res://res/theme/MonsterCard.tres" id="27_7g460"]
 [ext_resource type="Texture2D" uid="uid://dh2hqbgi3mpdv" path="res://res/monstercard/PhyPowerIcon.png" id="28_317fs"]
 [ext_resource type="Texture2D" uid="uid://c8ryvx8t0btr3" path="res://res/monstercard/MagPowerIcon.png" id="29_3juot"]
+[ext_resource type="Script" uid="uid://bfyne3eaxlybm" path="res://scripts/battle_scripts/player_attribute.gd" id="29_f7hr6"]
 [ext_resource type="Texture2D" uid="uid://coexdqa0rbbyi" path="res://res/monstercard/PhyDefIcon.png" id="30_f7hr6"]
 [ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="31_2op3e"]
 [ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="32_jxr1f"]
@@ -199,85 +200,86 @@ script = ExtResource("timeline_script")
 
 [node name="TooltipPanel" parent="UI" unique_id=1474670946 instance=ExtResource("tooltip_panel_scene")]
 
-[node name="Attribute" type="VBoxContainer" parent="UI" unique_id=369425618]
+[node name="PlayerAttribute" type="VBoxContainer" parent="UI" unique_id=369425618]
 offset_left = 689.0
 offset_top = 409.0
 offset_right = 1003.0
 offset_bottom = 470.0
 theme = ExtResource("27_7g460")
 alignment = 1
+script = ExtResource("29_f7hr6")
 
-[node name="attribute" type="HBoxContainer" parent="UI/Attribute" unique_id=1881192759]
+[node name="attribute" type="HBoxContainer" parent="UI/PlayerAttribute" unique_id=1881192759]
 layout_mode = 2
 theme = ExtResource("27_7g460")
 alignment = 1
 
-[node name="PhyPowerTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=2071213327]
+[node name="PhyPowerTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=2071213327]
 layout_mode = 2
 texture = ExtResource("28_317fs")
 expand_mode = 2
 
-[node name="PhyPowerLabel" type="Label" parent="UI/Attribute/attribute" unique_id=823819621]
+[node name="PhyPowerLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=823819621]
 layout_mode = 2
 theme = ExtResource("27_7g460")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="split" type="Label" parent="UI/Attribute/attribute" unique_id=270001395]
+[node name="split" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=270001395]
 layout_mode = 2
 text = "  "
 
-[node name="MagPowerTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=1363800386]
+[node name="MagPowerTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=1363800386]
 layout_mode = 2
 texture = ExtResource("29_3juot")
 expand_mode = 2
 
-[node name="MagPowerLabel" type="Label" parent="UI/Attribute/attribute" unique_id=1123990083]
+[node name="MagPowerLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=1123990083]
 layout_mode = 2
 theme = ExtResource("27_7g460")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="split2" type="Label" parent="UI/Attribute/attribute" unique_id=631891463]
+[node name="split2" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=631891463]
 layout_mode = 2
 text = "  "
 
-[node name="PhyDefTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=104565757]
+[node name="PhyDefTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=104565757]
 layout_mode = 2
 texture = ExtResource("30_f7hr6")
 expand_mode = 2
 
-[node name="PhyDefLabel" type="Label" parent="UI/Attribute/attribute" unique_id=484516209]
+[node name="PhyDefLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=484516209]
 layout_mode = 2
 theme = ExtResource("27_7g460")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="split3" type="Label" parent="UI/Attribute/attribute" unique_id=115414777]
+[node name="split3" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=115414777]
 layout_mode = 2
 text = "  "
 
-[node name="MagDefTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=775857420]
+[node name="MagDefTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=775857420]
 layout_mode = 2
 texture = ExtResource("31_2op3e")
 expand_mode = 2
 
-[node name="MagDefLabel" type="Label" parent="UI/Attribute/attribute" unique_id=315003797]
+[node name="MagDefLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=315003797]
 layout_mode = 2
 theme = ExtResource("27_7g460")
 theme_override_font_sizes/font_size = 15
 text = "100"
 
-[node name="split4" type="Label" parent="UI/Attribute/attribute" unique_id=1154825550]
+[node name="split4" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=1154825550]
 layout_mode = 2
 text = "  "
 
-[node name="SpeedTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=1344090833]
+[node name="SpeedTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=1344090833]
 layout_mode = 2
 texture = ExtResource("32_jxr1f")
 expand_mode = 2
 
-[node name="SpeedLabel" type="Label" parent="UI/Attribute/attribute" unique_id=1592340171]
+[node name="SpeedLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=1592340171]
 layout_mode = 2
 theme = ExtResource("27_7g460")
 theme_override_font_sizes/font_size = 15
