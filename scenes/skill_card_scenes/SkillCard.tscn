@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/skill_card.gd" id="1_wvnnh"]
 [ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="2_wvnnh"]
+[ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="3_78v1l"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
 size = Vector2(140, 100)
@@ -32,9 +33,7 @@ offset_right = 88.0
 offset_bottom = -26.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 1
-theme_override_font_sizes/font_size = 20
+theme = ExtResource("3_78v1l")
 text = "技能卡名"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -45,14 +44,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -88.0
+offset_left = -72.0
 offset_top = -11.0
-offset_right = -27.0
+offset_right = -11.0
 offset_bottom = 59.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 1
+theme = ExtResource("3_78v1l")
 text = "标签"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -73,12 +71,11 @@ grow_vertical = 2
 autowrap_mode = 3
 
 [node name="CardCost" type="Label" parent="." unique_id=822735793]
-offset_left = 48.0
+offset_left = 40.0
 offset_top = -16.0
-offset_right = 88.0
+offset_right = 80.0
 offset_bottom = 65.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 1
+theme = ExtResource("3_78v1l")
 text = "10"
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -25,6 +25,13 @@
 [ext_resource type="Resource" uid="uid://b57sfyhlvplgf" path="res://resources/monster/sandpile_huangshayanyinshou.tres" id="18_eboiy"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="18_sep7c"]
 [ext_resource type="Resource" uid="uid://d0eylh2xvavit" path="res://resources/skill_cards/wood_phys_muji.tres" id="22_bjehq"]
+[ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="24_317fs"]
+[ext_resource type="Theme" uid="uid://cltloypjdpw1h" path="res://res/theme/MonsterCard.tres" id="27_7g460"]
+[ext_resource type="Texture2D" uid="uid://dh2hqbgi3mpdv" path="res://res/monstercard/PhyPowerIcon.png" id="28_317fs"]
+[ext_resource type="Texture2D" uid="uid://c8ryvx8t0btr3" path="res://res/monstercard/MagPowerIcon.png" id="29_3juot"]
+[ext_resource type="Texture2D" uid="uid://coexdqa0rbbyi" path="res://res/monstercard/PhyDefIcon.png" id="30_f7hr6"]
+[ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="31_2op3e"]
+[ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="32_jxr1f"]
 [ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="37_3juot"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 [ext_resource type="Script" uid="uid://b74g378xtw11y" path="res://scripts/ui_scripts/action_timeline.gd" id="timeline_script"]
@@ -89,7 +96,7 @@ offset_left = 1112.0
 offset_top = 401.0
 offset_right = 1229.0
 offset_bottom = 456.0
-theme_override_font_sizes/font_size = 23
+theme = ExtResource("24_317fs")
 text = "结束回合"
 
 [node name="DrawCard" type="Button" parent="Button" unique_id=871572952]
@@ -98,16 +105,17 @@ offset_left = 1112.0
 offset_top = 321.0
 offset_right = 1229.0
 offset_bottom = 376.0
-theme_override_font_sizes/font_size = 23
+theme = ExtResource("24_317fs")
 text = "摸牌"
 
 [node name="UI" type="Marker2D" parent="." unique_id=1635819477]
 
 [node name="HpBar" type="ProgressBar" parent="UI" unique_id=1277872820]
 offset_left = 340.0
-offset_top = 424.0
+offset_top = 400.0
 offset_right = 540.0
-offset_bottom = 454.0
+offset_bottom = 430.0
+theme = ExtResource("24_317fs")
 theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
 value = 100.0
@@ -127,12 +135,12 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="HpTitle" type="Label" parent="UI/HpBar" unique_id=1277872822]
+[node name="HpTitle" type="Label" parent="UI/HpBar" unique_id=327797566]
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -40.0
+offset_left = -60.0
 offset_top = -13.0
 offset_right = -5.0
 offset_bottom = 13.0
@@ -140,13 +148,13 @@ grow_vertical = 2
 text = "血量"
 horizontal_alignment = 2
 vertical_alignment = 1
-metadata/_edit_use_anchors_ = true
 
 [node name="EnergyBar" type="ProgressBar" parent="UI" unique_id=1840398388]
-offset_left = 740.0
-offset_top = 424.0
-offset_right = 940.0
-offset_bottom = 454.0
+offset_left = 340.0
+offset_top = 448.0
+offset_right = 540.0
+offset_bottom = 478.0
+theme = ExtResource("24_317fs")
 theme_override_styles/background = SubResource("StyleBoxFlat_energy_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_energy_fill")
 value = 100.0
@@ -186,9 +194,94 @@ offset_left = 20.0
 offset_top = 20.0
 offset_right = 140.0
 offset_bottom = 400.0
+theme = ExtResource("24_317fs")
 script = ExtResource("timeline_script")
 
 [node name="TooltipPanel" parent="UI" unique_id=1474670946 instance=ExtResource("tooltip_panel_scene")]
+
+[node name="Attribute" type="VBoxContainer" parent="UI" unique_id=369425618]
+offset_left = 689.0
+offset_top = 409.0
+offset_right = 1003.0
+offset_bottom = 470.0
+theme = ExtResource("27_7g460")
+alignment = 1
+
+[node name="attribute" type="HBoxContainer" parent="UI/Attribute" unique_id=1881192759]
+layout_mode = 2
+theme = ExtResource("27_7g460")
+alignment = 1
+
+[node name="PhyPowerTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=2071213327]
+layout_mode = 2
+texture = ExtResource("28_317fs")
+expand_mode = 2
+
+[node name="PhyPowerLabel" type="Label" parent="UI/Attribute/attribute" unique_id=823819621]
+layout_mode = 2
+theme = ExtResource("27_7g460")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="split" type="Label" parent="UI/Attribute/attribute" unique_id=270001395]
+layout_mode = 2
+text = "  "
+
+[node name="MagPowerTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=1363800386]
+layout_mode = 2
+texture = ExtResource("29_3juot")
+expand_mode = 2
+
+[node name="MagPowerLabel" type="Label" parent="UI/Attribute/attribute" unique_id=1123990083]
+layout_mode = 2
+theme = ExtResource("27_7g460")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="split2" type="Label" parent="UI/Attribute/attribute" unique_id=631891463]
+layout_mode = 2
+text = "  "
+
+[node name="PhyDefTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=104565757]
+layout_mode = 2
+texture = ExtResource("30_f7hr6")
+expand_mode = 2
+
+[node name="PhyDefLabel" type="Label" parent="UI/Attribute/attribute" unique_id=484516209]
+layout_mode = 2
+theme = ExtResource("27_7g460")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="split3" type="Label" parent="UI/Attribute/attribute" unique_id=115414777]
+layout_mode = 2
+text = "  "
+
+[node name="MagDefTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=775857420]
+layout_mode = 2
+texture = ExtResource("31_2op3e")
+expand_mode = 2
+
+[node name="MagDefLabel" type="Label" parent="UI/Attribute/attribute" unique_id=315003797]
+layout_mode = 2
+theme = ExtResource("27_7g460")
+theme_override_font_sizes/font_size = 15
+text = "100"
+
+[node name="split4" type="Label" parent="UI/Attribute/attribute" unique_id=1154825550]
+layout_mode = 2
+text = "  "
+
+[node name="SpeedTexture" type="TextureRect" parent="UI/Attribute/attribute" unique_id=1344090833]
+layout_mode = 2
+texture = ExtResource("32_jxr1f")
+expand_mode = 2
+
+[node name="SpeedLabel" type="Label" parent="UI/Attribute/attribute" unique_id=1592340171]
+layout_mode = 2
+theme = ExtResource("27_7g460")
+theme_override_font_sizes/font_size = 15
+text = "100"
 
 [node name="PlayerManager" type="Node2D" parent="." unique_id=1987979305]
 script = ExtResource("11_to08p")

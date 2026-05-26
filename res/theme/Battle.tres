@@ -1,0 +1,14 @@
+[gd_resource type="Theme" format=3 uid="uid://c2h5a54fkrrvi"]
+
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="1_2cvxb"]
+
+[resource]
+Button/colors/font_outline_color = Color(0, 0, 0, 1)
+Button/constants/outline_size = 1
+Button/font_sizes/font_size = 23
+Button/fonts/font = ExtResource("1_2cvxb")
+HBoxContainer/constants/separation = 0
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/constants/outline_size = 1
+Label/font_sizes/font_size = 19
+Label/fonts/font = ExtResource("1_2cvxb")
