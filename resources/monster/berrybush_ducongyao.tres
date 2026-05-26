@@ -6,9 +6,14 @@
 [ext_resource type="Resource" uid="uid://cfdj0dfuvdoq2" path="res://resources/skill_cards/wood_phys_wanzhiluanpuxi.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://8i240itphi1k" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://chqp3ixoqp4oi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="7_skill_4"]
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="8_58kaq"]
+[ext_resource type="Resource" uid="uid://dywne4daeg1qm" path="res://resources/combat_skills/wood_magic_mushu.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://ced4nad445q7l" path="res://resources/combat_skills/wood_phys_wanzhiluanpuxi.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://ulkmeo2rhqff" path="res://resources/combat_skills/wood_magic_qinglingzhou.tres" id="combat_skill_3"]
+[ext_resource type="Resource" uid="uid://dy1dacfsmqoot" path="res://resources/combat_skills/wood_magic_tengxiang.tres" id="combat_skill_4"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
 
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
@@ -52,6 +57,31 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_1"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_1")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_2"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_2")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_3"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_3")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillEntry_migrated_4"]
+script = ExtResource("monster_skill_entry_script")
+Skill = ExtResource("combat_skill_4")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
+
+[sub_resource type="Resource" id="MonsterSkillSet_migrated"]
+script = ExtResource("monster_skill_set_script")
+Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1"), SubResource("MonsterSkillEntry_migrated_2"), SubResource("MonsterSkillEntry_migrated_3"), SubResource("MonsterSkillEntry_migrated_4")])
+metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "毒丛妖"
@@ -59,4 +89,5 @@ InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 1
 LootTable = SubResource("Resource_loot")
 MaxHealth = 95
+SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://b1jg07l3o2be4"]
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://b57sfyhlvplgf"]
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
@@ -8,8 +8,8 @@
 [ext_resource type="Resource" uid="uid://dd7mnum2hfn5d" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://bbduwbnithwpx" path="res://resources/skill_cards/earth_phys_yanbengji.tres" id="8_skill_5"]
 [ext_resource type="Resource" uid="uid://kxrggdaafx5w" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="9_skill_6"]
-[ext_resource type="Resource" uid="uid://bv8wnil4o2xn0" path="res://resources/combat_skills/earth_phys_houtuzhensifang.tres" id="combat_skill_1"]
-[ext_resource type="Resource" uid="uid://ghnfkfvsml6y" path="res://resources/combat_skills/earth_phys_panshizhuang.tres" id="combat_skill_2"]
+[ext_resource type="Resource" uid="uid://b2arhqsf7bcsb" path="res://resources/combat_skills/earth_phys_houtuzhensifang.tres" id="combat_skill_1"]
+[ext_resource type="Resource" uid="uid://bnrrrtk1ot1uf" path="res://resources/combat_skills/earth_phys_panshizhuang.tres" id="combat_skill_2"]
 [ext_resource type="Resource" uid="uid://cani7w0ijgqr3" path="res://resources/combat_skills/earth_phys_tuji.tres" id="combat_skill_3"]
 [ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="combat_skill_4"]
 [ext_resource type="Resource" uid="uid://bwbg6v5bljtvu" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="combat_skill_5"]

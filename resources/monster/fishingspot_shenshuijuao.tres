@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://bm2tv6dls4iao"]
+[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://bqi8y7dq2heho"]
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
@@ -11,7 +11,7 @@
 [ext_resource type="Resource" uid="uid://bn2pktd4ncpk7" path="res://resources/combat_skills/water_phys_hongtaoxijuanlai.tres" id="combat_skill_2"]
 [ext_resource type="Resource" uid="uid://b0urn62a1axoa" path="res://resources/combat_skills/water_phys_langji.tres" id="combat_skill_3"]
 [ext_resource type="Resource" uid="uid://cgaidy2ryuwvq" path="res://resources/combat_skills/water_phys_liubozhuang.tres" id="combat_skill_4"]
-[ext_resource type="Resource" uid="uid://cw6l0x4m3ll4v" path="res://resources/combat_skills/water_phys_shuiji.tres" id="combat_skill_5"]
+[ext_resource type="Resource" uid="uid://tqtutau0o0o4" path="res://resources/combat_skills/water_phys_shuiji.tres" id="combat_skill_5"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
