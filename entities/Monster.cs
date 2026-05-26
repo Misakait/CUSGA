@@ -28,6 +28,9 @@ public partial class Monster : Node2D
     private Label _cardNameLabel;
     private Label _elementLabel;
     private Node _tooltipPanel;
+    private Tween _visualScaleTween;
+    private readonly System.Collections.Generic.Dictionary<Node, Vector2> _visualScaleBaseMap = new();
+    private readonly System.Collections.Generic.Dictionary<Node, Vector2> _visualPositionBaseMap = new();
 
     public override void _Ready()
     {
@@ -45,6 +48,7 @@ public partial class Monster : Node2D
         _elementLabel = GetNodeOrNull<Label>("Element");
 
         _area2D = GetNode<Area2D>("Area2D");
+        CacheVisualScaleTargets();
         if (_area2D != null)
         {
             _area2D.MouseEntered += OnMouseEntered;
@@ -197,6 +201,99 @@ public partial class Monster : Node2D
             ElementType.Fire => "火",
             _ => "无"
         };
+    }
+
+    private void CacheVisualScaleTargets()
+    {
+        _visualScaleBaseMap.Clear();
+        _visualPositionBaseMap.Clear();
+        string[] visualNodePaths = ["Sprite2D", "CardName", "Element", "Attribute"];
+
+        foreach (string path in visualNodePaths)
+        {
+            Node node = GetNodeOrNull<Node>(path);
+            if (node == null)
+            {
+                continue;
+            }
+
+            // 只缓存卡面和卡面内部内容的初始 scale，故意不包含 HealthBar，避免目标高亮/行动高亮时血条跟着放大。
+            if (node is Node2D node2D)
+            {
+                _visualScaleBaseMap[node] = node2D.Scale;
+                _visualPositionBaseMap[node] = node2D.Position;
+            }
+            else if (node is Control control)
+            {
+                _visualScaleBaseMap[node] = control.Scale;
+                _visualPositionBaseMap[node] = control.Position;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 统一缩放怪物卡面与内部文字/属性内容，但不缩放血条。
+    /// </summary>
+    /// <param name="targetSpriteScale">怪物卡面 Sprite2D 的目标缩放值。</param>
+    /// <param name="duration">缩放动画持续时间（秒）。</param>
+    /// <returns>无返回值。</returns>
+    public void TweenVisualScale(Vector2 targetSpriteScale, double duration)
+    {
+        if (_visualScaleBaseMap.Count == 0)
+        {
+            CacheVisualScaleTargets();
+        }
+
+        Node spriteNode = GetNodeOrNull<Node>("Sprite2D");
+        if (spriteNode == null || !_visualScaleBaseMap.TryGetValue(spriteNode, out Vector2 baseSpriteScale))
+        {
+            return;
+        }
+
+        Vector2 ratio = new(
+            baseSpriteScale.X != 0f ? targetSpriteScale.X / baseSpriteScale.X : 1f,
+            baseSpriteScale.Y != 0f ? targetSpriteScale.Y / baseSpriteScale.Y : 1f
+        );
+
+        if (_visualScaleTween != null && _visualScaleTween.IsRunning())
+        {
+            _visualScaleTween.Kill();
+        }
+
+        _visualScaleTween = CreateTween().SetParallel(true);
+        foreach (var pair in _visualScaleBaseMap)
+        {
+            Vector2 targetScale = pair.Key == spriteNode
+                ? targetSpriteScale
+                : new Vector2(pair.Value.X * ratio.X, pair.Value.Y * ratio.Y);
+            _visualScaleTween.TweenProperty(pair.Key, "scale", targetScale, duration);
+
+            if (_visualPositionBaseMap.TryGetValue(pair.Key, out Vector2 basePosition))
+            {
+                // 同步缩放位置才能接近“父节点整体缩放”的视觉效果，但 HealthBar 没被缓存，所以它的位置和大小都会保持原样。
+                Vector2 targetPosition = new(basePosition.X * ratio.X, basePosition.Y * ratio.Y);
+                _visualScaleTween.TweenProperty(pair.Key, "position", targetPosition, duration);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 将怪物卡面与内部内容恢复到场景中的初始缩放，血条保持不变。
+    /// </summary>
+    /// <param name="duration">缩放动画持续时间（秒）。</param>
+    /// <returns>无返回值。</returns>
+    public void ResetVisualScale(double duration)
+    {
+        if (_visualScaleBaseMap.Count == 0)
+        {
+            CacheVisualScaleTargets();
+        }
+
+        Node spriteNode = GetNodeOrNull<Node>("Sprite2D");
+        if (spriteNode != null && _visualScaleBaseMap.TryGetValue(spriteNode, out Vector2 baseSpriteScale))
+        {
+            TweenVisualScale(baseSpriteScale, duration);
+        }
     }
 
     /// <summary>

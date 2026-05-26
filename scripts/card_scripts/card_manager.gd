@@ -32,8 +32,6 @@ var drag_offset: Vector2 # 用于记录拖拽偏移量
 #var currently_hovered_slot: Node2D = null # 记录当前被悬停的卡槽，修改为下面
 var currently_highlighted_entities: Array[Node] = [] # 记录当前被悬停的卡槽
 
-const MONSTER_BASE_SCALE_META := "_card_hover_base_scale"
-
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
 	player_hand_referencd = $"../PlayerHand"
@@ -136,20 +134,23 @@ func update_hovered_targets(new_slot: Node2D, release_in_hand_area: bool = false
 	currently_highlighted_entities = intended_targets
 
 ## 辅助函数：统一处理实体的视觉放大和时间轴高亮
+## @param entity 需要高亮或取消高亮的战斗实体。
+## @param is_highlighted 为 true 时放大高亮，为 false 时恢复正常大小。
+## @return void 无返回值。
 func set_entity_highlight(entity: Node, is_highlighted: bool):
 	if not entity:
 		return
 
-	# 处理缩放动画（怪物：放大整个节点，确保 HealthBar/CardName/Element 同步缩放）
+	# 处理缩放动画（怪物：统一调用怪物自身的视觉缩放接口，只放大卡面和内部内容，不影响 HealthBar）
 	if _is_monster_entity(entity):
-		var monster = entity as Node2D
-		var base_scale = _get_monster_base_scale(monster)
-		var ratio = _get_monster_hover_ratio()
-		var target_scale = base_scale if not is_highlighted else Vector2(base_scale.x * ratio.x, base_scale.y * ratio.y)
-		var tween = create_tween()
-		tween.tween_property(monster, "scale", target_scale, scale_tween_duration)
-		if not is_highlighted:
-			_clear_monster_base_scale(monster)
+		var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
+		if entity.has_method("TweenVisualScale"):
+			# 这里复用 Monster.TweenVisualScale，避免拖拽指定目标和敌方行动使用两套不同的放大规则。
+			entity.call("TweenVisualScale", target_scale, scale_tween_duration)
+		else:
+			# 兜底兼容：如果未来出现非 C# Monster 的怪物节点，至少保持旧的卡面缩放表现。
+			var tween = create_tween()
+			tween.tween_property(entity.get_node("Sprite2D"), "scale", target_scale, scale_tween_duration)
 	elif entity.has_node("Sprite2D"):
 		# 兼容其它实体：保持旧逻辑，仅缩放贴图
 		var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
@@ -165,23 +166,6 @@ func _is_monster_entity(entity: Node) -> bool:
 	return entity is Node2D \
 		and entity.has_node("Sprite2D") \
 		and entity.has_node("HealthBar")
-
-func _get_monster_base_scale(monster: Node2D) -> Vector2:
-	if monster.has_meta(MONSTER_BASE_SCALE_META):
-		return monster.get_meta(MONSTER_BASE_SCALE_META)
-	var base_scale: Vector2 = monster.scale
-	monster.set_meta(MONSTER_BASE_SCALE_META, base_scale)
-	return base_scale
-
-func _clear_monster_base_scale(monster: Node2D) -> void:
-	if monster.has_meta(MONSTER_BASE_SCALE_META):
-		monster.remove_meta(MONSTER_BASE_SCALE_META)
-
-func _get_monster_hover_ratio() -> Vector2:
-	return Vector2(
-		monster_hover_scale.x / monster_normal_scale.x if monster_normal_scale.x != 0 else 1.0,
-		monster_hover_scale.y / monster_normal_scale.y if monster_normal_scale.y != 0 else 1.0
-	)
 
 ## 检查卡牌状态是否可用（例如是否被锁上变暗）。
 ## 这里判断了两种条件：

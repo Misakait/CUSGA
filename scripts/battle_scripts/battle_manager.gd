@@ -94,11 +94,28 @@ func _get_enemies_for_source(source: Variant) -> Array:
 		return monster_manager.active_monsters.duplicate()
 	return []
 
+## 统一处理怪物视觉缩放：只缩放卡面与内部内容，血条不参与缩放。
+## @param monster 需要缩放的怪物节点。
+## @param target_scale 怪物卡面 Sprite2D 的目标缩放值。
+## @return void 无返回值。
+func _tween_monster_visual_scale(monster: Node, target_scale: Vector2) -> void:
+	if not monster:
+		return
+
+	if monster.has_method("TweenVisualScale"):
+		# 统一调用 Monster 自身的视觉缩放接口，只放大卡牌与内部内容，避免 HealthBar 被父节点 scale 连带放大。
+		monster.call("TweenVisualScale", target_scale, scale_tween_duration)
+	elif monster.has_node("Sprite2D"):
+		# 兜底兼容旧节点结构：没有统一接口时至少保持卡面本体能放大/还原。
+		var tween = create_tween()
+		tween.tween_property(monster.get_node("Sprite2D"), "scale", target_scale, scale_tween_duration)
+
 func _pick_random_from(list: Array):
 	# 从列表中安全随机选择一个元素
 	if not list or list.is_empty():
 		return null
 	return list.pick_random()
+
 
 func _is_active_entity_valid() -> bool:
 	# 避免引用已被销毁的节点，防止战斗流程中断
@@ -399,9 +416,7 @@ func _handle_enemy_turn():
 		change_state(BattleState.CALCULATE_TURN)
 		return
 
-	if active_entity and active_entity.has_node("Sprite2D"):
-		var tween = create_tween()
-		tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_turn_scale, scale_tween_duration)
+	_tween_monster_visual_scale(active_entity, monster_turn_scale)
 
 	# 怪物回合只读取 CombatSkillData；玩家 SkillCardData 在玩家出牌路径处理。
 	var combat_skill = null
@@ -643,9 +658,7 @@ func _handle_turn_end():
 	if has_valid_actor and active_entity == player_manager:
 		deck_manager.discard_hand() # 玩家回合结束必定弃置所有手牌
 	elif has_valid_actor:
-		if active_entity.has_node("Sprite2D"):
-			var tween = create_tween()
-			tween.tween_property(active_entity.get_node("Sprite2D"), "scale", monster_normal_scale, scale_tween_duration)
+		_tween_monster_visual_scale(active_entity, monster_normal_scale)
 
 	# 再次做一次安全检测，确认是否应该转入战斗结束
 	if player_manager.hp <= 0 or (monster_manager.active_monsters.is_empty() and monster_manager.upcoming_monsters.is_empty()):
