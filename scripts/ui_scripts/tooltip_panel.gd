@@ -83,6 +83,15 @@ func show_tooltip(title_text: String, desc_text: String) -> void:
 		_pending_show = false
 		_actually_show_tooltip()
 
+func show_tooltip_now(title_text: String, desc_text: String) -> void:
+	# 每次请求都自增 ID，确保异步延迟期间能认出是否还是这次请求
+	_request_id += 1
+
+	_target_title = title_text
+	_target_desc = desc_text
+	_pending_show = false
+	_actually_show_tooltip()
+
 ## 内部逻辑：时间到达后真正执行显示
 func _actually_show_tooltip() -> void:
 	var current_request: int = _request_id

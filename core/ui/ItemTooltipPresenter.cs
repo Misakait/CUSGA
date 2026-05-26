@@ -34,7 +34,7 @@ public sealed class ItemTooltipPresenter(Node tooltipPanel)
             return;
         }
 
-        _tooltipPanel.Call("show_tooltip", GetItemName(item), GetItemDescription(item));
+        _tooltipPanel.Call("show_tooltip_now", GetItemName(item), GetItemDescription(item));
     }
 
     public void Hide()
