@@ -14,3 +14,5 @@ Element = 5
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "燎原焚四野"
+Description = "对所有敌人造成10点火属性物理伤害。"

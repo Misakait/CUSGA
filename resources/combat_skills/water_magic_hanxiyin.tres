@@ -18,3 +18,5 @@ Element = 3
 TargetingType = 6
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "寒汐引"
+Description = "对单体敌人造成20点水属性法术伤害，并对相邻敌人造成10点水属性法术伤害。"

@@ -15,3 +15,5 @@ Element = 3
 TargetingType = 5
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "寒浪冲"
+Description = "对随机敌人造成30点水属性物理伤害。"

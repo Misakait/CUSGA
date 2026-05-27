@@ -16,3 +16,5 @@ Element = 2
 TargetingType = 5
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "鎏光咒"
+Description = "对随机敌人造成30点金属性法术伤害。"

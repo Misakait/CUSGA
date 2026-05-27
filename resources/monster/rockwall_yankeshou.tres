@@ -15,6 +15,12 @@
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
 
+[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="csv_skill_1"]
+[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_shachenlongtiandi.tres" id="csv_skill_2"]
+[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_shixiao.tres" id="csv_skill_3"]
+[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="csv_skill_4"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BasePhysAtk = 110.0
@@ -83,6 +89,59 @@ script = ExtResource("monster_skill_set_script")
 Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1"), SubResource("MonsterSkillEntry_migrated_2"), SubResource("MonsterSkillEntry_migrated_3"), SubResource("MonsterSkillEntry_migrated_4")])
 metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
+script = ExtResource("csv_entry_script")
+Skill = ExtResource("csv_skill_1")
+VisibleInPreview = true
+
+[sub_resource type="Resource" id="CSV_MonsterSkillEntry_2"]
+script = ExtResource("csv_entry_script")
+Skill = ExtResource("csv_skill_2")
+VisibleInPreview = true
+
+[sub_resource type="Resource" id="CSV_MonsterSkillEntry_3"]
+script = ExtResource("csv_entry_script")
+Skill = ExtResource("csv_skill_3")
+VisibleInPreview = true
+
+[sub_resource type="Resource" id="CSV_MonsterSkillEntry_4"]
+script = ExtResource("csv_entry_script")
+Skill = ExtResource("csv_skill_4")
+VisibleInPreview = true
+
+[sub_resource type="Resource" id="CSV_MonsterSkillSet"]
+script = ExtResource("csv_set_script")
+Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4")])
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "岩壳兽"
@@ -90,5 +149,6 @@ InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 4
 LootTable = SubResource("Resource_loot")
 MaxHealth = 140
-SkillSet = SubResource("MonsterSkillSet_migrated")
+SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
+Faction = 0

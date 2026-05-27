@@ -18,3 +18,5 @@ Element = 5
 TargetingType = 5
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "烈炎拳"
+Description = "对随机敌人造成30点火属性物理伤害。"

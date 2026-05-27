@@ -7,6 +7,8 @@
 [resource]
 script = ExtResource("1_xiuvs")
 Skill = ExtResource("combat_skill")
+cost = 211
+CardTags = Array[String](["扩散伤害", "灼烧"])
 CardId = null
 CardName = "炸弹"
 CardIcon = ExtResource("icon_skillcard")

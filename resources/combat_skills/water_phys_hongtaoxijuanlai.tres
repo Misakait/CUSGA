@@ -14,3 +14,5 @@ Element = 3
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "洪涛席卷来"
+Description = "对所有敌人造成10点水属性物理伤害。"

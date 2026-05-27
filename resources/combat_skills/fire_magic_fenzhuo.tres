@@ -18,3 +18,5 @@ Element = 5
 TargetingType = 1
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "焚灼"
+Description = "对单体敌人造成10点火属性法术伤害。"

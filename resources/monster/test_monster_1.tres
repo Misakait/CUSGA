@@ -9,6 +9,10 @@
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
 [ext_resource type="Resource" path="res://resources/combat_skills/test_card_2.tres" id="combat_skill_1"]
 
+[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_2.tres" id="csv_skill_1"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("2_a84qo")
@@ -30,11 +34,34 @@ script = ExtResource("monster_skill_set_script")
 Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1")])
 metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+[sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
+script = ExtResource("csv_entry_script")
+Skill = ExtResource("csv_skill_1")
+VisibleInPreview = true
+
+[sub_resource type="Resource" id="CSV_MonsterSkillSet"]
+script = ExtResource("csv_set_script")
+Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1")])
 [resource]
 script = ExtResource("1_noehs")
 MonsterName = "测试怪物1"
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
 MaxHealth = 100
-SkillSet = SubResource("MonsterSkillSet_migrated")
+SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
+Faction = 0
+InitialAttributes = SubResource("CSV_StartingStats")

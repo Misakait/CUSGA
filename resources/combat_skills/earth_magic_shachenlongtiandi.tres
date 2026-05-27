@@ -15,3 +15,5 @@ Element = 4
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "沙尘笼天地"
+Description = "对所有敌人造成10点土属性法术伤害。"

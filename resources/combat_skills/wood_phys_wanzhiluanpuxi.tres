@@ -14,3 +14,5 @@ Element = 1
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "万枝乱扑袭"
+Description = "对所有敌人造成10点木属性物理伤害。"

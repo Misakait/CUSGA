@@ -15,3 +15,5 @@ Element = 2
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "金芒覆八方"
+Description = "对所有敌人造成10点金属性法术伤害。"

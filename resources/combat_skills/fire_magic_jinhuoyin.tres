@@ -18,3 +18,5 @@ Element = 5
 TargetingType = 6
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "烬火引"
+Description = "对单体敌人造成20点火属性法术伤害，并对相邻敌人造成10点火属性法术伤害。"

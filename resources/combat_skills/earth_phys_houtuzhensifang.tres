@@ -14,3 +14,5 @@ Element = 4
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "厚土镇四方"
+Description = "对所有敌人造成10点土属性物理伤害。"

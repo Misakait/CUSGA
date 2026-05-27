@@ -14,3 +14,5 @@ Element = 2
 TargetingType = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "碎铁狂击"
+Description = "对所有敌人造成10点金属性物理伤害。"

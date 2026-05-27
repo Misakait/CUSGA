@@ -2,9 +2,25 @@
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_ckrcu"]
 
+[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
+
+
+
+
+
+
+
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[sub_resource type="Resource" id="CSV_MonsterSkillSet"]
+script = ExtResource("csv_set_script")
+Skills = Array[ExtResource("csv_entry_script")]([])
 [resource]
 script = ExtResource("1_ckrcu")
 MonsterName = "怪物2"
 ElementalProperty = 1
 MaxHealth = 200
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
+Faction = 0
+InitialAttributes = SubResource("CSV_StartingStats")
+SkillSet = SubResource("CSV_MonsterSkillSet")

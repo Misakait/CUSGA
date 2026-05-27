@@ -13,3 +13,6 @@ script = ExtResource("4_combat")
 Element = 5
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+TargetingType = 1
+CardName = "炎涌"
+Description = "对单体敌人造成10点火属性物理伤害。"

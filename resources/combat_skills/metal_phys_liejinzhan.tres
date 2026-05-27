@@ -17,3 +17,5 @@ Element = 2
 TargetingType = 6
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
+CardName = "裂金斩"
+Description = "对单体敌人造成20点金属性物理伤害，并对相邻敌人造成10点金属性物理伤害。"
