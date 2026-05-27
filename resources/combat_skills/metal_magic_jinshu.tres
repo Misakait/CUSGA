@@ -15,6 +15,5 @@ script = ExtResource("4_combat")
 Element = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
-TargetingType = 1
 CardName = "金术"
 Description = "对单体敌人造成5点金属性法术伤害。"

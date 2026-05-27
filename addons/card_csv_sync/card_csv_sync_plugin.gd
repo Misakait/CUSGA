@@ -4,9 +4,9 @@ extends EditorPlugin
 const MENU_EXPORT := "导出卡牌 CSV"
 const MENU_IMPORT := "应用卡牌 CSV"
 const MENU_SYNC := "同步卡牌 CSV"
-const EXPORT_SCRIPT_PATH := "res://tools/card_csv/export_current_cards.py"
-const SKILL_CSV_PATH := "res://tools/card_csv/skill_cards.csv"
-const MONSTER_CSV_PATH := "res://tools/card_csv/monster_cards.csv"
+const EXPORT_SCRIPT_PATH := "res://card_table/export_current_cards.py"
+const SKILL_CSV_PATH := "res://card_table/skill_cards.csv"
+const MONSTER_CSV_PATH := "res://card_table/monster_cards.csv"
 const POLL_INTERVAL_SECONDS := 5.0
 const RESCAN_DELAY_SECONDS := 0.5
 
@@ -58,6 +58,8 @@ func _sync_from_menu() -> void:
 ## 调用 Python 自动同步脚本，由 Python 根据 CSV 状态文件判断导入或导出。
 func _run_auto_script() -> void:
 	var output := _run_python_script(["--auto"])
+	if not output.is_empty():
+		print(output)
 	if output.contains("已导入"):
 		_queue_rescan_filesystem()
 
@@ -65,20 +67,26 @@ func _run_auto_script() -> void:
 ## 调用 Python 导出脚本生成 CSV。
 ## 这里刻意保持插件脚本本身非常轻量，避免 EditorPlugin 加载阶段直接解析或实例化 C# 资源导致插件被禁用。
 func _run_export_script() -> void:
-	_run_python_script([])
-	print("Card CSV Sync：CSV 已导出到 res://tools/card_csv。")
+	var output := _run_python_script([])
+	if not output.is_empty():
+		print(output)
+	print("Card CSV Sync：CSV 已导出到 res://card_table。")
 
 
 ## 调用 Python 导入脚本，把 CSV 回写到资源。
 func _run_import_script() -> void:
-	_run_python_script(["--import"])
+	var output := _run_python_script(["--import"])
+	if not output.is_empty():
+		print(output)
 	_queue_rescan_filesystem()
 	print("Card CSV Sync：CSV 已应用到 Godot 资源。")
 
 
 ## 调用 Python 双向同步脚本，适合外部表格保存后自动执行。
 func _run_sync_script() -> void:
-	_run_python_script(["--sync"])
+	var output := _run_python_script(["--sync"])
+	if not output.is_empty():
+		print(output)
 	_queue_rescan_filesystem()
 	print("Card CSV Sync：CSV 与 Godot 资源已双向同步。")
 
