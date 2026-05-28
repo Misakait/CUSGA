@@ -25,6 +25,21 @@ public partial class StatusComponent : Node
 
     public IReadOnlyCollection<StatusEffectInstance> ActiveStatuses => _statuses.Values;
 
+    /// <summary>
+    /// 获取当前激活状态的快照，供 GDScript UI 安全遍历。
+    /// </summary>
+    /// <returns>按当前字典顺序复制出的状态数组；调用方只能读取，不能通过该数组修改组件内部状态。</returns>
+    public Godot.Collections.Array<StatusEffectInstance> GetActiveStatusesSnapshot()
+    {
+        var snapshot = new Godot.Collections.Array<StatusEffectInstance>();
+        foreach (var status in _statuses.Values)
+        {
+            snapshot.Add(status);
+        }
+
+        return snapshot;
+    }
+
     private long _nextAppliedSequence;
 
     public override void _Ready()

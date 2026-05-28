@@ -141,8 +141,8 @@ def godot_string(value: str) -> str:
 
 
 def godot_string_array(text: str) -> str:
-    """把分号分隔的 CSV 文本转换成 Godot `Array[String]` 字面量。"""
-    values = [godot_string(value.strip()) for value in text.split(";") if value.strip()]
+    """把中英文分号分隔的 CSV 文本转换成 Godot `Array[String]` 字面量。"""
+    values = [godot_string(value) for value in split_semicolon_values(text)]
     return "Array[String]([%s])" % ", ".join(values)
 
 
@@ -296,8 +296,9 @@ def targeting_to_value(value: str) -> str:
 
 
 def split_semicolon_values(text: str) -> list[str]:
-    """拆分分号多选字段，过滤空白项并保持用户原有顺序。"""
-    return [part.strip() for part in (text or "").split(";") if part.strip()]
+    """拆分中英文分号多选字段，过滤空白项并保持用户原有顺序。"""
+    # 表格由中文用户手动维护时容易输入中文分号；导入时统一兼容，导出仍使用英文分号保持 CSV/XLSX 稳定。
+    return [part.strip() for part in re.split(r"[;；]", text or "") if part.strip()]
 
 
 def compact_semicolon_values(values: list[str]) -> str:
@@ -868,9 +869,9 @@ def derive_id_slug_from_path(res_path: str, fallback: str = "") -> str:
 
 
 def resolve_skill_paths(text: str, key_map: dict[str, str]) -> list[str]:
-    """解析分号分隔的技能路径/名称，统一转换为 CombatSkillData 路径。"""
+    """解析中英文分号分隔的技能路径/名称，统一转换为 CombatSkillData 路径。"""
     result: list[str] = []
-    for token in [part.strip() for part in text.split(";") if part.strip()]:
+    for token in split_semicolon_values(text):
         path = key_map.get(token, token)
         if path and path not in result:
             result.append(path)
@@ -1261,11 +1262,7 @@ def apply_monster_rows(
         combat_path = resolve_combat_skill_path(row, resolve_skill_card_path(row))
         if combat_path:
             managed_skill_paths.add(combat_path)
-        for owner in [
-            part.strip()
-            for part in (row.get("monster_owners") or "").split(";")
-            if part.strip()
-        ]:
+        for owner in split_semicolon_values(row.get("monster_owners") or ""):
             monster_path = monster_key_map.get(owner, owner)
             owner_assignments.setdefault(monster_path, [])
             if combat_path and combat_path not in owner_assignments[monster_path]:

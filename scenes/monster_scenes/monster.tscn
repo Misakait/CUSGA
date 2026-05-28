@@ -25,6 +25,7 @@
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="18_gxwrs"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="19_ia034"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="20_ve02a"]
+[ext_resource type="Script" uid="uid://ck6vnjbp88ek7" path="res://scripts/ui_scripts/status_effect_bar.gd" id="status_bar_script"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
@@ -252,6 +253,14 @@ layout_mode = 2
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 15
 text = "100"
+
+[node name="StatusEffectBar" type="HBoxContainer" parent="." unique_id=1708846443]
+offset_left = -65.0
+offset_top = 101.0
+offset_right = 65.0
+offset_bottom = 127.0
+alignment = 1
+script = ExtResource("status_bar_script")
 
 [node name="Components" type="Node" parent="." unique_id=1744515292]
 

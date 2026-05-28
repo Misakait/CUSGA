@@ -207,7 +207,7 @@ public partial class Monster : Node2D
     {
         _visualScaleBaseMap.Clear();
         _visualPositionBaseMap.Clear();
-        string[] visualNodePaths = ["Sprite2D", "CardName", "Element", "MonsterAttribute"];
+        string[] visualNodePaths = ["Sprite2D", "CardName", "Element", "MonsterAttribute", "StatusEffectBar"];
 
         foreach (string path in visualNodePaths)
         {

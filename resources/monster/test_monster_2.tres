@@ -47,6 +47,9 @@
 
 
 
+
+
+
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]

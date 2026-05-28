@@ -1,7 +1,7 @@
 ﻿resource_path,id_slug,monster_name,element,faction,max_health,model_scene_path,behavior_tree_scene_path,skill_names,base_phys_atk,base_phys_def,base_mag_power,base_mag_resist,base_speed
 res://resources/monster/anvil_cuihuotiewei.tres,anvil_cuihuotiewei,淬火铁卫,金,0,145,,,炸弹;金芒覆八方;金术;金击,190.0,320.0,120.0,240.0,105.0
 res://resources/monster/anvil_duantiezhano.tres,anvil_duantiezhano,锻铁战偶,金,0,110,,,火击;金芒覆八方;切割;锐锋击;碎铁狂击,140.0,320.0,60.0,160.0,90.0
-res://resources/monster/anvil_rongduanmobing.tres,anvil_rongduanmobing,熔锻魔兵,火,0,120,,,烈焰吞八方;燃魂咒;神火炼凡躯;焚天击;炎涌,120.0,180.0,170.0,180.0,115.0
+res://resources/monster/anvil_rongduanmobing.tres,anvil_rongduanmobing,熔锻魔兵,火,0,120,,,炸弹,120.0,180.0,170.0,180.0,115.0
 res://resources/monster/berrybush_ducongyao.tres,berrybush_ducongyao,毒丛妖,木,0,95,,,木术;青灵咒;藤响;万枝乱扑袭,80.0,140.0,150.0,200.0,113.0
 res://resources/monster/berrybush_mantengdushou.tres,berrybush_mantengdushou,蔓藤毒兽,木,0,140,,,藤响;苍藤刺;抽枝;古木撼山岳;蔓枝绞;木击,140.0,220.0,180.0,280.0,118.0
 res://resources/monster/berrybush_yeguoshou.tres,berrybush_yeguoshou,野果兽,木,0,120,,,青灵咒;藤响;苍藤刺;抽枝;古木撼山岳,120.0,180.0,140.0,240.0,110.0
