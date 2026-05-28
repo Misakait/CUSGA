@@ -25,9 +25,6 @@ Modifiers = Array[ExtResource("4_8lhwl")]([SubResource("Resource_lwroi")])
 Id = null
 MaxStacks = 999
 Policy = 2
-InitOwnerTurnDuration = 999
-InitGlobalTurnDuration = 999
-InitRoundDuration = 999
 metadata/_custom_type_script = "uid://dswxdym0jp2hb"
 
 [sub_resource type="Resource" id="Resource_xwuh1"]

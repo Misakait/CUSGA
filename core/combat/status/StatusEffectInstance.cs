@@ -43,7 +43,7 @@ public abstract partial class StatusEffectInstance : RefCounted
 
     public bool TryIncreaseStack()
     {
-        if (CurrentStacks >= MaxStacks)
+        if (MaxStacks > 0 && CurrentStacks >= MaxStacks)
         {
             return false;
         }

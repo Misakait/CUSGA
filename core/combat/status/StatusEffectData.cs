@@ -25,6 +25,9 @@ public abstract partial class StatusEffectData : Resource
     /// </summary>
     [Export] public Texture2D Icon { get; set; }
 
+    /// <summary>
+    /// 状态允许叠加的最大层数；设置为 0 时表示没有层数上限。
+    /// </summary>
     [Export] public int MaxStacks { get; set; } = 1;
     [Export] public StackPolicy Policy { get; set; } = StackPolicy.ResetDuration;
 
