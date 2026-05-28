@@ -197,6 +197,12 @@ public abstract partial class StatusEffectInstance : RefCounted
     // 扣血前最终处理
     public virtual void OnBeforeHealthDamage(DamagePayload payload, ref float damage) { }
 
+    /// <summary>
+    /// 获取状态在 UI 悬停提示中显示的运行时描述文本。
+    /// </summary>
+    /// <returns>优先返回状态数据配置的描述；特殊状态可重写以展示运行时数值。</returns>
+    public virtual string DisplayDescription => Data.Description;
+
     public virtual IEnumerable<AttributeModifier> GetAttributeModifiers()
     {
         yield break;

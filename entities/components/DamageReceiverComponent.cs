@@ -21,8 +21,8 @@ public partial class DamageReceiverComponent : Node
         var attackerStats = payload.Source?.GetNodeOrNull<AttributeComponent>("AttributeComponent");
         var defenderStats = defender.GetNodeOrNull<AttributeComponent>("AttributeComponent");
 
-        var attackerStatus = payload.Source?.GetNodeOrNull<StatusComponent>("StatusComponent");
-        var defenderStatus = defender.GetNodeOrNull<StatusComponent>("StatusComponent");
+        var attackerStatus = payload.Source?.GetStatusComponentOrNull();
+        var defenderStatus = defender.GetStatusComponentOrNull();
 
         float damage = Mathf.Max(0f, payload.Damage);
 

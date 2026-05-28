@@ -19,7 +19,17 @@ public sealed partial class ShieldStatusInstance(
             : base.GetHookPriority(phase);
     }
 
+    /// <summary>
+    /// 当前剩余可吸收的伤害量。
+    /// </summary>
     public float ShieldAmount { get; private set; } = Mathf.Max(0f, shieldAmount);
+
+    /// <summary>
+    /// 获取护盾在 UI 悬停提示中显示的剩余吸收量描述。
+    /// </summary>
+    /// <returns>格式化后的剩余护盾说明。</returns>
+    public override string DisplayDescription => $"抵挡{Mathf.RoundToInt(ShieldAmount)}点伤害";
+
     public override void OnBeforeHealthDamage(DamagePayload payload, ref float damage)
     {
         if (damage <= 0f)
@@ -39,7 +49,7 @@ public sealed partial class ShieldStatusInstance(
 
         if (ShieldAmount <= 0f)
         {
-            Owner.GetNodeOrNull<StatusComponent>("StatusComponent")
+            Owner.GetStatusComponentOrNull()
                 ?.RemoveStatus(Id);
         }
     }

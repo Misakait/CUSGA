@@ -36,7 +36,7 @@ res://resources/monster/rockwall_lieyanjuling.tres,rockwall_lieyanjuling,裂岩�
 res://resources/monster/rockwall_shijiashouwei.tres,rockwall_shijiashouwei,石甲守卫,土,0,145,,,沙尘笼天地;石啸;土术;镇土诀;岩崩击,110.0,420.0,90.0,320.0,82.0
 res://resources/monster/rockwall_yankeshou.tres,rockwall_yankeshou,岩壳兽,土,0,140,,,厚土封灵脉;沙尘笼天地;石啸;岩崩,110.0,280.0,70.0,220.0,85.0
 res://resources/monster/sandpile_huangmoshaxingshou.tres,sandpile_huangmoshaxingshou,荒漠沙行兽,土,0,145,,,沉岩碎千钧;厚土镇四方;磐石撞;土击;岩崩,130.0,280.0,90.0,260.0,90.0
-res://resources/monster/sandpile_huangshayanyinshou.tres,sandpile_huangshayanyinshou,黄沙岩隐兽,土,0,175,,,厚土封灵脉;厚土镇四方;磐石撞;土击;岩崩;岩崩击,150.0,360.0,110.0,300.0,95.0
+res://resources/monster/sandpile_huangshayanyinshou.tres,sandpile_huangshayanyinshou,黄沙岩隐兽,土,0,175,,,测试卡2,150.0,80.0,110.0,80.0,95.0
 res://resources/monster/sandpile_liushashaxie.tres,sandpile_liushashaxie,流沙沙蝎,土,0,120,,,浊岩引;沉岩碎千钧;厚土镇四方;磐石撞,110.0,240.0,70.0,220.0,88.0
 res://resources/monster/snowpile_hanshuangxueguai.tres,snowpile_hanshuangxueguai,寒霜雪怪,水,0,115,,,玄水灭灵台;烟雨锁千川;沧海覆凡尘;寒浪冲;洪涛席卷来,90.0,160.0,130.0,300.0,126.0
 res://resources/monster/snowpile_linfengxueyao.tres,snowpile_linfengxueyao,凛风雪妖,水,0,135,,,烟雨锁千川;沧海覆凡尘;寒浪冲;洪涛席卷来;浪击;流波撞,110.0,200.0,160.0,300.0,133.0

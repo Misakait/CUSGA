@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_rt7uw"]
 [ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_3i3k0"]
+[ext_resource type="Script" uid="uid://r1cfj2qxeuh7" path="res://core/combat/buffs/ShieldStatusData.cs" id="3_puyf7"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_uxcp8"]
+[ext_resource type="Script" uid="uid://bhuvu8mbbinyo" path="res://core/combat/effects/ApplyShieldCardEffect.cs" id="4_ysswq"]
 
 [sub_resource type="Resource" id="Resource_7wn03"]
 script = ExtResource("2_3i3k0")
@@ -11,12 +13,26 @@ Type = 1
 Element = 5
 metadata/_custom_type_script = "uid://b2df0ritlplj8"
 
+[sub_resource type="Resource" id="Resource_lmghr"]
+script = ExtResource("3_puyf7")
+DefaultShieldAmount = 20.0
+Id = null
+DisplayName = "护盾"
+Description = "抵挡伤害"
+metadata/_custom_type_script = "uid://r1cfj2qxeuh7"
+
+[sub_resource type="Resource" id="Resource_vg0ut"]
+script = ExtResource("4_ysswq")
+ShieldStatus = SubResource("Resource_lmghr")
+TargetScope = 0
+metadata/_custom_type_script = "uid://bhuvu8mbbinyo"
+
 [resource]
 script = ExtResource("3_uxcp8")
 Element = 5
 TargetingType = 5
-Effects = Array[ExtResource("1_rt7uw")]([SubResource("Resource_7wn03")])
+Effects = Array[ExtResource("1_rt7uw")]([SubResource("Resource_7wn03"), SubResource("Resource_vg0ut")])
 CardId = null
 CardName = "测试卡2"
-Description = "对随机敌人造成20点火属性法术伤害。"
+Description = "对随机敌人造成20点火属性法术伤害，然后自身获得20点护盾。"
 metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

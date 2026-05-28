@@ -281,8 +281,8 @@ Buff 栏悬停提示的标题会通过 `StatusEffectBar` 生成：
 
 注意事项：
 
-- 当前 `ApplyShieldCardEffect` 查找路径是 `StatusComponent`，不是 `Components/StatusComponent`。
-- 如果单位实际组件都放在 `Components/` 子节点下，需要确认节点结构或统一路径。
+- `ApplyShieldCardEffect` 通过 `ComponentLookup.GetStatusComponentOrNull()` 查找状态组件。
+- 当前兼容 `StatusComponent`、`Components/StatusComponent` 和唯一名称 `%StatusComponent` 三种场景结构。
 
 ### 5.3 ModifyAttributeEffect
 
@@ -620,6 +620,7 @@ BurnStatusData
 | 字段 | 作用 |
 | --- | --- |
 | `ShieldAmount` | 当前剩余护盾值。创建时会被限制为不小于 `0`。 |
+| `DisplayDescription` | UI 悬停描述，显示为 `抵挡X点伤害`，其中 `X` 是当前剩余护盾值。 |
 
 执行逻辑：
 
@@ -627,7 +628,8 @@ BurnStatusData
 2. `absorbed = Min(ShieldAmount, damage)`。
 3. `ShieldAmount -= absorbed`。
 4. `damage -= absorbed`。
-5. 如果护盾耗尽，移除该状态。
+5. UI 悬停描述会通过 `DisplayDescription` 显示剩余护盾值，如 `抵挡1000点伤害`。
+6. 如果护盾耗尽，移除该状态。
 
 重复施加逻辑：
 
@@ -642,8 +644,8 @@ BurnStatusData
 
 注意事项：
 
-- 当前护盾耗尽时调用 `Owner.GetNodeOrNull<StatusComponent>("StatusComponent")?.RemoveStatus(Id)`。
-- 如果单位的 `StatusComponent` 实际放在 `Components/StatusComponent` 下，这里可能无法自动移除，需要统一节点路径或调整实现。
+- 护盾耗尽时通过 `ComponentLookup.GetStatusComponentOrNull()` 查找并移除状态。
+- 当前兼容 `StatusComponent`、`Components/StatusComponent` 和唯一名称 `%StatusComponent` 三种场景结构。
 
 ---
 
@@ -755,13 +757,14 @@ VulnerableStatusData
 
 | 代码位置 | 查找路径 |
 | --- | --- |
-| `ApplyStatusCardEffect` | `Components/StatusComponent` |
+| `ApplyStatusCardEffect` | 通过 `ComponentLookup.GetStatusComponentOrNull()` 兼容 `StatusComponent`、`Components/StatusComponent`、`%StatusComponent` |
+| `ApplyShieldCardEffect` | 通过 `ComponentLookup.GetStatusComponentOrNull()` 兼容 `StatusComponent`、`Components/StatusComponent`、`%StatusComponent` |
+| `DamageReceiverComponent` 内部查找攻击/防御状态 | 通过 `ComponentLookup.GetStatusComponentOrNull()` 兼容 `StatusComponent`、`Components/StatusComponent`、`%StatusComponent` |
+| `ShieldStatusInstance` 护盾耗尽移除 | 通过 `ComponentLookup.GetStatusComponentOrNull()` 兼容 `StatusComponent`、`Components/StatusComponent`、`%StatusComponent` |
 | `ModifyAttributeEffect` | `Components/AttributeComponent` |
 | `BurnStatusInstance` | `Components/DamageReceiverComponent` |
-| `ApplyShieldCardEffect` | `StatusComponent` |
-| `ShieldStatusInstance` 护盾耗尽移除 | `StatusComponent` |
 | `BossDamageCapStatusInstance` | `HealthComponent` |
-| `DamageReceiverComponent` 内部查找攻击/防御属性与状态 | `AttributeComponent`、`StatusComponent`、`HealthComponent` |
+| `DamageReceiverComponent` 内部查找攻击/防御属性与生命 | `AttributeComponent`、`HealthComponent` |
 
 使用 Buff 前需要确认单位场景结构是否与对应路径一致。
 
@@ -855,6 +858,8 @@ ShieldStatusData
   Description = 吸收接下来受到的伤害。
   MaxStacks = 1
   DefaultShieldAmount = 30
+
+运行时悬停描述会由 `ShieldStatusInstance.DisplayDescription` 覆盖为当前剩余值，例如 `抵挡30点伤害`。
 ```
 
 ### Boss 伤害上限

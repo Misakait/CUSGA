@@ -8,14 +8,9 @@
 [ext_resource type="Resource" uid="uid://dd7mnum2hfn5d" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://bbduwbnithwpx" path="res://resources/skill_cards/earth_phys_yanbengji.tres" id="8_skill_5"]
 [ext_resource type="Resource" uid="uid://kxrggdaafx5w" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="9_skill_6"]
+[ext_resource type="Resource" uid="uid://cygjacjot10mm" path="res://resources/combat_skills/test_card_2.tres" id="11_hrj43"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
 [ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Resource" uid="uid://c0uvi2exrh6s4" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="csv_skill_1"]
-[ext_resource type="Resource" uid="uid://b2arhqsf7bcsb" path="res://resources/combat_skills/earth_phys_houtuzhensifang.tres" id="csv_skill_2"]
-[ext_resource type="Resource" uid="uid://bnrrrtk1ot1uf" path="res://resources/combat_skills/earth_phys_panshizhuang.tres" id="csv_skill_3"]
-[ext_resource type="Resource" uid="uid://cani7w0ijgqr3" path="res://resources/combat_skills/earth_phys_tuji.tres" id="csv_skill_4"]
-[ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="csv_skill_5"]
-[ext_resource type="Resource" uid="uid://bwbg6v5bljtvu" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="csv_skill_6"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
@@ -23,11 +18,11 @@
 script = ExtResource("3_stats")
 BasePhysAtk = 150.0
 PhysAtkGrowth = 20.0
-BasePhysDef = 360.0
+BasePhysDef = 80.0
 PhysDefGrowth = 40.0
 BaseMagPower = 110.0
 MagPowerGrowth = 20.0
-BaseMagResist = 300.0
+BaseMagResist = 80.0
 MagResistGrowth = 36.0
 BaseSpeed = 95.0
 SpeedGrowth = 3.5
@@ -74,33 +69,14 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5"), SubResource("LootDrop_6")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
+[sub_resource type="Resource" id="Resource_843s2"]
 script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_1")
-
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_2"]
-script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_2")
-
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_3"]
-script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_3")
-
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_4"]
-script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_4")
-
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_5"]
-script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_5")
-
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_6"]
-script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_6")
+Skill = ExtResource("11_hrj43")
+metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
-Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4"), SubResource("CSV_MonsterSkillEntry_5"), SubResource("CSV_MonsterSkillEntry_6")])
+Skills = Array[ExtResource("csv_entry_script")]([SubResource("Resource_843s2")])
 
 [resource]
 script = ExtResource("2_monster")

@@ -115,7 +115,7 @@ public partial class AttributeComponent : Node
 
     public override void _Ready()
     {
-        _statusComponent = Host?.GetNodeOrNull<StatusComponent>("StatusComponent");
+        _statusComponent = Host?.GetStatusComponentOrNull();
 
         if (_statusComponent != null)
         {

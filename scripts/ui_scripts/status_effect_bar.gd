@@ -256,7 +256,8 @@ func _create_status_icon(status: Variant) -> Control:
 		_get_status_icon(status),
 		_get_status_stacks(status),
 		_get_status_tooltip_title(status),
-		_get_status_description(status)
+		_get_status_description(status),
+		status
 	)
 
 ## 创建一个 Buff 图标控件，并绑定层数与提示框内容。
@@ -265,7 +266,7 @@ func _create_status_icon(status: Variant) -> Control:
 ## 参数 tooltip_title：悬停提示框标题。
 ## 参数 tooltip_description：悬停提示框描述。
 ## 返回值：可加入 Buff 栏的 Control 节点。
-func _create_icon_control(icon_texture: Texture2D, stacks: int, tooltip_title: String, tooltip_description: String) -> Control:
+func _create_icon_control(icon_texture: Texture2D, stacks: int, tooltip_title: String, tooltip_description: String, status: Variant = null) -> Control:
 	var icon_root := Control.new()
 	icon_root.custom_minimum_size = icon_size
 	icon_root.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -288,7 +289,7 @@ func _create_icon_control(icon_texture: Texture2D, stacks: int, tooltip_title: S
 	if stacks > 1:
 		icon_root.add_child(_create_stack_label(stacks))
 
-	icon_root.mouse_entered.connect(_on_status_icon_mouse_entered.bind(tooltip_title, tooltip_description))
+	icon_root.mouse_entered.connect(_on_status_icon_mouse_entered.bind(tooltip_title, tooltip_description, status))
 	icon_root.mouse_exited.connect(_on_status_icon_mouse_exited)
 	return icon_root
 
@@ -330,8 +331,13 @@ func _create_stack_label(stacks: int) -> Label:
 	return stack_label
 
 ## 鼠标进入 Buff 图标时显示详细说明。
-func _on_status_icon_mouse_entered(tooltip_title: String, tooltip_description: String) -> void:
+func _on_status_icon_mouse_entered(tooltip_title: String, tooltip_description: String, status: Variant = null) -> void:
 	_is_pointer_inside_status_icon = true
+	if status != null:
+		# 护盾等运行时数值会在状态实例上变化，悬停时重新读取可避免显示旧描述。
+		tooltip_title = _get_status_tooltip_title(status)
+		tooltip_description = _get_status_description(status)
+
 	if not _tooltip_panel or not is_instance_valid(_tooltip_panel):
 		_resolve_tooltip_panel()
 
@@ -426,6 +432,11 @@ func _get_status_display_name(status: Variant) -> String:
 ## 参数 status：C# StatusEffectInstance 实例。
 ## 返回值：配置描述文本；为空时返回通用兜底说明。
 func _get_status_description(status: Variant) -> String:
+	if status != null:
+		var runtime_description = status.get("DisplayDescription")
+		if runtime_description != null and not str(runtime_description).is_empty():
+			return str(runtime_description)
+
 	var data = _get_status_data(status)
 	if data:
 		var description = data.get("Description")

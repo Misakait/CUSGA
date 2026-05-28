@@ -107,6 +107,9 @@ metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
 
 
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([])
