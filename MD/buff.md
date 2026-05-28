@@ -91,6 +91,12 @@
 - `ActiveStatuses`：当前激活状态集合。
 - `GetActiveStatusesSnapshot()`：给 GDScript / UI 安全遍历的状态快照。
 
+Buff 栏悬停提示的标题会通过 `StatusEffectBar` 生成：
+
+- 无限持续状态：显示 `Buff名称`。
+- 有限持续状态：显示 `Buff名称 | 剩余回合:x`，例如 `灼烧 | 剩余回合:2`。
+- 如果同时配置了多种持续时间，`FirstExpired` 显示最先到期的剩余值，`AllExpired` 显示最后到期的剩余值。
+
 ### 2.1 重复施加同 Id 状态
 
 当新状态 `incoming.Id` 已存在时，`StatusComponent` 会：

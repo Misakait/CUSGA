@@ -255,7 +255,7 @@ func _create_status_icon(status: Variant) -> Control:
 	return _create_icon_control(
 		_get_status_icon(status),
 		_get_status_stacks(status),
-		_get_status_display_name(status),
+		_get_status_tooltip_title(status),
 		_get_status_description(status)
 	)
 
@@ -343,6 +343,68 @@ func _on_status_icon_mouse_exited() -> void:
 	_is_pointer_inside_status_icon = false
 	if _tooltip_panel and is_instance_valid(_tooltip_panel):
 		_tooltip_panel.call("hide_tooltip")
+
+## 生成状态悬停标题。
+## 参数 status：C# StatusEffectInstance 实例。
+## 返回值：带剩余回合数的标题；有限持续状态显示为“状态名 | 剩余回合:x”，无限持续状态只显示状态名。
+func _get_status_tooltip_title(status: Variant) -> String:
+	var display_name := _get_status_display_name(status)
+	var remaining_turns := _get_status_remaining_turns(status)
+	if remaining_turns < 0:
+		return display_name
+
+	return "%s | 剩余回合:%d" % [display_name, remaining_turns]
+
+## 计算状态用于 UI 展示的剩余回合数。
+## 参数 status：C# StatusEffectInstance 实例。
+## 返回值：剩余回合数；返回 -1 表示没有有限持续时间，不在标题中追加回合数。
+func _get_status_remaining_turns(status: Variant) -> int:
+	if status == null:
+		return -1
+
+	var remaining_values: Array[int] = []
+	_add_configured_duration_value(
+		remaining_values,
+		_read_status_int(status, "InitOwnerTurnDuration"),
+		_read_status_int(status, "OwnerTurnDuration")
+	)
+	_add_configured_duration_value(
+		remaining_values,
+		_read_status_int(status, "InitGlobalTurnDuration"),
+		_read_status_int(status, "GlobalTurnDuration")
+	)
+	_add_configured_duration_value(
+		remaining_values,
+		_read_status_int(status, "InitRoundDuration"),
+		_read_status_int(status, "RoundDuration")
+	)
+
+	if remaining_values.is_empty():
+		return -1
+
+	var expire_policy := _get_status_expire_policy(status)
+	if expire_policy == 1:
+		return int(remaining_values.max())
+
+	return int(remaining_values.min())
+
+## 只把已配置的持续时间加入显示候选，避免未启用的 0 持续时间影响最小值判断。
+func _add_configured_duration_value(values: Array[int], initial_duration: int, current_duration: int) -> void:
+	if initial_duration <= 0:
+		return
+
+	values.append(maxi(0, current_duration))
+
+## 安全读取 C# 状态实例上的整型属性。
+func _read_status_int(status: Variant, property_name: StringName) -> int:
+	var value = status.get(property_name)
+	return int(value) if value != null else 0
+
+## 读取过期策略枚举值。
+## 返回值：0 表示 FirstExpired，1 表示 AllExpired；读取失败时按 FirstExpired 处理，让 UI 展示最接近过期的剩余值。
+func _get_status_expire_policy(status: Variant) -> int:
+	var expire_policy = status.get("ExpirePolicy") if status != null else null
+	return int(expire_policy) if expire_policy != null else 0
 
 ## 读取状态名称。
 ## 参数 status：C# StatusEffectInstance 实例。
