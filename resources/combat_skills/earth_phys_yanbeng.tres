@@ -13,6 +13,5 @@ script = ExtResource("4_combat")
 Element = 4
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
-TargetingType = 1
 CardName = "岩崩"
 Description = "对单体敌人造成10点土属性物理伤害。"

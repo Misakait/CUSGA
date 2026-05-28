@@ -8,25 +8,17 @@
 [ext_resource type="Resource" uid="uid://dd7mnum2hfn5d" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://bbduwbnithwpx" path="res://resources/skill_cards/earth_phys_yanbengji.tres" id="8_skill_5"]
 [ext_resource type="Resource" uid="uid://kxrggdaafx5w" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="9_skill_6"]
-[ext_resource type="Resource" uid="uid://b2arhqsf7bcsb" path="res://resources/combat_skills/earth_phys_houtuzhensifang.tres" id="combat_skill_1"]
-[ext_resource type="Resource" uid="uid://bnrrrtk1ot1uf" path="res://resources/combat_skills/earth_phys_panshizhuang.tres" id="combat_skill_2"]
-[ext_resource type="Resource" uid="uid://cani7w0ijgqr3" path="res://resources/combat_skills/earth_phys_tuji.tres" id="combat_skill_3"]
-[ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="combat_skill_4"]
-[ext_resource type="Resource" uid="uid://bwbg6v5bljtvu" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="combat_skill_5"]
-[ext_resource type="Resource" uid="uid://c0uvi2exrh6s4" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="combat_skill_6"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Resource" uid="uid://c0uvi2exrh6s4" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="csv_skill_1"]
+[ext_resource type="Resource" uid="uid://b2arhqsf7bcsb" path="res://resources/combat_skills/earth_phys_houtuzhensifang.tres" id="csv_skill_2"]
+[ext_resource type="Resource" uid="uid://bnrrrtk1ot1uf" path="res://resources/combat_skills/earth_phys_panshizhuang.tres" id="csv_skill_3"]
+[ext_resource type="Resource" uid="uid://cani7w0ijgqr3" path="res://resources/combat_skills/earth_phys_tuji.tres" id="csv_skill_4"]
+[ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="csv_skill_5"]
+[ext_resource type="Resource" uid="uid://bwbg6v5bljtvu" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="csv_skill_6"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
-[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
-[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
 
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="csv_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_houtuzhensifang.tres" id="csv_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_panshizhuang.tres" id="csv_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_tuji.tres" id="csv_skill_4"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="csv_skill_5"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbengji.tres" id="csv_skill_6"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BasePhysAtk = 150.0
@@ -82,368 +74,34 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5"), SubResource("LootDrop_6")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-[sub_resource type="Resource" id="MonsterSkillEntry_migrated_1"]
-script = ExtResource("monster_skill_entry_script")
-Skill = ExtResource("combat_skill_1")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
-
-[sub_resource type="Resource" id="MonsterSkillEntry_migrated_2"]
-script = ExtResource("monster_skill_entry_script")
-Skill = ExtResource("combat_skill_2")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
-
-[sub_resource type="Resource" id="MonsterSkillEntry_migrated_3"]
-script = ExtResource("monster_skill_entry_script")
-Skill = ExtResource("combat_skill_3")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
-
-[sub_resource type="Resource" id="MonsterSkillEntry_migrated_4"]
-script = ExtResource("monster_skill_entry_script")
-Skill = ExtResource("combat_skill_4")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
-
-[sub_resource type="Resource" id="MonsterSkillEntry_migrated_5"]
-script = ExtResource("monster_skill_entry_script")
-Skill = ExtResource("combat_skill_5")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
-
-[sub_resource type="Resource" id="MonsterSkillEntry_migrated_6"]
-script = ExtResource("monster_skill_entry_script")
-Skill = ExtResource("combat_skill_6")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
-
-[sub_resource type="Resource" id="MonsterSkillSet_migrated"]
-script = ExtResource("monster_skill_set_script")
-Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1"), SubResource("MonsterSkillEntry_migrated_2"), SubResource("MonsterSkillEntry_migrated_3"), SubResource("MonsterSkillEntry_migrated_4"), SubResource("MonsterSkillEntry_migrated_5"), SubResource("MonsterSkillEntry_migrated_6")])
-metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_2"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_2")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_3"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_3")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_4"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_4")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_5"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_5")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_6"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_6")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4"), SubResource("CSV_MonsterSkillEntry_5"), SubResource("CSV_MonsterSkillEntry_6")])
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "黄沙岩隐兽"
@@ -453,4 +111,3 @@ LootTable = SubResource("Resource_loot")
 MaxHealth = 175
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
-Faction = 0

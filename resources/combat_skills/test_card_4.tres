@@ -16,6 +16,6 @@ Element = 3
 TargetingType = 0
 Effects = Array[ExtResource("1_46jgr")]([SubResource("Resource_46jgr")])
 CardId = null
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 CardName = "测试卡4"
 Description = "对自己造成20点伤害"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

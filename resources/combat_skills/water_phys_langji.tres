@@ -13,6 +13,5 @@ script = ExtResource("4_combat")
 Element = 3
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
-TargetingType = 1
 CardName = "浪击"
 Description = "对单体敌人造成10点水属性物理伤害。"

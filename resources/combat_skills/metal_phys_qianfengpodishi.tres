@@ -14,6 +14,5 @@ script = ExtResource("4_combat")
 Element = 2
 Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
-TargetingType = 1
 CardName = "千锋破敌势"
 Description = "对单体敌人造成70点金属性物理伤害。"
