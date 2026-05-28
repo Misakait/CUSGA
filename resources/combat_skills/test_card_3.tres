@@ -16,6 +16,6 @@ Element = 3
 TargetingType = 2
 Effects = Array[ExtResource("1_skflr")]([SubResource("Resource_874ny")])
 CardId = null
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 CardName = "测试卡3"
 Description = "对所有敌人造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

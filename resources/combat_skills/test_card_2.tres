@@ -17,6 +17,6 @@ Element = 5
 TargetingType = 5
 Effects = Array[ExtResource("1_rt7uw")]([SubResource("Resource_7wn03")])
 CardId = null
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 CardName = "测试卡2"
 Description = "对随机敌人造成20点火属性法术伤害。"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

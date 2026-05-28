@@ -1,3 +1,4 @@
+@tool
 extends HBoxContainer
 class_name StatusEffectBar
 
@@ -5,6 +6,7 @@ class_name StatusEffectBar
 ## 该组件只负责读取实体 StatusComponent 并生成图标 UI，不参与状态结算，适合挂在玩家属性区、怪物卡牌或其它战斗实体旁边。
 
 const DEFAULT_FALLBACK_ICON: Texture2D = preload("res://res/buff_icon/none.png")
+const DEFAULT_STACK_FONT: Font = preload("res://res/font/Uranus_Pixel_11Px.ttf")
 
 @export_category("目标绑定")
 @export var target_entity_path: NodePath ## 可选：直接指定持有 StatusComponent 的战斗实体节点；留空时会自动向父级或战斗场景查找。
@@ -12,11 +14,80 @@ const DEFAULT_FALLBACK_ICON: Texture2D = preload("res://res/buff_icon/none.png")
 @export var status_component_node_path: NodePath = NodePath("Components/StatusComponent") ## 状态组件相对战斗实体的路径。
 
 @export_category("图标布局")
-@export var icon_size: Vector2 = Vector2(18, 18) ## 单个 Buff 图标的显示尺寸。
-@export var fallback_icon: Texture2D = DEFAULT_FALLBACK_ICON ## Buff 未配置图标时使用的默认图标。
+@export var icon_size: Vector2 = Vector2(18, 18):
+	set(value):
+		icon_size = value
+		_queue_editor_refresh()
+## 单个 Buff 图标的显示尺寸。
+@export var fallback_icon: Texture2D = DEFAULT_FALLBACK_ICON:
+	set(value):
+		fallback_icon = value
+		_queue_editor_refresh()
+## Buff 未配置图标时使用的默认图标。
 @export var empty_bar_visible: bool = false ## 没有 Buff 时是否保留空栏位区域，通常玩家栏可按布局需求开启。
 @export var fallback_icon_color: Color = Color(0.35, 0.35, 0.35, 0.9) ## Buff 未配置图标时的兜底底色，避免状态完全不可见。
 @export var fallback_text: String = "?" ## Buff 未配置图标时显示的兜底字符。
+
+@export_category("层数数字样式")
+@export var stack_font: Font = DEFAULT_STACK_FONT:
+	set(value):
+		stack_font = value
+		_queue_editor_refresh()
+## 层数数字使用的字体；这里主动覆盖父级 Theme，保证玩家栏和怪物栏显示一致。
+@export_range(1, 64, 1) var stack_font_size: int = 11:
+	set(value):
+		stack_font_size = value
+		_queue_editor_refresh()
+## 层数数字字号。
+@export var stack_offset_left: float = -14.0:
+	set(value):
+		stack_offset_left = value
+		_queue_editor_refresh()
+## 层数 Label 相对图标右下角向左扩展的距离，越负显示区域越宽。
+@export var stack_offset_top: float = -14.0:
+	set(value):
+		stack_offset_top = value
+		_queue_editor_refresh()
+## 层数 Label 相对图标右下角向上扩展的距离，越负显示区域越高。
+@export var stack_font_color: Color = Color.WHITE:
+	set(value):
+		stack_font_color = value
+		_queue_editor_refresh()
+## 层数数字颜色。
+@export var stack_outline_color: Color = Color.BLACK:
+	set(value):
+		stack_outline_color = value
+		_queue_editor_refresh()
+## 层数数字描边颜色。
+@export_range(0, 12, 1) var stack_outline_size: int = 3:
+	set(value):
+		stack_outline_size = value
+		_queue_editor_refresh()
+## 层数数字描边粗细。
+
+@export_category("编辑器预览")
+@export var editor_preview_enabled: bool = true:
+	set(value):
+		editor_preview_enabled = value
+		_queue_editor_refresh()
+## 在 Godot 编辑器中显示示例 Buff，不需要启动游戏即可调整 UI 布局。
+@export_range(0, 12, 1) var editor_preview_count: int = 3:
+	set(value):
+		editor_preview_count = value
+		_queue_editor_refresh()
+## 编辑器中显示的示例 Buff 数量。
+@export_range(1, 99, 1) var editor_preview_stacks: int = 2:
+	set(value):
+		editor_preview_stacks = value
+		_queue_editor_refresh()
+## 编辑器示例 Buff 右下角显示的层数。
+@export var editor_preview_icon: Texture2D = DEFAULT_FALLBACK_ICON:
+	set(value):
+		editor_preview_icon = value
+		_queue_editor_refresh()
+## 编辑器示例 Buff 使用的图标；为空时使用默认 none 图标。
+@export var editor_preview_name: String = "示例 Buff" ## 编辑器预览 tooltip 的名称。
+@export_multiline var editor_preview_description: String = "用于在编辑器中预览 Buff 栏布局。" ## 编辑器预览 tooltip 的描述。
 
 var _target_entity: Node = null
 var _status_component: Node = null
@@ -28,6 +99,11 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_theme_constant_override("separation", 3)
 	call_deferred("refresh")
+
+## 在编辑器中修改预览参数后延迟刷新，避免检查器连续赋值时重复重建子节点。
+func _queue_editor_refresh() -> void:
+	if Engine.is_editor_hint() and is_inside_tree():
+		call_deferred("refresh")
 
 ## 重新绑定目标实体并刷新所有 Buff 图标。
 ## 使用场景：战斗实体初始化完成、玩家实体替换、外部系统需要手动同步状态 UI。
@@ -127,8 +203,11 @@ func _rebuild_icons() -> void:
 		_tooltip_panel.call("hide_tooltip")
 	_is_pointer_inside_status_icon = false
 
-	for child in get_children():
-		child.queue_free()
+	_clear_icons()
+
+	if Engine.is_editor_hint() and editor_preview_enabled:
+		_rebuild_editor_preview_icons()
+		return
 
 	if not _status_component:
 		visible = empty_bar_visible
@@ -150,16 +229,48 @@ func _rebuild_icons() -> void:
 
 	visible = empty_bar_visible or status_count > 0
 
+## 移除当前所有图标子节点。
+func _clear_icons() -> void:
+	for child in get_children():
+		remove_child(child)
+		child.queue_free()
+
+## 在编辑器中生成示例 Buff 图标，方便不运行游戏时直接调整 UI 布局。
+func _rebuild_editor_preview_icons() -> void:
+	var preview_icon := editor_preview_icon if editor_preview_icon else fallback_icon
+	for index in range(editor_preview_count):
+		add_child(_create_icon_control(
+			preview_icon,
+			editor_preview_stacks,
+			"%s %d" % [editor_preview_name, index + 1],
+			editor_preview_description
+		))
+
+	visible = empty_bar_visible or editor_preview_count > 0
+
 ## 为单个状态创建可悬停的图标节点。
 ## 参数 status：C# StatusEffectInstance 实例。
 ## 返回值：已配置好图标、层数和提示框信号的 Control 节点。
 func _create_status_icon(status: Variant) -> Control:
+	return _create_icon_control(
+		_get_status_icon(status),
+		_get_status_stacks(status),
+		_get_status_display_name(status),
+		_get_status_description(status)
+	)
+
+## 创建一个 Buff 图标控件，并绑定层数与提示框内容。
+## 参数 icon_texture：优先显示的 Buff 图标；为空时使用 fallback_icon。
+## 参数 stacks：当前层数，超过 1 时显示在右下角。
+## 参数 tooltip_title：悬停提示框标题。
+## 参数 tooltip_description：悬停提示框描述。
+## 返回值：可加入 Buff 栏的 Control 节点。
+func _create_icon_control(icon_texture: Texture2D, stacks: int, tooltip_title: String, tooltip_description: String) -> Control:
 	var icon_root := Control.new()
 	icon_root.custom_minimum_size = icon_size
 	icon_root.mouse_filter = Control.MOUSE_FILTER_STOP
 	icon_root.tooltip_text = ""
 
-	var icon_texture := _get_status_icon(status)
 	if not icon_texture:
 		icon_texture = fallback_icon
 
@@ -174,11 +285,10 @@ func _create_status_icon(status: Variant) -> Control:
 	else:
 		icon_root.add_child(_create_fallback_icon())
 
-	var stacks := _get_status_stacks(status)
 	if stacks > 1:
 		icon_root.add_child(_create_stack_label(stacks))
 
-	icon_root.mouse_entered.connect(_on_status_icon_mouse_entered.bind(status))
+	icon_root.mouse_entered.connect(_on_status_icon_mouse_entered.bind(tooltip_title, tooltip_description))
 	icon_root.mouse_exited.connect(_on_status_icon_mouse_exited)
 	return icon_root
 
@@ -205,26 +315,28 @@ func _create_fallback_icon() -> Control:
 func _create_stack_label(stacks: int) -> Label:
 	var stack_label := Label.new()
 	stack_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	stack_label.offset_left = -14
-	stack_label.offset_top = -14
+	stack_label.offset_left = stack_offset_left
+	stack_label.offset_top = stack_offset_top
 	stack_label.text = str(stacks)
 	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	stack_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stack_label.add_theme_color_override("font_color", Color.WHITE)
-	stack_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	stack_label.add_theme_constant_override("outline_size", 3)
-	stack_label.add_theme_font_size_override("font_size", 11)
+	if stack_font:
+		stack_label.add_theme_font_override("font", stack_font)
+	stack_label.add_theme_color_override("font_color", stack_font_color)
+	stack_label.add_theme_color_override("font_outline_color", stack_outline_color)
+	stack_label.add_theme_constant_override("outline_size", stack_outline_size)
+	stack_label.add_theme_font_size_override("font_size", stack_font_size)
 	return stack_label
 
 ## 鼠标进入 Buff 图标时显示详细说明。
-func _on_status_icon_mouse_entered(status: Variant) -> void:
+func _on_status_icon_mouse_entered(tooltip_title: String, tooltip_description: String) -> void:
 	_is_pointer_inside_status_icon = true
 	if not _tooltip_panel or not is_instance_valid(_tooltip_panel):
 		_resolve_tooltip_panel()
 
 	if _tooltip_panel and is_instance_valid(_tooltip_panel):
-		_tooltip_panel.call("show_tooltip", _get_status_display_name(status), _get_status_description(status))
+		_tooltip_panel.call("show_tooltip", tooltip_title, tooltip_description)
 
 ## 鼠标离开 Buff 图标时隐藏提示框。
 func _on_status_icon_mouse_exited() -> void:

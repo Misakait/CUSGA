@@ -292,10 +292,13 @@ text = "100"
 [node name="StatusEffectBar" type="HBoxContainer" parent="UI/PlayerAttribute" unique_id=923155428]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 3
 alignment = 1
 script = ExtResource("status_bar_script")
 auto_find_player_entity = true
 empty_bar_visible = true
+stack_font = null
 
 [node name="ActionTimeline" type="Control" parent="UI" unique_id=987654321]
 layout_mode = 3
