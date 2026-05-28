@@ -14,7 +14,7 @@ const ROW_SPACING_Y = -80   # 两行之间的Y轴垂直间距 (正数往下排�
 @export var hand_release_area_padding: Vector2 = Vector2(120.0, 80.0) ## 为了避免玩家拖回手牌区时被误判为施放，这里给判定范围留出缓冲
 
 var player_hand_card:Array[Node2D] = [] #玩家手牌。
-var center_screen_x
+var center_screen_x: float = 0.0 ## 当前视口中心点 X，用于让每一行手牌围绕实际窗口居中。
 
 #region 动画部分
 @export_group("动画部分")
@@ -23,7 +23,28 @@ var center_screen_x
 #endregion
 
 func _ready() -> void:
-	center_screen_x = get_viewport().size.x / 2
+	refresh_layout_metrics()
+	var viewport := get_viewport()
+	if viewport and not viewport.size_changed.is_connected(_on_viewport_size_changed):
+		viewport.size_changed.connect(_on_viewport_size_changed)
+
+func _exit_tree() -> void:
+	var viewport := get_viewport()
+	if viewport and viewport.size_changed.is_connected(_on_viewport_size_changed):
+		viewport.size_changed.disconnect(_on_viewport_size_changed)
+
+## 刷新手牌布局依赖的视口数据。
+## 动态从 Main 挂入战斗场景时，节点进入树和首轮发牌可能发生在同一帧，
+## 因此不能只在 _ready 缓存一次中心点，否则会沿用过期尺寸导致手牌整体偏移。
+## @return void 无返回值。
+func refresh_layout_metrics() -> void:
+	center_screen_x = get_viewport_rect().size.x / 2.0
+
+## 视口尺寸变化时重新整理手牌，保证窗口缩放或拉伸模式变化后仍然居中。
+## @return void 无返回值。
+func _on_viewport_size_changed() -> void:
+	refresh_layout_metrics()
+	update_hand_positions()
 
 ## 判断释放位置是否位于手牌区域（含缓冲），用于避免玩家拖回手牌区时被误判为施放。
 ## @param release_position 释放时的全局坐标。
@@ -77,6 +98,7 @@ func remove_card_from_hand(card):
 		play_discard_animation(card)
 
 func update_hand_positions():
+	refresh_layout_metrics()
 	for i in range(player_hand_card.size()):
 		# 直接获取计算好的 Vector2 坐标
 		var new_position = calculate_card_position(i)
