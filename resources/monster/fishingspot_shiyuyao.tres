@@ -23,6 +23,7 @@ BaseMagResist = 180.0
 MagResistGrowth = 32.0
 BaseSpeed = 120.0
 SpeedGrowth = 5.5
+BaseMaxHealth = 100.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
@@ -112,7 +113,6 @@ MonsterName = "噬鱼妖"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
-MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0
 SkillSet = SubResource("CSV_MonsterSkillSet")

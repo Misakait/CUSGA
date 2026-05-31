@@ -27,6 +27,7 @@ BaseMagResist = 160.0
 MagResistGrowth = 24.0
 BaseSpeed = 95.0
 SpeedGrowth = 4.0
+BaseMaxHealth = 110.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
@@ -84,6 +85,5 @@ MonsterName = "游荡盗匪"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 2
 LootTable = SubResource("Resource_loot")
-MaxHealth = 110
-SkillSet = SubResource("CSV_MonsterSkillSet")
+SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

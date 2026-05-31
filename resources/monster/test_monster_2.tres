@@ -1,6 +1,12 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://d1k7qaisrtngg"]
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_ckrcu"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="stats_script"]
+
+[sub_resource type="Resource" id="Resource_stats"]
+script = ExtResource("stats_script")
+BaseMaxHealth = 200.0
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 
@@ -61,8 +67,8 @@ Skills = Array[ExtResource("csv_entry_script")]([])
 [resource]
 script = ExtResource("1_ckrcu")
 MonsterName = "怪物2"
+InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 1
-MaxHealth = 200
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0
 InitialAttributes = SubResource("CSV_StartingStats")

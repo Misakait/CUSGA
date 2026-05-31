@@ -24,6 +24,7 @@
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
+BaseMaxHealth = 100.0
 BasePhysAtk = 80.0
 PhysAtkGrowth = 20.0
 BasePhysDef = 120.0
@@ -371,7 +372,6 @@ script = ExtResource("2_monster")
 MonsterName = "激流游蛟"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 3
-MaxHealth = 100
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

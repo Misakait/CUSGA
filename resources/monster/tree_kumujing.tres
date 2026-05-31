@@ -32,6 +32,7 @@ BaseMagResist = 200.0
 MagResistGrowth = 30.0
 BaseSpeed = 105.0
 SpeedGrowth = 4.5
+BaseMaxHealth = 95.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
@@ -362,7 +363,6 @@ MonsterName = "枯木精"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 1
 LootTable = SubResource("Resource_loot")
-MaxHealth = 95
-SkillSet = SubResource("CSV_MonsterSkillSet")
+SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0

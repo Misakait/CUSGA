@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_gvgr5"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_noehs"]
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="2_a84qo"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="stats_script"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
@@ -34,120 +35,18 @@ script = ExtResource("monster_skill_set_script")
 Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1")])
 metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
+[sub_resource type="Resource" id="Resource_stats"]
+script = ExtResource("stats_script")
+BaseMaxHealth = 100.0
+metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
-script = ExtResource("csv_entry_script")
-Skill = ExtResource("csv_skill_1")
-VisibleInPreview = true
-
-[sub_resource type="Resource" id="CSV_MonsterSkillSet"]
-script = ExtResource("csv_set_script")
-Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1")])
 [resource]
 script = ExtResource("1_noehs")
 MonsterName = "测试怪物1"
+InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
-MaxHealth = 100
-SkillSet = SubResource("CSV_MonsterSkillSet")
+SkillSet = SubResource("MonsterSkillSet_migrated")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0
 InitialAttributes = SubResource("CSV_StartingStats")
