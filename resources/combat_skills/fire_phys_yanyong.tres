@@ -15,3 +15,4 @@ Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
 CardName = "炎涌"
 Description = "对单体敌人造成10点火属性物理伤害。"
+TargetingType = 1

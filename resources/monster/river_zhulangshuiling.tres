@@ -461,6 +461,20 @@ metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
@@ -500,6 +514,7 @@ MonsterName = "逐浪水灵"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
-SkillSet = SubResource("MonsterSkillSet_migrated")
+SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0
+MaxHealth = 100

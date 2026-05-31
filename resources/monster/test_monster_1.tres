@@ -40,13 +40,24 @@ script = ExtResource("stats_script")
 BaseMaxHealth = 100.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
+
+
+[sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
+script = ExtResource("csv_entry_script")
+Skill = ExtResource("csv_skill_1")
+VisibleInPreview = true
+
+[sub_resource type="Resource" id="CSV_MonsterSkillSet"]
+script = ExtResource("csv_set_script")
+Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1")])
 [resource]
 script = ExtResource("1_noehs")
 MonsterName = "测试怪物1"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
-SkillSet = SubResource("MonsterSkillSet_migrated")
+SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0
 InitialAttributes = SubResource("CSV_StartingStats")
+MaxHealth = 100

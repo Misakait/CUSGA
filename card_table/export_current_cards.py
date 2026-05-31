@@ -60,7 +60,6 @@ MONSTER_HEADERS = [
     "monster_name",
     "element",
     "faction",
-    "max_health",
     "model_scene_path",
     "behavior_tree_scene_path",
     "skill_names",
@@ -965,7 +964,6 @@ def export_monster_csv(monster_skills: dict[str, list[str]]) -> list[dict[str, s
                 "monster_name": parse_scalar(text, "MonsterName"),
                 "element": element_to_label(parse_scalar(text, "ElementalProperty")),
                 "faction": parse_scalar(text, "Faction", "0"),
-                "max_health": parse_scalar(text, "MaxHealth"),
                 "model_scene_path": parse_ext_assignment(text, "ModelScene", resources),
                 "behavior_tree_scene_path": parse_ext_assignment(
                     text, "BehaviorTreeScene", resources
@@ -1086,7 +1084,6 @@ def create_monster_resource(row: dict[str, str], skill_paths: list[str]) -> str:
             'InitialAttributes = SubResource("CSV_StartingStats")',
             f"ElementalProperty = {row.get('element') or '0'}",
             f"Faction = {row.get('faction') or '0'}",
-            f"MaxHealth = {row.get('max_health') or '100'}",
             'SkillSet = SubResource("CSV_MonsterSkillSet")',
             "",
         ]
@@ -1302,9 +1299,6 @@ def apply_monster_rows(
         )
         text = replace_or_add_resource_property(
             text, "Faction", row.get("faction") or "0"
-        )
-        text = replace_or_add_resource_property(
-            text, "MaxHealth", row.get("max_health") or "100"
         )
         text = update_monster_stats(text, row)
         text = update_monster_skillset(text, skill_paths)

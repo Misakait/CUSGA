@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://16qrp6486xaj"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_v80vg"]
-[ext_resource type="Resource" uid="uid://bxk8iyjs31aho" path="res://resources/combat_skills/test_card_3.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
 
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_3.tres" id="combat_skill"]
 [resource]
 script = ExtResource("1_v80vg")
 Skill = ExtResource("combat_skill")
@@ -13,3 +13,4 @@ CardName = "测试卡3"
 CardIcon = ExtResource("icon_skillcard")
 Description = "对所有敌人造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。"
 metadata/_custom_type_script = "uid://bejho62d28qir"
+CardTags = Array[String]([])

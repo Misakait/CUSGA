@@ -17,3 +17,4 @@ Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
 CardName = "玄水灭灵台"
 Description = "对单体敌人造成70点水属性法术伤害。"
+TargetingType = 1

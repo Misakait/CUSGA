@@ -7,16 +7,16 @@
 [ext_resource type="Resource" uid="uid://b5jb56ukvkytf" path="res://resources/skill_cards/water_phys_langji.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://blwmjy1nct70x" path="res://resources/skill_cards/water_phys_liubozhuang.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://dh26gd0jj0ig4" path="res://resources/skill_cards/water_phys_shuiji.tres" id="8_skill_5"]
-[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Resource" uid="uid://u65i7iw04yr0" path="res://resources/combat_skills/water_phys_hanlangchong.tres" id="csv_skill_1"]
-[ext_resource type="Resource" uid="uid://bn2pktd4ncpk7" path="res://resources/combat_skills/water_phys_hongtaoxijuanlai.tres" id="csv_skill_2"]
-[ext_resource type="Resource" uid="uid://b0urn62a1axoa" path="res://resources/combat_skills/water_phys_langji.tres" id="csv_skill_3"]
-[ext_resource type="Resource" uid="uid://cgaidy2ryuwvq" path="res://resources/combat_skills/water_phys_liubozhuang.tres" id="csv_skill_4"]
-[ext_resource type="Resource" uid="uid://tqtutau0o0o4" path="res://resources/combat_skills/water_phys_shuiji.tres" id="csv_skill_5"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
+[ext_resource type="Resource" path="res://resources/combat_skills/water_phys_hanlangchong.tres" id="csv_skill_1"]
+[ext_resource type="Resource" path="res://resources/combat_skills/water_phys_hongtaoxijuanlai.tres" id="csv_skill_2"]
+[ext_resource type="Resource" path="res://resources/combat_skills/water_phys_langji.tres" id="csv_skill_3"]
+[ext_resource type="Resource" path="res://resources/combat_skills/water_phys_liubozhuang.tres" id="csv_skill_4"]
+[ext_resource type="Resource" path="res://resources/combat_skills/water_phys_shuiji.tres" id="csv_skill_5"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BasePhysAtk = 110.0
@@ -67,35 +67,53 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
+
+
+
+
+
+
+
+
+
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
+VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_2"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_2")
+VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_3"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_3")
+VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_4"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_4")
+VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_5"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_5")
+VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4"), SubResource("CSV_MonsterSkillEntry_5")])
-
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "深水巨螯"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
-SkillSet = SubResource("MonsterSkillSet_migrated")
+SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
+Faction = 0
+MaxHealth = 100

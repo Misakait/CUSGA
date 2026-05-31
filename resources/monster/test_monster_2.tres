@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_ckrcu"]
 [ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="stats_script"]
 
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("stats_script")
 BaseMaxHealth = 200.0
@@ -59,8 +61,8 @@ metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 
 
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([])
@@ -73,3 +75,4 @@ metadata/_custom_type_script = "uid://dh28trwcjvre6"
 Faction = 0
 InitialAttributes = SubResource("CSV_StartingStats")
 SkillSet = SubResource("CSV_MonsterSkillSet")
+MaxHealth = 100

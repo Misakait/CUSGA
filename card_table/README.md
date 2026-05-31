@@ -109,7 +109,6 @@ Windows 下 Excel/WPS 会锁定打开中的 `.xlsx` 文件。
 | `monster_name` | 怪物中文名。 |
 | `element` | 怪物五行中文名，可填/选择 `无`、`金`、`木`、`水`、`火`、`土`。 |
 | `faction` | 阵营枚举数字。 |
-| `max_health` | 最大生命值。 |
 | `model_scene_path` | 怪物模型场景路径。 |
 | `behavior_tree_scene_path` | 行为树场景路径。 |
 | `skill_names` | 怪物拥有的技能中文名，多个技能用英文分号 `;` 分隔。 |
@@ -177,7 +176,7 @@ Windows 下 Excel/WPS 会锁定打开中的 `.xlsx` 文件。
 1. 在 `monster_cards` 表中复制一行。
 2. 清空 `resource_path`。
 3. 填写唯一的 `id_slug`。
-4. 填写 `monster_name`、`element`、`max_health`、`skill_names` 等字段。
+4. 填写 `monster_name`、`element`、`skill_names` 等字段。
 5. 保存表格并同步。
 
 脚本会自动创建：
