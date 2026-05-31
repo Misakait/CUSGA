@@ -1,6 +1,6 @@
 ---
 name: architectural-engineering-guidelines
-description: architectural software engineering guidance for code design, refactoring, and system modeling. use when reviewing or writing non-trivial code, designing gameplay systems, backend services, ecs/component systems, ui state systems, data pipelines, os/runtime components, or when the user asks for solid, design patterns, high cohesion, low coupling, maintainability, extensibility, testability, or architecture-first implementation.
+description: "architectural software engineering guidance for code design, refactoring, and system modeling. use when reviewing or writing non-trivial code, designing gameplay systems, backend services, ecs/component systems, ui state systems, data pipelines, os/runtime components, or when the user asks for solid, design patterns, high cohesion, low coupling, maintainability, extensibility, testability, or architecture-first implementation."
 ---
 
 # Architectural Engineering Guidelines
