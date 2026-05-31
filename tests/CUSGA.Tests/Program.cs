@@ -1,4 +1,6 @@
 using CUSGA.core.application;
+using CUSGA.core.attributes;
+using CUSGA.core.combat;
 using CUSGA.core.combat.skills;
 using CUSGA.core.constants;
 using CUSGA.core.crafting;
@@ -32,6 +34,19 @@ tests.MagicItemSlotRequiresExplicitMagicItemTag();
 tests.EquipmentDataCanAllowBothRingSlots();
 tests.EquippedTorchAppliesEncounterMultiplierUntilUnequipped();
 tests.GatheringEncounterModifierOnlyReducesNightChance();
+tests.StartingStatsExposeCombatExpansionDefaults();
+tests.PhysicalDamageFormulaAppliesFixedAndRatePenetration();
+tests.MagicDamageFormulaClampsOverPenetratedResistance();
+tests.DamageFormulaResolvesEvasionCriticalVarianceAndLifesteal();
+tests.DamageFormulaCalculatesActualDamageBeforeLifesteal();
+tests.AttributeComponentInitializesExpandedCombatAttributes();
+tests.AttributeComponentSynchronizesHealthAndEnergyMaxima();
+tests.AttributeComponentIgnoresMaxEnergyWhenEnergyComponentIsAbsent();
+tests.AttributeComponentPreservesCurrentVitalsOnUnchangedRecalculation();
+tests.AttributeComponentPreservesCurrentVitalsWhenMaximaIncrease();
+tests.AttributeComponentClampsCurrentVitalsWhenMaximaShrink();
+tests.HealthComponentReturnsActualDamageTaken();
+tests.VitalComponentBaseReturnsActualHealingAndLoss();
 
 Console.WriteLine("All CUSGA tests passed.");
 
@@ -114,10 +129,10 @@ internal sealed class TerrainRandomizationTests
         baseStats.BaseMagPower = 300f;
         baseStats.BaseMagResist = 800f;
         baseStats.BaseSpeed = 50f;
+        baseStats.BaseMaxHealth = 100f;
 
         var monster = CreateMonsterDataStub();
         monster.MonsterName = "Scaled";
-        monster.MaxHealth = 100;
         monster.InitialAttributes = baseStats;
         monster.SkillSet = CreateMonsterSkillSet(CreateMonsterSkillEntry(CreateCombatSkillDataStub()));
 
@@ -136,13 +151,13 @@ internal sealed class TerrainRandomizationTests
         MonsterData scaledMonster = scaled[0];
         Assert.NotSame(monster, scaledMonster);
         Assert.NotSame(baseStats, scaledMonster.InitialAttributes);
-        Assert.Equal(180, scaledMonster.MaxHealth);
+        Assert.Approximately(180f, scaledMonster.InitialAttributes.BaseMaxHealth);
         Assert.Approximately(240f, scaledMonster.InitialAttributes.BasePhysAtk);
         Assert.Approximately(1440f, scaledMonster.InitialAttributes.BasePhysDef);
         Assert.Approximately(1440f, scaledMonster.InitialAttributes.BaseMagPower);
         Assert.Approximately(4800f, scaledMonster.InitialAttributes.BaseMagResist);
         Assert.Approximately(30f, scaledMonster.InitialAttributes.BaseSpeed);
-        Assert.Equal(100, monster.MaxHealth);
+        Assert.Approximately(100f, baseStats.BaseMaxHealth);
         Assert.Approximately(100f, baseStats.BasePhysAtk);
         Assert.Same(monster.SkillSet, scaledMonster.SkillSet);
     }
@@ -356,6 +371,302 @@ internal sealed class TerrainRandomizationTests
         {
             time._ExitTree();
         }
+    }
+
+    /// <summary>
+    /// 验证新增战斗属性维度拥有明确默认值，并且基础五维枚举序号保持稳定。
+    /// </summary>
+    public void StartingStatsExposeCombatExpansionDefaults()
+    {
+        Assert.Equal(0, (int)AttributeType.PhysAtk);
+        Assert.Equal(1, (int)AttributeType.PhysDef);
+        Assert.Equal(2, (int)AttributeType.MagPower);
+        Assert.Equal(3, (int)AttributeType.MagResist);
+        Assert.Equal(4, (int)AttributeType.Speed);
+
+        var stats = new StartingStats();
+
+        Assert.Approximately(1000f, stats.BaseMaxHealth);
+        Assert.Approximately(0f, stats.MaxHealthGrowth);
+        Assert.Approximately(100f, stats.BaseMaxEnergy);
+        Assert.Approximately(0f, stats.MaxEnergyGrowth);
+        Assert.Approximately(0f, stats.BaseCritRate);
+        Assert.Approximately(0f, stats.CritRateGrowth);
+        Assert.Approximately(1.5f, stats.BaseCritDamage);
+        Assert.Approximately(0f, stats.CritDamageGrowth);
+        Assert.Approximately(0f, stats.BaseEvasionRate);
+        Assert.Approximately(0f, stats.EvasionRateGrowth);
+        Assert.Approximately(0f, stats.BaseLifestealRate);
+        Assert.Approximately(0f, stats.LifestealRateGrowth);
+        Assert.Approximately(0f, stats.BaseFixedPhysPenetration);
+        Assert.Approximately(0f, stats.FixedPhysPenetrationGrowth);
+        Assert.Approximately(0f, stats.BasePhysPenetrationRate);
+        Assert.Approximately(0f, stats.PhysPenetrationRateGrowth);
+        Assert.Approximately(0f, stats.BaseFixedMagicPenetration);
+        Assert.Approximately(0f, stats.FixedMagicPenetrationGrowth);
+        Assert.Approximately(0f, stats.BaseMagicPenetrationRate);
+        Assert.Approximately(0f, stats.MagicPenetrationRateGrowth);
+    }
+
+    /// <summary>
+    /// 验证物理基础伤害使用同一个全局常数，并同时应用固定穿透和百分比穿透。
+    /// </summary>
+    public void PhysicalDamageFormulaAppliesFixedAndRatePenetration()
+    {
+        float damage = DamageFormula.CalculatePhysicalBaseDamage(
+            skillPower: 120f,
+            attackerPhysAtk: 200f,
+            defenderPhysDef: 300f,
+            physicalPenetrationRate: 0.25f,
+            fixedPhysicalPenetration: 25f
+        );
+
+        Assert.Approximately(120f, damage);
+    }
+
+    /// <summary>
+    /// 验证法术穿透过量时有效法抗不会低于 0。
+    /// </summary>
+    public void MagicDamageFormulaClampsOverPenetratedResistance()
+    {
+        float damage = DamageFormula.CalculateMagicBaseDamage(
+            skillPower: 60f,
+            attackerMagPower: 200f,
+            defenderMagResist: 120f,
+            magicPenetrationRate: 1.5f,
+            fixedMagicPenetration: 40f
+        );
+
+        Assert.Approximately(180f, damage);
+    }
+
+    /// <summary>
+    /// 验证闪避、暴击、随机浮动和吸血的纯公式入口。
+    /// </summary>
+    public void DamageFormulaResolvesEvasionCriticalVarianceAndLifesteal()
+    {
+        Assert.True(DamageFormula.ShouldEvade(evasionRate: 0.3f, evasionRoll: 0.2f));
+        Assert.False(DamageFormula.ShouldEvade(evasionRate: 0.3f, evasionRoll: 0.8f));
+        Assert.True(DamageFormula.ShouldCrit(critRate: 0.4f, critRoll: 0.1f));
+        Assert.False(DamageFormula.ShouldCrit(critRate: 0.4f, critRoll: 0.9f));
+        Assert.Approximately(1.75f, DamageFormula.CalculateCriticalModifier(true, 1.75f));
+        Assert.Approximately(1f, DamageFormula.CalculateCriticalModifier(false, 1.75f));
+        Assert.Approximately(1.02f, DamageFormula.CalculateRandomVariance(0.95f, 1.05f, 0.7f));
+        Assert.Equal(13, DamageFormula.CalculateLifestealAmount(51, 0.25f));
+    }
+
+    /// <summary>
+    /// 验证吸血使用实际扣血量，而不是取整后的理论伤害。
+    /// </summary>
+    public void DamageFormulaCalculatesActualDamageBeforeLifesteal()
+    {
+        Assert.Equal(35, DamageFormula.CalculateActualDamage(finalDamage: 99, defenderCurrentHealth: 35));
+        Assert.Equal(9, DamageFormula.CalculateLifestealAmount(finalActualDamage: 35, lifestealRate: 0.25f));
+    }
+
+    /// <summary>
+    /// 验证运行时属性组件初始化全部新增战斗属性维度。
+    /// </summary>
+    public void AttributeComponentInitializesExpandedCombatAttributes()
+    {
+        var attributes = new AttributeComponent();
+        var stats = new StartingStats
+        {
+            BaseMaxHealth = 1200f,
+            BaseMaxEnergy = 80f,
+            BaseFixedPhysPenetration = 18f,
+            BasePhysPenetrationRate = 0.3f,
+            BaseFixedMagicPenetration = 12f,
+            BaseMagicPenetrationRate = 0.25f,
+            BaseCritRate = 0.2f,
+            BaseCritDamage = 1.75f,
+            BaseEvasionRate = 0.1f,
+            BaseLifestealRate = 0.15f
+        };
+
+        attributes.InitializeWithData(stats);
+
+        Assert.Approximately(1200f, attributes.MaxHealth);
+        Assert.Approximately(80f, attributes.MaxEnergy);
+        Assert.Approximately(18f, attributes.FixedPhysPenetration);
+        Assert.Approximately(0.3f, attributes.PhysPenetrationRate);
+        Assert.Approximately(12f, attributes.FixedMagicPenetration);
+        Assert.Approximately(0.25f, attributes.MagicPenetrationRate);
+        Assert.Approximately(0.2f, attributes.CritRate);
+        Assert.Approximately(1.75f, attributes.CritDamage);
+        Assert.Approximately(0.1f, attributes.EvasionRate);
+        Assert.Approximately(0.15f, attributes.LifestealRate);
+    }
+
+    /// <summary>
+    /// 验证生命上限和能量上限由属性组件初始化并同步到同宿主资源组件。
+    /// </summary>
+    public void AttributeComponentSynchronizesHealthAndEnergyMaxima()
+    {
+        var owner = new Node { Name = "Components" };
+        var health = new HealthComponent { Name = "HealthComponent" };
+        var energy = new EnergyComponent { Name = "EnergyComponent" };
+        var attributes = new AttributeComponent { Name = "AttributeComponent" };
+        owner.AddChild(health);
+        owner.AddChild(energy);
+        owner.AddChild(attributes);
+
+        attributes.InitializeWithData(new StartingStats
+        {
+            BaseMaxHealth = 1350f,
+            BaseMaxEnergy = 90f
+        });
+
+        Assert.Equal(1350, health.MaxValue);
+        Assert.Equal(1350, health.CurrentValue);
+        Assert.Equal(90, energy.MaxValue);
+        Assert.Equal(90, energy.CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证没有能量组件的单位仍然可以初始化属性。
+    /// </summary>
+    public void AttributeComponentIgnoresMaxEnergyWhenEnergyComponentIsAbsent()
+    {
+        var owner = new Node { Name = "Components" };
+        var health = new HealthComponent { Name = "HealthComponent" };
+        var attributes = new AttributeComponent { Name = "AttributeComponent" };
+        owner.AddChild(health);
+        owner.AddChild(attributes);
+
+        attributes.InitializeWithData(new StartingStats
+        {
+            BaseMaxHealth = 777f,
+            BaseMaxEnergy = 45f
+        });
+
+        Assert.Equal(777, health.MaxValue);
+        Assert.Approximately(45f, attributes.MaxEnergy);
+    }
+
+    /// <summary>
+    /// 验证普通属性重算不会把生命和能量隐式回满。
+    /// </summary>
+    public void AttributeComponentPreservesCurrentVitalsOnUnchangedRecalculation()
+    {
+        var owner = new Node { Name = "Components" };
+        var health = new HealthComponent { Name = "HealthComponent" };
+        var energy = new EnergyComponent { Name = "EnergyComponent" };
+        var attributes = new AttributeComponent { Name = "AttributeComponent" };
+        owner.AddChild(health);
+        owner.AddChild(energy);
+        owner.AddChild(attributes);
+
+        attributes.InitializeWithData(new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseMaxEnergy = 50f
+        });
+        health.TakeDamage(30, ElementType.None);
+        energy.Subtract(20);
+
+        attributes.ForceRecalculateAll(owner);
+
+        Assert.Equal(100, health.MaxValue);
+        Assert.Equal(70, health.CurrentValue);
+        Assert.Equal(50, energy.MaxValue);
+        Assert.Equal(30, energy.CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证生命和能量上限提高时不会额外治疗当前值。
+    /// </summary>
+    public void AttributeComponentPreservesCurrentVitalsWhenMaximaIncrease()
+    {
+        var owner = new Node { Name = "Components" };
+        var health = new HealthComponent { Name = "HealthComponent" };
+        var energy = new EnergyComponent { Name = "EnergyComponent" };
+        var attributes = new AttributeComponent { Name = "AttributeComponent" };
+        owner.AddChild(health);
+        owner.AddChild(energy);
+        owner.AddChild(attributes);
+
+        attributes.InitializeWithData(new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseMaxEnergy = 50f
+        });
+        health.TakeDamage(30, ElementType.None);
+        energy.Subtract(20);
+
+        attributes.AddPermanentBonus(AttributeType.MaxHealth, 40f, owner);
+        attributes.AddPermanentBonus(AttributeType.MaxEnergy, 10f, owner);
+
+        Assert.Equal(140, health.MaxValue);
+        Assert.Equal(70, health.CurrentValue);
+        Assert.Equal(60, energy.MaxValue);
+        Assert.Equal(30, energy.CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证生命和能量上限降低时当前值会被钳制到新上限，但不会回满。
+    /// </summary>
+    public void AttributeComponentClampsCurrentVitalsWhenMaximaShrink()
+    {
+        var owner = new Node { Name = "Components" };
+        var health = new HealthComponent { Name = "HealthComponent" };
+        var energy = new EnergyComponent { Name = "EnergyComponent" };
+        var attributes = new AttributeComponent { Name = "AttributeComponent" };
+        owner.AddChild(health);
+        owner.AddChild(energy);
+        owner.AddChild(attributes);
+
+        attributes.InitializeWithData(new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseMaxEnergy = 50f
+        });
+        health.TakeDamage(10, ElementType.None);
+        energy.Subtract(5);
+
+        attributes.AddPermanentBonus(AttributeType.MaxHealth, -30f, owner);
+        attributes.AddPermanentBonus(AttributeType.MaxEnergy, -20f, owner);
+
+        Assert.Equal(70, health.MaxValue);
+        Assert.Equal(70, health.CurrentValue);
+        Assert.Equal(30, energy.MaxValue);
+        Assert.Equal(30, energy.CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证生命组件返回实际扣除生命，过量伤害不会被吸血错误放大。
+    /// </summary>
+    public void HealthComponentReturnsActualDamageTaken()
+    {
+        var health = new HealthComponent();
+        health.InitializeMax(30);
+
+        int firstActual = health.TakeDamage(12, ElementType.None);
+        int secondActual = health.TakeDamage(99, ElementType.None);
+
+        Assert.Equal(12, firstActual);
+        Assert.Equal(18, secondActual);
+        Assert.Equal(0, health.CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证资源基类返回实际变化量。
+    /// </summary>
+    public void VitalComponentBaseReturnsActualHealingAndLoss()
+    {
+        var energy = new EnergyComponent();
+        energy.InitializeMax(10);
+
+        int consumed = energy.Subtract(7);
+        int overConsumed = energy.Subtract(9);
+        int restored = energy.Add(4);
+        int overRestored = energy.Add(99);
+
+        Assert.Equal(7, consumed);
+        Assert.Equal(3, overConsumed);
+        Assert.Equal(4, restored);
+        Assert.Equal(6, overRestored);
+        Assert.Equal(10, energy.CurrentValue);
     }
 
     private static TerrainCardData CreateTerrainCardDataStub()

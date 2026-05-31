@@ -58,7 +58,6 @@ public sealed class EncounterMonsterScaler(Func<MonsterData> monsterFactory, Fun
         scaled.BehaviorTreeScene = source.BehaviorTreeScene;
         scaled.Faction = source.Faction;
         scaled.SkillSet = source.SkillSet;
-        scaled.MaxHealth = ScaleInt(source.MaxHealth, terrain.MaxHealth, day.MaxHealth);
 
         if (source.InitialAttributes != null)
         {
@@ -84,6 +83,26 @@ public sealed class EncounterMonsterScaler(Func<MonsterData> monsterFactory, Fun
         scaled.MagResistGrowth = source.MagResistGrowth;
         scaled.BaseSpeed = ScaleFloat(source.BaseSpeed, terrain.Speed, day.Speed);
         scaled.SpeedGrowth = source.SpeedGrowth;
+        scaled.BaseMaxHealth = ScaleFloat(source.BaseMaxHealth, terrain.MaxHealth, day.MaxHealth);
+        scaled.MaxHealthGrowth = source.MaxHealthGrowth;
+        scaled.BaseMaxEnergy = source.BaseMaxEnergy;
+        scaled.MaxEnergyGrowth = source.MaxEnergyGrowth;
+        scaled.BaseFixedPhysPenetration = source.BaseFixedPhysPenetration;
+        scaled.FixedPhysPenetrationGrowth = source.FixedPhysPenetrationGrowth;
+        scaled.BasePhysPenetrationRate = source.BasePhysPenetrationRate;
+        scaled.PhysPenetrationRateGrowth = source.PhysPenetrationRateGrowth;
+        scaled.BaseFixedMagicPenetration = source.BaseFixedMagicPenetration;
+        scaled.FixedMagicPenetrationGrowth = source.FixedMagicPenetrationGrowth;
+        scaled.BaseMagicPenetrationRate = source.BaseMagicPenetrationRate;
+        scaled.MagicPenetrationRateGrowth = source.MagicPenetrationRateGrowth;
+        scaled.BaseCritRate = source.BaseCritRate;
+        scaled.CritRateGrowth = source.CritRateGrowth;
+        scaled.BaseCritDamage = source.BaseCritDamage;
+        scaled.CritDamageGrowth = source.CritDamageGrowth;
+        scaled.BaseEvasionRate = source.BaseEvasionRate;
+        scaled.EvasionRateGrowth = source.EvasionRateGrowth;
+        scaled.BaseLifestealRate = source.BaseLifestealRate;
+        scaled.LifestealRateGrowth = source.LifestealRateGrowth;
         return scaled;
     }
 
@@ -111,11 +130,6 @@ public sealed class EncounterMonsterScaler(Func<MonsterData> monsterFactory, Fun
             MagResist = 1f + elapsedDays * growth.MagResist,
             Speed = 1f + elapsedDays * growth.Speed
         };
-    }
-
-    private static int ScaleInt(int value, float terrainMultiplier, float dayMultiplier)
-    {
-        return Mathf.Max(1, Mathf.RoundToInt(value * terrainMultiplier * dayMultiplier));
     }
 
     private static float ScaleFloat(float value, float terrainMultiplier, float dayMultiplier)

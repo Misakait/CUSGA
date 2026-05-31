@@ -6,6 +6,7 @@ using CUSGA.core.constants;
 using CUSGA.core.combat;
 using CUSGA.core.attributes;
 using CUSGA.core.combat.skills;
+using CUSGA.resources.stats;
 using System;
 
 namespace CUSGA.entities;
@@ -151,9 +152,8 @@ public partial class Monster : Node2D
     public void Initialize(MonsterData data)
     {
         BaseData = data;
-        Attributes.InitializeWithData(data.InitialAttributes);
+        Attributes.InitializeWithData(data.InitialAttributes ?? new StartingStats());
         Faction.Faction = data.Faction;
-        Health.InitializeMax(data.MaxHealth);
         if (data.SkillSet != null)
         {
             SkillComponent?.Initialize(data.SkillSet);

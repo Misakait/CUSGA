@@ -8,81 +8,111 @@ namespace CUSGA.entities.components;
 [GlobalClass]
 public partial class DamageReceiverComponent : Node
 {
+    private readonly RandomNumberGenerator _rng = new();
+
+    [Export]
+    public float RandomVarianceMin { get; set; } = 0.95f;
+
+    [Export]
+    public float RandomVarianceMax { get; set; } = 1.05f;
+
+    public override void _Ready()
+    {
+        _rng.Randomize();
+    }
+
+    /// <summary>
+    /// 接收伤害载荷，按战斗公式结算闪避、暴击、属性克制、随机浮动和吸血。
+    /// </summary>
+    /// <param name="payload">伤害来源、目标、技能威力、伤害类型和五行属性。</param>
     public void ReceiveDamage(DamagePayload payload)
     {
-        Node defender = GetParent();
+        Node defenderComponents = GetParent();
+        Node defenderRoot = payload.Target ?? defenderComponents?.GetParent() ?? defenderComponents;
 
-        if (defender == null)
+        if (defenderComponents == null)
         {
             GD.PushError($"{nameof(DamageReceiverComponent)} has no parent defender.");
             return;
         }
 
-        var attackerStats = payload.Source?.GetNodeOrNull<AttributeComponent>("AttributeComponent");
-        var defenderStats = defender.GetNodeOrNull<AttributeComponent>("AttributeComponent");
+        var attackerStats = FindComponent<AttributeComponent>(payload.Source, "AttributeComponent");
+        var defenderStats = FindComponent<AttributeComponent>(defenderRoot, "AttributeComponent")
+            ?? defenderComponents.GetNodeOrNull<AttributeComponent>("AttributeComponent");
 
-        var attackerStatus = payload.Source?.GetStatusComponentOrNull();
-        var defenderStatus = defender.GetStatusComponentOrNull();
+        var attackerStatus = FindComponent<StatusComponent>(payload.Source, "StatusComponent");
+        var defenderStatus = FindComponent<StatusComponent>(defenderRoot, "StatusComponent")
+            ?? defenderComponents.GetNodeOrNull<StatusComponent>("StatusComponent");
 
-        float damage = Mathf.Max(0f, payload.Damage);
+        if (DamageFormula.ShouldEvade(defenderStats?.EvasionRate ?? 0f, _rng.Randf()))
+        {
+            GD.Print(
+                $"[Damage] Target: {defenderRoot?.Name ?? defenderComponents.Name} | " +
+                $"Source: {payload.Source?.Name ?? "Unknown"} | " +
+                "Damage: 0 | Evaded: True | " +
+                $"Element: {payload.Element} | " +
+                $"Type: {payload.Type}"
+            );
+            return;
+        }
 
-        ApplyAttackerAttributes(payload, attackerStats, ref damage);
+        float damage = CalculateBaseDamage(payload, attackerStats, defenderStats);
+        bool isCritical = DamageFormula.ShouldCrit(attackerStats?.CritRate ?? 0f, _rng.Randf());
+        damage *= DamageFormula.CalculateCriticalModifier(isCritical, attackerStats?.CritDamage ?? 1f);
 
         attackerStatus?.ProcessModifyOutgoingDamage(payload, ref damage);
         defenderStatus?.ProcessModifyIncomingDamageBeforeMitigation(payload, ref damage);
 
-        ApplyElementMultiplier(payload, defender, ref damage);
-        ApplyDefenseMitigation(payload, defenderStats, ref damage);
+        ApplyElementMultiplier(payload, defenderRoot, ref damage);
 
         defenderStatus?.ProcessModifyIncomingDamageAfterMitigation(payload, ref damage);
         defenderStatus?.ProcessBeforeHealthDamage(payload, ref damage);
+        ApplyRandomVariance(ref damage);
 
         int finalDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
+        var defenderHealth = FindComponent<HealthComponent>(defenderRoot, "HealthComponent")
+            ?? defenderComponents.GetNodeOrNull<HealthComponent>("HealthComponent");
+        int actualDamage = defenderHealth?.TakeDamage(finalDamage, payload.Element) ?? 0;
+        ApplyLifesteal(payload.Source, attackerStats, actualDamage);
 
         GD.Print(
-            $"[Damage] Target: {defender.GetParent().Name} | " +
+            $"[Damage] Target: {defenderRoot?.Name ?? defenderComponents.Name} | " +
             $"Source: {payload.Source?.Name ?? "Unknown"} | " +
-            $"Damage: {finalDamage} | " +
+            $"Damage: {actualDamage} | " +
+            $"Critical: {isCritical} | " +
             $"Element: {payload.Element} | " +
             $"Type: {payload.Type}"
         );
-
-        defender.GetNodeOrNull<HealthComponent>("HealthComponent")
-            ?.TakeDamage(finalDamage, payload.Element);
     }
 
-    private static void ApplyAttackerAttributes(
+    private static float CalculateBaseDamage(
         DamagePayload payload,
         AttributeComponent attackerStats,
-        ref float damage
+        AttributeComponent defenderStats
     )
     {
-        if (attackerStats == null)
+        float skillPower = Mathf.Max(0f, payload.Damage);
+
+        return payload.Type switch
         {
-            return;
-        }
-
-        switch (payload.Type)
-        {
-            case DamageType.Physical:
-                {
-                    damage += attackerStats.PhysAtk;
-                    damage *= 1f + attackerStats.PhysDamageBoost;
-                    break;
-                }
-
-            case DamageType.Magic:
-                {
-                    damage += attackerStats.MagPower;
-                    damage *= 1f + attackerStats.MagicDamageBoost;
-                    break;
-                }
-
-            case DamageType.Real:
-                break;
-        }
-
-        damage = Mathf.Max(0f, damage);
+            DamageType.Physical => DamageFormula.CalculatePhysicalBaseDamage(
+                skillPower,
+                attackerStats?.PhysAtk ?? 0f,
+                defenderStats?.PhysDef ?? 0f,
+                attackerStats?.PhysPenetrationRate ?? 0f,
+                attackerStats?.FixedPhysPenetration ?? 0f
+            ),
+            DamageType.Magic => DamageFormula.CalculateMagicBaseDamage(
+                skillPower,
+                attackerStats?.MagPower ?? 0f,
+                defenderStats?.MagResist ?? 0f,
+                attackerStats?.MagicPenetrationRate ?? 0f,
+                attackerStats?.FixedMagicPenetration ?? 0f
+            ),
+            // 真实伤害不走攻防比值，仍然保留后续状态和属性克制修正入口。
+            DamageType.Real => skillPower,
+            _ => skillPower
+        };
     }
 
     private static void ApplyElementMultiplier(
@@ -107,33 +137,45 @@ public partial class DamageReceiverComponent : Node
         damage = Mathf.Max(0f, damage);
     }
 
-    private static void ApplyDefenseMitigation(
-        DamagePayload payload,
-        AttributeComponent defenderStats,
-        ref float damage
+    private void ApplyRandomVariance(ref float damage)
+    {
+        damage *= DamageFormula.CalculateRandomVariance(
+            RandomVarianceMin,
+            RandomVarianceMax,
+            _rng.Randf()
+        );
+        damage = Mathf.Max(0f, damage);
+    }
+
+    private static void ApplyLifesteal(
+        Node source,
+        AttributeComponent attackerStats,
+        int actualDamage
     )
     {
-        if (payload.Type == DamageType.Real)
+        int healAmount = DamageFormula.CalculateLifestealAmount(
+            actualDamage,
+            attackerStats?.LifestealRate ?? 0f
+        );
+
+        if (healAmount <= 0)
         {
             return;
         }
 
-        if (defenderStats == null)
+        FindComponent<HealthComponent>(source, "HealthComponent")
+            ?.Add(healAmount);
+    }
+
+    private static T FindComponent<T>(Node owner, string componentName)
+        where T : Node
+    {
+        if (owner == null)
         {
-            return;
+            return null;
         }
 
-        float defense = payload.Type switch
-        {
-            DamageType.Physical => defenderStats.PhysDef,
-            DamageType.Magic => defenderStats.MagResist,
-            _ => 0f
-        };
-
-        defense = Mathf.Max(0f, defense);
-
-        float defenseMultiplier = 100f / (100f + defense);
-        damage *= defenseMultiplier;
-        damage = Mathf.Max(0f, damage);
+        return owner.GetNodeOrNull<T>(componentName)
+            ?? owner.GetNodeOrNull<T>($"Components/{componentName}");
     }
 }

@@ -9,8 +9,16 @@ public enum AttributeType
     MagPower, // 法强
     MagResist,// 法抗
     Speed,     // 速度
-    PhysDamageBoost, // 物理增伤
-    MagicDamageBoost // 魔法增伤
+    MaxHealth, // 生命上限
+    MaxEnergy, // 能量上限
+    FixedPhysPenetration, // 固定物理穿透
+    PhysPenetrationRate, // 物理穿透率
+    FixedMagicPenetration, // 固定法术穿透
+    MagicPenetrationRate, // 法术穿透率
+    CritRate, // 暴击率
+    CritDamage, // 暴击伤害倍率
+    EvasionRate, // 闪避率
+    LifestealRate // 吸血率
 }
 
 public class Attribute(AttributeType type, string displayName, float baseValue, float growthPerPoint) : IReadOnlyAttribute

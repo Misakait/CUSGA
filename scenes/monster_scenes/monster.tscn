@@ -30,6 +30,7 @@
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
 script = ExtResource("2_gqard")
+BaseMaxHealth = 100.0
 metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="Resource_bgonl"]
@@ -45,7 +46,6 @@ InitialAttributes = SubResource("Resource_4jp6m")
 ElementalProperty = 1
 ModelScene = SubResource("PackedScene_1lcr1")
 LootTable = SubResource("Resource_bgonl")
-MaxHealth = 100
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]

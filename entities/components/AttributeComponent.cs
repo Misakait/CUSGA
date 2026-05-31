@@ -38,13 +38,6 @@ public partial class AttributeComponent : Node
 
     public Node Host => GetParent();
 
-    // public float Speed => GetEffectiveValue(AttributeType.Speed);
-    // public float MagPower => GetEffectiveValue(AttributeType.MagPower);
-    // public float MagResist => GetEffectiveValue(AttributeType.MagResist);
-    // public float PhysAtk => GetEffectiveValue(AttributeType.PhysAtk);
-    // public float PhysDef => GetEffectiveValue(AttributeType.PhysDef);
-    // public float PhysDamageBoost => GetEffectiveValue(AttributeType.PhysDamageBoost);
-    // public float MagicDamageBoost => GetEffectiveValue(AttributeType.MagicDamageBoost);
     [ExportGroup("Realtime Attributes (Debug)")]
     [Export]
     public float Speed
@@ -81,17 +74,103 @@ public partial class AttributeComponent : Node
         set { }
     }
 
+    /// <summary>
+    /// 获取当前生命上限。
+    /// </summary>
     [Export]
-    public float PhysDamageBoost
+    public float MaxHealth
     {
-        get => GetEffectiveValue(AttributeType.PhysDamageBoost);
+        get => GetEffectiveValue(AttributeType.MaxHealth);
         set { }
     }
 
+    /// <summary>
+    /// 获取当前能量上限。
+    /// </summary>
     [Export]
-    public float MagicDamageBoost
+    public float MaxEnergy
     {
-        get => GetEffectiveValue(AttributeType.MagicDamageBoost);
+        get => GetEffectiveValue(AttributeType.MaxEnergy);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前固定物理穿透。
+    /// </summary>
+    [Export]
+    public float FixedPhysPenetration
+    {
+        get => GetEffectiveValue(AttributeType.FixedPhysPenetration);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前物理穿透率。
+    /// </summary>
+    [Export]
+    public float PhysPenetrationRate
+    {
+        get => GetEffectiveValue(AttributeType.PhysPenetrationRate);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前固定法术穿透。
+    /// </summary>
+    [Export]
+    public float FixedMagicPenetration
+    {
+        get => GetEffectiveValue(AttributeType.FixedMagicPenetration);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前法术穿透率。
+    /// </summary>
+    [Export]
+    public float MagicPenetrationRate
+    {
+        get => GetEffectiveValue(AttributeType.MagicPenetrationRate);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前暴击率。
+    /// </summary>
+    [Export]
+    public float CritRate
+    {
+        get => GetEffectiveValue(AttributeType.CritRate);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前暴击伤害倍率。
+    /// </summary>
+    [Export]
+    public float CritDamage
+    {
+        get => GetEffectiveValue(AttributeType.CritDamage);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前闪避率。
+    /// </summary>
+    [Export]
+    public float EvasionRate
+    {
+        get => GetEffectiveValue(AttributeType.EvasionRate);
+        set { }
+    }
+
+    /// <summary>
+    /// 获取当前吸血率。
+    /// </summary>
+    [Export]
+    public float LifestealRate
+    {
+        get => GetEffectiveValue(AttributeType.LifestealRate);
         set { }
     }
 
@@ -104,8 +183,16 @@ public partial class AttributeComponent : Node
             propName == nameof(MagResist) ||
             propName == nameof(PhysAtk) ||
             propName == nameof(PhysDef) ||
-            propName == nameof(PhysDamageBoost) ||
-            propName == nameof(MagicDamageBoost))
+            propName == nameof(MaxHealth) ||
+            propName == nameof(MaxEnergy) ||
+            propName == nameof(FixedPhysPenetration) ||
+            propName == nameof(PhysPenetrationRate) ||
+            propName == nameof(FixedMagicPenetration) ||
+            propName == nameof(MagicPenetrationRate) ||
+            propName == nameof(CritRate) ||
+            propName == nameof(CritDamage) ||
+            propName == nameof(EvasionRate) ||
+            propName == nameof(LifestealRate))
         {
             var usage = (PropertyUsageFlags)property["usage"].AsInt64();
             usage |= PropertyUsageFlags.ReadOnly;
@@ -155,8 +242,16 @@ public partial class AttributeComponent : Node
         SetAttribute(AttributeType.MagPower, "法术强度", data.BaseMagPower, data.MagPowerGrowth);
         SetAttribute(AttributeType.MagResist, "法术抗性", data.BaseMagResist, data.MagResistGrowth);
         SetAttribute(AttributeType.Speed, "速度", data.BaseSpeed, data.SpeedGrowth);
-        SetAttribute(AttributeType.PhysDamageBoost, "物理增伤", 0f, 0f);
-        SetAttribute(AttributeType.MagicDamageBoost, "魔法增伤", 0f, 0f);
+        SetAttribute(AttributeType.MaxHealth, "生命上限", data.BaseMaxHealth, data.MaxHealthGrowth);
+        SetAttribute(AttributeType.MaxEnergy, "能量上限", data.BaseMaxEnergy, data.MaxEnergyGrowth);
+        SetAttribute(AttributeType.FixedPhysPenetration, "固定物理穿透", data.BaseFixedPhysPenetration, data.FixedPhysPenetrationGrowth);
+        SetAttribute(AttributeType.PhysPenetrationRate, "物理穿透率", data.BasePhysPenetrationRate, data.PhysPenetrationRateGrowth);
+        SetAttribute(AttributeType.FixedMagicPenetration, "固定法术穿透", data.BaseFixedMagicPenetration, data.FixedMagicPenetrationGrowth);
+        SetAttribute(AttributeType.MagicPenetrationRate, "法术穿透率", data.BaseMagicPenetrationRate, data.MagicPenetrationRateGrowth);
+        SetAttribute(AttributeType.CritRate, "暴击率", data.BaseCritRate, data.CritRateGrowth);
+        SetAttribute(AttributeType.CritDamage, "暴击伤害", data.BaseCritDamage, data.CritDamageGrowth);
+        SetAttribute(AttributeType.EvasionRate, "闪避率", data.BaseEvasionRate, data.EvasionRateGrowth);
+        SetAttribute(AttributeType.LifestealRate, "吸血率", data.BaseLifestealRate, data.LifestealRateGrowth);
 
         GD.Print("InitializeWithData", data);
 
@@ -518,6 +613,7 @@ public partial class AttributeComponent : Node
         {
             // 被拦截取消，最终值保持 oldValue
             _effectiveCache[type] = oldValue;
+            SynchronizeVitalMaximum(type, oldValue, reason);
             return;
         }
 
@@ -539,11 +635,13 @@ public partial class AttributeComponent : Node
             //
             // 不发事件，不触发 After
             _effectiveCache[type] = finalValue;
+            SynchronizeVitalMaximum(type, finalValue, reason);
             return;
         }
 
         context.NewValue = finalValue;
         _effectiveCache[type] = finalValue;
+        SynchronizeVitalMaximum(type, finalValue, reason);
 
         if (!emitEvents)
         {
@@ -605,6 +703,56 @@ public partial class AttributeComponent : Node
         return (baseValue + flatAdd) * (1f + percentAdd) * percentMul;
     }
 
+    private void SynchronizeVitalMaximum(
+        AttributeType type,
+        float value,
+        AttributeChangeReason reason
+    )
+    {
+        int maxValue = Mathf.Max(1, Mathf.RoundToInt(value));
+        bool shouldRefill = reason == AttributeChangeReason.Initialization;
+
+        switch (type)
+        {
+            case AttributeType.MaxHealth:
+                SynchronizeVitalMaximum(
+                    Host?.GetNodeOrNull<HealthComponent>("HealthComponent"),
+                    maxValue,
+                    shouldRefill
+                );
+                break;
+
+            case AttributeType.MaxEnergy:
+                // 怪物等无能量单位不会挂载 EnergyComponent；这里允许缺失。
+                SynchronizeVitalMaximum(
+                    Host?.GetNodeOrNull<EnergyComponent>("EnergyComponent"),
+                    maxValue,
+                    shouldRefill
+                );
+                break;
+        }
+    }
+
+    private static void SynchronizeVitalMaximum(
+        VitalComponentBase vital,
+        int maxValue,
+        bool shouldRefill
+    )
+    {
+        if (vital == null)
+        {
+            return;
+        }
+
+        if (shouldRefill)
+        {
+            vital.InitializeMax(maxValue);
+            return;
+        }
+
+        vital.SetMaxValuePreservingCurrent(maxValue);
+    }
+
     private static float ClampAttributeValue(AttributeType type, float value)
     {
         return type switch
@@ -614,9 +762,20 @@ public partial class AttributeComponent : Node
             AttributeType.PhysAtk or
             AttributeType.PhysDef or
             AttributeType.MagPower or
-            AttributeType.MagResist => Mathf.Max(0f, value),
-            AttributeType.PhysDamageBoost or
-            AttributeType.MagicDamageBoost => Mathf.Max(-1f, value),
+            AttributeType.MagResist or
+            AttributeType.FixedPhysPenetration or
+            AttributeType.FixedMagicPenetration => Mathf.Max(0f, value),
+
+            AttributeType.MaxHealth or
+            AttributeType.MaxEnergy => Mathf.Max(1f, value),
+
+            AttributeType.PhysPenetrationRate or
+            AttributeType.MagicPenetrationRate or
+            AttributeType.CritRate or
+            AttributeType.EvasionRate or
+            AttributeType.LifestealRate => Mathf.Clamp(value, 0f, 1f),
+
+            AttributeType.CritDamage => Mathf.Max(1f, value),
 
             _ => value
         };

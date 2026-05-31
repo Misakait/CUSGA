@@ -86,22 +86,117 @@ size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="PhysBoostLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="DetailsButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "物理增伤"
+text = "详情"
 
-[node name="PhysBoostValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="AttributeDetailsPopup" type="PopupPanel" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+
+[node name="MarginContainer" type="MarginContainer" parent="AttributeDetailsPopup"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AttributeDetailsPopup/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "详细属性"
+horizontal_alignment = 1
+
+[node name="DetailsGrid" type="GridContainer" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="MaxHealthDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "生命上限"
+
+[node name="MaxHealthDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="MagicBoostLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="MaxEnergyDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
 layout_mode = 2
-text = "魔法增伤"
+text = "能量上限"
 
-[node name="MagicBoostValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="MaxEnergyDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="PhysPenetrationDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "物理穿透"
+
+[node name="PhysPenetrationDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="MagicPenetrationDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "法术穿透"
+
+[node name="MagicPenetrationDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="CritRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "暴击率"
+
+[node name="CritRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="CritDamageDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "暴击伤害"
+
+[node name="CritDamageDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="EvasionRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "闪避率"
+
+[node name="EvasionRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-"
+horizontal_alignment = 2
+
+[node name="LifestealRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+layout_mode = 2
+text = "吸血率"
+
+[node name="LifestealRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

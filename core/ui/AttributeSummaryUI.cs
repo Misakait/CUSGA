@@ -4,6 +4,9 @@ using CUSGA.entities.components;
 
 namespace CUSGA.core.ui;
 
+/// <summary>
+/// 显示角色基础五维属性，并通过详情弹窗展示完整战斗属性。
+/// </summary>
 public partial class AttributeSummaryUI : PanelContainer
 {
     private AttributeComponent _attributes;
@@ -13,8 +16,16 @@ public partial class AttributeSummaryUI : PanelContainer
     private Label _magPowerValue = null!;
     private Label _magResistValue = null!;
     private Label _speedValue = null!;
-    private Label _physBoostValue = null!;
-    private Label _magicBoostValue = null!;
+    private Button _detailsButton = null!;
+    private PopupPanel _detailsPopup = null!;
+    private Label _maxHealthDetailValue = null!;
+    private Label _maxEnergyDetailValue = null!;
+    private Label _physPenetrationDetailValue = null!;
+    private Label _magicPenetrationDetailValue = null!;
+    private Label _critRateDetailValue = null!;
+    private Label _critDamageDetailValue = null!;
+    private Label _evasionRateDetailValue = null!;
+    private Label _lifestealRateDetailValue = null!;
 
     public override void _Ready()
     {
@@ -23,8 +34,17 @@ public partial class AttributeSummaryUI : PanelContainer
         _magPowerValue = GetNode<Label>("%MagPowerValue");
         _magResistValue = GetNode<Label>("%MagResistValue");
         _speedValue = GetNode<Label>("%SpeedValue");
-        _physBoostValue = GetNode<Label>("%PhysBoostValue");
-        _magicBoostValue = GetNode<Label>("%MagicBoostValue");
+        _detailsButton = GetNode<Button>("%DetailsButton");
+        _detailsPopup = GetNode<PopupPanel>("%AttributeDetailsPopup");
+        _maxHealthDetailValue = GetNode<Label>("%MaxHealthDetailValue");
+        _maxEnergyDetailValue = GetNode<Label>("%MaxEnergyDetailValue");
+        _physPenetrationDetailValue = GetNode<Label>("%PhysPenetrationDetailValue");
+        _magicPenetrationDetailValue = GetNode<Label>("%MagicPenetrationDetailValue");
+        _critRateDetailValue = GetNode<Label>("%CritRateDetailValue");
+        _critDamageDetailValue = GetNode<Label>("%CritDamageDetailValue");
+        _evasionRateDetailValue = GetNode<Label>("%EvasionRateDetailValue");
+        _lifestealRateDetailValue = GetNode<Label>("%LifestealRateDetailValue");
+        _detailsButton.Pressed += OnDetailsButtonPressed;
         Refresh();
     }
 
@@ -50,6 +70,11 @@ public partial class AttributeSummaryUI : PanelContainer
 
     public override void _ExitTree()
     {
+        if (_detailsButton != null)
+        {
+            _detailsButton.Pressed -= OnDetailsButtonPressed;
+        }
+
         DisconnectAttributeSignals();
     }
 
@@ -86,8 +111,33 @@ public partial class AttributeSummaryUI : PanelContainer
         SetValue(_magPowerValue, AttributeType.MagPower);
         SetValue(_magResistValue, AttributeType.MagResist);
         SetValue(_speedValue, AttributeType.Speed);
-        SetPercentValue(_physBoostValue, AttributeType.PhysDamageBoost);
-        SetPercentValue(_magicBoostValue, AttributeType.MagicDamageBoost);
+        RefreshDetails();
+    }
+
+    private void OnDetailsButtonPressed()
+    {
+        RefreshDetails();
+        _detailsPopup.PopupCentered();
+    }
+
+    private void RefreshDetails()
+    {
+        SetValue(_maxHealthDetailValue, AttributeType.MaxHealth);
+        SetValue(_maxEnergyDetailValue, AttributeType.MaxEnergy);
+        SetPenetrationValue(
+            _physPenetrationDetailValue,
+            AttributeType.FixedPhysPenetration,
+            AttributeType.PhysPenetrationRate
+        );
+        SetPenetrationValue(
+            _magicPenetrationDetailValue,
+            AttributeType.FixedMagicPenetration,
+            AttributeType.MagicPenetrationRate
+        );
+        SetPercentValue(_critRateDetailValue, AttributeType.CritRate);
+        SetPercentValue(_critDamageDetailValue, AttributeType.CritDamage);
+        SetPercentValue(_evasionRateDetailValue, AttributeType.EvasionRate);
+        SetPercentValue(_lifestealRateDetailValue, AttributeType.LifestealRate);
     }
 
     private void SetValue(Label label, AttributeType type)
@@ -95,6 +145,13 @@ public partial class AttributeSummaryUI : PanelContainer
         label.Text = _attributes == null
             ? "-"
             : FormatNumber(_attributes.GetEffectiveValue(type));
+    }
+
+    private void SetPenetrationValue(Label label, AttributeType fixedType, AttributeType rateType)
+    {
+        label.Text = _attributes == null
+            ? "-"
+            : $"{FormatNumber(_attributes.GetEffectiveValue(fixedType))} | {_attributes.GetEffectiveValue(rateType) * 100f:0.#}%";
     }
 
     private void SetPercentValue(Label label, AttributeType type)
