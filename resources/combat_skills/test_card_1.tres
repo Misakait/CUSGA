@@ -42,3 +42,4 @@ CardName = "测试卡1"
 CardIcon = ExtResource("icon_skillcard")
 Description = "对单体敌人造成10点木属性物理伤害，并使自身提高100点速度。"
 metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+TargetingType = 1

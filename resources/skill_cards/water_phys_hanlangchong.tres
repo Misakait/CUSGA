@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://dgtn8xvgflfdj"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
-[ext_resource type="Resource" uid="uid://u65i7iw04yr0" path="res://resources/combat_skills/water_phys_hanlangchong.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
 
+[ext_resource type="Resource" path="res://resources/combat_skills/water_phys_hanlangchong.tres" id="combat_skill"]
 [resource]
 script = ExtResource("1_skillcard")
 Skill = ExtResource("combat_skill")
