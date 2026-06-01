@@ -83,6 +83,5 @@ MonsterName = "黄沙岩隐兽"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 4
 LootTable = SubResource("Resource_loot")
-MaxHealth = 100
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"

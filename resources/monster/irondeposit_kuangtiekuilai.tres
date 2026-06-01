@@ -7,11 +7,11 @@
 [ext_resource type="Resource" uid="uid://ciuiocurbf42p" path="res://resources/skill_cards/metal_magic_ruimang.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://ber6qsjhjv7k6" path="res://resources/skill_cards/metal_magic_suixingjue.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://b15to0sscgk31" path="res://resources/skill_cards/metal_magic_xuanjinzhenshenhun.tres" id="8_skill_5"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BasePhysAtk = 160.0
@@ -62,67 +62,14 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
-Skills = Array[ExtResource("csv_entry_script")]([])
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "矿铁傀儡"
 InitialAttributes = SubResource("Resource_stats")
 ElementalProperty = 2
 LootTable = SubResource("Resource_loot")
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
-Faction = 0
 SkillSet = SubResource("CSV_MonsterSkillSet")
-MaxHealth = 100
+metadata/_custom_type_script = "uid://dh28trwcjvre6"
