@@ -11,6 +11,7 @@
 
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BasePhysAtk = 80.0
@@ -56,13 +57,108 @@ Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubRe
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([])
+[sub_resource type="Resource" id="CSV_StartingStats"]
+script = ExtResource("csv_stats_script")
+BasePhysAtk = 80.0
+PhysAtkGrowth = 25.0
+BasePhysDef = 120.0
+PhysDefGrowth = 20.0
+BaseMagPower = 130.0
+MagPowerGrowth = 30.0
+BaseMagResist = 180.0
+MagResistGrowth = 20.0
+BaseSpeed = 120.0
+SpeedGrowth = 5.0
+BaseMaxHealth = 1000.0
+MaxHealthGrowth = 0.0
+BaseFixedPhysPenetration = 0.0
+FixedPhysPenetrationGrowth = 0.0
+BasePhysPenetrationRate = 0.0
+PhysPenetrationRateGrowth = 0.0
+BaseFixedMagicPenetration = 0.0
+FixedMagicPenetrationGrowth = 0.0
+BaseMagicPenetrationRate = 0.0
+MagicPenetrationRateGrowth = 0.0
+BaseCritRate = 0.0
+CritRateGrowth = 0.0
+BaseCritDamage = 1.5
+CritDamageGrowth = 0.0
+BaseEvasionRate = 0.0
+EvasionRateGrowth = 0.0
+BaseLifestealRate = 0.0
+LifestealRateGrowth = 0.0
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "噬鱼妖"
-InitialAttributes = SubResource("Resource_stats")
+InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")

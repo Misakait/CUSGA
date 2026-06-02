@@ -25,6 +25,7 @@
 [ext_resource type="Resource" path="res://resources/combat_skills/water_magic_yanyusuoqianchuan.tres" id="csv_skill_5"]
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
 [ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BaseMaxHealth = 115.0
@@ -427,6 +428,260 @@ metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
@@ -455,10 +710,41 @@ VisibleInPreview = true
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4"), SubResource("CSV_MonsterSkillEntry_5")])
+[sub_resource type="Resource" id="CSV_StartingStats"]
+script = ExtResource("csv_stats_script")
+BasePhysAtk = 100.0
+PhysAtkGrowth = 25.0
+BasePhysDef = 160.0
+PhysDefGrowth = 20.0
+BaseMagPower = 130.0
+MagPowerGrowth = 30.0
+BaseMagResist = 220.0
+MagResistGrowth = 20.0
+BaseSpeed = 127.0
+SpeedGrowth = 5.0
+BaseMaxHealth = 1000.0
+MaxHealthGrowth = 0.0
+BaseFixedPhysPenetration = 0.0
+FixedPhysPenetrationGrowth = 0.0
+BasePhysPenetrationRate = 0.0
+PhysPenetrationRateGrowth = 0.0
+BaseFixedMagicPenetration = 0.0
+FixedMagicPenetrationGrowth = 0.0
+BaseMagicPenetrationRate = 0.0
+MagicPenetrationRateGrowth = 0.0
+BaseCritRate = 0.0
+CritRateGrowth = 0.0
+BaseCritDamage = 1.5
+CritDamageGrowth = 0.0
+BaseEvasionRate = 0.0
+EvasionRateGrowth = 0.0
+BaseLifestealRate = 0.0
+LifestealRateGrowth = 0.0
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "穴居水蜥"
-InitialAttributes = SubResource("Resource_stats")
+InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")

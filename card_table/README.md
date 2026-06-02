@@ -117,6 +117,17 @@ Windows 下 Excel/WPS 会锁定打开中的 `.xlsx` 文件。
 | `base_mag_power` | 基础法术强度。 |
 | `base_mag_resist` | 基础法术抗性。 |
 | `base_speed` | 基础速度。 |
+| `base_max_health` | 基础生命上限。 |
+| `base_fixed_phys_penetration` | 基础固定物理穿透。 |
+| `base_phys_penetration_rate` | 基础物理穿透率。 |
+| `base_fixed_magic_penetration` | 基础固定法术穿透。 |
+| `base_magic_penetration_rate` | 基础法术穿透率。 |
+| `base_crit_rate` | 基础暴击率。 |
+| `base_crit_damage` | 基础暴击伤害倍率。 |
+| `base_evasion_rate` | 基础闪避率。 |
+| `base_lifesteal_rate` | 基础吸血率。 |
+
+`StartingStats` 中除 `BaseMaxEnergy` 以外的 `Base*` 基础属性都会同步到怪物表；`BaseMaxEnergy` 继续保留在资源默认值或 Inspector 配置中，不进入 CSV/XLSX 表格。
 
 属性成长列已经从表格中移除，例如：
 

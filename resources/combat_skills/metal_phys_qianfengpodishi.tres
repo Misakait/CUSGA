@@ -16,4 +16,3 @@ Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
 CardName = "千锋破敌势"
 Description = "对单体敌人造成70点金属性物理伤害。"
-TargetingType = 1

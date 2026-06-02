@@ -54,6 +54,23 @@ SKILL_HEADERS = [
     "monster_owners",
 ]
 
+BASE_STAT_FIELDS = [
+    ("base_phys_atk", "BasePhysAtk", "100.0"),
+    ("base_phys_def", "BasePhysDef", "100.0"),
+    ("base_mag_power", "BaseMagPower", "100.0"),
+    ("base_mag_resist", "BaseMagResist", "100.0"),
+    ("base_speed", "BaseSpeed", "100.0"),
+    ("base_max_health", "BaseMaxHealth", "1000.0"),
+    ("base_fixed_phys_penetration", "BaseFixedPhysPenetration", "0.0"),
+    ("base_phys_penetration_rate", "BasePhysPenetrationRate", "0.0"),
+    ("base_fixed_magic_penetration", "BaseFixedMagicPenetration", "0.0"),
+    ("base_magic_penetration_rate", "BaseMagicPenetrationRate", "0.0"),
+    ("base_crit_rate", "BaseCritRate", "0.0"),
+    ("base_crit_damage", "BaseCritDamage", "1.5"),
+    ("base_evasion_rate", "BaseEvasionRate", "0.0"),
+    ("base_lifesteal_rate", "BaseLifestealRate", "0.0"),
+]
+
 MONSTER_HEADERS = [
     "resource_path",
     "id_slug",
@@ -63,11 +80,7 @@ MONSTER_HEADERS = [
     "model_scene_path",
     "behavior_tree_scene_path",
     "skill_names",
-    "base_phys_atk",
-    "base_phys_def",
-    "base_mag_power",
-    "base_mag_resist",
-    "base_speed",
+    *[csv_key for csv_key, _gd_key, _default_value in BASE_STAT_FIELDS],
 ]
 
 
@@ -117,6 +130,24 @@ STAT_FIELDS = [
     ("mag_resist_growth", "MagResistGrowth", "20.0"),
     ("base_speed", "BaseSpeed", "100.0"),
     ("speed_growth", "SpeedGrowth", "5.0"),
+    ("base_max_health", "BaseMaxHealth", "1000.0"),
+    ("max_health_growth", "MaxHealthGrowth", "0.0"),
+    ("base_fixed_phys_penetration", "BaseFixedPhysPenetration", "0.0"),
+    ("fixed_phys_penetration_growth", "FixedPhysPenetrationGrowth", "0.0"),
+    ("base_phys_penetration_rate", "BasePhysPenetrationRate", "0.0"),
+    ("phys_penetration_rate_growth", "PhysPenetrationRateGrowth", "0.0"),
+    ("base_fixed_magic_penetration", "BaseFixedMagicPenetration", "0.0"),
+    ("fixed_magic_penetration_growth", "FixedMagicPenetrationGrowth", "0.0"),
+    ("base_magic_penetration_rate", "BaseMagicPenetrationRate", "0.0"),
+    ("magic_penetration_rate_growth", "MagicPenetrationRateGrowth", "0.0"),
+    ("base_crit_rate", "BaseCritRate", "0.0"),
+    ("crit_rate_growth", "CritRateGrowth", "0.0"),
+    ("base_crit_damage", "BaseCritDamage", "1.5"),
+    ("crit_damage_growth", "CritDamageGrowth", "0.0"),
+    ("base_evasion_rate", "BaseEvasionRate", "0.0"),
+    ("evasion_rate_growth", "EvasionRateGrowth", "0.0"),
+    ("base_lifesteal_rate", "BaseLifestealRate", "0.0"),
+    ("lifesteal_rate_growth", "LifestealRateGrowth", "0.0"),
 ]
 
 
@@ -668,6 +699,21 @@ def parse_scalar(text: str, key: str, default: str = "") -> str:
     return value
 
 
+def parse_scalar_in_subresource(
+    text: str, sub_id: str, key: str, default: str = ""
+) -> str:
+    """读取 .tres 中指定子资源块内的标量字段，避免文件内多子资源重名键的歧义。"""
+    block_pattern = (
+        r'\[sub_resource[^\]]*id="'
+        + re.escape(sub_id)
+        + r'"[^\]]*\][\s\S]*?(?=\n\[(?:sub_resource|resource|ext_resource)|\Z)'
+    )
+    block_match = re.search(block_pattern, text)
+    if not block_match:
+        return default
+    return parse_scalar(block_match.group(0), key, default)
+
+
 def parse_ext_assignment(text: str, key: str, resources: dict[str, str]) -> str:
     """读取 `Skill = ExtResource("...")` 这类资源引用字段。"""
     match = re.search(
@@ -957,25 +1003,31 @@ def export_monster_csv(monster_skills: dict[str, list[str]]) -> list[dict[str, s
         skill_names = [
             get_combat_skill_basics(skill_path)[2] for skill_path in skill_paths
         ]
-        rows.append(
-            {
-                "resource_path": res_path,
-                "id_slug": derive_id_slug_from_path(res_path, path.stem),
-                "monster_name": parse_scalar(text, "MonsterName"),
-                "element": element_to_label(parse_scalar(text, "ElementalProperty")),
-                "faction": parse_scalar(text, "Faction", "0"),
-                "model_scene_path": parse_ext_assignment(text, "ModelScene", resources),
-                "behavior_tree_scene_path": parse_ext_assignment(
-                    text, "BehaviorTreeScene", resources
-                ),
-                "skill_names": ";".join(skill_names),
-                "base_phys_atk": parse_scalar(text, "BasePhysAtk"),
-                "base_phys_def": parse_scalar(text, "BasePhysDef"),
-                "base_mag_power": parse_scalar(text, "BaseMagPower"),
-                "base_mag_resist": parse_scalar(text, "BaseMagResist"),
-                "base_speed": parse_scalar(text, "BaseSpeed"),
-            }
+        row = {
+            "resource_path": res_path,
+            "id_slug": derive_id_slug_from_path(res_path, path.stem),
+            "monster_name": parse_scalar(text, "MonsterName"),
+            "element": element_to_label(parse_scalar(text, "ElementalProperty")),
+            "faction": parse_scalar(text, "Faction", "0"),
+            "model_scene_path": parse_ext_assignment(text, "ModelScene", resources),
+            "behavior_tree_scene_path": parse_ext_assignment(
+                text, "BehaviorTreeScene", resources
+            ),
+            "skill_names": ";".join(skill_names),
+        }
+        # 从 CSV_StartingStats 子资源块读取属性，避免受文件中其他子资源同名键干扰（如 Godot Inspector 创建的旧 Resource_stats）
+        has_csv_stats = bool(
+            re.search(r'\[sub_resource[^\]]*id="CSV_StartingStats"[^\]]*\]', text)
         )
+        for csv_key, gd_key, default_value in BASE_STAT_FIELDS:
+            raw = (
+                parse_scalar_in_subresource(text, "CSV_StartingStats", gd_key)
+                if has_csv_stats
+                else parse_scalar(text, gd_key)
+            )
+            # .tres 中未配置的字段使用 StartingStats 默认值，保证 CSV/XLSX 始终有数据
+            row[csv_key] = raw if raw != "" else default_value
+        rows.append(row)
     write_csv_rows(MONSTER_CSV, MONSTER_HEADERS, rows)
     return rows
 
@@ -1211,32 +1263,31 @@ def update_monster_skillset(text: str, skill_paths: list[str]) -> str:
 
 
 def update_monster_stats(text: str, row: dict[str, str]) -> str:
-    """更新怪物 StartingStats；没有属性资源时追加 CSV 专用属性子资源。"""
-    has_stats = bool(
-        re.search(r"^InitialAttributes\s*=\s*SubResource\(", text, flags=re.MULTILINE)
+    """更新怪物 StartingStats；始终重新构建 CSV_StartingStats，保证新增字段正确写入子资源块内。"""
+    # 移除旧的 CSV_StartingStats，避免旧字段残留或新增字段被追加到文件末尾
+    text = re.sub(
+        r'\n?\[sub_resource[^\]]*id="CSV_StartingStats"[^\]]*\][\s\S]*?(?=\n\[(?:sub_resource|resource|ext_resource)|\Z)',
+        "",
+        text,
     )
-    if not has_stats:
-        text = ensure_ext_resource(
-            text, "Script", STARTING_STATS_SCRIPT, "csv_stats_script"
-        )
-        stats_lines = [
-            '[sub_resource type="Resource" id="CSV_StartingStats"]',
-            'script = ExtResource("csv_stats_script")',
-        ]
-        for csv_key, gd_key, default_value in STAT_FIELDS:
-            stats_lines.append(f"{gd_key} = {row.get(csv_key) or default_value}")
-        insert_at = text.find("[resource]")
-        if insert_at >= 0:
-            text = text[:insert_at] + "\n".join(stats_lines) + "\n\n" + text[insert_at:]
-        else:
-            text = text.rstrip() + "\n" + "\n".join(stats_lines) + "\n"
-        return replace_or_add_resource_property(
-            text, "InitialAttributes", 'SubResource("CSV_StartingStats")'
-        )
-    for csv_key, gd_key, _default_value in STAT_FIELDS:
-        if row.get(csv_key, "") != "":
-            text = replace_or_add_line(text, gd_key, row[csv_key])
-    return text
+    text = ensure_ext_resource(
+        text, "Script", STARTING_STATS_SCRIPT, "csv_stats_script"
+    )
+    stats_lines = [
+        '[sub_resource type="Resource" id="CSV_StartingStats"]',
+        'script = ExtResource("csv_stats_script")',
+    ]
+    for csv_key, gd_key, default_value in STAT_FIELDS:
+        csv_val = row.get(csv_key, "")
+        stats_lines.append(f"{gd_key} = {csv_val if csv_val != '' else default_value}")
+    insert_at = text.find("[resource]")
+    if insert_at >= 0:
+        text = text[:insert_at] + "\n".join(stats_lines) + "\n\n" + text[insert_at:]
+    else:
+        text = text.rstrip() + "\n" + "\n".join(stats_lines) + "\n"
+    return replace_or_add_resource_property(
+        text, "InitialAttributes", 'SubResource("CSV_StartingStats")'
+    )
 
 
 def apply_monster_rows(
@@ -1300,8 +1351,10 @@ def apply_monster_rows(
         text = replace_or_add_resource_property(
             text, "Faction", row.get("faction") or "0"
         )
-        text = update_monster_stats(text, row)
+        # skillset 的 strip_csv_subresources 会清除所有 CSV_* 子资源，因此必须先调用 skillset 再调用 stats，
+        # 避免 stats 刚创建的 CSV_StartingStats 被 skillset 误删
         text = update_monster_skillset(text, skill_paths)
+        text = update_monster_stats(text, row)
         monster_file.write_text(text, encoding="utf-8")
 
 

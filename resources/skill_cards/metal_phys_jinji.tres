@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://defad2x2jo3sb"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
+[ext_resource type="Resource" uid="uid://bfh51o6ax5knt" path="res://resources/combat_skills/metal_phys_jinji.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://c7g8f2ax6j8fe" path="res://res/skillcard/gold_skill_card.png" id="icon_skillcard"]
 
-[ext_resource type="Resource" path="res://resources/combat_skills/metal_phys_jinji.tres" id="combat_skill"]
 [resource]
 script = ExtResource("1_skillcard")
 Skill = ExtResource("combat_skill")
@@ -12,4 +12,3 @@ CardId = null
 CardName = "金击"
 CardIcon = ExtResource("icon_skillcard")
 Description = "对单体敌人造成5点金属性物理伤害。"
-cost = 10
