@@ -149,20 +149,31 @@ func _connect_status_changed_signal() -> void:
 
 ## 定位战斗场景里唯一的 TooltipPanel，复用卡牌和怪物已有的悬停提示框样式。
 func _resolve_tooltip_panel() -> void:
-	var panels := get_tree().get_nodes_in_group("tooltip_panel")
+	_tooltip_panel = null
+	if not is_inside_tree():
+		# @tool 脚本在编辑器构建阶段可能被脱离场景树刷新，此时不能访问 SceneTree。
+		return
+
+	var tree := get_tree()
+	var panels := tree.get_nodes_in_group("tooltip_panel")
 	if panels.size() > 0:
 		_tooltip_panel = panels[0]
 		return
 
-	if get_tree().current_scene:
-		var ui_node := get_tree().current_scene.get_node_or_null("UI")
+	if tree.current_scene:
+		var ui_node := tree.current_scene.get_node_or_null("UI")
 		if ui_node:
 			_tooltip_panel = ui_node.get_node_or_null("TooltipPanel")
 
 ## 玩家 Buff 栏处于 UI 层，不能通过父级链路找到实体，因此优先读取 PlayerManager 暴露的战斗实体。
 ## 返回值：玩家实体节点；无法定位时返回 null。
 func _find_player_entity() -> Node:
-	var current_scene := get_tree().current_scene
+	if not is_inside_tree():
+		# 编辑器预览刷新可能早于节点入树，直接返回空目标避免构建期脚本错误。
+		return null
+
+	var tree := get_tree()
+	var current_scene := tree.current_scene
 	var player_manager := current_scene.get_node_or_null("PlayerManager") if current_scene else null
 	if player_manager:
 		if player_manager.has_method("get_combat_entity"):
@@ -174,7 +185,7 @@ func _find_player_entity() -> Node:
 		if local_player:
 			return local_player
 
-	var grouped_players := get_tree().get_nodes_in_group("Player")
+	var grouped_players := tree.get_nodes_in_group("Player")
 	if grouped_players.size() > 0:
 		return grouped_players[0]
 
