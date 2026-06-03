@@ -16,3 +16,4 @@ Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
 CardName = "金击"
 Description = "对单体敌人造成5点金属性物理伤害。"
+TargetingType = 1

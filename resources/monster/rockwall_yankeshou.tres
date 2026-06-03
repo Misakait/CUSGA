@@ -1,35 +1,27 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://cs11m2jpfad1e"]
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://kxrggdaafx5w" path="res://resources/skill_cards/earth_magic_houtufenglingmai.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://dd7mnum2hfn5d" path="res://resources/skill_cards/earth_phys_yanbeng.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://djo6yad7ek2f2" path="res://resources/skill_cards/earth_magic_shachenlongtiandi.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://4r0o8edoq8hv" path="res://resources/skill_cards/earth_magic_shixiao.tres" id="7_skill_4"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Resource" uid="uid://c0uvi2exrh6s4" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="csv_skill_1"]
+[ext_resource type="Resource" uid="uid://brx8b7fw1yvqk" path="res://resources/combat_skills/earth_magic_shachenlongtiandi.tres" id="csv_skill_2"]
+[ext_resource type="Resource" uid="uid://jlt74x0yme74" path="res://resources/combat_skills/earth_magic_shixiao.tres" id="csv_skill_3"]
+[ext_resource type="Resource" uid="uid://snpvhjlg0ump" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="csv_skill_4"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_houtufenglingmai.tres" id="csv_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_shachenlongtiandi.tres" id="csv_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_magic_shixiao.tres" id="csv_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/earth_phys_yanbeng.tres" id="csv_skill_4"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
-[sub_resource type="Resource" id="Resource_stats"]
-script = ExtResource("3_stats")
+[sub_resource type="Resource" id="CSV_StartingStats"]
+script = ExtResource("csv_stats_script")
 BasePhysAtk = 110.0
-PhysAtkGrowth = 20.0
 BasePhysDef = 280.0
-PhysDefGrowth = 40.0
 BaseMagPower = 70.0
-MagPowerGrowth = 20.0
 BaseMagResist = 220.0
-MagResistGrowth = 36.0
 BaseSpeed = 85.0
-SpeedGrowth = 3.5
-BaseMaxHealth = 140.0
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
@@ -60,280 +52,25 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_2"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_2")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_3"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_3")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_4"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_4")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4")])
-[sub_resource type="Resource" id="CSV_StartingStats"]
-script = ExtResource("csv_stats_script")
-BasePhysAtk = 110.0
-PhysAtkGrowth = 25.0
-BasePhysDef = 280.0
-PhysDefGrowth = 20.0
-BaseMagPower = 70.0
-MagPowerGrowth = 30.0
-BaseMagResist = 220.0
-MagResistGrowth = 20.0
-BaseSpeed = 85.0
-SpeedGrowth = 5.0
-BaseMaxHealth = 1000.0
-MaxHealthGrowth = 0.0
-BaseFixedPhysPenetration = 0.0
-FixedPhysPenetrationGrowth = 0.0
-BasePhysPenetrationRate = 0.0
-PhysPenetrationRateGrowth = 0.0
-BaseFixedMagicPenetration = 0.0
-FixedMagicPenetrationGrowth = 0.0
-BaseMagicPenetrationRate = 0.0
-MagicPenetrationRateGrowth = 0.0
-BaseCritRate = 0.0
-CritRateGrowth = 0.0
-BaseCritDamage = 1.5
-CritDamageGrowth = 0.0
-BaseEvasionRate = 0.0
-EvasionRateGrowth = 0.0
-BaseLifestealRate = 0.0
-LifestealRateGrowth = 0.0
 
 [resource]
 script = ExtResource("2_monster")
@@ -343,4 +80,3 @@ ElementalProperty = 4
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
-Faction = 0

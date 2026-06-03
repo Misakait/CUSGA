@@ -17,4 +17,3 @@ Effects = Array[ExtResource("2_cardeffect")]([SubResource("Resource_damage")])
 CardId = null
 CardName = "神火炼凡躯"
 Description = "对单体敌人造成70点火属性法术伤害。"
-TargetingType = 1

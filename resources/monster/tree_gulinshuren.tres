@@ -1,32 +1,25 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dpcb4jwwk8od5"]
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
 [ext_resource type="Resource" uid="uid://bhi0612m3hkrk" path="res://resources/skill_cards/wood_magic_lingmushishengji.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://d0eylh2xvavit" path="res://resources/skill_cards/wood_phys_muji.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://cw5iyxehw12fh" path="res://resources/skill_cards/wood_magic_mushu.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://8i240itphi1k" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://chqp3ixoqp4oi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="8_skill_5"]
 [ext_resource type="Resource" uid="uid://bm12fxxsffifx" path="res://resources/skill_cards/wood_phys_cangtengci.tres" id="9_skill_6"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
-[sub_resource type="Resource" id="Resource_stats"]
-script = ExtResource("3_stats")
+[sub_resource type="Resource" id="CSV_StartingStats"]
+script = ExtResource("csv_stats_script")
 BasePhysAtk = 120.0
-PhysAtkGrowth = 22.0
 BasePhysDef = 220.0
-PhysDefGrowth = 24.0
 BaseMagPower = 160.0
 BaseMagResist = 280.0
-MagResistGrowth = 30.0
 BaseSpeed = 115.0
-SpeedGrowth = 4.5
-BaseMaxHealth = 130.0
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
@@ -69,104 +62,8 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5"), SubResource("LootDrop_6")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
-Skills = Array[ExtResource("csv_entry_script")]([])
-[sub_resource type="Resource" id="CSV_StartingStats"]
-script = ExtResource("csv_stats_script")
-BasePhysAtk = 120.0
-PhysAtkGrowth = 25.0
-BasePhysDef = 220.0
-PhysDefGrowth = 20.0
-BaseMagPower = 160.0
-MagPowerGrowth = 30.0
-BaseMagResist = 280.0
-MagResistGrowth = 20.0
-BaseSpeed = 115.0
-SpeedGrowth = 5.0
-BaseMaxHealth = 1000.0
-MaxHealthGrowth = 0.0
-BaseFixedPhysPenetration = 0.0
-FixedPhysPenetrationGrowth = 0.0
-BasePhysPenetrationRate = 0.0
-PhysPenetrationRateGrowth = 0.0
-BaseFixedMagicPenetration = 0.0
-FixedMagicPenetrationGrowth = 0.0
-BaseMagicPenetrationRate = 0.0
-MagicPenetrationRateGrowth = 0.0
-BaseCritRate = 0.0
-CritRateGrowth = 0.0
-BaseCritDamage = 1.5
-CritDamageGrowth = 0.0
-BaseEvasionRate = 0.0
-EvasionRateGrowth = 0.0
-BaseLifestealRate = 0.0
-LifestealRateGrowth = 0.0
 
 [resource]
 script = ExtResource("2_monster")
@@ -176,4 +73,3 @@ ElementalProperty = 1
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
-Faction = 0

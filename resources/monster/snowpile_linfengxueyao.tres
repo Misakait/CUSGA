@@ -378,6 +378,14 @@ metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 
 
+
+
+
+
+
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
