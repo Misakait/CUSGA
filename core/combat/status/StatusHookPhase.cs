@@ -8,7 +8,12 @@ public enum StatusHookPhase
     ModifyOutgoingDamage,
     ModifyIncomingDamageBeforeMitigation,
     ModifyIncomingDamageAfterMitigation,
+    ModifyDamageHitCount,
+    ModifyDamageEffectSegmentDamage,
     BeforeHealthDamage,
+
+    BeforeSkillExecution,
+    AfterSkillExecution,
 
     GlobalTurnStart,
     OwnerTurnStart,

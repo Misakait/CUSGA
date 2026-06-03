@@ -94,6 +94,15 @@ func _get_enemies_for_source(source: Variant) -> Array:
 		return monster_manager.active_monsters.duplicate()
 	return []
 
+func _collect_real_enemy_candidates_for_source(source: Variant) -> Array[Node]:
+	# 在技能开始时锁定敌方候选池，避免多段随机伤害命中新刷出的敌人。
+	var candidates: Array[Node] = []
+	for enemy in _get_enemies_for_source(source):
+		var real_enemy = _unwrap_combat_entity(enemy)
+		if real_enemy:
+			candidates.append(real_enemy)
+	return candidates
+
 ## 统一处理怪物视觉缩放：只缩放卡面与内部内容，血条不参与缩放。
 ## @param monster 需要缩放的怪物节点。
 ## @param target_scale 怪物卡面 Sprite2D 的目标缩放值。
@@ -533,23 +542,23 @@ func _execute_single_action(action: Action):
 			# ---------------------------------------------------------
 			var real_source = _unwrap_combat_entity(action.source)
 			var real_target = _unwrap_combat_entity(target)
+			var real_enemy_candidates: Array[Node] = _collect_real_enemy_candidates_for_source(action.source)
 
 			# 基于解析到的类型，动态收集场上目标并分配至对应上下文工厂
 			match targeting_type:
 				target_self:
 					# 目标为自身：直接传入卡牌施放者
-					context = ContextClass.Self(real_source)
+					context = ContextClass.Self(real_source, real_enemy_candidates)
 
 				target_single_enemy:
 					# 单体敌人：若未显式指定目标，则自动从敌方中随机选择
 					if not real_target:
-						var enemy = _pick_random_from(_get_enemies_for_source(action.source))
-						real_target = _unwrap_combat_entity(enemy)
+						real_target = _pick_random_from(real_enemy_candidates)
 					if real_target:
-						context = ContextClass.FromSingleTarget(real_source, real_target)
+						context = ContextClass.FromSingleTarget(real_source, real_target, real_enemy_candidates)
 					else:
 						push_warning("单体技能未找到目标，退化为以自身为目标")
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 
 				target_any_single:
 					# 任意单体：若未显式指定目标，则从场上所有单位中随机选择
@@ -557,22 +566,19 @@ func _execute_single_action(action: Action):
 						var any_unit = _pick_random_from(get_all_combatants())
 						real_target = _unwrap_combat_entity(any_unit)
 					if real_target:
-						context = ContextClass.FromSingleTarget(real_source, real_target)
+						context = ContextClass.FromSingleTarget(real_source, real_target, real_enemy_candidates)
 					else:
 						push_warning("任意单体技能未找到目标，退化为以自身为目标")
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 
 				target_all_enemies:
 					# 全体敌人：根据施放者阵营动态选择敌对单位
 					var enemies: Array[Node] = []
-					for enemy in _get_enemies_for_source(action.source):
-						var real_enemy = _unwrap_combat_entity(enemy)
-						if real_enemy:
-							enemies.append(real_enemy)
+					enemies.assign(real_enemy_candidates)
 					if enemies.is_empty():
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 					else:
-						context = ContextClass.FromPrimaryTargets(real_source, enemies)
+						context = ContextClass.FromPrimaryTargets(real_source, enemies, real_enemy_candidates)
 
 				target_all_units:
 					# 全体单位：复用写好的 get_all_combatants() 获取包含玩家在内的所有人
@@ -582,18 +588,17 @@ func _execute_single_action(action: Action):
 						if real_unit:
 							all_units.append(real_unit)
 					if all_units.is_empty():
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 					else:
-						context = ContextClass.FromPrimaryTargets(real_source, all_units)
+						context = ContextClass.FromPrimaryTargets(real_source, all_units, real_enemy_candidates)
 
 				target_random_enemy:
 					# 随机单体敌人：根据施放者阵营动态选择敌对单位
-					var random_enemy = _pick_random_from(_get_enemies_for_source(action.source))
-					random_enemy = _unwrap_combat_entity(random_enemy)
+					var random_enemy = _pick_random_from(real_enemy_candidates)
 					if random_enemy:
-						context = ContextClass.FromSingleTarget(real_source, random_enemy)
+						context = ContextClass.FromSingleTarget(real_source, random_enemy, real_enemy_candidates)
 					else:
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 
 				target_spread_from_enemy:
 					# 扩散类型：获取主目标，并根据其在怪物列表中的位置，提取相邻（左右）的敌人作为次要目标
@@ -623,16 +628,16 @@ func _execute_single_action(action: Action):
 
 					# 封装为上下文对象，将找出的左右侧相邻敌人作为 secondary_targets 传入
 					if real_primary:
-						context = ContextClass.FromSpread(real_source, real_primary, secondary_targets)
+						context = ContextClass.FromSpread(real_source, real_primary, secondary_targets, real_enemy_candidates)
 					else:
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 
 				_:
 					# 兜底情况的容错处理
 					if real_target:
-						context = ContextClass.FromSingleTarget(real_source, real_target)
+						context = ContextClass.FromSingleTarget(real_source, real_target, real_enemy_candidates)
 					else:
-						context = ContextClass.Self(real_source)
+						context = ContextClass.Self(real_source, real_enemy_candidates)
 
 			if context != null and action.action_type == "CARD" and action.card_data and action.card_data.has_method("ApplyEffect"):
 				action.card_data.ApplyEffect(context)

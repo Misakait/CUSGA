@@ -2,6 +2,7 @@ using Godot;
 using Godot.Collections;
 using CUSGA.core.combat.effects;
 using CUSGA.core.constants;
+using CUSGA.entities.components;
 using CUSGA.resources.item;
 
 namespace CUSGA.core.combat.skills;
@@ -38,12 +39,44 @@ public partial class CombatSkillData : BaseCardData
             return;
         }
 
+        var statusComponent = context.Source.GetStatusComponentOrNull();
+        var modifierContext = new SkillExecutionModifierContext(
+            context.Source,
+            this,
+            context,
+            HasDamageEffect()
+        );
+
+        statusComponent?.ProcessBeforeSkillExecution(modifierContext);
+
+        try
+        {
+            foreach (var effect in Effects)
+            {
+                if (effect == null)
+                {
+                    continue;
+                }
+
+                effect.Execute(context);
+            }
+        }
+        finally
+        {
+            statusComponent?.ProcessAfterSkillExecution(modifierContext);
+        }
+    }
+
+    private bool HasDamageEffect()
+    {
         foreach (var effect in Effects)
         {
-            if (effect == null)
-                continue;
-
-            effect.Execute(context);
+            if (effect is DamageEffect)
+            {
+                return true;
+            }
         }
+
+        return false;
     }
 }

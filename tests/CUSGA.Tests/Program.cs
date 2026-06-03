@@ -1,7 +1,10 @@
 using CUSGA.core.application;
 using CUSGA.core.attributes;
 using CUSGA.core.combat;
+using CUSGA.core.combat.buffs;
+using CUSGA.core.combat.effects;
 using CUSGA.core.combat.skills;
+using CUSGA.core.combat.status;
 using CUSGA.core.constants;
 using CUSGA.core.crafting;
 using CUSGA.core.inventory;
@@ -47,10 +50,16 @@ tests.AttributeComponentPreservesCurrentVitalsWhenMaximaIncrease();
 tests.AttributeComponentClampsCurrentVitalsWhenMaximaShrink();
 tests.HealthComponentReturnsActualDamageTaken();
 tests.VitalComponentBaseReturnsActualHealingAndLoss();
+tests.DamageEffectRepeatsFixedTargetForConfiguredHitCount();
+tests.DamageEffectRandomCandidatePerHitFiltersDeadCandidates();
+tests.BeforeSkillExecutionSkipsStatusesRemovedEarlierInSameHookPass();
+tests.HitCountModifierAppliesForConfiguredAttackSkillUsesOnly();
+tests.NextAttackDamageBonusAppliesToEverySegmentForConfiguredAttackSkillUses();
+tests.NonAttackSkillDoesNotConsumeAttackSkillUseModifiers();
 
 Console.WriteLine("All CUSGA tests passed.");
 
-internal sealed class TerrainRandomizationTests
+internal sealed partial class TerrainRandomizationTests
 {
     // 验证 RoomTerrainLayoutGenerator 是否能根据给定的配置文件（Profile）正确生成地形布局
     public void GeneratedLayoutUsesProfileAndCarriesVarianceMultiplier()
@@ -669,6 +678,167 @@ internal sealed class TerrainRandomizationTests
         Assert.Equal(10, energy.CurrentValue);
     }
 
+    /// <summary>
+    /// 验证伤害效果会按配置段数重复对固定目标造成独立伤害。
+    /// </summary>
+    public void DamageEffectRepeatsFixedTargetForConfiguredHitCount()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var target = CreateCombatEntity("Target", health: 100);
+        var targetHealth = GetHealth(target);
+        var damageTakenEvents = 0;
+        targetHealth.DamageTaken += (_, _) => damageTakenEvents++;
+        var effect = CreateRealDamageEffect(baseDamage: 10, hitCount: 3);
+        var context = SkillExecutionContext.FromSingleTarget(source, target);
+
+        effect.Execute(context);
+
+        Assert.Equal(70, targetHealth.CurrentValue);
+        Assert.Equal(3, damageTakenEvents);
+    }
+
+    /// <summary>
+    /// 验证分段随机模式每段都会过滤已经无效的候选目标。
+    /// </summary>
+    public void DamageEffectRandomCandidatePerHitFiltersDeadCandidates()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var deadTarget = CreateCombatEntity("DeadTarget", health: 1);
+        var aliveTarget = CreateCombatEntity("AliveTarget", health: 100);
+        GetHealth(deadTarget).TakeDamage(1, ElementType.None);
+        var aliveHealth = GetHealth(aliveTarget);
+        var effect = CreateRealDamageEffect(baseDamage: 10, hitCount: 3);
+        effect.HitTargetMode = DamageHitTargetMode.RandomCandidatePerHit;
+        var context = SkillExecutionContext.FromSingleTarget(
+            source,
+            deadTarget,
+            [deadTarget, aliveTarget]
+        );
+
+        effect.Execute(context);
+
+        Assert.Equal(70, aliveHealth.CurrentValue);
+        Assert.Equal(0, GetHealth(deadTarget).CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证技能开始 Hook 中被移除的状态不会继续参与本轮 Hook 调用。
+    /// </summary>
+    public void BeforeSkillExecutionSkipsStatusesRemovedEarlierInSameHookPass()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var statusComponent = GetStatus(source);
+        var removedStatusId = new StringName("removed_before_hook_counter");
+        var callCounter = new BeforeSkillExecutionCallCounter();
+        var removerData = new RemovingBeforeSkillStatusData
+        {
+            Id = new StringName("remove_other_before_hook"),
+            DefaultHookPriority = -100,
+            TargetStatusId = removedStatusId
+        };
+        var counterData = new CountingBeforeSkillStatusData
+        {
+            Id = removedStatusId,
+            Counter = callCounter
+        };
+        statusComponent.AddStatus(counterData.CreateInstance(source, source));
+        statusComponent.AddStatus(removerData.CreateInstance(source, source));
+        var skillContext = SkillExecutionContext.Self(source);
+        var modifierContext = new SkillExecutionModifierContext(
+            source,
+            new CombatSkillData(),
+            skillContext,
+            hasDamageEffect: false
+        );
+
+        statusComponent.ProcessBeforeSkillExecution(modifierContext);
+
+        Assert.False(statusComponent.HasStatus(removedStatusId));
+        Assert.Equal(0, callCounter.Count);
+    }
+
+    /// <summary>
+    /// 验证限次段数 Buff 只影响配置数量的攻击牌，且非攻击牌不会消耗次数。
+    /// </summary>
+    public void HitCountModifierAppliesForConfiguredAttackSkillUsesOnly()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var target = CreateCombatEntity("Target", health: 100);
+        var targetHealth = GetHealth(target);
+        var statusComponent = GetStatus(source);
+        var status = new HitCountModifierStatusData
+        {
+            Id = new StringName("hit_count_plus_two_two_uses"),
+            FlatHitCountBonusPerStack = 2,
+            AttackSkillUses = 2
+        };
+        statusComponent.AddStatus(status.CreateInstance(source, source));
+
+        var nonAttackSkill = new CombatSkillData();
+        var attackSkill = CreateCombatSkill(CreateRealDamageEffect(baseDamage: 1, hitCount: 1));
+        var context = SkillExecutionContext.FromSingleTarget(source, target);
+
+        nonAttackSkill.Execute(context);
+        attackSkill.Execute(context);
+        attackSkill.Execute(context);
+        attackSkill.Execute(context);
+
+        Assert.Equal(93, targetHealth.CurrentValue);
+        Assert.False(statusComponent.HasStatus(status.Id));
+    }
+
+    /// <summary>
+    /// 验证限次基础伤害 Buff 会作用到攻击牌的每一段，并按攻击牌次数消耗。
+    /// </summary>
+    public void NextAttackDamageBonusAppliesToEverySegmentForConfiguredAttackSkillUses()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var target = CreateCombatEntity("Target", health: 200);
+        var targetHealth = GetHealth(target);
+        var statusComponent = GetStatus(source);
+        var status = new NextAttackDamageBonusStatusData
+        {
+            Id = new StringName("next_two_attack_damage_plus_ten"),
+            FlatSegmentDamageBonusPerStack = 10,
+            AttackSkillUses = 2
+        };
+        statusComponent.AddStatus(status.CreateInstance(source, source));
+
+        var attackSkill = CreateCombatSkill(CreateRealDamageEffect(baseDamage: 1, hitCount: 5));
+        var context = SkillExecutionContext.FromSingleTarget(source, target);
+
+        attackSkill.Execute(context);
+        attackSkill.Execute(context);
+        attackSkill.Execute(context);
+
+        Assert.Equal(85, targetHealth.CurrentValue);
+        Assert.False(statusComponent.HasStatus(status.Id));
+    }
+
+    /// <summary>
+    /// 验证没有伤害效果的技能不会消耗限次攻击牌 Buff。
+    /// </summary>
+    public void NonAttackSkillDoesNotConsumeAttackSkillUseModifiers()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var target = CreateCombatEntity("Target", health: 100);
+        var statusComponent = GetStatus(source);
+        var status = new NextAttackDamageBonusStatusData
+        {
+            Id = new StringName("next_attack_damage_plus_ten"),
+            FlatSegmentDamageBonusPerStack = 10,
+            AttackSkillUses = 1
+        };
+        statusComponent.AddStatus(status.CreateInstance(source, source));
+
+        var nonAttackSkill = new CombatSkillData();
+        var context = SkillExecutionContext.FromSingleTarget(source, target);
+
+        nonAttackSkill.Execute(context);
+
+        Assert.True(statusComponent.HasStatus(status.Id));
+    }
+
     private static TerrainCardData CreateTerrainCardDataStub()
     {
         return (TerrainCardData)RuntimeHelpers.GetUninitializedObject(typeof(TerrainCardData));
@@ -750,6 +920,122 @@ internal sealed class TerrainRandomizationTests
     private static CombatSkillData CreateCombatSkillDataStub()
     {
         return (CombatSkillData)RuntimeHelpers.GetUninitializedObject(typeof(CombatSkillData));
+    }
+
+    private static CombatSkillData CreateCombatSkill(params CardEffect[] effects)
+    {
+        var skill = new CombatSkillData();
+        foreach (var effect in effects)
+        {
+            skill.Effects.Add(effect);
+        }
+
+        return skill;
+    }
+
+    private static DamageEffect CreateRealDamageEffect(int baseDamage, int hitCount)
+    {
+        return new DamageEffect
+        {
+            BaseDamage = baseDamage,
+            HitCount = hitCount,
+            Type = DamageType.Real,
+            Element = ElementType.None,
+            TargetScope = SkillEffectTargetScope.PrimaryOnly
+        };
+    }
+
+    private static Node CreateCombatEntity(
+        string name,
+        int health = 100,
+        bool withStatus = false
+    )
+    {
+        var entity = new Node { Name = name };
+        var components = new Node { Name = "Components" };
+        var healthComponent = new HealthComponent { Name = "HealthComponent" };
+        var receiver = new DamageReceiverComponent
+        {
+            Name = "DamageReceiverComponent",
+            RandomVarianceMin = 1f,
+            RandomVarianceMax = 1f
+        };
+
+        entity.AddChild(components);
+        components.AddChild(healthComponent);
+        components.AddChild(receiver);
+        healthComponent.InitializeMax(health);
+
+        if (withStatus)
+        {
+            components.AddChild(new StatusComponent { Name = "StatusComponent" });
+        }
+
+        return entity;
+    }
+
+    private static HealthComponent GetHealth(Node entity)
+    {
+        return entity.GetNode<HealthComponent>("Components/HealthComponent");
+    }
+
+    private static StatusComponent GetStatus(Node entity)
+    {
+        return entity.GetNode<StatusComponent>("Components/StatusComponent");
+    }
+
+    private sealed class BeforeSkillExecutionCallCounter
+    {
+        public int Count { get; set; }
+    }
+
+    private sealed partial class RemovingBeforeSkillStatusData : StatusEffectData
+    {
+        public StringName TargetStatusId { get; set; } = default!;
+
+        public override StatusEffectInstance CreateInstance(Node source, Node owner)
+        {
+            return new RemovingBeforeSkillStatusInstance(this, source, owner);
+        }
+    }
+
+    private sealed partial class RemovingBeforeSkillStatusInstance(
+        RemovingBeforeSkillStatusData data,
+        Node source,
+        Node owner
+    ) : StatusEffectInstance(data, source, owner)
+    {
+        private readonly RemovingBeforeSkillStatusData _data = data;
+
+        public override void OnBeforeSkillExecution(SkillExecutionModifierContext context)
+        {
+            Owner.GetNodeOrNull<StatusComponent>("Components/StatusComponent")
+                ?.RemoveStatus(_data.TargetStatusId);
+        }
+    }
+
+    private sealed partial class CountingBeforeSkillStatusData : StatusEffectData
+    {
+        public BeforeSkillExecutionCallCounter Counter { get; init; } = new();
+
+        public override StatusEffectInstance CreateInstance(Node source, Node owner)
+        {
+            return new CountingBeforeSkillStatusInstance(this, source, owner);
+        }
+    }
+
+    private sealed partial class CountingBeforeSkillStatusInstance(
+        CountingBeforeSkillStatusData data,
+        Node source,
+        Node owner
+    ) : StatusEffectInstance(data, source, owner)
+    {
+        private readonly CountingBeforeSkillStatusData _data = data;
+
+        public override void OnBeforeSkillExecution(SkillExecutionModifierContext context)
+        {
+            _data.Counter.Count++;
+        }
     }
 
     private static StartingStats CreateStartingStatsStub()

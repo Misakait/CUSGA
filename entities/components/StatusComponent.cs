@@ -6,6 +6,8 @@ using CUSGA.core.attributes;
 using CUSGA.core.combat.status;
 using CUSGA.core.constants;
 using CUSGA.core.combat;
+using CUSGA.core.combat.effects;
+using CUSGA.core.combat.skills;
 
 namespace CUSGA.entities.components;
 
@@ -382,6 +384,88 @@ public partial class StatusComponent : Node
         }
     }
 
+    /// <summary>
+    /// 在整张技能开始执行前通知所有状态。
+    /// </summary>
+    /// <param name="context">本次技能执行修正上下文。</param>
+    public void ProcessBeforeSkillExecution(SkillExecutionModifierContext context)
+    {
+        var statuses = _statuses.Values.ToList();
+
+        foreach (var status in GetStatusesForHook(StatusHookPhase.BeforeSkillExecution, statuses))
+        {
+            if (!IsActiveStatus(status))
+            {
+                continue;
+            }
+
+            status.OnBeforeSkillExecution(context);
+        }
+    }
+
+    /// <summary>
+    /// 在整张技能全部效果执行后通知所有状态，并统一扣减被标记的限次状态。
+    /// </summary>
+    /// <param name="context">本次技能执行修正上下文。</param>
+    public void ProcessAfterSkillExecution(SkillExecutionModifierContext context)
+    {
+        var statuses = _statuses.Values.ToList();
+
+        foreach (var status in GetStatusesForHook(StatusHookPhase.AfterSkillExecution, statuses))
+        {
+            if (!IsActiveStatus(status))
+            {
+                continue;
+            }
+
+            status.OnAfterSkillExecution(context);
+        }
+
+        ConsumeMarkedSkillExecutionStatuses(context);
+    }
+
+    /// <summary>
+    /// 在伤害效果进入段数循环前应用施法者状态的段数修正。
+    /// </summary>
+    /// <param name="context">伤害段数修正上下文。</param>
+    /// <param name="hitCount">当前有效段数候选值。</param>
+    public void ProcessModifyDamageHitCount(
+        DamageEffectHitCountContext context,
+        ref int hitCount
+    )
+    {
+        foreach (var status in GetStatusesForHook(StatusHookPhase.ModifyDamageHitCount))
+        {
+            status.OnModifyDamageHitCount(context, ref hitCount);
+            if (hitCount <= 0)
+            {
+                hitCount = 0;
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 在单段伤害创建伤害载荷前应用施法者状态的基础伤害修正。
+    /// </summary>
+    /// <param name="context">单段伤害修正上下文。</param>
+    /// <param name="damage">当前本段基础伤害候选值。</param>
+    public void ProcessModifyDamageEffectSegmentDamage(
+        DamageEffectSegmentContext context,
+        ref int damage
+    )
+    {
+        foreach (var status in GetStatusesForHook(StatusHookPhase.ModifyDamageEffectSegmentDamage))
+        {
+            status.OnModifyDamageEffectSegmentDamage(context, ref damage);
+            if (damage <= 0)
+            {
+                damage = 0;
+                return;
+            }
+        }
+    }
+
     public void ProcessModifyOutgoingDamage(
         DamagePayload payload,
         ref float damage
@@ -467,6 +551,25 @@ public partial class StatusComponent : Node
             changeEvent
         );
         // EmitLocalStatusChanged();
+    }
+
+    private void ConsumeMarkedSkillExecutionStatuses(SkillExecutionModifierContext context)
+    {
+        foreach (var statusId in context.StatusIdsMarkedForConsumption.ToList())
+        {
+            if (!_statuses.TryGetValue(statusId, out var status))
+            {
+                continue;
+            }
+
+            if (status.ConsumeMarkedSkillExecutionUse())
+            {
+                RemoveStatus(statusId);
+                continue;
+            }
+
+            NotifyStatusChanged(status, StatusChangeReason.Refreshed, status.Source);
+        }
     }
 
     // private void EmitLocalStatusChanged()

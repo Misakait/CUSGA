@@ -1,6 +1,8 @@
 using Godot;
 using System.Collections.Generic;
 using CUSGA.core.attributes;
+using CUSGA.core.combat.effects;
+using CUSGA.core.combat.skills;
 
 namespace CUSGA.core.combat.status;
 
@@ -185,8 +187,40 @@ public abstract partial class StatusEffectInstance : RefCounted
     public virtual void OnGlobalTurnEnd(Node currentActor) { }
     public virtual void OnRoundEnd() { }
 
+    /// <summary>
+    /// 在整张技能开始执行前调用，用于初始化技能级状态作用域。
+    /// </summary>
+    /// <param name="context">本次技能执行修正上下文。</param>
+    public virtual void OnBeforeSkillExecution(SkillExecutionModifierContext context) { }
+
+    /// <summary>
+    /// 在整张技能全部效果执行后调用，用于标记限次状态消费。
+    /// </summary>
+    /// <param name="context">本次技能执行修正上下文。</param>
+    public virtual void OnAfterSkillExecution(SkillExecutionModifierContext context) { }
+
     public virtual void OnBeforeAttributeChange(AttributeChangeContext context) { }
     public virtual void OnAfterAttributeChanged(AttributeChangeContext context) { }
+
+    /// <summary>
+    /// 在伤害效果进入段数循环前修正有效段数。
+    /// </summary>
+    /// <param name="context">伤害段数修正上下文。</param>
+    /// <param name="hitCount">当前有效段数候选值。</param>
+    public virtual void OnModifyDamageHitCount(
+        DamageEffectHitCountContext context,
+        ref int hitCount
+    ) { }
+
+    /// <summary>
+    /// 在单段伤害创建伤害载荷前修正本段基础伤害。
+    /// </summary>
+    /// <param name="context">单段伤害修正上下文。</param>
+    /// <param name="damage">当前本段基础伤害候选值。</param>
+    public virtual void OnModifyDamageEffectSegmentDamage(
+        DamageEffectSegmentContext context,
+        ref int damage
+    ) { }
 
     // 攻击方 Buff 修正
     public virtual void OnModifyOutgoingDamage(DamagePayload payload, ref float damage) { }
@@ -202,6 +236,15 @@ public abstract partial class StatusEffectInstance : RefCounted
     /// </summary>
     /// <returns>优先返回状态数据配置的描述；特殊状态可重写以展示运行时数值。</returns>
     public virtual string DisplayDescription => Data.Description;
+
+    /// <summary>
+    /// 扣减一次技能级限次状态使用次数，并返回是否应移除该状态。
+    /// </summary>
+    /// <returns>如果状态应被移除，返回 true；否则返回 false。</returns>
+    public virtual bool ConsumeMarkedSkillExecutionUse()
+    {
+        return true;
+    }
 
     public virtual IEnumerable<AttributeModifier> GetAttributeModifiers()
     {
