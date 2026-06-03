@@ -161,10 +161,13 @@ public Array<Node> CandidateTargets { get; }
 
 - Buff 不直接修改 `DamageEffect.HitCount` 资源字段。
 - Buff 只修改本次执行的有效段数。
+- 段数 Buff 只作用于资源配置 `DamageEffect.HitCount > 1` 的多段伤害。
+- 段数 Buff 不会把 `DamageEffect.HitCount = 1` 的单段伤害变成多段伤害。
 - 状态结束后，后续技能自动回到资源配置段数。
 - 段数修正属于施法者状态，不属于防御方状态。
 - 段数修正在 `DamageEffect` 进入 hit loop 前计算一次，不在每段伤害内部重复计算。
 - 限次段数 Buff 不能在段数修正 Hook 内立即移除，否则多段伤害或同一张牌内后续 `DamageEffect` 可能吃不到完整效果。
+- 限次段数 Buff 只有在本张技能中实际修正过至少一个多段 `DamageEffect` 后才扣减次数；单段攻击牌不会消耗限次段数 Buff。
 
 ### 推荐 Hook
 
@@ -218,10 +221,14 @@ public sealed class DamageEffectHitCountContext
 本版只做固定段数加成：
 
 ```text
-effectiveHitCount = HitCount + FlatHitCountBonusPerStack * CurrentStacks
+if HitCount > 1:
+    effectiveHitCount = HitCount + FlatHitCountBonusPerStack * CurrentStacks
+else:
+    effectiveHitCount = HitCount
 ```
 
 例如 `FlatHitCountBonusPerStack = 2` 且当前 1 层，就使 5 段变成 7 段。
+如果 `HitCount = 1`，则仍然只造成 1 段伤害，并且不会消耗限次段数 Buff。
 
 暂不做百分比段数修正、按元素筛选、按伤害类型筛选等复杂规则。需要这些能力时再扩展上下文字段和状态数据。
 
@@ -319,6 +326,7 @@ public sealed class SkillExecutionModifierContext
 - 非攻击技能不会触发，不消费。
 - 每张攻击牌最多扣减 1 次剩余次数，即使该技能内有多个 `DamageEffect` 或多个伤害段。
 - 扣减发生在整张攻击牌执行结束后。
+- 限次段数 Buff 只有在本张攻击牌里实际修正过多段 `DamageEffect` 时才扣减；只包含单段伤害的攻击牌不扣减。
 - `RemainingAttackSkillUses` 扣到 0 后移除状态。
 - 如果状态有多层，本版推荐所有当前层数都参与每次攻击牌修正；层数不改变剩余攻击牌次数。
 - 如果未来需要“每层各自拥有剩余次数”，再新增更复杂的层级计数模型，不在本版复杂化。
@@ -511,6 +519,8 @@ HitTargetMode = RandomCandidatePerHit
 - 中途补出的新怪不会进入本次技能候选池。
 - 候选池全部死亡后，剩余段数跳过且不报错。
 - `HitCountModifierStatusData` 能把 5 段修正为 7 段。
+- `HitCountModifierStatusData` 不会把 1 段伤害修正为多段伤害。
+- 单段攻击牌不会消耗限次段数 Buff，后续多段攻击牌仍可使用该 Buff。
 - 段数 Buff 不修改 `DamageEffect.HitCount` 资源值。
 - 段数 Buff 叠层时按 `FlatHitCountBonusPerStack * CurrentStacks` 生效。
 - 段数 Buff 过期后，有效段数恢复为资源配置段数。

@@ -25,6 +25,7 @@ func _run() -> void:
 	_test_fixed_target_hit_count()
 	_test_random_candidate_mode_filters_dead_targets()
 	_test_hit_count_status_uses_configured_attack_skill_count()
+	_test_hit_count_status_ignores_single_hit_damage_without_consuming()
 	_test_next_attack_damage_status_applies_to_every_segment()
 	_test_non_attack_skill_does_not_consume_attack_skill_status()
 
@@ -77,7 +78,7 @@ func _test_hit_count_status_uses_configured_attack_skill_count() -> void:
 	_status(source).AddStatus(status.CreateInstance(source, source))
 
 	var non_attack_skill = load(COMBAT_SKILL_SCRIPT).new()
-	var attack_skill = _create_combat_skill([_create_real_damage_effect(1, 1)])
+	var attack_skill = _create_combat_skill([_create_real_damage_effect(1, 2)])
 	var context = _context_script().FromSingleTarget(source, target, [target])
 
 	non_attack_skill.Execute(context)
@@ -85,8 +86,32 @@ func _test_hit_count_status_uses_configured_attack_skill_count() -> void:
 	attack_skill.Execute(context)
 	attack_skill.Execute(context)
 
-	_assert(_health(target).CurrentValue == 93, "段数限次 Buff 应只影响前两张攻击牌。")
+	_assert(_health(target).CurrentValue == 90, "段数限次 Buff 应只影响前两张多段攻击牌。")
 	_assert(not _status(source).HasStatus(status.Id), "段数限次 Buff 用完配置次数后应移除。")
+
+
+func _test_hit_count_status_ignores_single_hit_damage_without_consuming() -> void:
+	var source := _create_combat_entity("Source", 100, true)
+	var target := _create_combat_entity("Target", 100, false)
+	var status = load(HIT_COUNT_STATUS_SCRIPT).new()
+	status.Id = &"hit_count_plus_two_single_guard"
+	status.FlatHitCountBonusPerStack = 2
+	status.AttackSkillUses = 1
+	_status(source).AddStatus(status.CreateInstance(source, source))
+
+	var single_hit_skill = _create_combat_skill([_create_real_damage_effect(1, 1)])
+	var multi_hit_skill = _create_combat_skill([_create_real_damage_effect(1, 2)])
+	var context = _context_script().FromSingleTarget(source, target, [target])
+
+	single_hit_skill.Execute(context)
+
+	_assert(_health(target).CurrentValue == 99, "段数 Buff 不应把单段伤害变成多段伤害。")
+	_assert(_status(source).HasStatus(status.Id), "单段攻击牌不应消耗限次段数 Buff。")
+
+	multi_hit_skill.Execute(context)
+
+	_assert(_health(target).CurrentValue == 95, "限次段数 Buff 应保留给后续多段伤害。")
+	_assert(not _status(source).HasStatus(status.Id), "限次段数 Buff 实际作用多段伤害后应消耗。")
 
 
 func _test_next_attack_damage_status_applies_to_every_segment() -> void:

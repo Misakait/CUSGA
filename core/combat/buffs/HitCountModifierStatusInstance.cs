@@ -3,6 +3,7 @@ using CUSGA.core.combat.skills;
 using CUSGA.core.combat.status;
 using Godot;
 using System;
+using System.Collections.Generic;
 
 namespace CUSGA.core.combat.buffs;
 
@@ -16,6 +17,7 @@ public sealed partial class HitCountModifierStatusInstance(
 ) : StatusEffectInstance(data, source, owner)
 {
     private readonly HitCountModifierStatusData _data = data;
+    private readonly HashSet<SkillExecutionContext> _modifiedSkillContexts = [];
     private int _remainingAttackSkillUses = Math.Max(0, data.AttackSkillUses);
 
     /// <summary>
@@ -50,6 +52,11 @@ public sealed partial class HitCountModifierStatusInstance(
         ref int hitCount
     )
     {
+        if (context.BaseHitCount <= 1)
+        {
+            return;
+        }
+
         if (_data.FlatHitCountBonusPerStack == 0)
         {
             return;
@@ -61,6 +68,12 @@ public sealed partial class HitCountModifierStatusInstance(
         }
 
         hitCount += _data.FlatHitCountBonusPerStack * CurrentStacks;
+
+        if (_data.AttackSkillUses > 0 && context.SkillContext != null)
+        {
+            // 限次段数状态只在本次技能真正修正过多段伤害后才允许消耗。
+            _modifiedSkillContexts.Add(context.SkillContext);
+        }
     }
 
     /// <summary>
@@ -70,6 +83,11 @@ public sealed partial class HitCountModifierStatusInstance(
     public override void OnAfterSkillExecution(SkillExecutionModifierContext context)
     {
         if (_data.AttackSkillUses <= 0 || !context.IsAttackSkill)
+        {
+            return;
+        }
+
+        if (!_modifiedSkillContexts.Remove(context.SkillContext))
         {
             return;
         }

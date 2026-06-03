@@ -54,6 +54,7 @@ tests.DamageEffectRepeatsFixedTargetForConfiguredHitCount();
 tests.DamageEffectRandomCandidatePerHitFiltersDeadCandidates();
 tests.BeforeSkillExecutionSkipsStatusesRemovedEarlierInSameHookPass();
 tests.HitCountModifierAppliesForConfiguredAttackSkillUsesOnly();
+tests.HitCountModifierDoesNotAffectSingleHitDamageOrConsumeUse();
 tests.NextAttackDamageBonusAppliesToEverySegmentForConfiguredAttackSkillUses();
 tests.NonAttackSkillDoesNotConsumeAttackSkillUseModifiers();
 
@@ -758,7 +759,7 @@ internal sealed partial class TerrainRandomizationTests
     }
 
     /// <summary>
-    /// 验证限次段数 Buff 只影响配置数量的攻击牌，且非攻击牌不会消耗次数。
+    /// 验证限次段数 Buff 只影响配置数量的多段攻击牌，且非攻击牌不会消耗次数。
     /// </summary>
     public void HitCountModifierAppliesForConfiguredAttackSkillUsesOnly()
     {
@@ -775,7 +776,7 @@ internal sealed partial class TerrainRandomizationTests
         statusComponent.AddStatus(status.CreateInstance(source, source));
 
         var nonAttackSkill = new CombatSkillData();
-        var attackSkill = CreateCombatSkill(CreateRealDamageEffect(baseDamage: 1, hitCount: 1));
+        var attackSkill = CreateCombatSkill(CreateRealDamageEffect(baseDamage: 1, hitCount: 2));
         var context = SkillExecutionContext.FromSingleTarget(source, target);
 
         nonAttackSkill.Execute(context);
@@ -783,7 +784,39 @@ internal sealed partial class TerrainRandomizationTests
         attackSkill.Execute(context);
         attackSkill.Execute(context);
 
-        Assert.Equal(93, targetHealth.CurrentValue);
+        Assert.Equal(90, targetHealth.CurrentValue);
+        Assert.False(statusComponent.HasStatus(status.Id));
+    }
+
+    /// <summary>
+    /// 验证段数 Buff 不会把单段伤害变成多段，也不会被单段攻击牌消耗。
+    /// </summary>
+    public void HitCountModifierDoesNotAffectSingleHitDamageOrConsumeUse()
+    {
+        var source = CreateCombatEntity("Source", withStatus: true);
+        var target = CreateCombatEntity("Target", health: 100);
+        var targetHealth = GetHealth(target);
+        var statusComponent = GetStatus(source);
+        var status = new HitCountModifierStatusData
+        {
+            Id = new StringName("hit_count_plus_two_single_guard"),
+            FlatHitCountBonusPerStack = 2,
+            AttackSkillUses = 1
+        };
+        statusComponent.AddStatus(status.CreateInstance(source, source));
+
+        var singleHitSkill = CreateCombatSkill(CreateRealDamageEffect(baseDamage: 1, hitCount: 1));
+        var multiHitSkill = CreateCombatSkill(CreateRealDamageEffect(baseDamage: 1, hitCount: 2));
+        var context = SkillExecutionContext.FromSingleTarget(source, target);
+
+        singleHitSkill.Execute(context);
+
+        Assert.Equal(99, targetHealth.CurrentValue);
+        Assert.True(statusComponent.HasStatus(status.Id));
+
+        multiHitSkill.Execute(context);
+
+        Assert.Equal(95, targetHealth.CurrentValue);
         Assert.False(statusComponent.HasStatus(status.Id));
     }
 
