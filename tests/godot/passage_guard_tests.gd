@@ -1,6 +1,7 @@
 extends SceneTree
 
 const PassageGuardControllerScript: GDScript = preload("res://scripts/map_scripts/passage_guard_controller.gd")
+const MapInstantiatorScript: GDScript = preload("res://scripts/map_scripts/map_instantiator.gd")
 const MapButtonScript: GDScript = preload("res://scripts/map_scripts/map_button/map_button.gd")
 const TagComponentScript: CSharpScript = preload("res://entities/components/TagComponent.cs")
 
@@ -101,7 +102,9 @@ func _init() -> void:
 func _run() -> void:
 	await _test_guard_battle_handles_synchronous_result_signal()
 	await _test_map_move_time_is_settled_before_loading_target_room()
+	_test_map_instantiator_dims_loaded_backgrounds_without_touching_other_sprites()
 	await _test_background_resolver_uses_map_instantiator_current_scene()
+	await _test_shop_room_background_uses_standard_background_contract()
 	_test_passage_guard_state_treats_edges_as_undirected()
 	_test_passage_guard_probability_applies_modifiers()
 	_test_torch_multiplier_reduces_night_guard_rolls()
@@ -177,6 +180,7 @@ func _test_background_resolver_uses_map_instantiator_current_scene() -> void:
 	map_system.add_child(map_instantiator)
 	var desert := _create_room_with_background("Desert", Color(1, 0, 0, 1))
 	var forest := _create_room_with_background("Forest", Color(0, 1, 0, 1))
+	forest.get_node("Background").self_modulate = Color(0.45, 0.45, 0.55, 1.0)
 	map_instantiator.add_child(desert)
 	map_instantiator.add_child(forest)
 	map_instantiator.current_scene = forest
@@ -187,8 +191,54 @@ func _test_background_resolver_uses_map_instantiator_current_scene() -> void:
 	_assert(duplicated != null, "战斗背景解析器应当能复制当前地图背景。")
 	_assert(duplicated.name == "MapBackground", "复制到战斗场景的背景节点应当使用稳定名称。")
 	_assert(duplicated.modulate == Color(0, 1, 0, 1), "战斗背景必须来自 MapInstantiator.current_scene，而不是第一个缓存子节点。")
+	_assert(duplicated.self_modulate == Color(0.45, 0.45, 0.55, 1.0), "夜晚战斗背景应当保留地图背景的变暗效果。")
 
 	duplicated.free()
+	map_system.queue_free()
+	await process_frame
+
+
+func _test_map_instantiator_dims_loaded_backgrounds_without_touching_other_sprites() -> void:
+	var map_instantiator: Node = MapInstantiatorScript.new()
+	var room := _create_room_with_background("Forest", Color.WHITE)
+	var foreground := Sprite2D.new()
+	foreground.name = "Foreground"
+	foreground.self_modulate = Color.WHITE
+	room.add_child(foreground)
+	map_instantiator.map_scene[Vector2i(0, 0)] = room
+
+	map_instantiator._on_day_night_toggled(true)
+
+	var background: Sprite2D = room.get_node("Background")
+	_assert(background.self_modulate == Color(0.45, 0.45, 0.55, 1.0), "夜晚只应让地图背景图片变暗。")
+	_assert(foreground.self_modulate == Color.WHITE, "夜晚背景变暗不应影响同房间的其它 Sprite。")
+
+	map_instantiator._on_day_night_toggled(false)
+
+	_assert(background.self_modulate == Color.WHITE, "切回白天时背景应恢复原始颜色。")
+	map_instantiator.free()
+	room.free()
+
+
+func _test_shop_room_background_uses_standard_background_contract() -> void:
+	var shop_scene_resource: PackedScene = load("res://scenes/map_scenes/map_son_scenes/map_shop.tscn")
+	var shop_scene: Node2D = shop_scene_resource.instantiate()
+	var map_system := Node.new()
+	var map_instantiator := FakeMapInstantiator.new()
+	map_instantiator.name = "MapInstantiator"
+	map_instantiator.call_log = []
+	map_system.add_child(map_instantiator)
+	map_instantiator.add_child(shop_scene)
+	map_instantiator.current_scene = shop_scene
+	var resolver := CurrentMapBackgroundResolver.new()
+
+	var duplicated: Sprite2D = resolver.DuplicateCurrentBackground(map_system)
+
+	_assert(shop_scene.get_node_or_null("Background") is Sprite2D, "商店房间背景节点应当统一命名为 Background。")
+	_assert(duplicated != null, "战斗背景解析器应当能复制商店房间背景。")
+
+	if duplicated != null:
+		duplicated.free()
 	map_system.queue_free()
 	await process_frame
 
