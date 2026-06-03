@@ -29,6 +29,7 @@ npx gitnexus analyze
 Before changing any C# symbol, run GitNexus impact analysis for the target symbol and report risk if it is HIGH or CRITICAL.
 
 Before changing GDScript or scenes, find the script's scene/runtime callers with `rg` and pick the smallest Godot headless check that exercises that path.
+Do not use GitNexus or CodeGraph to look up symbols in GDScript, as neither tool supports the GDScript language.
 
 Keep collaborator-owned GDScript changes narrow. If the task is mainly diagnosis or the user says not to change friend-authored `.gd` code, report findings instead of editing those files.
 
