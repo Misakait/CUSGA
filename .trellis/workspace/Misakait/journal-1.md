@@ -39,3 +39,36 @@ Added night-only map background tinting, standardized room background naming for
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Bootstrap Trellis guidelines
+
+**Date**: 2026-06-03
+**Task**: Bootstrap Trellis guidelines
+**Branch**: `main`
+
+### Summary
+
+Populated CUSGA Trellis specs from real Godot/C# patterns, added the minimal feature start guide, and installed project-local Trellis agent skills.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `79d4802` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
