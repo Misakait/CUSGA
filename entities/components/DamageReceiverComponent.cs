@@ -44,7 +44,10 @@ public partial class DamageReceiverComponent : Node
         var defenderStatus = FindComponent<StatusComponent>(defenderRoot, "StatusComponent")
             ?? defenderComponents.GetNodeOrNull<StatusComponent>("StatusComponent");
 
-        if (DamageFormula.ShouldEvade(defenderStats?.EvasionRate ?? 0f, _rng.Randf()))
+        if (
+            payload.AppliesDefaultCombatModifiers &&
+            DamageFormula.ShouldEvade(defenderStats?.EvasionRate ?? 0f, _rng.Randf())
+        )
         {
             GD.Print(
                 $"[Damage] Target: {defenderRoot?.Name ?? defenderComponents.Name} | " +
@@ -57,8 +60,12 @@ public partial class DamageReceiverComponent : Node
         }
 
         float damage = CalculateBaseDamage(payload, attackerStats, defenderStats);
-        bool isCritical = DamageFormula.ShouldCrit(attackerStats?.CritRate ?? 0f, _rng.Randf());
-        damage *= DamageFormula.CalculateCriticalModifier(isCritical, attackerStats?.CritDamage ?? 1f);
+        bool isCritical = false;
+        if (payload.AppliesDefaultCombatModifiers)
+        {
+            isCritical = DamageFormula.ShouldCrit(attackerStats?.CritRate ?? 0f, _rng.Randf());
+            damage *= DamageFormula.CalculateCriticalModifier(isCritical, attackerStats?.CritDamage ?? 1f);
+        }
 
         attackerStatus?.ProcessModifyOutgoingDamage(payload, ref damage);
         defenderStatus?.ProcessModifyIncomingDamageBeforeMitigation(payload, ref damage);
@@ -67,13 +74,19 @@ public partial class DamageReceiverComponent : Node
 
         defenderStatus?.ProcessModifyIncomingDamageAfterMitigation(payload, ref damage);
         defenderStatus?.ProcessBeforeHealthDamage(payload, ref damage);
-        ApplyRandomVariance(ref damage);
+        if (payload.AppliesDefaultCombatModifiers)
+        {
+            ApplyRandomVariance(ref damage);
+        }
 
         int finalDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
         var defenderHealth = FindComponent<HealthComponent>(defenderRoot, "HealthComponent")
             ?? defenderComponents.GetNodeOrNull<HealthComponent>("HealthComponent");
         int actualDamage = defenderHealth?.TakeDamage(finalDamage, payload.Element) ?? 0;
-        ApplyLifesteal(payload.Source, attackerStats, actualDamage);
+        if (payload.AppliesDefaultCombatModifiers)
+        {
+            ApplyLifesteal(payload.Source, attackerStats, actualDamage);
+        }
 
         GD.Print(
             $"[Damage] Target: {defenderRoot?.Name ?? defenderComponents.Name} | " +

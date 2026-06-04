@@ -18,5 +18,12 @@ public class DamagePayload
     public DamageType Type { get; set; }
     public int Damage { get; set; }
     public ElementType Element { get; set; }
+
+    /// <summary>
+    /// Controls default direct-damage modifiers: evasion, critical hits, random variance, and lifesteal.
+    /// Status hooks, elemental multipliers, shields, damage caps, and health damage still run when disabled.
+    /// </summary>
+    public bool AppliesDefaultCombatModifiers { get; set; } = true;
+
     public bool IsExtraDamage { get; set; } = false;
 }

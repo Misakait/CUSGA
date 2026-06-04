@@ -14,7 +14,9 @@ public sealed partial class BurnStatusInstance(
     public override void OnOwnerTurnStart()
     {
         if (_data.DamagePerStack <= 0f)
+        {
             return;
+        }
 
         var receiver = Owner.GetNodeOrNull<DamageReceiverComponent>("Components/DamageReceiverComponent");
 
@@ -32,7 +34,8 @@ public sealed partial class BurnStatusInstance(
             Target = Owner,
             Damage = (int)damage,
             Type = _data.DamageType,
-            Element = _data.Element
+            Element = _data.Element,
+            AppliesDefaultCombatModifiers = false
         };
 
         receiver.ReceiveDamage(payload);

@@ -42,6 +42,9 @@ tests.PhysicalDamageFormulaAppliesFixedAndRatePenetration();
 tests.MagicDamageFormulaClampsOverPenetratedResistance();
 tests.DamageFormulaResolvesEvasionCriticalVarianceAndLifesteal();
 tests.DamageFormulaCalculatesActualDamageBeforeLifesteal();
+tests.DotDamageSkipsDefaultCombatModifiers();
+tests.DefaultDamageStillAppliesDefaultCombatModifiers();
+tests.DotDamageStillUsesBeforeHealthDamageHooks();
 tests.AttributeComponentInitializesExpandedCombatAttributes();
 tests.AttributeComponentSynchronizesHealthAndEnergyMaxima();
 tests.AttributeComponentIgnoresMaxEnergyWhenEnergyComponentIsAbsent();
@@ -472,6 +475,100 @@ internal sealed partial class TerrainRandomizationTests
     {
         Assert.Equal(35, DamageFormula.CalculateActualDamage(finalDamage: 99, defenderCurrentHealth: 35));
         Assert.Equal(9, DamageFormula.CalculateLifestealAmount(finalActualDamage: 35, lifestealRate: 0.25f));
+    }
+
+    /// <summary>
+    /// 验证 DOT 伤害关闭默认战斗修饰后不会闪避、暴击、随机浮动或吸血。
+    /// </summary>
+    public void DotDamageSkipsDefaultCombatModifiers()
+    {
+        var source = CreateCombatEntity("Source", health: 100);
+        var target = CreateCombatEntity("Target", health: 100);
+        AddAttributes(source, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseCritRate = 1f,
+            BaseCritDamage = 3f,
+            BaseLifestealRate = 1f
+        });
+        AddAttributes(target, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseEvasionRate = 1f
+        });
+        GetHealth(source).TakeDamage(50, ElementType.None);
+        var receiver = GetDamageReceiver(target);
+        receiver.RandomVarianceMin = 2f;
+        receiver.RandomVarianceMax = 2f;
+        var payload = new DamagePayload
+        {
+            Source = source,
+            Target = target,
+            Damage = 10,
+            Type = DamageType.Real,
+            Element = ElementType.None,
+            AppliesDefaultCombatModifiers = false
+        };
+
+        receiver.ReceiveDamage(payload);
+
+        Assert.Equal(90, GetHealth(target).CurrentValue);
+        Assert.Equal(50, GetHealth(source).CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证普通伤害 payload 默认仍会应用闪避等默认战斗修饰。
+    /// </summary>
+    public void DefaultDamageStillAppliesDefaultCombatModifiers()
+    {
+        var source = CreateCombatEntity("Source", health: 100);
+        var target = CreateCombatEntity("Target", health: 100);
+        AddAttributes(target, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseEvasionRate = 1f
+        });
+        var receiver = GetDamageReceiver(target);
+        var payload = new DamagePayload
+        {
+            Source = source,
+            Target = target,
+            Damage = 10,
+            Type = DamageType.Real,
+            Element = ElementType.None
+        };
+
+        receiver.ReceiveDamage(payload);
+
+        Assert.Equal(100, GetHealth(target).CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证 DOT 跳过默认修饰时仍会执行扣血前 Hook，例如护盾吸收。
+    /// </summary>
+    public void DotDamageStillUsesBeforeHealthDamageHooks()
+    {
+        var source = CreateCombatEntity("Source", health: 100);
+        var target = CreateCombatEntity("Target", health: 100, withStatus: true);
+        var shieldData = new ShieldStatusData
+        {
+            Id = new StringName("test_shield")
+        };
+        GetStatus(target).AddStatus(shieldData.CreateInstance(source, target, shieldAmount: 6f));
+        var payload = new DamagePayload
+        {
+            Source = source,
+            Target = target,
+            Damage = 10,
+            Type = DamageType.Real,
+            Element = ElementType.None,
+            AppliesDefaultCombatModifiers = false
+        };
+
+        GetDamageReceiver(target).ReceiveDamage(payload);
+
+        Assert.Equal(96, GetHealth(target).CurrentValue);
+        Assert.False(GetStatus(target).HasStatus(shieldData.Id));
     }
 
     /// <summary>
@@ -1010,6 +1107,19 @@ internal sealed partial class TerrainRandomizationTests
     private static HealthComponent GetHealth(Node entity)
     {
         return entity.GetNode<HealthComponent>("Components/HealthComponent");
+    }
+
+    private static DamageReceiverComponent GetDamageReceiver(Node entity)
+    {
+        return entity.GetNode<DamageReceiverComponent>("Components/DamageReceiverComponent");
+    }
+
+    private static AttributeComponent AddAttributes(Node entity, StartingStats stats)
+    {
+        var attributes = new AttributeComponent { Name = "AttributeComponent" };
+        entity.GetNode<Node>("Components").AddChild(attributes);
+        attributes.InitializeWithData(stats);
+        return attributes;
     }
 
     private static StatusComponent GetStatus(Node entity)
