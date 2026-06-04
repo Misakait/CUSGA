@@ -5,12 +5,8 @@ const MENU_EXPORT := "导出卡牌 CSV"
 const MENU_IMPORT := "应用卡牌 CSV"
 const MENU_SYNC := "同步卡牌 CSV"
 const EXPORT_SCRIPT_PATH := "res://card_table/export_current_cards.py"
-const SKILL_CSV_PATH := "res://card_table/skill_cards.csv"
-const MONSTER_CSV_PATH := "res://card_table/monster_cards.csv"
-const POLL_INTERVAL_SECONDS := 5.0
 const RESCAN_DELAY_SECONDS := 0.5
 
-var _elapsed_seconds := 0.0
 var _is_syncing := false
 var _rescan_requested := false
 
@@ -19,25 +15,12 @@ func _enter_tree() -> void:
 	add_tool_menu_item(MENU_EXPORT, Callable(self, "_export_from_menu"))
 	add_tool_menu_item(MENU_IMPORT, Callable(self, "_import_from_menu"))
 	add_tool_menu_item(MENU_SYNC, Callable(self, "_sync_from_menu"))
-	set_process(true)
-	call_deferred("_run_auto_script")
 
 
 func _exit_tree() -> void:
-	set_process(false)
 	remove_tool_menu_item(MENU_EXPORT)
 	remove_tool_menu_item(MENU_IMPORT)
 	remove_tool_menu_item(MENU_SYNC)
-
-
-func _process(delta: float) -> void:
-	_elapsed_seconds += delta
-	if _elapsed_seconds < POLL_INTERVAL_SECONDS or _is_syncing:
-		return
-
-	_elapsed_seconds = 0.0
-	_run_auto_script()
-
 
 
 ## 手动导出入口，保留在菜单中便于表格异常时快速重新生成。
@@ -53,15 +36,6 @@ func _import_from_menu() -> void:
 ## 手动双向同步入口，先导入 CSV，再重新导出最新表格。
 func _sync_from_menu() -> void:
 	_run_sync_script()
-
-
-## 调用 Python 自动同步脚本，由 Python 根据 CSV 状态文件判断导入或导出。
-func _run_auto_script() -> void:
-	var output := _run_python_script(["--auto"])
-	if not output.is_empty():
-		print(output)
-	if output.contains("已导入"):
-		_queue_rescan_filesystem()
 
 
 ## 调用 Python 导出脚本生成 CSV。
@@ -82,7 +56,7 @@ func _run_import_script() -> void:
 	print("Card CSV Sync：CSV 已应用到 Godot 资源。")
 
 
-## 调用 Python 双向同步脚本，适合外部表格保存后自动执行。
+## 调用 Python 双向同步脚本，适合手动把外部表格修改应用回 Godot。
 func _run_sync_script() -> void:
 	var output := _run_python_script(["--sync"])
 	if not output.is_empty():
@@ -128,26 +102,3 @@ func _rescan_filesystem_when_idle() -> void:
 			return
 		filesystem.scan()
 	_rescan_requested = false
-
-
-func _get_latest_resource_time(directory_path: String) -> int:
-	var latest := 0
-	var dir := DirAccess.open(directory_path)
-	if dir == null:
-		return latest
-
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while not file_name.is_empty():
-		if file_name.begins_with("."):
-			file_name = dir.get_next()
-			continue
-
-		var child_path := directory_path + "/" + file_name
-		if dir.current_is_dir():
-			latest = max(latest, _get_latest_resource_time(child_path))
-		elif child_path.ends_with(".tres"):
-			latest = max(latest, FileAccess.get_modified_time(child_path))
-		file_name = dir.get_next()
-	dir.list_dir_end()
-	return latest

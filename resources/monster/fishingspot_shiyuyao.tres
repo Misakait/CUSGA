@@ -5,20 +5,13 @@
 [ext_resource type="Resource" uid="uid://dgtn8xvgflfdj" path="res://resources/skill_cards/water_phys_hanlangchong.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://dmmhu7qhj6f8o" path="res://resources/skill_cards/water_phys_hongtaoxijuanlai.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://b5jb56ukvkytf" path="res://resources/skill_cards/water_phys_langji.tres" id="7_skill_4"]
-[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
-[sub_resource type="Resource" id="CSV_StartingStats"]
-script = ExtResource("csv_stats_script")
-BasePhysAtk = 80.0
-BasePhysDef = 120.0
-BaseMagPower = 130.0
-BaseMagResist = 180.0
-BaseSpeed = 120.0
 
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("4_skill_1")
@@ -48,8 +41,42 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
+
+
+
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
+Skills = Array[ExtResource("csv_entry_script")]([])
+[sub_resource type="Resource" id="CSV_StartingStats"]
+script = ExtResource("csv_stats_script")
+BasePhysAtk = 80.0
+PhysAtkGrowth = 25.0
+BasePhysDef = 120.0
+PhysDefGrowth = 20.0
+BaseMagPower = 130.0
+MagPowerGrowth = 30.0
+BaseMagResist = 180.0
+MagResistGrowth = 20.0
+BaseSpeed = 120.0
+SpeedGrowth = 5.0
+BaseMaxHealth = 1000.0
+MaxHealthGrowth = 0.0
+BaseFixedPhysPenetration = 0.0
+FixedPhysPenetrationGrowth = 0.0
+BasePhysPenetrationRate = 0.0
+PhysPenetrationRateGrowth = 0.0
+BaseFixedMagicPenetration = 0.0
+FixedMagicPenetrationGrowth = 0.0
+BaseMagicPenetrationRate = 0.0
+MagicPenetrationRateGrowth = 0.0
+BaseCritRate = 0.0
+CritRateGrowth = 0.0
+BaseCritDamage = 1.5
+CritDamageGrowth = 0.0
+BaseEvasionRate = 0.0
+EvasionRateGrowth = 0.0
+BaseLifestealRate = 0.0
+LifestealRateGrowth = 0.0
 
 [resource]
 script = ExtResource("2_monster")
@@ -59,3 +86,4 @@ ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
+Faction = 0

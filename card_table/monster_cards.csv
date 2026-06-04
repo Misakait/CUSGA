@@ -1,5 +1,5 @@
 ﻿resource_path,id_slug,monster_name,element,faction,model_scene_path,behavior_tree_scene_path,skill_names,base_phys_atk,base_phys_def,base_mag_power,base_mag_resist,base_speed,base_max_health,base_fixed_phys_penetration,base_phys_penetration_rate,base_fixed_magic_penetration,base_magic_penetration_rate,base_crit_rate,base_crit_damage,base_evasion_rate,base_lifesteal_rate
-res://resources/monster/anvil_cuihuotiewei.tres,anvil_cuihuotiewei,淬火铁卫,金,0,,,炸弹;金芒覆八方;金术;金击,190.0,320.0,120.0,240.0,105.0,1000.0,10.0,5.0,5.0,10.0,5.0,2.0,5.0,0.0
+res://resources/monster/anvil_cuihuotiewei.tres,anvil_cuihuotiewei,淬火铁卫,金,0,,,炸弹;金芒覆八方;金术;金击,190.0,320.0,120.0,240.0,105.0,1000.0,10.0,13.0,23,10.0,5.0,2.0,5.0,0.0
 res://resources/monster/anvil_duantiezhano.tres,anvil_duantiezhano,锻铁战偶,金,0,,,火击;金芒覆八方;切割;锐锋击;碎铁狂击,140.0,320.0,60.0,160.0,90.0,1000.0,0.0,0.0,0.0,0.0,0.0,1.5,0.0,0.0
 res://resources/monster/anvil_rongduanmobing.tres,anvil_rongduanmobing,熔锻魔兵,火,0,,,炸弹,120.0,180.0,170.0,180.0,115.0,1000.0,0.0,0.0,0.0,0.0,0.0,1.5,0.0,0.0
 res://resources/monster/berrybush_ducongyao.tres,berrybush_ducongyao,毒丛妖,木,0,,,木术;青灵咒;藤响;万枝乱扑袭,80.0,140.0,150.0,200.0,113.0,1000.0,0.0,0.0,0.0,0.0,0.0,1.5,0.0,0.0
