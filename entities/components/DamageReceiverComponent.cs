@@ -22,9 +22,9 @@ public partial class DamageReceiverComponent : Node
     }
 
     /// <summary>
-    /// 接收伤害载荷，按战斗公式结算闪避、暴击、属性克制、随机浮动和吸血。
+    /// 接收伤害载荷，按载荷配置结算闪避、暴击、属性克制、随机浮动和吸血。
     /// </summary>
-    /// <param name="payload">伤害来源、目标、技能威力、伤害类型和五行属性。</param>
+    /// <param name="payload">伤害来源、目标、技能威力、伤害类型、五行属性和修饰配置。</param>
     public void ReceiveDamage(DamagePayload payload)
     {
         Node defenderComponents = GetParent();
@@ -45,7 +45,7 @@ public partial class DamageReceiverComponent : Node
             ?? defenderComponents.GetNodeOrNull<StatusComponent>("StatusComponent");
 
         if (
-            payload.AppliesDefaultCombatModifiers &&
+            payload.HasDamageModifier(DamageModifierFlags.Evasion) &&
             DamageFormula.ShouldEvade(defenderStats?.EvasionRate ?? 0f, _rng.Randf())
         )
         {
@@ -61,7 +61,7 @@ public partial class DamageReceiverComponent : Node
 
         float damage = CalculateBaseDamage(payload, attackerStats, defenderStats);
         bool isCritical = false;
-        if (payload.AppliesDefaultCombatModifiers)
+        if (payload.HasDamageModifier(DamageModifierFlags.Critical))
         {
             isCritical = DamageFormula.ShouldCrit(attackerStats?.CritRate ?? 0f, _rng.Randf());
             damage *= DamageFormula.CalculateCriticalModifier(isCritical, attackerStats?.CritDamage ?? 1f);
@@ -74,7 +74,7 @@ public partial class DamageReceiverComponent : Node
 
         defenderStatus?.ProcessModifyIncomingDamageAfterMitigation(payload, ref damage);
         defenderStatus?.ProcessBeforeHealthDamage(payload, ref damage);
-        if (payload.AppliesDefaultCombatModifiers)
+        if (payload.HasDamageModifier(DamageModifierFlags.RandomVariance))
         {
             ApplyRandomVariance(ref damage);
         }
@@ -83,7 +83,7 @@ public partial class DamageReceiverComponent : Node
         var defenderHealth = FindComponent<HealthComponent>(defenderRoot, "HealthComponent")
             ?? defenderComponents.GetNodeOrNull<HealthComponent>("HealthComponent");
         int actualDamage = defenderHealth?.TakeDamage(finalDamage, payload.Element) ?? 0;
-        if (payload.AppliesDefaultCombatModifiers)
+        if (payload.HasDamageModifier(DamageModifierFlags.Lifesteal))
         {
             ApplyLifesteal(payload.Source, attackerStats, actualDamage);
         }

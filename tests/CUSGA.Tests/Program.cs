@@ -45,9 +45,11 @@ tests.PhysicalDamageFormulaAppliesFixedAndRatePenetration();
 tests.MagicDamageFormulaClampsOverPenetratedResistance();
 tests.DamageFormulaResolvesEvasionCriticalVarianceAndLifesteal();
 tests.DamageFormulaCalculatesActualDamageBeforeLifesteal();
-tests.DotDamageSkipsDefaultCombatModifiers();
-tests.DefaultDamageStillAppliesDefaultCombatModifiers();
-tests.DotDamageStillUsesBeforeHealthDamageHooks();
+tests.DamagePayloadWithoutModifiersSkipsDirectAttackModifiers();
+tests.DefaultDamageStillAppliesDirectAttackModifiers();
+tests.DamagePayloadWithoutModifiersStillUsesBeforeHealthDamageHooks();
+tests.StatusDamageDefaultsToNoDirectAttackModifiers();
+tests.StatusDamageCanEnableCriticalWithoutOtherDirectAttackModifiers();
 tests.AttributeComponentInitializesExpandedCombatAttributes();
 tests.AttributeComponentSynchronizesHealthAndEnergyMaxima();
 tests.AttributeComponentIgnoresMaxEnergyWhenEnergyComponentIsAbsent();
@@ -519,48 +521,31 @@ internal sealed partial class TerrainRandomizationTests
     }
 
     /// <summary>
-    /// 验证 DOT 伤害关闭默认战斗修饰后不会闪避、暴击、随机浮动或吸血。
+    /// 验证没有直接攻击修饰的伤害不会闪避、暴击、随机浮动或吸血。
     /// </summary>
-    public void DotDamageSkipsDefaultCombatModifiers()
+    public void DamagePayloadWithoutModifiersSkipsDirectAttackModifiers()
     {
-        var source = CreateCombatEntity("Source", health: 100);
-        var target = CreateCombatEntity("Target", health: 100);
-        AddAttributes(source, new StartingStats
-        {
-            BaseMaxHealth = 100f,
-            BaseCritRate = 1f,
-            BaseCritDamage = 3f,
-            BaseLifestealRate = 1f
-        });
-        AddAttributes(target, new StartingStats
-        {
-            BaseMaxHealth = 100f,
-            BaseEvasionRate = 1f
-        });
-        GetHealth(source).TakeDamage(50, ElementType.None);
-        var receiver = GetDamageReceiver(target);
-        receiver.RandomVarianceMin = 2f;
-        receiver.RandomVarianceMax = 2f;
+        var probe = CreateDirectAttackModifierProbe();
         var payload = new DamagePayload
         {
-            Source = source,
-            Target = target,
+            Source = probe.Source,
+            Target = probe.Target,
             Damage = 10,
             Type = DamageType.Real,
             Element = ElementType.None,
-            AppliesDefaultCombatModifiers = false
+            DamageModifiers = DamageModifierFlags.None
         };
 
-        receiver.ReceiveDamage(payload);
+        probe.Receiver.ReceiveDamage(payload);
 
-        Assert.Equal(90, GetHealth(target).CurrentValue);
-        Assert.Equal(50, GetHealth(source).CurrentValue);
+        Assert.Equal(90, GetHealth(probe.Target).CurrentValue);
+        Assert.Equal(50, GetHealth(probe.Source).CurrentValue);
     }
 
     /// <summary>
-    /// 验证普通伤害 payload 默认仍会应用闪避等默认战斗修饰。
+    /// 验证普通伤害 payload 默认仍会应用闪避等直接攻击修饰。
     /// </summary>
-    public void DefaultDamageStillAppliesDefaultCombatModifiers()
+    public void DefaultDamageStillAppliesDirectAttackModifiers()
     {
         var source = CreateCombatEntity("Source", health: 100);
         var target = CreateCombatEntity("Target", health: 100);
@@ -585,9 +570,9 @@ internal sealed partial class TerrainRandomizationTests
     }
 
     /// <summary>
-    /// 验证 DOT 跳过默认修饰时仍会执行扣血前 Hook，例如护盾吸收。
+    /// 验证跳过直接攻击修饰时仍会执行扣血前 Hook，例如护盾吸收。
     /// </summary>
-    public void DotDamageStillUsesBeforeHealthDamageHooks()
+    public void DamagePayloadWithoutModifiersStillUsesBeforeHealthDamageHooks()
     {
         var source = CreateCombatEntity("Source", health: 100);
         var target = CreateCombatEntity("Target", health: 100, withStatus: true);
@@ -603,13 +588,52 @@ internal sealed partial class TerrainRandomizationTests
             Damage = 10,
             Type = DamageType.Real,
             Element = ElementType.None,
-            AppliesDefaultCombatModifiers = false
+            DamageModifiers = DamageModifierFlags.None
         };
 
         GetDamageReceiver(target).ReceiveDamage(payload);
 
         Assert.Equal(96, GetHealth(target).CurrentValue);
         Assert.False(GetStatus(target).HasStatus(shieldData.Id));
+    }
+
+    /// <summary>
+    /// 验证状态伤害默认不触发闪避、暴击、随机浮动或吸血。
+    /// </summary>
+    public void StatusDamageDefaultsToNoDirectAttackModifiers()
+    {
+        var probe = CreateDirectAttackModifierProbe();
+        var burnData = new BurnStatusData
+        {
+            DamagePerStack = 10f,
+            DamageType = DamageType.Real,
+            Element = ElementType.None
+        };
+
+        burnData.CreateInstance(probe.Source, probe.Target).OnOwnerTurnStart();
+
+        Assert.Equal(90, GetHealth(probe.Target).CurrentValue);
+        Assert.Equal(50, GetHealth(probe.Source).CurrentValue);
+    }
+
+    /// <summary>
+    /// 验证状态伤害可只开启暴击，不会同时触发闪避、随机浮动或吸血。
+    /// </summary>
+    public void StatusDamageCanEnableCriticalWithoutOtherDirectAttackModifiers()
+    {
+        var probe = CreateDirectAttackModifierProbe();
+        var burnData = new BurnStatusData
+        {
+            DamagePerStack = 10f,
+            DamageType = DamageType.Real,
+            Element = ElementType.None,
+            DamageModifiers = DamageModifierFlags.Critical
+        };
+
+        burnData.CreateInstance(probe.Source, probe.Target).OnOwnerTurnStart();
+
+        Assert.Equal(70, GetHealth(probe.Target).CurrentValue);
+        Assert.Equal(50, GetHealth(probe.Source).CurrentValue);
     }
 
     /// <summary>
@@ -1161,6 +1185,41 @@ internal sealed partial class TerrainRandomizationTests
         entity.GetNode<Node>("Components").AddChild(attributes);
         attributes.InitializeWithData(stats);
         return attributes;
+    }
+
+    private static DirectAttackModifierProbe CreateDirectAttackModifierProbe()
+    {
+        var source = CreateCombatEntity("Source", health: 100);
+        var target = CreateCombatEntity("Target", health: 100);
+        AddAttributes(source, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseCritRate = 1f,
+            BaseCritDamage = 3f,
+            BaseLifestealRate = 1f
+        });
+        AddAttributes(target, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseEvasionRate = 1f
+        });
+        GetHealth(source).TakeDamage(50, ElementType.None);
+        var receiver = GetDamageReceiver(target);
+        receiver.RandomVarianceMin = 2f;
+        receiver.RandomVarianceMax = 2f;
+
+        return new DirectAttackModifierProbe(source, target, receiver);
+    }
+
+    private sealed class DirectAttackModifierProbe(
+        Node source,
+        Node target,
+        DamageReceiverComponent receiver
+    )
+    {
+        public Node Source { get; } = source;
+        public Node Target { get; } = target;
+        public DamageReceiverComponent Receiver { get; } = receiver;
     }
 
     private static StatusComponent GetStatus(Node entity)

@@ -35,7 +35,7 @@ public sealed partial class BurnStatusInstance(
             Damage = (int)damage,
             Type = _data.DamageType,
             Element = _data.Element,
-            AppliesDefaultCombatModifiers = false
+            DamageModifiers = _data.DamageModifiers
         };
 
         receiver.ReceiveDamage(payload);

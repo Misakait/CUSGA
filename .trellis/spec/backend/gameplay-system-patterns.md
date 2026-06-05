@@ -59,6 +59,29 @@ Combat effect data is C# resource-driven:
 
 For new buffs, create a `StatusEffectData` plus `StatusEffectInstance` pair. Override the narrow hook needed by the effect, and add tests around ordering, stack/duration policy, and consumption rules when relevant.
 
+### Damage Payload Modifier Flags
+
+Use `DamagePayload.DamageModifiers` with `DamageModifierFlags` to control direct-attack modifiers. Do not add one-off booleans for evasion, critical hits, random variance, or lifesteal.
+
+Contracts:
+
+- Plain skill damage should rely on the `DamagePayload` default of `DamageModifierFlags.DefaultCombat`.
+- Status or buff damage should expose a resource-level modifier field when designers need configurability; DOT-like damage defaults to `DamageModifierFlags.None`.
+- `DamageReceiverComponent.ReceiveDamage` should ask `payload.HasDamageModifier(...)` at each direct-attack modifier step instead of grouping unrelated modifiers behind one branch.
+- Status damage modification hooks such as `ProcessModifyOutgoingDamage`, `ProcessModifyIncomingDamageBeforeMitigation`, and `ProcessModifyIncomingDamageAfterMitigation` are not part of the direct-attack modifier set yet. If they become configurable later, extend `DamageModifierFlags` rather than reshaping `DamagePayload`.
+
+Good:
+
+```csharp
+payload.HasDamageModifier(DamageModifierFlags.Critical);
+```
+
+Bad:
+
+```csharp
+payload.AppliesDefaultCombatModifiers;
+```
+
 ## Inventory And Equipment
 
 Inventory-like systems use `ItemStack` as a mutable stack object with `OnStackChanged`. UI slots bind to stack references and refresh on stack events.
