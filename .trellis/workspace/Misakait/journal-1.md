@@ -19,7 +19,9 @@ Added night-only map background tinting, standardized room background naming for
 
 ### Main Changes
 
-(Add details)
+- Added battle deck auto-expansion so the active combat deck is not limited by the initial inventory slot count.
+- Kept regular inventory capacity fixed and preserved the existing stack/move semantics through shared capacity prediction hooks.
+- Added C# and Godot headless regression coverage for battle deck expansion, `CanAddItem` prediction, and regular inventory non-expansion.
 
 ### Git Commits
 
@@ -30,7 +32,11 @@ Added night-only map background tinting, standardized room background naming for
 
 ### Testing
 
-- [OK] (Add test results)
+- [OK] `godot-mono --headless --path . --script res://tests/godot/battle_deck_capacity_tests.gd`
+- [OK] `godot-mono --headless --path . --build-solutions --quit`
+- [OK] `env CI=true dotnet build CUSGA.sln --no-restore`
+- [OK] `env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj --no-restore`
+- [OK] `godot-mono --headless --path . --scene res://scenes/Main.tscn --quit-after 5`
 
 ### Status
 
@@ -60,6 +66,39 @@ Populated CUSGA Trellis specs from real Godot/C# patterns, added the minimal fea
 | Hash | Message |
 |------|---------|
 | `79d4802` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 3: BattleDeck auto-expansion
+
+**Date**: 2026-06-05
+**Task**: BattleDeck auto-expansion
+**Branch**: `main`
+
+### Summary
+
+Implemented unlimited battle deck capacity with auto-expansion, aligned CanAddItem with AddItem semantics, and validated with Godot headless and CI dotnet builds.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c47f20c` | (see git log) |
 
 ### Testing
 
