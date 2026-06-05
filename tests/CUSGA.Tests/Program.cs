@@ -15,6 +15,7 @@ using CUSGA.resources.encounters;
 using CUSGA.resources.interaction;
 using CUSGA.resources.crafting;
 using CUSGA.resources.item;
+using CUSGA.resources.item.card;
 using CUSGA.resources.item.equipment;
 using CUSGA.resources.monster;
 using CUSGA.resources.monsters;
@@ -32,6 +33,8 @@ tests.MonsterSkillComponentRandomSkillComesFromConfiguredSkillSet();
 tests.CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot();
 tests.CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult();
 tests.CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit();
+tests.BattleDeckExpandsWhenAddingBeyondInitialCapacity();
+tests.RegularInventoryKeepsFixedCapacityWhenFull();
 tests.NewEquipmentSlotsAcceptCurrentItemTags();
 tests.MagicItemSlotRequiresExplicitMagicItemTag();
 tests.EquipmentDataCanAllowBothRingSlots();
@@ -257,6 +260,44 @@ internal sealed partial class TerrainRandomizationTests
         Assert.Equal(5, inventory.CountWhere(item => item == material));
         Assert.Equal(1, inventory.CountWhere(item => item == filler));
         Assert.Equal(0, inventory.CountWhere(item => item == output));
+    }
+
+    /// <summary>
+    /// 验证出战卡组在初始格子用尽后继续扩容，并始终留出一个可拖入的空槽。
+    /// </summary>
+    public void BattleDeckExpandsWhenAddingBeyondInitialCapacity()
+    {
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        var skillCard = CreateSkillCardDataStub();
+        int initialCapacity = battleDeck.Capacity;
+
+        Assert.True(battleDeck.CanAddItem(skillCard, initialCapacity + 1));
+
+        int remaining = battleDeck.AddItem(skillCard, initialCapacity + 1);
+
+        Assert.Equal(0, remaining);
+        Assert.Equal(initialCapacity + 1, battleDeck.GetSkillCards().Count);
+        Assert.Equal(initialCapacity + 2, battleDeck.Capacity);
+        Assert.True(battleDeck.Slots[battleDeck.Capacity - 1].IsEmpty);
+    }
+
+    /// <summary>
+    /// 验证普通背包仍保持固定容量，避免出战卡组扩容规则泄漏到所有背包。
+    /// </summary>
+    public void RegularInventoryKeepsFixedCapacityWhenFull()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var item = CreateItemDataStub(maxStackSize: 1);
+        int initialCapacity = inventory.Capacity;
+
+        Assert.False(inventory.CanAddItem(item, initialCapacity + 1));
+
+        int remaining = inventory.AddItem(item, initialCapacity + 1);
+
+        Assert.Equal(1, remaining);
+        Assert.Equal(initialCapacity, inventory.Capacity);
     }
 
     /// <summary>
@@ -1210,6 +1251,11 @@ internal sealed partial class TerrainRandomizationTests
         }
         item.CardId = new StringName(cardId);
         return item;
+    }
+
+    private static SkillCardData CreateSkillCardDataStub()
+    {
+        return (SkillCardData)RuntimeHelpers.GetUninitializedObject(typeof(SkillCardData));
     }
 
     private static EquipmentData CreateEquipmentDataStub(params EquipmentSlot[] validSlots)

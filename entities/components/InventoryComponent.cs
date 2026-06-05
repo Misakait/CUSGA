@@ -9,6 +9,9 @@ using CUSGA.core.constants;
 
 namespace CUSGA.entities.components;
 
+/// <summary>
+/// 表示基于固定槽位存放 <see cref="ItemStack"/> 的通用背包组件。
+/// </summary>
 public partial class InventoryComponent : Node, ICraftingInventory
 {
     [Export] public int Capacity { get; private set; } = 27; // 背包格子数
@@ -35,9 +38,109 @@ public partial class InventoryComponent : Node, ICraftingInventory
     // 提供给 UI 遍历用的只读接口
     public IReadOnlyList<ItemStack> Slots => _slots;
 
+    /// <summary>
+    /// 获取此背包是否需要在末尾保留一个空槽位。
+    /// </summary>
+    /// <value>需要为拖拽入口保留空槽时为 <see langword="true"/>。</value>
+    protected virtual bool KeepsTrailingEmptySlot => false;
+
     protected virtual bool CanStoreItem(ItemData item)
     {
         return item != null;
+    }
+
+    /// <summary>
+    /// 在加入物品前为特殊背包预留额外槽位。
+    /// </summary>
+    /// <param name="item">准备加入的物品数据。</param>
+    /// <param name="amount">准备加入的物品数量。</param>
+    protected virtual void PrepareCapacityForAdd(ItemData item, int amount)
+    {
+    }
+
+    /// <summary>
+    /// 判断当前槽位用尽后是否还能提供额外容量。
+    /// </summary>
+    /// <param name="item">需要继续容纳的物品数据。</param>
+    /// <param name="amount">当前槽位无法容纳的剩余数量。</param>
+    /// <returns>特殊背包能够扩容容纳剩余数量时返回 <see langword="true"/>。</returns>
+    protected virtual bool CanProvideAdditionalCapacity(ItemData item, int amount)
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// 计算现有槽位容纳指定物品后仍剩余的数量。
+    /// </summary>
+    /// <param name="item">准备加入的物品数据。</param>
+    /// <param name="amount">准备加入的物品数量。</param>
+    /// <returns>当前槽位无法容纳的剩余数量。</returns>
+    protected int CountRemainingAfterAvailableSlots(ItemData item, int amount)
+    {
+        int remaining = amount;
+        foreach (var slot in _slots)
+        {
+            if (slot.IsEmpty)
+            {
+                remaining -= item.ActualMaxStackSize;
+            }
+            else if (slot.Item == item && !slot.IsFull)
+            {
+                remaining -= slot.AvailableSpace;
+            }
+
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+        }
+
+        return remaining;
+    }
+
+    /// <summary>
+    /// 确保内部槽位数量至少达到指定容量。
+    /// </summary>
+    /// <param name="minimumCapacity">调用方需要的最小槽位数量。</param>
+    protected void EnsureCapacityAtLeast(int minimumCapacity)
+    {
+        if (minimumCapacity <= Capacity)
+        {
+            return;
+        }
+
+        int oldCapacity = Capacity;
+        System.Array.Resize(ref _slots, minimumCapacity);
+        for (int i = oldCapacity; i < minimumCapacity; i++)
+        {
+            _slots[i] = new ItemStack();
+        }
+
+        Capacity = minimumCapacity;
+    }
+
+    private void EnsureTrailingEmptySlot()
+    {
+        foreach (var slot in _slots)
+        {
+            if (slot.IsEmpty)
+            {
+                return;
+            }
+        }
+
+        // 出战卡组需要一个可投放空槽，否则 UI 没有位置接收下一张拖入的牌。
+        EnsureCapacityAtLeast(Capacity + 1);
+    }
+
+    private void NotifyInventoryChanged()
+    {
+        if (KeepsTrailingEmptySlot)
+        {
+            EnsureTrailingEmptySlot();
+        }
+
+        EmitInventoryChanged();
     }
 
     public bool IsValidSlotIndex(int index)
@@ -73,7 +176,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
         }
 
         _slots[index].CopyFrom(stack);
-        EmitInventoryChanged();
+        NotifyInventoryChanged();
         return true;
     }
 
@@ -85,7 +188,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
         }
 
         _slots[index].Clear();
-        EmitInventoryChanged();
+        NotifyInventoryChanged();
         return true;
     }
 
@@ -107,7 +210,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
             _slots[i].Clear();
         }
 
-        EmitInventoryChanged();
+        NotifyInventoryChanged();
         return true;
     }
 
@@ -120,7 +223,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
             .ThenByDescending(stack => stack.Amount) // 再按数量排序（降序，大的在前）
             .Concat(_slots.Where(stack => stack.Item == null)) // null 放最后
             .ToArray();
-        EmitInventoryChanged();
+        NotifyInventoryChanged();
     }
 
     public int AddItem(ItemData item, int amount)
@@ -133,6 +236,8 @@ public partial class InventoryComponent : Node, ICraftingInventory
         int remaining = amount;
         bool changed = false;
 
+        PrepareCapacityForAdd(item, amount);
+
         // 找已经有这个物品，且还没满的格子塞进去
         foreach (var slot in _slots)
         {
@@ -142,7 +247,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
                 changed = true;
                 if (remaining <= 0)
                 {
-                    EmitInventoryChanged();
+                    NotifyInventoryChanged();
                     return 0; // 全部塞完了
                 }
             }
@@ -160,7 +265,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
 
                 if (remaining <= 0)
                 {
-                    EmitInventoryChanged();
+                    NotifyInventoryChanged();
                     return 0;
                 }
             }
@@ -168,7 +273,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
 
         if (changed)
         {
-            EmitInventoryChanged();
+            NotifyInventoryChanged();
         }
 
         // 返回最终没放下的数量
@@ -182,25 +287,8 @@ public partial class InventoryComponent : Node, ICraftingInventory
             return false;
         }
 
-        int remaining = amount;
-        foreach (var slot in _slots)
-        {
-            if (slot.IsEmpty)
-            {
-                remaining -= item.ActualMaxStackSize;
-            }
-            else if (slot.Item == item && !slot.IsFull)
-            {
-                remaining -= slot.AvailableSpace;
-            }
-
-            if (remaining <= 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        int remaining = CountRemainingAfterAvailableSlots(item, amount);
+        return remaining <= 0 || CanProvideAdditionalCapacity(item, remaining);
     }
 
     // 查特定物品够不够
@@ -310,7 +398,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
 
         if (changed)
         {
-            EmitInventoryChanged();
+            NotifyInventoryChanged();
         }
 
         return true;
@@ -397,7 +485,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
             sourceSlot.CopyFrom(tempStack);
         }
 
-        EmitInventoryChanged();
+        NotifyInventoryChanged();
     }
 
     public bool CanReceiveItemFrom(InventoryComponent sourceInventory, int fromIndex, int toIndex)
@@ -470,8 +558,8 @@ public partial class InventoryComponent : Node, ICraftingInventory
             sourceSlot.CopyFrom(tempStack);
         }
 
-        sourceInventory.EmitInventoryChanged();
-        EmitInventoryChanged();
+        sourceInventory.NotifyInventoryChanged();
+        NotifyInventoryChanged();
     }
 
     //尝试合并，之后进行交换
