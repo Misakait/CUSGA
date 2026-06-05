@@ -111,3 +111,36 @@ Implemented unlimited battle deck capacity with auto-expansion, aligned CanAddIt
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Configurable damage modifiers
+
+**Date**: 2026-06-05
+**Task**: Configurable damage modifiers
+**Branch**: `main`
+
+### Summary
+
+Replaced the DamagePayload default-combat bool with DamageModifierFlags, added configurable status damage modifiers, covered behavior in C# and Godot runtime tests, and archived the Trellis task.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f41164d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
