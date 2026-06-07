@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3 uid="uid://c45r6hcgrdcit"]
+
+[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="1_lix4h"]
+[ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="2_fcnkj"]
+[ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="3_3unss"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_kuieb"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="5_1sq63"]
+[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="6_rj5wv"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="7_6fdhq"]
+[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_dx027"]
+[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="9_k15k0"]
+
+[sub_resource type="Resource" id="Resource_2kl7r"]
+script = ExtResource("1_lix4h")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.9
+MaxMaxHealth = 1.2
+MaxPhysAtk = 1.2
+MaxPhysDef = 1.2
+MaxMagPower = 1.2
+MaxMagResist = 1.2
+MaxSpeed = 1.2
+
+[sub_resource type="Resource" id="Resource_d4mx6"]
+script = ExtResource("4_kuieb")
+Item = ExtResource("3_3unss")
+MaxAmount = 3
+
+[sub_resource type="Resource" id="Resource_3khdx"]
+script = ExtResource("5_1sq63")
+Drops = Array[ExtResource("4_kuieb")]([SubResource("Resource_d4mx6")])
+
+[sub_resource type="Resource" id="Resource_eg11l"]
+script = ExtResource("6_rj5wv")
+GatheringTag = &"earth"
+DropTable = SubResource("Resource_3khdx")
+
+[sub_resource type="Resource" id="Resource_kl3op"]
+script = ExtResource("7_6fdhq")
+InteractionBehavior = SubResource("Resource_eg11l")
+CardId = &"earth"
+CardName = "石材地形"
+CardIcon = ExtResource("2_fcnkj")
+
+[sub_resource type="Resource" id="Resource_ibjiy"]
+script = ExtResource("8_dx027")
+TerrainData = SubResource("Resource_kl3op")
+
+[resource]
+script = ExtResource("9_k15k0")
+TerrainPool = [SubResource("Resource_ibjiy")]
+EncounterVarianceRange = SubResource("Resource_2kl7r")

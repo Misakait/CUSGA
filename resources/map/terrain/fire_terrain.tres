@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3]
+
+[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="1_kxulm"]
+[ext_resource type="Texture2D" path="res://res/environment/tree.png" id="2_xsb7k"]
+[ext_resource type="Resource" path="res://resources/item/card/res_cards/torch.tres" id="3_attm4"]
+[ext_resource type="Script" path="res://resources/loot/LootDrop.cs" id="4_i6gwo"]
+[ext_resource type="Script" path="res://resources/loot/LootTable.cs" id="5_jdxpc"]
+[ext_resource type="Script" path="res://resources/interaction/GatheringInteraction.cs" id="6_aq0ua"]
+[ext_resource type="Script" path="res://resources/interaction/TerrainCardData.cs" id="7_pbjrw"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_or3wb"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="9_fftbi"]
+
+[sub_resource type="Resource" id="Resource_wndsc"]
+script = ExtResource("1_kxulm")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.9
+MaxMaxHealth = 1.2
+MaxPhysAtk = 1.2
+MaxPhysDef = 1.2
+MaxMagPower = 1.2
+MaxMagResist = 1.2
+MaxSpeed = 1.2
+
+[sub_resource type="Resource" id="Resource_ysggx"]
+script = ExtResource("4_i6gwo")
+Item = ExtResource("3_attm4")
+MaxAmount = 3
+
+[sub_resource type="Resource" id="Resource_73hw2"]
+script = ExtResource("5_jdxpc")
+Drops = [SubResource("Resource_ysggx")]
+
+[sub_resource type="Resource" id="Resource_qoqhn"]
+script = ExtResource("6_aq0ua")
+GatheringTag = &"fire"
+DropTable = SubResource("Resource_73hw2")
+
+[sub_resource type="Resource" id="Resource_04wpj"]
+script = ExtResource("7_pbjrw")
+InteractionBehavior = SubResource("Resource_qoqhn")
+CardId = &"fire"
+CardName = "火把地形"
+CardIcon = ExtResource("2_xsb7k")
+
+[sub_resource type="Resource" id="Resource_jalxp"]
+script = ExtResource("8_or3wb")
+TerrainData = SubResource("Resource_04wpj")
+
+[resource]
+script = ExtResource("9_fftbi")
+TerrainPool = [SubResource("Resource_jalxp")]
+EncounterVarianceRange = SubResource("Resource_wndsc")

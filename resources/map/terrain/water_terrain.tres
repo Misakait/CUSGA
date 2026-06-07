@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3]
+
+[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="1_v675b"]
+[ext_resource type="Texture2D" path="res://res/environment/tree.png" id="2_6vog2"]
+[ext_resource type="Resource" path="res://resources/item/card/res_cards/branch.tres" id="3_awmcl"]
+[ext_resource type="Script" path="res://resources/loot/LootDrop.cs" id="4_62acw"]
+[ext_resource type="Script" path="res://resources/loot/LootTable.cs" id="5_tdlsx"]
+[ext_resource type="Script" path="res://resources/interaction/GatheringInteraction.cs" id="6_wtwq6"]
+[ext_resource type="Script" path="res://resources/interaction/TerrainCardData.cs" id="7_ixooc"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_0n6ch"]
+[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="9_76e3c"]
+
+[sub_resource type="Resource" id="Resource_ac41b"]
+script = ExtResource("1_v675b")
+MinMaxHealth = 0.9
+MinPhysAtk = 0.9
+MinPhysDef = 0.9
+MinMagPower = 0.9
+MinMagResist = 0.9
+MinSpeed = 0.9
+MaxMaxHealth = 1.2
+MaxPhysAtk = 1.2
+MaxPhysDef = 1.2
+MaxMagPower = 1.2
+MaxMagResist = 1.2
+MaxSpeed = 1.2
+
+[sub_resource type="Resource" id="Resource_yt6hx"]
+script = ExtResource("4_62acw")
+Item = ExtResource("3_awmcl")
+MaxAmount = 3
+
+[sub_resource type="Resource" id="Resource_eg0go"]
+script = ExtResource("5_tdlsx")
+Drops = [SubResource("Resource_yt6hx")]
+
+[sub_resource type="Resource" id="Resource_w6e0r"]
+script = ExtResource("6_wtwq6")
+GatheringTag = &"water"
+DropTable = SubResource("Resource_eg0go")
+
+[sub_resource type="Resource" id="Resource_h8u2k"]
+script = ExtResource("7_ixooc")
+InteractionBehavior = SubResource("Resource_w6e0r")
+CardId = &"water"
+CardName = "水流地形"
+CardIcon = ExtResource("2_6vog2")
+
+[sub_resource type="Resource" id="Resource_nn2p2"]
+script = ExtResource("8_0n6ch")
+TerrainData = SubResource("Resource_h8u2k")
+
+[resource]
+script = ExtResource("9_76e3c")
+TerrainPool = [SubResource("Resource_nn2p2")]
+EncounterVarianceRange = SubResource("Resource_ac41b")
