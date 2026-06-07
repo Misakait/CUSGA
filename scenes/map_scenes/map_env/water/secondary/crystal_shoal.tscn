@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://bocd8i4iha4mj"]
+
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_km5ub"]
+
+[node name="CrystalShoal" type="Node2D" unique_id=956506504]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1852242933]
+position = Vector2(641, 359)
+scale = Vector2(9.1285715, 7.22)
+texture = ExtResource("1_km5ub")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=755798485]
+top_level = true
+offset_left = 496.0
+offset_top = 304.0
+offset_right = 763.13043
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 40
+text = "水晶浅滩"

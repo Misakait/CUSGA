@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://c26o6k34m0edv"]
+
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_m8cuh"]
+
+[node name="ObsidianCliff" type="Node2D" unique_id=917686282]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=871367293]
+position = Vector2(641, 359)
+scale = Vector2(9.1285715, 7.22)
+texture = ExtResource("1_m8cuh")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=2140656043]
+top_level = true
+offset_left = 496.0
+offset_top = 304.0
+offset_right = 763.13043
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 40
+text = "黑曜悬崖"

@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dwoosy2usowu1"]
+
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_5h24s"]
+
+[node name="ValleyPass" type="Node2D" unique_id=939400823]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=356173698]
+position = Vector2(641, 359)
+scale = Vector2(9.1285715, 7.22)
+texture = ExtResource("1_5h24s")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=1834424181]
+top_level = true
+offset_left = 496.0
+offset_top = 304.0
+offset_right = 763.13043
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 40
+text = "山谷隘口"

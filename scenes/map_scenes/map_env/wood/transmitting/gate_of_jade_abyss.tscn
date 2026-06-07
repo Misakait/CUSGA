@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://6vcj3hx5dckw"]
+
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_pdyos"]
+
+[node name="GateOfJadeAbyss" type="Node2D" unique_id=348571000]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1372970054]
+position = Vector2(641, 359)
+scale = Vector2(9.1285715, 7.22)
+texture = ExtResource("1_pdyos")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=1794848154]
+top_level = true
+offset_left = 496.0
+offset_top = 304.0
+offset_right = 763.13043
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 40
+text = "界门·翠渊"

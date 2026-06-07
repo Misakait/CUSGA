@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://cr6055dlhxcq0"]
+
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_v3n5c"]
+
+[node name="SeaOfFlowers" type="Node2D" unique_id=2052678687]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1668976625]
+position = Vector2(641, 359)
+scale = Vector2(9.1285715, 7.22)
+texture = ExtResource("1_v3n5c")
+
+[node name="Label" type="Label" parent="Sprite2D" unique_id=1559421811]
+top_level = true
+offset_left = 496.0
+offset_top = 304.0
+offset_right = 763.13043
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 40
+text = "花海平原"
