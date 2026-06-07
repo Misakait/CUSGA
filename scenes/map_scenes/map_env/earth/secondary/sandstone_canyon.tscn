@@ -1,8 +1,12 @@
-[gd_scene format=3 uid="uid://n6ogrstj3fmp"]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_ol5gj"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_bdp81"]
+[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_ol5gj"]
+[ext_resource type="Resource" path="res://resources/map/terrain/earth_terrain.tres" id="2_roc72"]
 
 [node name="SandstoneCanyon" type="Node2D" unique_id=1779475169]
+script = ExtResource("1_bdp81")
+terrain_profile = ExtResource("2_roc72")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2007839528]
 position = Vector2(639, 361)

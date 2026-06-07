@@ -1,8 +1,12 @@
-[gd_scene format=3 uid="uid://o0luw84wrrg8"]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_ksbba"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_2s5i2"]
+[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_ksbba"]
+[ext_resource type="Resource" path="res://resources/map/terrain/gold_terrain.tres" id="2_73jsc"]
 
 [node name="CopperRustForest" type="Node2D" unique_id=1069784824]
+script = ExtResource("1_2s5i2")
+terrain_profile = ExtResource("2_73jsc")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=857952990]
 position = Vector2(641, 359)

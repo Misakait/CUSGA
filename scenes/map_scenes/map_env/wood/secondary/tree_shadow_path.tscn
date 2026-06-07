@@ -1,8 +1,12 @@
-[gd_scene format=3 uid="uid://m2vlbqk7p54v"]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_cajba"]
+[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_cajba"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_dprxo"]
+[ext_resource type="Resource" path="res://resources/map/terrain/wood_terrain.tres" id="2_77lri"]
 
 [node name="TreeShadowPath" type="Node2D" unique_id=1729048248]
+script = ExtResource("1_dprxo")
+terrain_profile = ExtResource("2_77lri")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2070885040]
 position = Vector2(641, 359)

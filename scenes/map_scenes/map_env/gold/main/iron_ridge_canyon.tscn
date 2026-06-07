@@ -1,8 +1,12 @@
-[gd_scene format=3 uid="uid://bafk3m32l83rw"]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_10f8j"]
+[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_10f8j"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_vte3y"]
+[ext_resource type="Resource" path="res://resources/map/terrain/gold_terrain.tres" id="2_srk70"]
 
 [node name="IronRidgeCanyon" type="Node2D" unique_id=1498638162]
+script = ExtResource("1_vte3y")
+terrain_profile = ExtResource("2_srk70")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=524757151]
 position = Vector2(641, 359)

@@ -152,7 +152,21 @@ func _get_guard_pool_for_position(position: Vector2i) -> Array[PassageGuardEncou
 	if map_attr == null:
 		return []
 
-	return map_attr.guard_encounter_pool
+	# 该场景显式禁用了驻守 → 永不刷怪
+	if map_attr.disable_guards:
+		return []
+
+	var pool: Array = map_attr.guard_encounter_pool
+	if not pool.is_empty():
+		return pool
+
+	# 场景未配置驻守池，回退到全局默认池
+	if settings != null:
+		var default_pool: Array = settings.DefaultGuardPool
+		if not default_pool.is_empty():
+			return default_pool
+
+	return []
 
 func _get_player_tag_component() -> Node:
 	var player := _get_player()

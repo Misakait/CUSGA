@@ -1,8 +1,12 @@
 [gd_scene format=3 uid="uid://w2hiqynv21s4"]
 
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_0kxya"]
 [ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_tf0n1"]
+[ext_resource type="Resource" uid="uid://cpnf33sxwouqw" path="res://resources/map/terrain/normal_terrain.tres" id="2_ihjmn"]
 
 [node name="ClearCreek" type="Node2D" unique_id=1751265788]
+script = ExtResource("1_0kxya")
+terrain_profile = ExtResource("2_ihjmn")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1056728059]
 position = Vector2(641, 359)

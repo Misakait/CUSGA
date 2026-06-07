@@ -2,8 +2,21 @@
 
 [ext_resource type="Script" uid="uid://dmorhqh3c3tca" path="res://resources/map/PassageGuardProbabilityModifier.cs" id="1_aj4bc"]
 [ext_resource type="Script" uid="uid://dxikihvo53lvh" path="res://resources/map/PassageGuardSettings.cs" id="1_settings"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_pged"]
+[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="3_mondata"]
+[ext_resource type="Resource" uid="uid://dtnx6pd1ups8n" path="res://resources/monster/test_monster_1.tres" id="4_testm1"]
+[ext_resource type="Resource" uid="uid://d1k7qaisrtngg" path="res://resources/monster/test_monster_2.tres" id="5_testm2"]
+
+[sub_resource type="Resource" id="guard_test_1"]
+script = ExtResource("2_pged")
+Monsters = Array[ExtResource("3_mondata")]([ExtResource("4_testm1")])
+
+[sub_resource type="Resource" id="guard_test_2"]
+script = ExtResource("2_pged")
+Monsters = Array[ExtResource("3_mondata")]([ExtResource("5_testm2")])
 
 [resource]
 script = ExtResource("1_settings")
 BaseGuardChance = 1.0
 HomeProtectionTag = null
+DefaultGuardPool = Array[ExtResource("2_pged")]([SubResource("guard_test_1"), SubResource("guard_test_2")])

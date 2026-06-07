@@ -1,8 +1,12 @@
-[gd_scene format=3 uid="uid://bgekd1hxdhgqp"]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_ns55r"]
+[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_ns55r"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_tynwg"]
+[ext_resource type="Resource" path="res://resources/map/terrain/gold_terrain.tres" id="2_av0ob"]
 
 [node name="GoldenSandPlain" type="Node2D" unique_id=1610402132]
+script = ExtResource("1_tynwg")
+terrain_profile = ExtResource("2_av0ob")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2099126891]
 position = Vector2(641, 359)

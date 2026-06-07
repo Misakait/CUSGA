@@ -1,3 +1,8 @@
-[gd_scene format=3 uid="uid://dl8l6478nqln0"]
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_n6ejq"]
+[ext_resource type="Resource" path="res://resources/map/terrain/earth_terrain.tres" id="2_sva88"]
 
 [node name="GemVein" type="Node2D" unique_id=270674205]
+script = ExtResource("1_n6ejq")
+terrain_profile = ExtResource("2_sva88")

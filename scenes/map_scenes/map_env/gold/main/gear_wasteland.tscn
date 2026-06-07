@@ -1,8 +1,12 @@
-[gd_scene format=3 uid="uid://c3ncms12q6hlh"]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_8q64i"]
+[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_8q64i"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_d4srp"]
+[ext_resource type="Resource" path="res://resources/map/terrain/gold_terrain.tres" id="2_mj7co"]
 
 [node name="GearWasteland" type="Node2D" unique_id=1776602896]
+script = ExtResource("1_d4srp")
+terrain_profile = ExtResource("2_mj7co")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=120853989]
 position = Vector2(641, 359)

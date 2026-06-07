@@ -24,4 +24,10 @@ public partial class PassageGuardSettings : Resource
     /// 由标签触发的概率修正列表。
     /// </summary>
     [Export] public Array<PassageGuardProbabilityModifier> ProbabilityModifiers { get; set; } = [];
+
+    /// <summary>
+    /// 当 map_attribute 未配置 guard_encounter_pool 时使用的默认驻守怪物池。
+    /// 若两者均为空，则通道不会生成驻守战斗。
+    /// </summary>
+    [Export] public Array<PassageGuardEncounterData> DefaultGuardPool { get; set; } = [];
 }
