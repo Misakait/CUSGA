@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://dehds73ldipyk"]
+
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_orxvf"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_xl8u4"]
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_ws1ti"]
+
+[sub_resource type="Resource" id="Resource_vav3q"]
+script = ExtResource("1_orxvf")
+scene_name = "fossil_cliff"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/main/fossil_cliff.tscn"
+
+[sub_resource type="Resource" id="Resource_r5h8e"]
+script = ExtResource("1_orxvf")
+scene_name = "gem_vein"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/main/gem_vein.tscn"
+
+[sub_resource type="Resource" id="Resource_nyrkm"]
+script = ExtResource("1_orxvf")
+scene_name = "karst_cave"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/main/karst_cave.tscn"
+
+[sub_resource type="Resource" id="Resource_ldsk6"]
+script = ExtResource("1_orxvf")
+scene_name = "meteor_crater"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/main/meteor_crater.tscn"
+
+[sub_resource type="Resource" id="Resource_fxy0o"]
+script = ExtResource("1_orxvf")
+scene_name = "rocky_plain"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/main/rocky_plain.tscn"
+
+[sub_resource type="Resource" id="Resource_ukd8o"]
+script = ExtResource("1_orxvf")
+scene_name = "stone_market"
+category = 3
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/market/stone_market.tscn"
+
+[sub_resource type="Resource" id="Resource_e0pc7"]
+script = ExtResource("1_orxvf")
+scene_name = "gate_of_stone"
+category = 2
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/earth/transmitting/gate_of_stone.tscn"
+
+[sub_resource type="Resource" id="Resource_cxkhe"]
+script = ExtResource("1_orxvf")
+scene_name = "boulder_maze_t1"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/boulder_maze.tscn"
+
+[sub_resource type="Resource" id="Resource_p1a7s"]
+script = ExtResource("1_orxvf")
+scene_name = "crystal_cave_t1"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/crystal_cave.tscn"
+
+[sub_resource type="Resource" id="Resource_by6h6"]
+script = ExtResource("1_orxvf")
+scene_name = "gravel_highland_t1"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/gravel_highland.tscn"
+
+[sub_resource type="Resource" id="Resource_hrnk6"]
+script = ExtResource("1_orxvf")
+scene_name = "quicksand_vortex_t1"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/quicksand_vortex.tscn"
+
+[sub_resource type="Resource" id="Resource_so8sb"]
+script = ExtResource("1_orxvf")
+scene_name = "sandstone_canyon_t1"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/sandstone_canyon.tscn"
+
+[sub_resource type="Resource" id="Resource_cro8f"]
+script = ExtResource("1_orxvf")
+scene_name = "boulder_maze_t2"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/boulder_maze.tscn"
+
+[sub_resource type="Resource" id="Resource_3ok4n"]
+script = ExtResource("1_orxvf")
+scene_name = "crystal_cave_t2"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/crystal_cave.tscn"
+
+[sub_resource type="Resource" id="Resource_lmoju"]
+script = ExtResource("1_orxvf")
+scene_name = "gravel_highland_t2"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/gravel_highland.tscn"
+
+[sub_resource type="Resource" id="Resource_dggac"]
+script = ExtResource("1_orxvf")
+scene_name = "quicksand_vortex_t2"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/quicksand_vortex.tscn"
+
+[sub_resource type="Resource" id="Resource_es4fy"]
+script = ExtResource("1_orxvf")
+scene_name = "sandstone_canyon_t2"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/sandstone_canyon.tscn"
+
+[sub_resource type="Resource" id="Resource_udd5f"]
+script = ExtResource("1_orxvf")
+scene_name = "boulder_maze_t3"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/boulder_maze.tscn"
+
+[sub_resource type="Resource" id="Resource_3iwy3"]
+script = ExtResource("1_orxvf")
+scene_name = "crystal_cave_t3"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/crystal_cave.tscn"
+
+[sub_resource type="Resource" id="Resource_8xfr8"]
+script = ExtResource("1_orxvf")
+scene_name = "gravel_highland_t3"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/gravel_highland.tscn"
+
+[sub_resource type="Resource" id="Resource_g6grn"]
+script = ExtResource("1_orxvf")
+scene_name = "quicksand_vortex_t3"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/quicksand_vortex.tscn"
+
+[sub_resource type="Resource" id="Resource_f014u"]
+script = ExtResource("1_orxvf")
+scene_name = "sandstone_canyon_t3"
+scene_dir = "res://scenes/map_scenes/map_env/earth/secondary/sandstone_canyon.tscn"
+
+[resource]
+script = ExtResource("3_ws1ti")
+biome_name = "earth"
+main_scenes = Array[ExtResource("1_orxvf")]([SubResource("Resource_vav3q"), SubResource("Resource_r5h8e"), SubResource("Resource_nyrkm"), SubResource("Resource_ldsk6"), SubResource("Resource_fxy0o")])
+transition_scenes = Array[ExtResource("1_orxvf")]([SubResource("Resource_cxkhe"), SubResource("Resource_p1a7s"), SubResource("Resource_by6h6"), SubResource("Resource_hrnk6"), SubResource("Resource_so8sb"), SubResource("Resource_cro8f"), SubResource("Resource_3ok4n"), SubResource("Resource_lmoju"), SubResource("Resource_dggac"), SubResource("Resource_es4fy"), SubResource("Resource_udd5f"), SubResource("Resource_3iwy3"), SubResource("Resource_8xfr8"), SubResource("Resource_g6grn"), SubResource("Resource_f014u")])
+teleport_scene = SubResource("Resource_e0pc7")
+market_scene = SubResource("Resource_ukd8o")

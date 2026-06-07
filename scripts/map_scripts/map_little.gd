@@ -27,8 +27,8 @@ func _ready() -> void:
 	
 	if if_see_all_little_map == true:
 		build_all_little_map()
-	build_little_map(1,1)
-	change_this_cell_color(1,1)
+	build_little_map(map_position_create.start_position.x, map_position_create.start_position.y)
+	change_this_cell_color(map_position_create.start_position.x, map_position_create.start_position.y)
 	
 func build_all_little_map():
 	for x in map.size():

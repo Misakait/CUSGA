@@ -21,15 +21,16 @@ const DIR_OFFSETS: Array[Vector2i] = [
 const NORMAL_LABELS: Array[String] = ["往北走", "往东走", "往南走", "往西走"]
 const DIRECTION_ICON_NAMES: Array[String] = ["UpIcon", "RightIcon", "DownIcon", "LeftIcon"]
 
-var current_position: Vector2i = Vector2i(1,1)
+var current_position: Vector2i
 var connect_scene = [0,0,0,0]
-var posx: int = 1
-var posy: int = 1
+var posx: int = 0
+var posy: int = 0
 
 #储存每个场景的button
 var scene_button: Dictionary
 
 func _ready() -> void:
+	current_position = map_position_create.start_position
 	if passage_guard_controller != null and passage_guard_controller.has_signal(&"guard_state_changed"):
 		passage_guard_controller.connect(&"guard_state_changed", Callable(self, "_on_guard_state_changed"))
 	update_scene_button(current_position)

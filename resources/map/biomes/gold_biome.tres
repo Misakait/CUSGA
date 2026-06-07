@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://by40qwyvwd4k8"]
+
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_23xf7"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_ghn8r"]
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_2k83w"]
+
+[sub_resource type="Resource" id="Resource_kt5bt"]
+script = ExtResource("1_23xf7")
+scene_name = "copper_rust_forest"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/main/copper_rust_forest.tscn"
+
+[sub_resource type="Resource" id="Resource_4xkx5"]
+script = ExtResource("1_23xf7")
+scene_name = "gear_wasteland"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/main/gear_wasteland.tscn"
+
+[sub_resource type="Resource" id="Resource_cswr5"]
+script = ExtResource("1_23xf7")
+scene_name = "golden_sand_plain"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/main/golden_sand_plain.tscn"
+
+[sub_resource type="Resource" id="Resource_cveji"]
+script = ExtResource("1_23xf7")
+scene_name = "iron_ridge_canyon"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/main/iron_ridge_canyon.tscn"
+
+[sub_resource type="Resource" id="Resource_41d1a"]
+script = ExtResource("1_23xf7")
+scene_name = "magnetite_mine"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/main/magnetite_mine.tscn"
+
+[sub_resource type="Resource" id="Resource_ctvjx"]
+script = ExtResource("1_23xf7")
+scene_name = "steel_dome_exchange"
+category = 3
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/market/steel_dome_exchange.tscn"
+
+[sub_resource type="Resource" id="Resource_v38ni"]
+script = ExtResource("1_23xf7")
+scene_name = "gate_steel_dome"
+category = 2
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/gold/transmitting/gate_steel_dome.tscn"
+
+[sub_resource type="Resource" id="Resource_8smyo"]
+script = ExtResource("1_23xf7")
+scene_name = "alloy_rift_valley_t1"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_npxqm"]
+script = ExtResource("1_23xf7")
+scene_name = "magnetite_hills_t1"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn"
+
+[sub_resource type="Resource" id="Resource_8gwdb"]
+script = ExtResource("1_23xf7")
+scene_name = "ore_vein_field_t1"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn"
+
+[sub_resource type="Resource" id="Resource_j3dv8"]
+script = ExtResource("1_23xf7")
+scene_name = "rusted_plains_t1"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn"
+
+[sub_resource type="Resource" id="Resource_2u8om"]
+script = ExtResource("1_23xf7")
+scene_name = "smelting_ruins_t1"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn"
+
+[sub_resource type="Resource" id="Resource_i880f"]
+script = ExtResource("1_23xf7")
+scene_name = "alloy_rift_valley_t2"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_e3y1s"]
+script = ExtResource("1_23xf7")
+scene_name = "magnetite_hills_t2"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn"
+
+[sub_resource type="Resource" id="Resource_g6cnh"]
+script = ExtResource("1_23xf7")
+scene_name = "ore_vein_field_t2"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn"
+
+[sub_resource type="Resource" id="Resource_2h4y2"]
+script = ExtResource("1_23xf7")
+scene_name = "rusted_plains_t2"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn"
+
+[sub_resource type="Resource" id="Resource_soa3y"]
+script = ExtResource("1_23xf7")
+scene_name = "smelting_ruins_t2"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn"
+
+[sub_resource type="Resource" id="Resource_o7pn5"]
+script = ExtResource("1_23xf7")
+scene_name = "alloy_rift_valley_t3"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_fpgq6"]
+script = ExtResource("1_23xf7")
+scene_name = "magnetite_hills_t3"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn"
+
+[sub_resource type="Resource" id="Resource_hilbl"]
+script = ExtResource("1_23xf7")
+scene_name = "ore_vein_field_t3"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn"
+
+[sub_resource type="Resource" id="Resource_j8pkk"]
+script = ExtResource("1_23xf7")
+scene_name = "rusted_plains_t3"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn"
+
+[sub_resource type="Resource" id="Resource_v7jde"]
+script = ExtResource("1_23xf7")
+scene_name = "smelting_ruins_t3"
+scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn"
+
+[resource]
+script = ExtResource("3_2k83w")
+biome_name = "gold"
+main_scenes = Array[ExtResource("1_23xf7")]([SubResource("Resource_kt5bt"), SubResource("Resource_4xkx5"), SubResource("Resource_cswr5"), SubResource("Resource_cveji"), SubResource("Resource_41d1a")])
+transition_scenes = Array[ExtResource("1_23xf7")]([SubResource("Resource_8smyo"), SubResource("Resource_npxqm"), SubResource("Resource_8gwdb"), SubResource("Resource_j3dv8"), SubResource("Resource_2u8om"), SubResource("Resource_i880f"), SubResource("Resource_e3y1s"), SubResource("Resource_g6cnh"), SubResource("Resource_2h4y2"), SubResource("Resource_soa3y"), SubResource("Resource_o7pn5"), SubResource("Resource_fpgq6"), SubResource("Resource_hilbl"), SubResource("Resource_j8pkk"), SubResource("Resource_v7jde")])
+teleport_scene = SubResource("Resource_v38ni")
+market_scene = SubResource("Resource_ctvjx")

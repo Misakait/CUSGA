@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://cmnngcyssxi8g"]
+
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_lrojp"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_kq0tc"]
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_fgb7l"]
+
+[sub_resource type="Resource" id="Resource_ykhb5"]
+script = ExtResource("1_lrojp")
+scene_name = "coral_shoal"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/main/coral_shoal.tscn"
+
+[sub_resource type="Resource" id="Resource_7dvim"]
+script = ExtResource("1_lrojp")
+scene_name = "crystal_river"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/main/crystal_river.tscn"
+
+[sub_resource type="Resource" id="Resource_thdl5"]
+script = ExtResource("1_lrojp")
+scene_name = "deep_sea_rift"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/main/deep_sea_rift.tscn"
+
+[sub_resource type="Resource" id="Resource_bap4s"]
+script = ExtResource("1_lrojp")
+scene_name = "frozen_lake"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/main/frozen_lake.tscn"
+
+[sub_resource type="Resource" id="Resource_m7o5j"]
+script = ExtResource("1_lrojp")
+scene_name = "waterfall_cave"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/main/waterfall_cave.tscn"
+
+[sub_resource type="Resource" id="Resource_267ai"]
+script = ExtResource("1_lrojp")
+scene_name = "abyss_sea_market"
+category = 3
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/market/abyss_sea_market.tscn"
+
+[sub_resource type="Resource" id="Resource_v8gcw"]
+script = ExtResource("1_lrojp")
+scene_name = "gate_of_surging_sea"
+category = 2
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/water/transmitting/gate_of_surging_sea.tscn"
+
+[sub_resource type="Resource" id="Resource_i7crg"]
+script = ExtResource("1_lrojp")
+scene_name = "crystal_shoal_t1"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/crystal_shoal.tscn"
+
+[sub_resource type="Resource" id="Resource_sd620"]
+script = ExtResource("1_lrojp")
+scene_name = "deep_sea_undercurrent_t1"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/deep_sea_undercurrent.tscn"
+
+[sub_resource type="Resource" id="Resource_8pkbj"]
+script = ExtResource("1_lrojp")
+scene_name = "frozen_lake_shore_t1"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/frozen_lake_shore.tscn"
+
+[sub_resource type="Resource" id="Resource_wf0pf"]
+script = ExtResource("1_lrojp")
+scene_name = "shallow_reef_t1"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/shallow_reef.tscn"
+
+[sub_resource type="Resource" id="Resource_53gt7"]
+script = ExtResource("1_lrojp")
+scene_name = "waterfall_pool_t1"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/waterfall_pool.tscn"
+
+[sub_resource type="Resource" id="Resource_cmab1"]
+script = ExtResource("1_lrojp")
+scene_name = "crystal_shoal_t2"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/crystal_shoal.tscn"
+
+[sub_resource type="Resource" id="Resource_icoah"]
+script = ExtResource("1_lrojp")
+scene_name = "deep_sea_undercurrent_t2"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/deep_sea_undercurrent.tscn"
+
+[sub_resource type="Resource" id="Resource_ar1nc"]
+script = ExtResource("1_lrojp")
+scene_name = "frozen_lake_shore_t2"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/frozen_lake_shore.tscn"
+
+[sub_resource type="Resource" id="Resource_gjcxo"]
+script = ExtResource("1_lrojp")
+scene_name = "shallow_reef_t2"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/shallow_reef.tscn"
+
+[sub_resource type="Resource" id="Resource_331dc"]
+script = ExtResource("1_lrojp")
+scene_name = "waterfall_pool_t2"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/waterfall_pool.tscn"
+
+[sub_resource type="Resource" id="Resource_7neld"]
+script = ExtResource("1_lrojp")
+scene_name = "crystal_shoal_t3"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/crystal_shoal.tscn"
+
+[sub_resource type="Resource" id="Resource_csxwu"]
+script = ExtResource("1_lrojp")
+scene_name = "deep_sea_undercurrent_t3"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/deep_sea_undercurrent.tscn"
+
+[sub_resource type="Resource" id="Resource_dwr4f"]
+script = ExtResource("1_lrojp")
+scene_name = "frozen_lake_shore_t3"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/frozen_lake_shore.tscn"
+
+[sub_resource type="Resource" id="Resource_3xug4"]
+script = ExtResource("1_lrojp")
+scene_name = "shallow_reef_t3"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/shallow_reef.tscn"
+
+[sub_resource type="Resource" id="Resource_4d6kb"]
+script = ExtResource("1_lrojp")
+scene_name = "waterfall_pool_t3"
+scene_dir = "res://scenes/map_scenes/map_env/water/secondary/waterfall_pool.tscn"
+
+[resource]
+script = ExtResource("3_fgb7l")
+biome_name = "water"
+main_scenes = Array[ExtResource("1_lrojp")]([SubResource("Resource_ykhb5"), SubResource("Resource_7dvim"), SubResource("Resource_thdl5"), SubResource("Resource_bap4s"), SubResource("Resource_m7o5j")])
+transition_scenes = Array[ExtResource("1_lrojp")]([SubResource("Resource_i7crg"), SubResource("Resource_sd620"), SubResource("Resource_8pkbj"), SubResource("Resource_wf0pf"), SubResource("Resource_53gt7"), SubResource("Resource_cmab1"), SubResource("Resource_icoah"), SubResource("Resource_ar1nc"), SubResource("Resource_gjcxo"), SubResource("Resource_331dc"), SubResource("Resource_7neld"), SubResource("Resource_csxwu"), SubResource("Resource_dwr4f"), SubResource("Resource_3xug4"), SubResource("Resource_4d6kb")])
+teleport_scene = SubResource("Resource_v8gcw")
+market_scene = SubResource("Resource_267ai")

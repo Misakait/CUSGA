@@ -2,185 +2,33 @@
 
 [ext_resource type="Script" uid="uid://dbccd17rop2k4" path="res://scripts/map_scripts/map_control.gd" id="1_7fije"]
 [ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_2r3ie"]
-[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="2_aulaq"]
 [ext_resource type="Script" uid="uid://bjncwoym5f2b4" path="res://scripts/map_scripts/map_instantiator.gd" id="3_2r3ie"]
-[ext_resource type="PackedScene" uid="uid://btsikq2ra6c5u" path="res://scenes/map_scenes/map_son_scenes/map_forest.tscn" id="3_4pmc0"]
-[ext_resource type="PackedScene" uid="uid://4a2ijvrcxnqe" path="res://scenes/map_scenes/map_son_scenes/map_cave.tscn" id="4_khs5e"]
-[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="4_y6xvl"]
-[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="5_31j1n"]
 [ext_resource type="Script" uid="uid://d6q8i3s5c07j" path="res://scripts/map_scripts/map_button/map_button.gd" id="5_vtfeq"]
-[ext_resource type="PackedScene" uid="uid://7wdqj8cp2mmy" path="res://scenes/map_scenes/map_son_scenes/map_farm.tscn" id="5_vuryw"]
-[ext_resource type="Resource" uid="uid://dpcb4jwwk8od5" path="res://resources/monster/tree_gulinshuren.tres" id="6_8b4u7"]
-[ext_resource type="PackedScene" uid="uid://dwapmnj5huibf" path="res://scenes/map_scenes/map_son_scenes/map_home.tscn" id="6_vuryw"]
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
-[ext_resource type="PackedScene" uid="uid://bpd2bncemempm" path="res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn" id="7_mrmfi"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
-[ext_resource type="PackedScene" uid="uid://b3i4o3cmggb2s" path="res://scenes/map_scenes/map_son_scenes/map_altar.tscn" id="9_2viwr"]
-[ext_resource type="Resource" uid="uid://dyu838ljiy5ul" path="res://resources/monster/fishingspot_shiyuyao.tres" id="9_31j1n"]
 [ext_resource type="Script" uid="uid://5dcs4o1t3h0" path="res://scripts/map_scripts/map_button/up_button.gd" id="9_bl6s4"]
-[ext_resource type="PackedScene" uid="uid://c4wjpuecdg4cl" path="res://scenes/map_scenes/map_son_scenes/map_shop.tscn" id="10_7lejn"]
-[ext_resource type="Script" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
-[ext_resource type="PackedScene" uid="uid://b3m1p2y3nixre" path="res://scenes/map_scenes/map_son_scenes/map_desert.tscn" id="11_kxp2x"]
-[ext_resource type="PackedScene" uid="uid://tatgubna8cvp" path="res://scenes/map_scenes/map_son_scenes/map_snowfield.tscn" id="12_lyes2"]
+[ext_resource type="Script" uid="uid://ceces3oo175j7" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
 [ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="12_rc7jg"]
 [ext_resource type="Texture2D" uid="uid://bsd554u1puu6u" path="res://res/UI/上-f597.png" id="13_2viwr"]
-[ext_resource type="PackedScene" uid="uid://b22mlxgtsdm06" path="res://scenes/map_scenes/map_son_scenes/map_volcanic.tscn" id="13_667l1"]
 [ext_resource type="Script" uid="uid://htnvjes8g8ym" path="res://scripts/map_scripts/map_button/right_button.gd" id="13_m5w21"]
 [ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_00bk6"]
 [ext_resource type="Script" uid="uid://c7yg358eqvkoy" path="res://scripts/map_scripts/map_button/down_button.gd" id="14_in5uc"]
-[ext_resource type="PackedScene" uid="uid://da11xb6fh4350" path="res://scenes/map_scenes/map_son_scenes/map_hotspring.tscn" id="14_lyes2"]
-[ext_resource type="Script" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
+[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 [ext_resource type="Script" uid="uid://c64fkkngl08fo" path="res://scripts/map_scripts/map_button/left_button.gd" id="15_7fije"]
-[ext_resource type="PackedScene" uid="uid://bd3oumuesx70" path="res://scenes/map_scenes/map_son_scenes/map_brook.tscn" id="15_667l1"]
-[ext_resource type="PackedScene" uid="uid://doi30pgmescy5" path="res://scenes/map_scenes/map_son_scenes/map_underlake.tscn" id="16_a4yqg"]
 [ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_m5w21"]
 [ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_rhltn"]
-[ext_resource type="PackedScene" uid="uid://cwblwans3h34i" path="res://scenes/map_scenes/map_son_scenes/map_desolateland.tscn" id="17_gi0q2"]
-[ext_resource type="PackedScene" uid="uid://hfgp25rvw8be" path="res://scenes/map_scenes/map_son_scenes/map_magmalake.tscn" id="18_0pxkt"]
 [ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/下-f65b.png" id="18_fcbp0"]
-[ext_resource type="Resource" uid="uid://d0ipus1j12737" path="res://resources/monster/lavalake_yanliumohun.tres" id="19_8b4u7"]
 [ext_resource type="Script" uid="uid://coflsqr203xqh" path="res://scripts/map_scripts/passage_guard_controller.gd" id="19_pguard"]
 [ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="20_gky4a"]
 [ext_resource type="Resource" uid="uid://ktq36y7kngt7" path="res://resources/map/default_passage_guard_settings.tres" id="20_pguard"]
 [ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="21_667l1"]
-
-[sub_resource type="Resource" id="Resource_6iqtf"]
-script = ExtResource("4_y6xvl")
-Monsters = Array[ExtResource("5_31j1n")]([ExtResource("6_8b4u7")])
-metadata/_custom_type_script = "uid://drhmmfbbl1x6o"
-
-[sub_resource type="Resource" id="Resource_4pmc0"]
-script = ExtResource("2_aulaq")
-scene_name = "forest"
-scene_count = 6
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_forest.tscn"
-scene_pkg = ExtResource("3_4pmc0")
-guard_encounter_pool = Array[ExtResource("4_y6xvl")]([SubResource("Resource_6iqtf")])
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_khs5e"]
-script = ExtResource("2_aulaq")
-scene_name = "cave"
-scene_count = 5
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_cave.tscn"
-scene_pkg = ExtResource("4_khs5e")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_8b4u7"]
-script = ExtResource("4_y6xvl")
-Monsters = Array[ExtResource("5_31j1n")]([ExtResource("9_31j1n")])
-metadata/_custom_type_script = "uid://drhmmfbbl1x6o"
-
-[sub_resource type="Resource" id="Resource_vuryw"]
-script = ExtResource("2_aulaq")
-scene_name = "farm"
-scene_count = 4
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_farm.tscn"
-scene_pkg = ExtResource("5_vuryw")
-guard_encounter_pool = Array[ExtResource("4_y6xvl")]([SubResource("Resource_8b4u7")])
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_1iq7d"]
-script = ExtResource("2_aulaq")
-scene_name = "home"
-scene_count = 1
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_home.tscn"
-scene_pkg = ExtResource("6_vuryw")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_bl6s4"]
-script = ExtResource("2_aulaq")
-scene_name = "boss_room"
-scene_count = 1
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_boss_room.tscn"
-scene_pkg = ExtResource("7_mrmfi")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_rhltn"]
-script = ExtResource("2_aulaq")
-scene_name = "altar_room"
-scene_count = 1
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_altar.tscn"
-scene_pkg = ExtResource("9_2viwr")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_a4yqg"]
-script = ExtResource("2_aulaq")
-scene_name = "shop"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_shop.tscn"
-scene_pkg = ExtResource("10_7lejn")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_6hss4"]
-script = ExtResource("2_aulaq")
-scene_name = "desert"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_desert.tscn"
-scene_pkg = ExtResource("11_kxp2x")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_gi0q2"]
-script = ExtResource("2_aulaq")
-scene_name = "snowfield"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_snowfield.tscn"
-scene_pkg = ExtResource("12_lyes2")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_0pxkt"]
-script = ExtResource("2_aulaq")
-scene_name = "volcanic"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_volcanic.tscn"
-scene_pkg = ExtResource("13_667l1")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_ooc15"]
-script = ExtResource("2_aulaq")
-scene_name = "hotspring"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_hotspring.tscn"
-scene_pkg = ExtResource("14_lyes2")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_viair"]
-script = ExtResource("4_y6xvl")
-Monsters = Array[ExtResource("5_31j1n")]([ExtResource("19_8b4u7")])
-metadata/_custom_type_script = "uid://drhmmfbbl1x6o"
-
-[sub_resource type="Resource" id="Resource_qm2pj"]
-script = ExtResource("2_aulaq")
-scene_name = "brook"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_brook.tscn"
-scene_pkg = ExtResource("15_667l1")
-guard_encounter_pool = Array[ExtResource("4_y6xvl")]([SubResource("Resource_viair")])
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_ncygy"]
-script = ExtResource("2_aulaq")
-scene_name = "underlake"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_underlake.tscn"
-scene_pkg = ExtResource("16_a4yqg")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_y6xvl"]
-script = ExtResource("2_aulaq")
-scene_name = "desolateland"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_desolateland.tscn"
-scene_pkg = ExtResource("17_gi0q2")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
-
-[sub_resource type="Resource" id="Resource_31j1n"]
-script = ExtResource("2_aulaq")
-scene_name = "magmalake"
-scene_count = 2
-scene_dir = "res://scenes/map_scenes/map_son_scenes/map_magmalake.tscn"
-scene_pkg = ExtResource("18_0pxkt")
-metadata/_custom_type_script = "uid://u4nusf1kaw5a"
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="22_biome"]
+[ext_resource type="Resource" path="res://resources/map/biomes/normal_biome.tres" id="23_normal"]
+[ext_resource type="Resource" path="res://resources/map/biomes/earth_biome.tres" id="24_earth"]
+[ext_resource type="Resource" path="res://resources/map/biomes/fire_biome.tres" id="25_fire"]
+[ext_resource type="Resource" path="res://resources/map/biomes/gold_biome.tres" id="26_gold"]
+[ext_resource type="Resource" path="res://resources/map/biomes/water_biome.tres" id="27_water"]
+[ext_resource type="Resource" path="res://resources/map/biomes/wood_biome.tres" id="28_wood"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
 texture = ExtResource("14_00bk6")
@@ -191,12 +39,10 @@ canvas_layer = NodePath("CanvasLayer")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("8_aulaq")
-map_type_attribute = Array[ExtResource("2_aulaq")]([SubResource("Resource_4pmc0"), SubResource("Resource_khs5e"), SubResource("Resource_vuryw"), SubResource("Resource_1iq7d"), SubResource("Resource_bl6s4"), SubResource("Resource_rhltn"), SubResource("Resource_a4yqg"), SubResource("Resource_6hss4"), SubResource("Resource_gi0q2"), SubResource("Resource_0pxkt"), SubResource("Resource_ooc15"), SubResource("Resource_qm2pj"), SubResource("Resource_ncygy"), SubResource("Resource_y6xvl"), SubResource("Resource_31j1n")])
+biome_definitions = Array[ExtResource("22_biome")]([ExtResource("23_normal"), ExtResource("24_earth"), ExtResource("25_fire"), ExtResource("26_gold"), ExtResource("27_water"), ExtResource("28_wood")])
 
 [node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("2_2r3ie")
-map_len_x = 5
-map_len_y = 5
 
 [node name="PassageGuardController" type="Node" parent="." unique_id=1821918264]
 script = ExtResource("19_pguard")
@@ -210,6 +56,7 @@ DownButton = NodePath("Down")
 LeftButton = NodePath("Left")
 
 [node name="Up" type="Node2D" parent="MapButton" unique_id=320211989 node_paths=PackedStringArray("h_e_zoom")]
+z_index = 1
 script = ExtResource("9_bl6s4")
 h_e_zoom = NodePath("hover_exit_zoom")
 
@@ -253,6 +100,7 @@ script = ExtResource("11_00bk6")
 sprite2d = NodePath("../UpButton")
 
 [node name="Right" type="Node2D" parent="MapButton" unique_id=2036926148 node_paths=PackedStringArray("h_e_zoom")]
+z_index = 1
 script = ExtResource("13_m5w21")
 h_e_zoom = NodePath("hover_exit_zoom")
 
@@ -294,6 +142,7 @@ script = ExtResource("11_00bk6")
 sprite2d = NodePath("../RightButton")
 
 [node name="Down" type="Node2D" parent="MapButton" unique_id=1514244813 node_paths=PackedStringArray("h_e_zoom")]
+z_index = 1
 script = ExtResource("14_in5uc")
 h_e_zoom = NodePath("hover_exit_zoom")
 
@@ -336,6 +185,7 @@ script = ExtResource("11_00bk6")
 sprite2d = NodePath("../DownButton")
 
 [node name="Left" type="Node2D" parent="MapButton" unique_id=993494128 node_paths=PackedStringArray("h_e_zoom")]
+z_index = 1
 script = ExtResource("15_7fije")
 h_e_zoom = NodePath("hover_exit_zoom")
 

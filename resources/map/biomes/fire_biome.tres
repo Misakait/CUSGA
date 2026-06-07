@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://btu6hv2cucsyd"]
+
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_titrg"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_lkx18"]
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_f5sdu"]
+
+[sub_resource type="Resource" id="Resource_qtjxu"]
+script = ExtResource("1_titrg")
+scene_name = "ash_plain"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/main/ash_plain.tscn"
+
+[sub_resource type="Resource" id="Resource_vgaip"]
+script = ExtResource("1_titrg")
+scene_name = "lava_riverside"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/main/lava_riverside.tscn"
+
+[sub_resource type="Resource" id="Resource_nwa21"]
+script = ExtResource("1_titrg")
+scene_name = "obsidian_cliff"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/main/obsidian_cliff.tscn"
+
+[sub_resource type="Resource" id="Resource_khq1t"]
+script = ExtResource("1_titrg")
+scene_name = "sulfur_rift"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/main/sulfur_rift.tscn"
+
+[sub_resource type="Resource" id="Resource_fec6u"]
+script = ExtResource("1_titrg")
+scene_name = "volcanic_foothills"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/main/volcanic_foothills.tscn"
+
+[sub_resource type="Resource" id="Resource_754pp"]
+script = ExtResource("1_titrg")
+scene_name = "scorched_wilds_exchange"
+category = 3
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/market/scorched_wilds_exchange.tscn"
+
+[sub_resource type="Resource" id="Resource_elpim"]
+script = ExtResource("1_titrg")
+scene_name = "gate_of_scorched_wilds"
+category = 2
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/fire/transmitting/gate_of_scorched_wilds.tscn"
+
+[sub_resource type="Resource" id="Resource_l6odk"]
+script = ExtResource("1_titrg")
+scene_name = "ash_hill_t1"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/ash_hill.tscn"
+
+[sub_resource type="Resource" id="Resource_sd477"]
+script = ExtResource("1_titrg")
+scene_name = "geothermal_valley_t1"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/geothermal_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_ig0jg"]
+script = ExtResource("1_titrg")
+scene_name = "igneous_cliff_t1"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/igneous_cliff.tscn"
+
+[sub_resource type="Resource" id="Resource_7icx5"]
+script = ExtResource("1_titrg")
+scene_name = "lava_plateau_t1"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/lava_plateau.tscn"
+
+[sub_resource type="Resource" id="Resource_x2dwi"]
+script = ExtResource("1_titrg")
+scene_name = "sulfur_passage_t1"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/sulfur_passage.tscn"
+
+[sub_resource type="Resource" id="Resource_hkrui"]
+script = ExtResource("1_titrg")
+scene_name = "ash_hill_t2"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/ash_hill.tscn"
+
+[sub_resource type="Resource" id="Resource_gdgfj"]
+script = ExtResource("1_titrg")
+scene_name = "geothermal_valley_t2"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/geothermal_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_f2i77"]
+script = ExtResource("1_titrg")
+scene_name = "igneous_cliff_t2"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/igneous_cliff.tscn"
+
+[sub_resource type="Resource" id="Resource_xac82"]
+script = ExtResource("1_titrg")
+scene_name = "lava_plateau_t2"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/lava_plateau.tscn"
+
+[sub_resource type="Resource" id="Resource_xsl03"]
+script = ExtResource("1_titrg")
+scene_name = "sulfur_passage_t2"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/sulfur_passage.tscn"
+
+[sub_resource type="Resource" id="Resource_sbwcf"]
+script = ExtResource("1_titrg")
+scene_name = "ash_hill_t3"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/ash_hill.tscn"
+
+[sub_resource type="Resource" id="Resource_o3456"]
+script = ExtResource("1_titrg")
+scene_name = "geothermal_valley_t3"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/geothermal_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_5pxwg"]
+script = ExtResource("1_titrg")
+scene_name = "igneous_cliff_t3"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/igneous_cliff.tscn"
+
+[sub_resource type="Resource" id="Resource_rb8rw"]
+script = ExtResource("1_titrg")
+scene_name = "lava_plateau_t3"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/lava_plateau.tscn"
+
+[sub_resource type="Resource" id="Resource_b07lv"]
+script = ExtResource("1_titrg")
+scene_name = "sulfur_passage_t3"
+scene_dir = "res://scenes/map_scenes/map_env/fire/secondary/sulfur_passage.tscn"
+
+[resource]
+script = ExtResource("3_f5sdu")
+biome_name = "fire"
+main_scenes = Array[ExtResource("1_titrg")]([SubResource("Resource_qtjxu"), SubResource("Resource_vgaip"), SubResource("Resource_nwa21"), SubResource("Resource_khq1t"), SubResource("Resource_fec6u")])
+transition_scenes = Array[ExtResource("1_titrg")]([SubResource("Resource_l6odk"), SubResource("Resource_sd477"), SubResource("Resource_ig0jg"), SubResource("Resource_7icx5"), SubResource("Resource_x2dwi"), SubResource("Resource_hkrui"), SubResource("Resource_gdgfj"), SubResource("Resource_f2i77"), SubResource("Resource_xac82"), SubResource("Resource_xsl03"), SubResource("Resource_sbwcf"), SubResource("Resource_o3456"), SubResource("Resource_5pxwg"), SubResource("Resource_rb8rw"), SubResource("Resource_b07lv")])
+teleport_scene = SubResource("Resource_elpim")
+market_scene = SubResource("Resource_754pp")

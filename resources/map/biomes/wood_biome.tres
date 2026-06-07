@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://cvg5cevllo4mi"]
+
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_1r3vh"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_lrsen"]
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_70bvo"]
+
+[sub_resource type="Resource" id="Resource_jpbvq"]
+script = ExtResource("1_1r3vh")
+scene_name = "ancient_tree"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/main/ancient_tree.tscn"
+
+[sub_resource type="Resource" id="Resource_d3x5l"]
+script = ExtResource("1_1r3vh")
+scene_name = "deep_forest"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/main/deep_forest.tscn"
+
+[sub_resource type="Resource" id="Resource_m5tcu"]
+script = ExtResource("1_1r3vh")
+scene_name = "sea_of_flowers"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/main/sea_of_flowers.tscn"
+
+[sub_resource type="Resource" id="Resource_hw5gh"]
+script = ExtResource("1_1r3vh")
+scene_name = "spirit_bamboo_path"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/main/spirit_bamboo_path.tscn"
+
+[sub_resource type="Resource" id="Resource_w8eam"]
+script = ExtResource("1_1r3vh")
+scene_name = "vine_swamp"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/main/vine_swamp.tscn"
+
+[sub_resource type="Resource" id="Resource_tf8ja"]
+script = ExtResource("1_1r3vh")
+scene_name = "jade_abyss_exchange"
+category = 3
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/market/jade_abyss_exchange.tscn"
+
+[sub_resource type="Resource" id="Resource_81lh4"]
+script = ExtResource("1_1r3vh")
+scene_name = "gate_of_jade_abyss"
+category = 2
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/wood/transmitting/gate_of_jade_abyss.tscn"
+
+[sub_resource type="Resource" id="Resource_janqp"]
+script = ExtResource("1_1r3vh")
+scene_name = "ancient_root_tunnel_t1"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/ancient_root_tunnel.tscn"
+
+[sub_resource type="Resource" id="Resource_6mvl2"]
+script = ExtResource("1_1r3vh")
+scene_name = "bamboo_wind_path_t1"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/bamboo_wind_path.tscn"
+
+[sub_resource type="Resource" id="Resource_bpktq"]
+script = ExtResource("1_1r3vh")
+scene_name = "honey_meadow_t1"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/honey_meadow.tscn"
+
+[sub_resource type="Resource" id="Resource_ctewb"]
+script = ExtResource("1_1r3vh")
+scene_name = "mossy_valley_t1"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/mossy_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_6krit"]
+script = ExtResource("1_1r3vh")
+scene_name = "tree_shadow_path_t1"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/tree_shadow_path.tscn"
+
+[sub_resource type="Resource" id="Resource_e7ajo"]
+script = ExtResource("1_1r3vh")
+scene_name = "ancient_root_tunnel_t2"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/ancient_root_tunnel.tscn"
+
+[sub_resource type="Resource" id="Resource_duo8c"]
+script = ExtResource("1_1r3vh")
+scene_name = "bamboo_wind_path_t2"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/bamboo_wind_path.tscn"
+
+[sub_resource type="Resource" id="Resource_75gdn"]
+script = ExtResource("1_1r3vh")
+scene_name = "honey_meadow_t2"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/honey_meadow.tscn"
+
+[sub_resource type="Resource" id="Resource_raem5"]
+script = ExtResource("1_1r3vh")
+scene_name = "mossy_valley_t2"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/mossy_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_tkj0f"]
+script = ExtResource("1_1r3vh")
+scene_name = "tree_shadow_path_t2"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/tree_shadow_path.tscn"
+
+[sub_resource type="Resource" id="Resource_6aeer"]
+script = ExtResource("1_1r3vh")
+scene_name = "ancient_root_tunnel_t3"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/ancient_root_tunnel.tscn"
+
+[sub_resource type="Resource" id="Resource_4b46q"]
+script = ExtResource("1_1r3vh")
+scene_name = "bamboo_wind_path_t3"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/bamboo_wind_path.tscn"
+
+[sub_resource type="Resource" id="Resource_q2id3"]
+script = ExtResource("1_1r3vh")
+scene_name = "honey_meadow_t3"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/honey_meadow.tscn"
+
+[sub_resource type="Resource" id="Resource_llpbm"]
+script = ExtResource("1_1r3vh")
+scene_name = "mossy_valley_t3"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/mossy_valley.tscn"
+
+[sub_resource type="Resource" id="Resource_hpcd3"]
+script = ExtResource("1_1r3vh")
+scene_name = "tree_shadow_path_t3"
+scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/tree_shadow_path.tscn"
+
+[resource]
+script = ExtResource("3_70bvo")
+biome_name = "wood"
+main_scenes = Array[ExtResource("1_1r3vh")]([SubResource("Resource_jpbvq"), SubResource("Resource_d3x5l"), SubResource("Resource_m5tcu"), SubResource("Resource_hw5gh"), SubResource("Resource_w8eam")])
+transition_scenes = Array[ExtResource("1_1r3vh")]([SubResource("Resource_janqp"), SubResource("Resource_6mvl2"), SubResource("Resource_bpktq"), SubResource("Resource_ctewb"), SubResource("Resource_6krit"), SubResource("Resource_e7ajo"), SubResource("Resource_duo8c"), SubResource("Resource_75gdn"), SubResource("Resource_raem5"), SubResource("Resource_tkj0f"), SubResource("Resource_6aeer"), SubResource("Resource_4b46q"), SubResource("Resource_q2id3"), SubResource("Resource_llpbm"), SubResource("Resource_hpcd3")])
+teleport_scene = SubResource("Resource_81lh4")
+market_scene = SubResource("Resource_tf8ja")

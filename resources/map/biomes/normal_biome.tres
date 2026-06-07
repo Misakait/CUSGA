@@ -1,0 +1,138 @@
+[gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://1if71u0wx1x8"]
+
+[ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_lnrxb"]
+[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_yddfo"]
+[ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_8npsg"]
+
+[sub_resource type="Resource" id="Resource_48238"]
+script = ExtResource("1_lnrxb")
+scene_name = "clear_creek"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/main/clear_creek.tscn"
+
+[sub_resource type="Resource" id="Resource_xypr1"]
+script = ExtResource("1_lnrxb")
+scene_name = "common_forest"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/main/common_forest.tscn"
+
+[sub_resource type="Resource" id="Resource_3gyhh"]
+script = ExtResource("1_lnrxb")
+scene_name = "rolling_hills"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/main/rolling_hills.tscn"
+
+[sub_resource type="Resource" id="Resource_256aw"]
+script = ExtResource("1_lnrxb")
+scene_name = "tranquil_lakeside"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/main/tranquil_lakeside.tscn"
+
+[sub_resource type="Resource" id="Resource_5cmny"]
+script = ExtResource("1_lnrxb")
+scene_name = "vast_grassland"
+category = 0
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/main/vast_grassland.tscn"
+
+[sub_resource type="Resource" id="Resource_ms1x4"]
+script = ExtResource("1_lnrxb")
+scene_name = "ordinary_market"
+category = 3
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/market/ordinary_market.tscn"
+
+[sub_resource type="Resource" id="Resource_rmfk3"]
+script = ExtResource("1_lnrxb")
+scene_name = "gate_of_ordinariness"
+category = 2
+min_connections = 3
+scene_dir = "res://scenes/map_scenes/map_env/normal/transmitting/gate_of_ordinariness.tscn"
+
+[sub_resource type="Resource" id="Resource_eod7v"]
+script = ExtResource("1_lnrxb")
+scene_name = "abandoned_farmland_t1"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/abandoned_farmland.tscn"
+
+[sub_resource type="Resource" id="Resource_1dryn"]
+script = ExtResource("1_lnrxb")
+scene_name = "forest_path_t1"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/forest_path.tscn"
+
+[sub_resource type="Resource" id="Resource_0n3my"]
+script = ExtResource("1_lnrxb")
+scene_name = "ordinary_wetland_t1"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/ordinary_wetland.tscn"
+
+[sub_resource type="Resource" id="Resource_s66g6"]
+script = ExtResource("1_lnrxb")
+scene_name = "riverside_meadow_t1"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/riverside_meadow.tscn"
+
+[sub_resource type="Resource" id="Resource_f4vq3"]
+script = ExtResource("1_lnrxb")
+scene_name = "valley_pass_t1"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/valley_pass.tscn"
+
+[sub_resource type="Resource" id="Resource_umc3w"]
+script = ExtResource("1_lnrxb")
+scene_name = "abandoned_farmland_t2"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/abandoned_farmland.tscn"
+
+[sub_resource type="Resource" id="Resource_wwpc1"]
+script = ExtResource("1_lnrxb")
+scene_name = "forest_path_t2"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/forest_path.tscn"
+
+[sub_resource type="Resource" id="Resource_bvej8"]
+script = ExtResource("1_lnrxb")
+scene_name = "ordinary_wetland_t2"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/ordinary_wetland.tscn"
+
+[sub_resource type="Resource" id="Resource_j2pbd"]
+script = ExtResource("1_lnrxb")
+scene_name = "riverside_meadow_t2"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/riverside_meadow.tscn"
+
+[sub_resource type="Resource" id="Resource_abjm4"]
+script = ExtResource("1_lnrxb")
+scene_name = "valley_pass_t2"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/valley_pass.tscn"
+
+[sub_resource type="Resource" id="Resource_g7wvo"]
+script = ExtResource("1_lnrxb")
+scene_name = "abandoned_farmland_t3"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/abandoned_farmland.tscn"
+
+[sub_resource type="Resource" id="Resource_p5x8e"]
+script = ExtResource("1_lnrxb")
+scene_name = "forest_path_t3"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/forest_path.tscn"
+
+[sub_resource type="Resource" id="Resource_b333r"]
+script = ExtResource("1_lnrxb")
+scene_name = "ordinary_wetland_t3"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/ordinary_wetland.tscn"
+
+[sub_resource type="Resource" id="Resource_u4jaj"]
+script = ExtResource("1_lnrxb")
+scene_name = "riverside_meadow_t3"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/riverside_meadow.tscn"
+
+[sub_resource type="Resource" id="Resource_tg2dd"]
+script = ExtResource("1_lnrxb")
+scene_name = "valley_pass_t3"
+scene_dir = "res://scenes/map_scenes/map_env/normal/secondary/valley_pass.tscn"
+
+[resource]
+script = ExtResource("3_8npsg")
+biome_name = "normal"
+is_starting_biome = true
+main_scenes = Array[ExtResource("1_lnrxb")]([SubResource("Resource_48238"), SubResource("Resource_xypr1"), SubResource("Resource_3gyhh"), SubResource("Resource_256aw"), SubResource("Resource_5cmny")])
+transition_scenes = Array[ExtResource("1_lnrxb")]([SubResource("Resource_eod7v"), SubResource("Resource_1dryn"), SubResource("Resource_0n3my"), SubResource("Resource_s66g6"), SubResource("Resource_f4vq3"), SubResource("Resource_umc3w"), SubResource("Resource_wwpc1"), SubResource("Resource_bvej8"), SubResource("Resource_j2pbd"), SubResource("Resource_abjm4"), SubResource("Resource_g7wvo"), SubResource("Resource_p5x8e"), SubResource("Resource_b333r"), SubResource("Resource_u4jaj"), SubResource("Resource_tg2dd")])
+teleport_scene = SubResource("Resource_rmfk3")
+market_scene = SubResource("Resource_ms1x4")

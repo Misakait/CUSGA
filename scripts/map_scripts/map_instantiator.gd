@@ -24,7 +24,7 @@ func _ready() -> void:
 	_bind_time_system()
 	#创建地图
 	create_map_road()
-	load_scene_at(Vector2i(1,1))
+	load_scene_at(map_position.start_position)
 
 func _exit_tree() -> void:
 	if time_system != null and time_system.has_signal(&"DayNightToggled"):

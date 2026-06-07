@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(godot-mono --headless --path . --check-only --script res://resources/map/scene_category.gd)"
+    ]
+  }
+}
