@@ -183,3 +183,37 @@ Made board terrain card scale configurable from the Godot inspector, added a foc
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: Inventory shortcut interactions
+
+**Date**: 2026-06-08
+**Task**: Inventory shortcut interactions
+**Branch**: `main`
+
+### Summary
+
+Implemented Shift/Alt shortcut interactions for skill cards and quick equipment from inventory, added component coverage, validated builds and Godot smoke checks, then archived the Trellis task.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5e5a385` | (see git log) |
+| `b18af92` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
