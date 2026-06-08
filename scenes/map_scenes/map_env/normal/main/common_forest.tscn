@@ -6,6 +6,7 @@
 
 [node name="CommonForest" type="Node2D" unique_id=1194793614]
 script = ExtResource("1_34iw6")
+scene_type = 1
 terrain_profile = ExtResource("2_hdnko")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=916113850]

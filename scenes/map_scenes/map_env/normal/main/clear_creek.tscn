@@ -6,6 +6,7 @@
 
 [node name="ClearCreek" type="Node2D" unique_id=1751265788]
 script = ExtResource("1_0kxya")
+scene_type = 1
 terrain_profile = ExtResource("2_ihjmn")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1056728059]

@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cntewxpy1gyk0"]
 
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_cv7so"]
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_yni16"]
-[ext_resource type="Resource" path="res://resources/map/terrain/water_terrain.tres" id="2_6ug1e"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_cv7so"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_yni16"]
+[ext_resource type="Resource" uid="uid://bw56oywci2hcv" path="res://resources/map/terrain/water_terrain.tres" id="2_6ug1e"]
 
 [node name="CoralShoal" type="Node2D" unique_id=1489912259]
 script = ExtResource("1_cv7so")
+scene_type = 1
 terrain_profile = ExtResource("2_6ug1e")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=445588981]

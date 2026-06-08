@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dnvtapb1n1iju"]
 
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_a8v32"]
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_bma53"]
-[ext_resource type="Resource" path="res://resources/map/terrain/fire_terrain.tres" id="2_jf483"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_a8v32"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_bma53"]
+[ext_resource type="Resource" uid="uid://bqvbldkyy2xri" path="res://resources/map/terrain/fire_terrain.tres" id="2_jf483"]
 
 [node name="SulfurRift" type="Node2D" unique_id=426255418]
 script = ExtResource("1_a8v32")
+scene_type = 1
 terrain_profile = ExtResource("2_jf483")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1672086680]

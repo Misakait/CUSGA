@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dcsrql22k6dv1"]
 
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_8b4ol"]
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_k2nkp"]
-[ext_resource type="Resource" path="res://resources/map/terrain/wood_terrain.tres" id="2_0ubtr"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_8b4ol"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_k2nkp"]
+[ext_resource type="Resource" uid="uid://cirik7pf566el" path="res://resources/map/terrain/wood_terrain.tres" id="2_0ubtr"]
 
 [node name="SpiritBambooPath" type="Node2D" unique_id=1683801259]
 script = ExtResource("1_8b4ol")
+scene_type = 1
 terrain_profile = ExtResource("2_0ubtr")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1056370146]

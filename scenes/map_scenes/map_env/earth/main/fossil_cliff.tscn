@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://6yjerb3opef0"]
 
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_m4voa"]
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_vnxee"]
-[ext_resource type="Resource" path="res://resources/map/terrain/earth_terrain.tres" id="2_84mct"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_m4voa"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_vnxee"]
+[ext_resource type="Resource" uid="uid://c45r6hcgrdcit" path="res://resources/map/terrain/earth_terrain.tres" id="2_84mct"]
 
 [node name="FossilCliff" type="Node2D" unique_id=620139840]
 script = ExtResource("1_vnxee")
+scene_type = 1
 terrain_profile = ExtResource("2_84mct")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=694345034]

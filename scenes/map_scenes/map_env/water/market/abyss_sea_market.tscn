@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dthirbc602wbw"]
 
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_6xsjf"]
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_7xrc5"]
-[ext_resource type="Resource" path="res://resources/map/terrain/water_terrain.tres" id="2_lo2vv"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_6xsjf"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_7xrc5"]
+[ext_resource type="Resource" uid="uid://bw56oywci2hcv" path="res://resources/map/terrain/water_terrain.tres" id="2_lo2vv"]
 
 [node name="AbyssSeaMarket" type="Node2D" unique_id=301317827]
 script = ExtResource("1_6xsjf")
+scene_type = 3
 terrain_profile = ExtResource("2_lo2vv")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1917754066]

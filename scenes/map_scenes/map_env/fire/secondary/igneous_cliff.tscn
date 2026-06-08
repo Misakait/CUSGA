@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dsx4ebaogl40d"]
 
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_qxxs1"]
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_xmcm0"]
-[ext_resource type="Resource" path="res://resources/map/terrain/fire_terrain.tres" id="2_12aj5"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_qxxs1"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_xmcm0"]
+[ext_resource type="Resource" uid="uid://bqvbldkyy2xri" path="res://resources/map/terrain/fire_terrain.tres" id="2_12aj5"]
 
 [node name="IgneousCliff" type="Node2D" unique_id=300908231]
 script = ExtResource("1_xmcm0")
+scene_type = 2
 terrain_profile = ExtResource("2_12aj5")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=727835639]

@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3]
+[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3 uid="uid://cirik7pf566el"]
 
-[ext_resource type="Script" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="1_5c1rx"]
-[ext_resource type="Texture2D" path="res://res/environment/tree.png" id="2_wdka1"]
-[ext_resource type="Resource" path="res://resources/item/card/res_cards/branch.tres" id="3_gf884"]
-[ext_resource type="Script" path="res://resources/loot/LootDrop.cs" id="4_nmjnw"]
-[ext_resource type="Script" path="res://resources/loot/LootTable.cs" id="5_sp6tn"]
-[ext_resource type="Script" path="res://resources/interaction/GatheringInteraction.cs" id="6_jk3va"]
-[ext_resource type="Script" path="res://resources/interaction/TerrainCardData.cs" id="7_q5g1j"]
-[ext_resource type="Script" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_n30x5"]
-[ext_resource type="Script" path="res://core/map/RoomTerrainProfile.cs" id="9_04ruy"]
+[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="1_5c1rx"]
+[ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="2_wdka1"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="3_gf884"]
+[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_nmjnw"]
+[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="5_sp6tn"]
+[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="6_jk3va"]
+[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="7_q5g1j"]
+[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_n30x5"]
+[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="9_04ruy"]
 
 [sub_resource type="Resource" id="Resource_r8j43"]
 script = ExtResource("1_5c1rx")
@@ -32,7 +32,7 @@ MaxAmount = 3
 
 [sub_resource type="Resource" id="Resource_66sjh"]
 script = ExtResource("5_sp6tn")
-Drops = [SubResource("Resource_hajn4")]
+Drops = Array[ExtResource("4_nmjnw")]([SubResource("Resource_hajn4")])
 
 [sub_resource type="Resource" id="Resource_suer6"]
 script = ExtResource("6_jk3va")

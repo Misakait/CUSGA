@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://b44rimdy33olh"]
 
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_s35l1"]
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_xbf1p"]
-[ext_resource type="Resource" path="res://resources/map/terrain/earth_terrain.tres" id="2_10gky"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_s35l1"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_xbf1p"]
+[ext_resource type="Resource" uid="uid://c45r6hcgrdcit" path="res://resources/map/terrain/earth_terrain.tres" id="2_10gky"]
 
 [node name="GateOfStone" type="Node2D" unique_id=1258069696]
 script = ExtResource("1_xbf1p")
+scene_type = 4
 terrain_profile = ExtResource("2_10gky")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1184814018]

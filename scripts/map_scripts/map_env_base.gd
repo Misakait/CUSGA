@@ -8,3 +8,11 @@ extends "res://scripts/map_scripts/map_son_scripts/map_base.gd"
 ## - 在 Inspector 中为 terrain_profile 配置 RoomTerrainProfile 即可控制资源生成
 ##
 ## 如果特定场景需要特殊行为，可单独创建脚本继承此类。
+
+var scene_types: Dictionary = {1: "main" , 2: "secondary", 3: "market", 4: "transmitting"}
+
+## 1表示主场景，2表示过渡场景，3表示集市场景，4表示传送场景
+@export var scene_type: int
+
+func get_scene_type() -> String:
+	return scene_types.get(scene_type, "场景类型错误！")

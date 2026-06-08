@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c67tda64uccuc"]
 
-[ext_resource type="Script" path="res://scripts/map_scripts/map_env_base.gd" id="1_i7i2s"]
-[ext_resource type="Texture2D" path="res://res/image/技能卡模板（废弃）.png" id="1_m5bau"]
-[ext_resource type="Resource" path="res://resources/map/terrain/earth_terrain.tres" id="2_vihyk"]
+[ext_resource type="Script" uid="uid://cf6crkad0yy76" path="res://scripts/map_scripts/map_env_base.gd" id="1_i7i2s"]
+[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="1_m5bau"]
+[ext_resource type="Resource" uid="uid://c45r6hcgrdcit" path="res://resources/map/terrain/earth_terrain.tres" id="2_vihyk"]
 
 [node name="GravelHighland" type="Node2D" unique_id=1519581807]
 script = ExtResource("1_i7i2s")
+scene_type = 2
 terrain_profile = ExtResource("2_vihyk")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1509847837]
