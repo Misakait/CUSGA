@@ -5,17 +5,24 @@
 [ext_resource type="Resource" uid="uid://cfdj0dfuvdoq2" path="res://resources/skill_cards/wood_phys_wanzhiluanpuxi.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://8i240itphi1k" path="res://resources/skill_cards/wood_magic_qinglingzhou.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://chqp3ixoqp4oi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="7_skill_4"]
+[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
+[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Resource" uid="uid://dywne4daeg1qm" path="res://resources/combat_skills/wood_magic_mushu.tres" id="csv_skill_1"]
+[ext_resource type="Resource" uid="uid://ulkmeo2rhqff" path="res://resources/combat_skills/wood_magic_qinglingzhou.tres" id="csv_skill_2"]
+[ext_resource type="Resource" uid="uid://dy1dacfsmqoot" path="res://resources/combat_skills/wood_magic_tengxiang.tres" id="csv_skill_3"]
+[ext_resource type="Resource" uid="uid://ced4nad445q7l" path="res://resources/combat_skills/wood_phys_wanzhiluanpuxi.tres" id="csv_skill_4"]
+[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
 
+[sub_resource type="Resource" id="CSV_StartingStats"]
+script = ExtResource("csv_stats_script")
+BasePhysAtk = 80.0
+BasePhysDef = 140.0
+BaseMagPower = 150.0
+BaseMagResist = 200.0
+BaseSpeed = 113.0
 
-[ext_resource type="Resource" path="res://resources/combat_skills/wood_magic_mushu.tres" id="csv_skill_1"]
-[ext_resource type="Resource" path="res://resources/combat_skills/wood_magic_qinglingzhou.tres" id="csv_skill_2"]
-[ext_resource type="Resource" path="res://resources/combat_skills/wood_magic_tengxiang.tres" id="csv_skill_3"]
-[ext_resource type="Resource" path="res://resources/combat_skills/wood_phys_wanzhiluanpuxi.tres" id="csv_skill_4"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
 Item = ExtResource("4_skill_1")
@@ -45,70 +52,25 @@ script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-
-
-
-
-
-
-
-
-
-
-
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_1")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_2"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_2")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_3"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_3")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_4"]
 script = ExtResource("csv_entry_script")
 Skill = ExtResource("csv_skill_4")
-VisibleInPreview = true
 
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
 Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4")])
-[sub_resource type="Resource" id="CSV_StartingStats"]
-script = ExtResource("csv_stats_script")
-BasePhysAtk = 80.0
-PhysAtkGrowth = 25.0
-BasePhysDef = 140.0
-PhysDefGrowth = 20.0
-BaseMagPower = 150.0
-MagPowerGrowth = 30.0
-BaseMagResist = 200.0
-MagResistGrowth = 20.0
-BaseSpeed = 113.0
-SpeedGrowth = 5.0
-BaseMaxHealth = 1000.0
-MaxHealthGrowth = 0.0
-BaseFixedPhysPenetration = 0.0
-FixedPhysPenetrationGrowth = 0.0
-BasePhysPenetrationRate = 0.0
-PhysPenetrationRateGrowth = 0.0
-BaseFixedMagicPenetration = 0.0
-FixedMagicPenetrationGrowth = 0.0
-BaseMagicPenetrationRate = 0.0
-MagicPenetrationRateGrowth = 0.0
-BaseCritRate = 0.0
-CritRateGrowth = 0.0
-BaseCritDamage = 1.5
-CritDamageGrowth = 0.0
-BaseEvasionRate = 0.0
-EvasionRateGrowth = 0.0
-BaseLifestealRate = 0.0
-LifestealRateGrowth = 0.0
 
 [resource]
 script = ExtResource("2_monster")
@@ -118,4 +80,3 @@ ElementalProperty = 1
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://dh28trwcjvre6"
-Faction = 0
