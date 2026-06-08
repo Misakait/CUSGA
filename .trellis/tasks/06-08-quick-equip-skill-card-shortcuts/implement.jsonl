@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/guides/minimal-feature-start.md", "reason": "CUSGA feature startup, tool boundary, and validation guidance"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Godot UI and scene-layer guidance index"}
+{"file": ".trellis/spec/backend/index.md", "reason": "C# component and test guidance index"}

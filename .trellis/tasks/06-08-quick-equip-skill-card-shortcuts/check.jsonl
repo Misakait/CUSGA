@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/guides/minimal-feature-start.md", "reason": "Expected build and Godot validation commands"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "UI quality scope for final review"}
+{"file": ".trellis/spec/backend/index.md", "reason": "C# component quality scope for final review"}
