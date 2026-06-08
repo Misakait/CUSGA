@@ -4,6 +4,7 @@ using CUSGA.core.constants;
 using System;
 using System.Collections.Generic;
 using CUSGA.core.application;
+using CUSGA.resources.item.card;
 
 namespace CUSGA.core.ui;
 
@@ -202,6 +203,7 @@ public partial class InventoryUI : Control
             SlotUI slotUI = SlotPrefab.Instantiate<SlotUI>();
             slotGrid.AddChild(slotUI);
             slotUI.SetTooltipPresenter(_tooltipPresenter);
+            slotUI.SetShortcutHandler(HandleSlotShortcut);
             slotViews.Add(slotUI);
         }
     }
@@ -262,6 +264,69 @@ public partial class InventoryUI : Control
     private void OnBattleDeckChanged()
     {
         RebindDeckSlots();
+    }
+
+    private void HandleSlotShortcut(SlotUI slotUI, SlotShortcutKind shortcutKind)
+    {
+        if (slotUI == null || _playerInventory == null || _battleDeck == null || _equipment == null)
+        {
+            return;
+        }
+
+        InventoryComponent sourceInventory = slotUI.Inventory;
+        if (sourceInventory == null)
+        {
+            return;
+        }
+
+        if (shortcutKind == SlotShortcutKind.AltClick)
+        {
+            HandleAltClickShortcut(slotUI, sourceInventory);
+            return;
+        }
+
+        HandleShiftClickShortcut(slotUI, sourceInventory);
+    }
+
+    private void HandleAltClickShortcut(SlotUI slotUI, InventoryComponent sourceInventory)
+    {
+        if (sourceInventory == _battleDeck)
+        {
+            _battleDeck.MoveAllMatchingStacksTo(_playerInventory, item => item is SkillCardData);
+            return;
+        }
+
+        if (sourceInventory == _playerInventory && slotUI.CurrentStack?.Item is SkillCardData)
+        {
+            _playerInventory.MoveAllMatchingStacksTo(_battleDeck, item => item is SkillCardData);
+        }
+    }
+
+    private void HandleShiftClickShortcut(SlotUI slotUI, InventoryComponent sourceInventory)
+    {
+        if (slotUI.CurrentStack == null || slotUI.CurrentStack.IsEmpty)
+        {
+            return;
+        }
+
+        if (sourceInventory == _battleDeck && slotUI.CurrentStack.Item is SkillCardData)
+        {
+            _battleDeck.TryMoveStackToFirstAvailableSlot(_playerInventory, slotUI.SlotIndex);
+            return;
+        }
+
+        if (sourceInventory != _playerInventory)
+        {
+            return;
+        }
+
+        if (slotUI.CurrentStack.Item is SkillCardData)
+        {
+            _playerInventory.TryMoveStackToFirstAvailableSlot(_battleDeck, slotUI.SlotIndex);
+            return;
+        }
+
+        _equipment.EquipFromInventoryToBestSlot(_playerInventory, slotUI.SlotIndex);
     }
 
     private void DisconnectInventorySignals()

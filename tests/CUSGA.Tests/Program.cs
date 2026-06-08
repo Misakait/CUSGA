@@ -35,9 +35,13 @@ tests.CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult();
 tests.CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit();
 tests.BattleDeckExpandsWhenAddingBeyondInitialCapacity();
 tests.RegularInventoryKeepsFixedCapacityWhenFull();
+tests.QuickTransferMovesSkillCardBetweenInventoryAndBattleDeck();
+tests.BulkTransferMovesOnlySkillCardsWithoutReplacingOtherItems();
 tests.NewEquipmentSlotsAcceptCurrentItemTags();
 tests.MagicItemSlotRequiresExplicitMagicItemTag();
 tests.EquipmentDataCanAllowBothRingSlots();
+tests.QuickEquipUsesEmptyCompatibleSlotBeforeReplacingEquipment();
+tests.QuickEquipReplacesOccupiedSlotWhenNoEmptyCompatibleSlot();
 tests.EquippedTorchAppliesEncounterMultiplierUntilUnequipped();
 tests.GatheringEncounterModifierOnlyReducesNightChance();
 tests.StartingStatsExposeCombatExpansionDefaults();
@@ -303,6 +307,56 @@ internal sealed partial class TerrainRandomizationTests
     }
 
     /// <summary>
+    /// 验证单张技能卡可以在背包和出战卡组之间快捷双向移动。
+    /// </summary>
+    public void QuickTransferMovesSkillCardBetweenInventoryAndBattleDeck()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        var skillCard = CreateSkillCardDataStub();
+
+        Assert.Equal(0, inventory.AddItem(skillCard, 1));
+
+        Assert.True(inventory.TryMoveStackToFirstAvailableSlot(battleDeck, 0));
+        Assert.True(inventory.GetStackAt(0).IsEmpty);
+        Assert.Same(skillCard, battleDeck.GetStackAt(0).Item);
+
+        Assert.True(battleDeck.TryMoveStackToFirstAvailableSlot(inventory, 0));
+        Assert.True(battleDeck.GetStackAt(0).IsEmpty);
+        Assert.Same(skillCard, inventory.GetStackAt(0).Item);
+    }
+
+    /// <summary>
+    /// 验证批量快捷移动只移动匹配物品，并且不会用不同物品做交换。
+    /// </summary>
+    public void BulkTransferMovesOnlySkillCardsWithoutReplacingOtherItems()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        var firstSkill = CreateSkillCardDataStub();
+        var secondSkill = CreateSkillCardDataStub();
+        var regularItem = CreateItemDataStub(maxStackSize: 1);
+
+        Assert.Equal(0, inventory.AddItem(firstSkill, 1));
+        Assert.Equal(0, inventory.AddItem(regularItem, 1));
+        Assert.Equal(0, inventory.AddItem(secondSkill, 1));
+
+        int moved = inventory.MoveAllMatchingStacksTo(battleDeck, item => item is SkillCardData);
+
+        Assert.Equal(2, moved);
+        Assert.True(inventory.GetStackAt(0).IsEmpty);
+        Assert.Same(regularItem, inventory.GetStackAt(1).Item);
+        Assert.True(inventory.GetStackAt(2).IsEmpty);
+        Assert.Equal(2, battleDeck.GetSkillCards().Count);
+        Assert.Same(firstSkill, battleDeck.GetStackAt(0).Item);
+        Assert.Same(secondSkill, battleDeck.GetStackAt(1).Item);
+    }
+
+    /// <summary>
     /// 验证当前资源标签能被新的装备槽识别。
     /// </summary>
     public void NewEquipmentSlotsAcceptCurrentItemTags()
@@ -374,6 +428,50 @@ internal sealed partial class TerrainRandomizationTests
 
         Assert.True(EquipmentComponent.CanEquipStack(stack, EquipmentSlot.Ring1));
         Assert.True(EquipmentComponent.CanEquipStack(stack, EquipmentSlot.Ring2));
+    }
+
+    /// <summary>
+    /// 验证快速装备会优先使用可兼容的空装备槽。
+    /// </summary>
+    public void QuickEquipUsesEmptyCompatibleSlotBeforeReplacingEquipment()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var equipment = new EquipmentComponent();
+        var oldRing = CreateEquipmentDataStub(EquipmentSlot.Ring1, EquipmentSlot.Ring2);
+        var newRing = CreateEquipmentDataStub(EquipmentSlot.Ring1, EquipmentSlot.Ring2);
+
+        Assert.True(equipment.Equip(Stack(oldRing, 1), EquipmentSlot.Ring1));
+        Assert.Equal(0, inventory.AddItem(newRing, 1));
+
+        Assert.True(equipment.EquipFromInventoryToBestSlot(inventory, 0));
+
+        Assert.True(inventory.GetStackAt(0).IsEmpty);
+        Assert.True(equipment.TryGetEquippedStack(EquipmentSlot.Ring1, out var equippedFirstRing));
+        Assert.True(equipment.TryGetEquippedStack(EquipmentSlot.Ring2, out var equippedSecondRing));
+        Assert.Same(oldRing, equippedFirstRing.Item);
+        Assert.Same(newRing, equippedSecondRing.Item);
+    }
+
+    /// <summary>
+    /// 验证没有可兼容空槽时，快速装备会替换第一个可装备槽。
+    /// </summary>
+    public void QuickEquipReplacesOccupiedSlotWhenNoEmptyCompatibleSlot()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var equipment = new EquipmentComponent();
+        var oldHelmet = CreateEquipmentDataStub(EquipmentSlot.Helmet);
+        var newHelmet = CreateEquipmentDataStub(EquipmentSlot.Helmet);
+
+        Assert.True(equipment.Equip(Stack(oldHelmet, 1), EquipmentSlot.Helmet));
+        Assert.Equal(0, inventory.AddItem(newHelmet, 1));
+
+        Assert.True(equipment.EquipFromInventoryToBestSlot(inventory, 0));
+
+        Assert.Same(oldHelmet, inventory.GetStackAt(0).Item);
+        Assert.True(equipment.TryGetEquippedStack(EquipmentSlot.Helmet, out var equippedHelmet));
+        Assert.Same(newHelmet, equippedHelmet.Item);
     }
 
     /// <summary>

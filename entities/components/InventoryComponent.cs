@@ -521,6 +521,90 @@ public partial class InventoryComponent : Node, ICraftingInventory
         return sourceInventory.CanStoreItem(targetSlot.Item);
     }
 
+    /// <summary>
+    /// 将指定槽位的物品移动到目标背包第一个不会替换不同物品的可用槽。
+    /// </summary>
+    /// <param name="targetInventory">接收物品的目标背包。</param>
+    /// <param name="fromIndex">来源背包中的槽位索引。</param>
+    /// <returns>成功移动或合并至少一部分物品时返回 <see langword="true"/>。</returns>
+    public bool TryMoveStackToFirstAvailableSlot(InventoryComponent targetInventory, int fromIndex)
+    {
+        if (targetInventory == null || targetInventory == this || !IsValidSlotIndex(fromIndex))
+        {
+            return false;
+        }
+
+        var sourceSlot = _slots[fromIndex];
+        if (sourceSlot.IsEmpty)
+        {
+            return false;
+        }
+
+        // 先让目标背包执行自己的扩容规则，出战卡组才能在快捷加入时保留拖拽入口空槽。
+        targetInventory.PrepareCapacityForAdd(sourceSlot.Item, sourceSlot.Amount);
+
+        for (int toIndex = 0; toIndex < targetInventory.Capacity; toIndex++)
+        {
+            if (!targetInventory.CanReceiveWithoutReplacingDifferentItem(this, fromIndex, toIndex))
+            {
+                continue;
+            }
+
+            int beforeAmount = sourceSlot.Amount;
+            targetInventory.MoveItemFrom(this, fromIndex, toIndex);
+            return sourceSlot.IsEmpty || sourceSlot.Amount < beforeAmount;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 将所有符合条件的物品堆叠移动到目标背包的可用槽位。
+    /// </summary>
+    /// <param name="targetInventory">接收物品的目标背包。</param>
+    /// <param name="predicate">用于判断物品是否应被移动的条件。</param>
+    /// <returns>成功移动的物品数量。</returns>
+    public int MoveAllMatchingStacksTo(InventoryComponent targetInventory, Func<ItemData, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        if (targetInventory == null || targetInventory == this)
+        {
+            return 0;
+        }
+
+        int movedAmount = 0;
+        for (int fromIndex = 0; fromIndex < Capacity; fromIndex++)
+        {
+            var sourceSlot = _slots[fromIndex];
+            if (sourceSlot.IsEmpty || !predicate(sourceSlot.Item))
+            {
+                continue;
+            }
+
+            int beforeAmount = sourceSlot.Amount;
+            if (TryMoveStackToFirstAvailableSlot(targetInventory, fromIndex))
+            {
+                int remainingAmount = sourceSlot.IsEmpty ? 0 : sourceSlot.Amount;
+                movedAmount += beforeAmount - remainingAmount;
+            }
+        }
+
+        return movedAmount;
+    }
+
+    private bool CanReceiveWithoutReplacingDifferentItem(InventoryComponent sourceInventory, int fromIndex, int toIndex)
+    {
+        if (!CanReceiveItemFrom(sourceInventory, fromIndex, toIndex))
+        {
+            return false;
+        }
+
+        var sourceSlot = sourceInventory._slots[fromIndex];
+        var targetSlot = _slots[toIndex];
+        return targetSlot.IsEmpty || (targetSlot.Item == sourceSlot.Item && !targetSlot.IsFull);
+    }
+
     public void MoveItemFrom(InventoryComponent sourceInventory, int fromIndex, int toIndex)
     {
         if (!CanReceiveItemFrom(sourceInventory, fromIndex, toIndex))

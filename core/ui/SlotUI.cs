@@ -1,9 +1,26 @@
 using Godot;
+using System;
 using CUSGA.core.inventory;
 using CUSGA.core.ui.draggable;
 using CUSGA.entities.components;
 
 namespace CUSGA.core.ui;
+
+/// <summary>
+/// 表示背包格子收到的快捷点击类型。
+/// </summary>
+public enum SlotShortcutKind
+{
+    /// <summary>
+    /// Shift + 左键点击单个格子。
+    /// </summary>
+    ShiftClick,
+
+    /// <summary>
+    /// Alt + 左键点击单个格子。
+    /// </summary>
+    AltClick
+}
 
 public partial class SlotUI : PanelContainer
 {
@@ -11,8 +28,26 @@ public partial class SlotUI : PanelContainer
     private ItemStack _itemStackInThisSlot; // 当前渲染的数据引用
     private InventoryComponent _inventoryComponent; //  Player 身上的 InventoryComponent 引用
     private ItemTooltipPresenter _tooltipPresenter = ItemTooltipPresenter.Empty;
+    private Action<SlotUI, SlotShortcutKind> _shortcutHandler;
     private bool _isPointerInside;
 
+    /// <summary>
+    /// 获取此 UI 格子当前绑定的背包槽位索引。
+    /// </summary>
+    /// <value>背包组件中的真实槽位索引。</value>
+    public int SlotIndex => _myIndex;
+
+    /// <summary>
+    /// 获取此 UI 格子当前绑定的背包组件。
+    /// </summary>
+    /// <value>背包、出战卡组或其他继承自背包的组件。</value>
+    public InventoryComponent Inventory => _inventoryComponent;
+
+    /// <summary>
+    /// 获取此 UI 格子当前渲染的物品堆叠。
+    /// </summary>
+    /// <value>当前槽位的物品堆叠引用。</value>
+    public ItemStack CurrentStack => _itemStackInThisSlot;
 
     public override void _Ready()
     {
@@ -51,6 +86,15 @@ public partial class SlotUI : PanelContainer
         _tooltipPresenter = tooltipPresenter ?? ItemTooltipPresenter.Empty;
     }
 
+    /// <summary>
+    /// 设置此格子的快捷点击处理器。
+    /// </summary>
+    /// <param name="shortcutHandler">收到快捷点击时调用的处理器。</param>
+    public void SetShortcutHandler(Action<SlotUI, SlotShortcutKind> shortcutHandler)
+    {
+        _shortcutHandler = shortcutHandler;
+    }
+
     public override void _ExitTree()
     {
         MouseEntered -= OnMouseEntered;
@@ -62,6 +106,32 @@ public partial class SlotUI : PanelContainer
         }
 
         _tooltipPresenter.Hide();
+    }
+
+    /// <inheritdoc />
+    public override void _GuiInput(InputEvent @event)
+    {
+        if (@event is not InputEventMouseButton
+            {
+                Pressed: true,
+                ButtonIndex: MouseButton.Left
+            } mouseEvent)
+        {
+            return;
+        }
+
+        if (mouseEvent.AltPressed)
+        {
+            _shortcutHandler?.Invoke(this, SlotShortcutKind.AltClick);
+            AcceptEvent();
+            return;
+        }
+
+        if (mouseEvent.ShiftPressed)
+        {
+            _shortcutHandler?.Invoke(this, SlotShortcutKind.ShiftClick);
+            AcceptEvent();
+        }
     }
 
     // 开始拖拽

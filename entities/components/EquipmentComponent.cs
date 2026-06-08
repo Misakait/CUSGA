@@ -170,6 +170,35 @@ public partial class EquipmentComponent : Node
         return Equip(newEquipment, slot);
     }
 
+    /// <summary>
+    /// 从背包指定槽位快速装备到最合适的装备槽。
+    /// </summary>
+    /// <param name="sourceInventory">提供装备物品的背包。</param>
+    /// <param name="fromIndex">背包中的来源槽位。</param>
+    /// <returns>成功装备或替换装备时返回 <see langword="true"/>。</returns>
+    public bool EquipFromInventoryToBestSlot(InventoryComponent sourceInventory, int fromIndex)
+    {
+        if (sourceInventory == null || !sourceInventory.IsValidSlotIndex(fromIndex))
+        {
+            return false;
+        }
+
+        var sourceStack = sourceInventory.GetStackAt(fromIndex);
+        if (sourceStack.IsEmpty)
+        {
+            return false;
+        }
+
+        EquipmentSlot? emptySlot = FindBestInventoryEquipmentSlot(sourceInventory, fromIndex, requireEmptySlot: true);
+        if (emptySlot.HasValue)
+        {
+            return EquipFromInventory(sourceInventory, fromIndex, emptySlot.Value);
+        }
+
+        EquipmentSlot? replacementSlot = FindBestInventoryEquipmentSlot(sourceInventory, fromIndex, requireEmptySlot: false);
+        return replacementSlot.HasValue && EquipFromInventory(sourceInventory, fromIndex, replacementSlot.Value);
+    }
+
     public bool CanUnequipToInventory(EquipmentSlot slot, InventoryComponent targetInventory, int targetIndex)
     {
         if (!_equippedItems.TryGetValue(slot, out var equippedStack))
@@ -249,6 +278,54 @@ public partial class EquipmentComponent : Node
         Equip(fromStack, toSlot);
 
         return true;
+    }
+
+    private EquipmentSlot? FindBestInventoryEquipmentSlot(
+        InventoryComponent sourceInventory,
+        int fromIndex,
+        bool requireEmptySlot)
+    {
+        var sourceStack = sourceInventory.GetStackAt(fromIndex);
+        foreach (EquipmentSlot slot in GetCandidateSlots(sourceStack))
+        {
+            bool isEmpty = !_equippedItems.ContainsKey(slot);
+            if (isEmpty != requireEmptySlot)
+            {
+                continue;
+            }
+
+            if (CanEquipFromInventory(sourceInventory, fromIndex, slot))
+            {
+                return slot;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<EquipmentSlot> GetCandidateSlots(ItemStack stack)
+    {
+        HashSet<EquipmentSlot> yieldedSlots = [];
+        if (stack?.Item is EquipmentData { ValidSlots.Count: > 0 } equipmentData)
+        {
+            foreach (EquipmentSlot slot in equipmentData.ValidSlots)
+            {
+                if (yieldedSlots.Add(slot))
+                {
+                    yield return slot;
+                }
+            }
+
+            yield break;
+        }
+
+        foreach (EquipmentSlot slot in Enum.GetValues<EquipmentSlot>())
+        {
+            if (CanEquipStack(stack, slot) && yieldedSlots.Add(slot))
+            {
+                yield return slot;
+            }
+        }
     }
 
     /// <summary>
