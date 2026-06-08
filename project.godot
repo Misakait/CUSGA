@@ -51,7 +51,7 @@ project/assembly_name="CUSGA"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/card_csv_sync/plugin.cfg", "res://addons/skill_targeting_type_codegen/plugin.cfg")
+enabled=PackedStringArray("res://addons/card_csv_sync/plugin.cfg", "res://addons/funplay_mcp/plugin.cfg", "res://addons/skill_targeting_type_codegen/plugin.cfg")
 
 [input]
 
