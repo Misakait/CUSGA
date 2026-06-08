@@ -7,11 +7,20 @@ using CUSGA.resources.item;
 
 namespace CUSGA.entities;
 
+/// <summary>
+/// 展示棋盘上的地形卡和掉落卡，并把鼠标输入转换为棋盘卡牌信号。
+/// </summary>
 public partial class BoardCardView : Area2D
 {
     [Signal] public delegate void ClickedEventHandler(BoardCardView card);
     [Signal] public delegate void HoverStartedEventHandler(BoardCardView card);
     [Signal] public delegate void HoverEndedEventHandler(BoardCardView card);
+
+    /// <summary>
+    /// 地形卡静止显示时的整体缩放倍率。
+    /// </summary>
+    [Export(PropertyHint.Range, "1,8,0.1,or_greater")]
+    public float TerrainCardRestingScale { get; set; } = 3f;
 
     private BoardCardState _state;
 
@@ -86,6 +95,7 @@ public partial class BoardCardView : Area2D
 
         _titleLabel.Text = cardData.CardName ?? string.Empty;
         _iconSprite.Texture = cardData.CardIcon;
+        Scale = GetRestingScale();
 
         if (_state is LootBoardCardState lootState && lootState.LootStack.Amount > 1)
         {
@@ -130,6 +140,7 @@ public partial class BoardCardView : Area2D
         Scale = Vector2.Zero;
         Rotation = 0f;
         InputPickable = false;
+        Vector2 restingScale = GetRestingScale();
 
         _activeTween = GetTree().CreateTween();
         _activeTween.SetParallel(true);
@@ -138,7 +149,7 @@ public partial class BoardCardView : Area2D
             .SetTrans(Tween.TransitionType.Circ)
             .SetEase(Tween.EaseType.Out);
 
-        _activeTween.TweenProperty(this, "scale", Vector2.One, 0.35f)
+        _activeTween.TweenProperty(this, "scale", restingScale, 0.35f)
             .SetTrans(Tween.TransitionType.Back)
             .SetEase(Tween.EaseType.Out);
 
@@ -177,6 +188,14 @@ public partial class BoardCardView : Area2D
     public void SetHighlighted(bool highlighted)
     {
 
+    }
+
+    private Vector2 GetRestingScale()
+    {
+        // 地形图标目前是 32x32 像素；根节点缩放可以同步放大图标、文字和点击范围。
+        return _state is TerrainBoardCardState
+            ? Vector2.One * TerrainCardRestingScale
+            : Vector2.One;
     }
 
     private void StopActiveTween()
