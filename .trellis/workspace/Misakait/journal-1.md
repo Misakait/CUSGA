@@ -144,3 +144,42 @@ Replaced the DamagePayload default-combat bool with DamageModifierFlags, added c
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Configurable terrain card scale
+
+**Date**: 2026-06-08
+**Task**: Configurable terrain card scale
+**Branch**: `main`
+
+### Summary
+
+Made board terrain card scale configurable from the Godot inspector, added a focused Godot regression test, fixed the review finding around null-safe test failure handling, and committed the terrain card scale change.
+
+### Main Changes
+
+- Added exported `TerrainCardRestingScale` configuration on `BoardCardView`.
+- Applied the configured terrain-card resting scale during normal refresh and scatter animation.
+- Added a focused Godot regression test for generated terrain card scaling.
+- Fixed the review finding by checking the spawned card before reading exported properties in the test.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `aa8b0c0` | (see git log) |
+
+### Testing
+
+- [OK] `godot-mono --headless --path . --script res://tests/godot/board_card_view_tests.gd`
+- [OK] `env CI=true dotnet build CUSGA.sln --no-restore`
+- [OK] `git diff --cached --check`
+- [OK] `gitnexus_detect_changes()` reported the expected `BoardCardView` refresh/animation flow impact.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
