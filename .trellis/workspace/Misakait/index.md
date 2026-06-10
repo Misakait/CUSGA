@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
-- **Last Active**: 2026-06-08
+- **Total Sessions**: 7
+- **Last Active**: 2026-06-10
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~219 | Active |
+| `journal-1.md` | ~252 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-06-10 | Reusable resource gathering cards | `1784ee1` | `main` |
 | 6 | 2026-06-08 | Inventory shortcut interactions | `5e5a385`, `b18af92` | `main` |
 | 5 | 2026-06-08 | Configurable terrain card scale | `aa8b0c0` | `main` |
 | 4 | 2026-06-05 | Configurable damage modifiers | `f41164d` | `main` |

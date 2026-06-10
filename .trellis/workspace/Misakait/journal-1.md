@@ -217,3 +217,36 @@ Implemented Shift/Alt shortcut interactions for skill cards and quick equipment 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: Reusable resource gathering cards
+
+**Date**: 2026-06-10
+**Task**: Reusable resource gathering cards
+**Branch**: `main`
+
+### Summary
+
+Implemented reusable terrain resource cards with long-press gathering, game-time cooldown refresh, slot-gated tool time reduction, sample resources, tests, and backend specs.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1784ee1` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
