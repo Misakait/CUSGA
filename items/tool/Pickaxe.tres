@@ -1,14 +1,17 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cgm6vgac8s3jy"]
+[gd_resource type="Resource" script_class="ToolData" format=3 uid="uid://cgm6vgac8s3jy"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_41t7r"]
+[ext_resource type="Script" uid="uid://bx63dwr65qgwh" path="res://resources/item/tool/ToolData.cs" id="1_41t7r"]
 [ext_resource type="Texture2D" uid="uid://cg7pqmqj74gj6" path="res://res/tool/Pickaxe.png" id="1_jppdk"]
 
 [resource]
 script = ExtResource("1_41t7r")
 MaxStackSize = 1
 ItemTags = Array[StringName]([&"Pickaxe"])
+ValidSlots = Array[int]([6])
+TargetGatheringTag = &"earth"
+GatheringTimeReduction = 10
 CardId = &"Pickaxe"
 CardName = "镐子"
 CardIcon = ExtResource("1_jppdk")
 Description = "挖矿！挖怪！"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://bx63dwr65qgwh"

@@ -17,7 +17,16 @@ public sealed class TerrainInteractionExecutor(
     BoardController boardController,
     EncounterManager encounterManager)
 {
-    public void Execute(BoardCardView card, TerrainInstance terrain)
+    /// <summary>
+    /// 执行指定地形卡的交互操作序列。
+    /// </summary>
+    /// <param name="card">触发交互的棋盘卡视图。</param>
+    /// <param name="terrain">被交互的地形实例。</param>
+    /// <param name="effectiveTimeCostOverride">输入开始时快照到的有效采集时间；为空时由交互资源现场计算。</param>
+    public void Execute(
+        BoardCardView card,
+        TerrainInstance terrain,
+        int? effectiveTimeCostOverride = null)
     {
         GD.Print($"[TerrainInteractionExecutor] Click terrain: {terrain.TerrainData.CardName}");
         TerrainInteraction interaction = terrain.TerrainData?.InteractionBehavior;
@@ -30,7 +39,8 @@ public sealed class TerrainInteractionExecutor(
         var buildCtx = new TerrainInteractionBuildContext
         {
             Player = gameplayPort.Player,
-            Terrain = terrain
+            Terrain = terrain,
+            EffectiveTimeCostOverride = effectiveTimeCostOverride
         };
 
         IReadOnlyList<TerrainOp> ops = interaction.BuildOps(buildCtx);

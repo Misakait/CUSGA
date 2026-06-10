@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using CUSGA.core.autoloads;
 using CUSGA.core.board;
 using CUSGA.core.inventory;
 using CUSGA.entities;
@@ -33,6 +34,9 @@ public partial class WorldInteractionCoordinator : Node
     private BoardController _boardController = null!;
     private GameplayPort _gameplayPort = null!;
     private Control _backpackFlyTarget;
+    private TimeSystem _timeSystem;
+    private BoardCardView _holdingCard;
+    private int _holdingEffectiveTimeCost;
 
     public override void _Ready()
     {
@@ -63,7 +67,16 @@ public partial class WorldInteractionCoordinator : Node
         );
 
         _boardController.CardClicked += OnBoardCardClicked;
+        _boardController.CardPressed += OnBoardCardPressed;
+        _boardController.CardReleased += OnBoardCardReleased;
+        _boardController.CardSpawned += OnBoardCardSpawned;
         _gameplayPort.EncounterRequested += OnEncounterRequested;
+
+        _timeSystem = TimeSystem.Instance;
+        if (_timeSystem != null)
+        {
+            _timeSystem.TimeChanged += OnTimeChanged;
+        }
     }
 
     public override void _ExitTree()
@@ -71,10 +84,33 @@ public partial class WorldInteractionCoordinator : Node
         if (_boardController != null)
         {
             _boardController.CardClicked -= OnBoardCardClicked;
+            _boardController.CardPressed -= OnBoardCardPressed;
+            _boardController.CardReleased -= OnBoardCardReleased;
+            _boardController.CardSpawned -= OnBoardCardSpawned;
         }
         if (_gameplayPort != null)
         {
             _gameplayPort.EncounterRequested -= OnEncounterRequested;
+        }
+        if (_timeSystem != null)
+        {
+            _timeSystem.TimeChanged -= OnTimeChanged;
+        }
+    }
+
+    /// <summary>
+    /// 监听全局鼠标松开，确保拖出卡牌范围后也会取消长按采集。
+    /// </summary>
+    /// <param name="event">Godot 输入事件。</param>
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton
+            {
+                ButtonIndex: MouseButton.Left,
+                Pressed: false
+            })
+        {
+            CancelReusableGatheringHold();
         }
     }
 
@@ -111,6 +147,11 @@ public partial class WorldInteractionCoordinator : Node
         TerrainInstance terrain = card.GetTerrainInstanceOrNull();
         if (terrain != null)
         {
+            if (terrain.TerrainData?.InteractionBehavior is ReusableGatheringInteraction)
+            {
+                return;
+            }
+
             HandleTerrainCardClicked(card, terrain);
         }
     }
@@ -136,5 +177,131 @@ public partial class WorldInteractionCoordinator : Node
     private void HandleTerrainCardClicked(BoardCardView card, TerrainInstance terrain)
     {
         _terrainInteractionExecutor.Execute(card, terrain);
+    }
+
+    private void OnBoardCardPressed(BoardCardView card)
+    {
+        if (TryGetReusableGathering(card, out TerrainInstance terrain, out ReusableGatheringInteraction interaction))
+        {
+            StartReusableGatheringHold(card, terrain, interaction);
+        }
+    }
+
+    private void OnBoardCardReleased(BoardCardView card)
+    {
+        if (card == _holdingCard)
+        {
+            CancelReusableGatheringHold();
+        }
+    }
+
+    private void OnBoardCardSpawned(BoardCardView card)
+    {
+        if (TryGetReusableGathering(card, out TerrainInstance terrain, out ReusableGatheringInteraction interaction))
+        {
+            RefreshReusableGatheringCard(card, terrain, interaction, GetCurrentTotalTime());
+        }
+    }
+
+    private void OnTimeChanged(
+        int totalTimePassed,
+        int currentDay,
+        bool isNight,
+        int phaseProgress,
+        int phaseLength)
+    {
+        foreach (BoardCardView card in _boardController.GetActiveCardsSnapshot())
+        {
+            if (!IsInstanceValid(card)
+                || !TryGetReusableGathering(card, out TerrainInstance terrain, out ReusableGatheringInteraction interaction))
+            {
+                continue;
+            }
+
+            RefreshReusableGatheringCard(card, terrain, interaction, totalTimePassed);
+        }
+    }
+
+    private void StartReusableGatheringHold(
+        BoardCardView card,
+        TerrainInstance terrain,
+        ReusableGatheringInteraction interaction)
+    {
+        CancelReusableGatheringHold();
+
+        int totalTimePassed = GetCurrentTotalTime();
+        RefreshReusableGatheringCard(card, terrain, interaction, totalTimePassed);
+        if (!interaction.CanHarvest(terrain, totalTimePassed))
+        {
+            return;
+        }
+
+        _holdingCard = card;
+        _holdingEffectiveTimeCost = interaction.GetEffectiveTimeCost(_gameplayPort.Player?.Equipment);
+        float holdSeconds = _holdingEffectiveTimeCost / ReusableGatheringInteraction.GameTimePointsPerHoldSecond;
+        card.StartHoldProgress(
+            holdSeconds,
+            () => CompleteReusableGatheringHold(card, terrain, interaction)
+        );
+    }
+
+    private void CompleteReusableGatheringHold(
+        BoardCardView card,
+        TerrainInstance terrain,
+        ReusableGatheringInteraction interaction)
+    {
+        if (_holdingCard != card)
+        {
+            return;
+        }
+
+        _holdingCard = null;
+        int effectiveTimeCost = _holdingEffectiveTimeCost;
+        _holdingEffectiveTimeCost = 0;
+        int totalTimePassed = GetCurrentTotalTime();
+        if (!interaction.CanHarvest(terrain, totalTimePassed))
+        {
+            RefreshReusableGatheringCard(card, terrain, interaction, totalTimePassed);
+            return;
+        }
+
+        _terrainInteractionExecutor.Execute(card, terrain, effectiveTimeCost);
+        RefreshReusableGatheringCard(card, terrain, interaction, GetCurrentTotalTime());
+    }
+
+    private void CancelReusableGatheringHold()
+    {
+        if (_holdingCard != null && IsInstanceValid(_holdingCard))
+        {
+            _holdingCard.CancelHoldProgress();
+        }
+
+        _holdingCard = null;
+        _holdingEffectiveTimeCost = 0;
+    }
+
+    private static bool TryGetReusableGathering(
+        BoardCardView card,
+        out TerrainInstance terrain,
+        out ReusableGatheringInteraction interaction)
+    {
+        terrain = card?.GetTerrainInstanceOrNull();
+        interaction = terrain?.TerrainData?.InteractionBehavior as ReusableGatheringInteraction;
+        return terrain != null && interaction != null;
+    }
+
+    private static void RefreshReusableGatheringCard(
+        BoardCardView card,
+        TerrainInstance terrain,
+        ReusableGatheringInteraction interaction,
+        int totalTimePassed)
+    {
+        bool canHarvest = interaction.CanHarvest(terrain, totalTimePassed);
+        card.SetInteractionDisabled(!canHarvest);
+    }
+
+    private static int GetCurrentTotalTime()
+    {
+        return TimeSystem.Instance?.TotalTimePassed ?? 0;
     }
 }

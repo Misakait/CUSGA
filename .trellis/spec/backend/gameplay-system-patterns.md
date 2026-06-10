@@ -47,6 +47,34 @@ Current operations include pass time, mark harvested, spawn loot, check gatherin
 
 When adding a new terrain interaction, keep resource decisions in `BuildOps` and runtime side effects in small `TerrainOp` classes. Do not make resource classes reach directly into scene nodes beyond the supplied context.
 
+### Reusable Gathering Terrain Cards
+
+Reusable resource cards use a `TerrainInteraction` subclass instead of the one-shot `GatheringInteraction` flow. The interaction resource owns the designer contract:
+
+- `TimeCost`: base game-time cost for one completed harvest.
+- `GatheringTag`: resource type used for encounter checks and matching tool bonuses.
+- `MaxHarvestCount`: number of harvests available before cooldown.
+- `RefreshTimeCost`: game-time cooldown after the count reaches zero.
+- `MinimumTimeCost`: lower bound after equipment reductions.
+- `EffectiveToolSlot`: the only equipment slot allowed to reduce this resource's hold time.
+
+Runtime state belongs on `TerrainInstance`, not on the interaction resource, so multiple terrain cards can share one interaction asset:
+
+- `RemainingGatheringCount`: `-1` means uninitialized; initialize from `MaxHarvestCount`.
+- `RefreshReadyTotalTime`: total game time when a depleted card becomes usable again.
+
+`BuildOps` for reusable gathering must include `PassTimeOp`, loot spawning, optional `CheckGatheringEncounterOp`, and a small record-state op. It must not add `RemoveSourceCardOp` or mark `IsHarvested`; depleted cards stay in their board cell, become disabled/gray in the card view, and refresh in place when `TimeSystem.TotalTimePassed` reaches `RefreshReadyTotalTime`.
+
+Hold duration is derived from game-time cost at `10` game-time points per second. Equipment reduction is slot-gated and tag-gated: only the configured `EffectiveToolSlot` is queried, and the equipped `ToolData.TargetGatheringTag` must exactly match the resource `GatheringTag`. Cancelled holds do not consume time or grant drops; the progress resets and the interaction is only executed when the hold completes.
+
+Tests for a new reusable gathering resource should assert:
+
+- configured-slot tools reduce effective time, while other-slot tools do not;
+- effective time never falls below `MinimumTimeCost`;
+- depletion and refresh are based on game time and restore harvest count to full;
+- the op list does not remove the source card;
+- card UI exposes hold progress and blocks input while disabled.
+
 ## Combat Skills And Status Hooks
 
 Combat effect data is C# resource-driven:

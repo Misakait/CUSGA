@@ -3,6 +3,7 @@ using CUSGA.core.attributes;
 using CUSGA.core.constants;
 using CUSGA.core.inventory;
 using CUSGA.resources.item.equipment;
+using CUSGA.resources.item.tool;
 
 namespace CUSGA.resources.debugging;
 
@@ -51,18 +52,29 @@ public partial class DebugGeneratedEquipmentEntry : Resource
     [Export] public bool RollRandomStats { get; set; } = true;
 
     /// <summary>
+    /// 获取或设置 Debug 工具匹配的采集标签；留空时生成普通装备。
+    /// </summary>
+    [Export] public StringName TargetGatheringTag { get; set; }
+
+    /// <summary>
+    /// 获取或设置 Debug 工具提供的额外采集产量。
+    /// </summary>
+    [Export(PropertyHint.Range, "0,999,1,or_greater")]
+    public int YieldGrowth { get; set; } = 0;
+
+    /// <summary>
+    /// 获取或设置 Debug 工具减少的采集游戏时间点数。
+    /// </summary>
+    [Export(PropertyHint.Range, "0,999,1,or_greater")]
+    public int GatheringTimeReduction { get; set; } = 0;
+
+    /// <summary>
     /// 创建一份包含当前 Debug 装备配置的物品堆叠。
     /// </summary>
     /// <returns>返回已写入装备数据，并按配置决定是否掷随机属性的 <see cref="ItemStack"/>。</returns>
     public ItemStack CreateStack()
     {
-        EquipmentData equipment = new()
-        {
-            CardId = new StringName($"debug_{Slot}_{CardName}"),
-            CardName = CardName,
-            Description = Description,
-            CardIcon = CardIcon
-        };
+        EquipmentData equipment = CreateEquipmentData();
 
         equipment.ValidSlots.Add(Slot);
         equipment.AttributeBonuses[BonusAttribute] = BonusRange;
@@ -75,5 +87,30 @@ public partial class DebugGeneratedEquipmentEntry : Resource
         }
 
         return stack;
+    }
+
+    private EquipmentData CreateEquipmentData()
+    {
+        EquipmentData equipment = ShouldCreateToolData()
+            ? new ToolData
+            {
+                TargetGatheringTag = TargetGatheringTag,
+                YieldGrowth = YieldGrowth,
+                GatheringTimeReduction = GatheringTimeReduction
+            }
+            : new EquipmentData();
+
+        equipment.CardId = new StringName($"debug_{Slot}_{CardName}");
+        equipment.CardName = CardName;
+        equipment.Description = Description;
+        equipment.CardIcon = CardIcon;
+        return equipment;
+    }
+
+    private bool ShouldCreateToolData()
+    {
+        return TargetGatheringTag != null && !TargetGatheringTag.IsEmpty
+            || YieldGrowth > 0
+            || GatheringTimeReduction > 0;
     }
 }

@@ -12,6 +12,8 @@ public partial class BoardController : Node2D
     [Signal] public delegate void CardSpawnedEventHandler(BoardCardView card);
     [Signal] public delegate void CardRemovedEventHandler(BoardCardView card);
     [Signal] public delegate void CardClickedEventHandler(BoardCardView card);
+    [Signal] public delegate void CardPressedEventHandler(BoardCardView card);
+    [Signal] public delegate void CardReleasedEventHandler(BoardCardView card);
     [Signal] public delegate void CardHoverStartedEventHandler(BoardCardView card);
     [Signal] public delegate void CardHoverEndedEventHandler(BoardCardView card);
 
@@ -131,6 +133,15 @@ public partial class BoardController : Node2D
         return _terrainCardsByLocalGrid.ContainsKey(gridPos);
     }
 
+    /// <summary>
+    /// 获取当前棋盘卡牌快照。
+    /// </summary>
+    /// <returns>返回当前仍由棋盘控制器持有的卡牌列表。</returns>
+    public IReadOnlyList<BoardCardView> GetActiveCardsSnapshot()
+    {
+        return [.. _activeCards];
+    }
+
     private void SpawnSingleLootWithScatter(ItemStack stack, Vector2 spawnOrigin)
     {
         Vector2 target = spawnOrigin + RandomDirection() * _rng.RandfRange(ScatterRadiusMin, ScatterRadiusMax);
@@ -157,6 +168,8 @@ public partial class BoardController : Node2D
     private void ConnectCardSignals(BoardCardView card)
     {
         card.Clicked += OnCardClicked;
+        card.Pressed += OnCardPressed;
+        card.Released += OnCardReleased;
         card.HoverStarted += OnCardHoverStarted;
         card.HoverEnded += OnCardHoverEnded;
     }
@@ -164,6 +177,8 @@ public partial class BoardController : Node2D
     private void DisconnectCardSignals(BoardCardView card)
     {
         card.Clicked -= OnCardClicked;
+        card.Pressed -= OnCardPressed;
+        card.Released -= OnCardReleased;
         card.HoverStarted -= OnCardHoverStarted;
         card.HoverEnded -= OnCardHoverEnded;
     }
@@ -172,6 +187,16 @@ public partial class BoardController : Node2D
     {
         GD.Print($"Card clicked: {card.GetCardData().CardName}");
         EmitSignal(SignalName.CardClicked, card);
+    }
+
+    private void OnCardPressed(BoardCardView card)
+    {
+        EmitSignal(SignalName.CardPressed, card);
+    }
+
+    private void OnCardReleased(BoardCardView card)
+    {
+        EmitSignal(SignalName.CardReleased, card);
     }
 
     private void OnCardHoverStarted(BoardCardView card)

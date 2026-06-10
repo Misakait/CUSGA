@@ -18,5 +18,14 @@ offset_bottom = 23.0
 
 [node name="Icon" type="Sprite2D" parent="." unique_id=589342026]
 
+[node name="HoldProgress" type="ProgressBar" parent="."]
+visible = false
+offset_left = -22.0
+offset_top = 29.0
+offset_right = 22.0
+offset_bottom = 35.0
+max_value = 1.0
+show_percentage = false
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1170748140]
 shape = SubResource("RectangleShape2D_2akyy")

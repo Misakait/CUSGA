@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using CUSGA.core.autoloads;
 using CUSGA.core.board;
 using CUSGA.resources.interaction;
 using CUSGA.core.constants;
@@ -86,6 +87,11 @@ public partial class RoomBoardPresenter : Node
             if (terrain.TerrainData == null)
             {
                 continue;
+            }
+
+            if (terrain.TerrainData.InteractionBehavior is ReusableGatheringInteraction reusable)
+            {
+                reusable.RefreshIfReady(terrain, TimeSystem.Instance?.TotalTimePassed ?? 0);
             }
 
             if (HideHarvestedTerrain && terrain.IsHarvested)

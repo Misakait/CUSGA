@@ -483,6 +483,29 @@ public partial class EquipmentComponent : Node
         return bonus;
     }
 
+    /// <summary>
+    /// 获取指定装备槽里匹配采集标签的工具时间减免。
+    /// </summary>
+    /// <param name="gatheringTag">资源点要求匹配的采集标签。</param>
+    /// <param name="slot">资源点指定读取的装备槽。</param>
+    /// <returns>返回该槽位有效工具提供的游戏时间减免；没有匹配工具时返回 0。</returns>
+    public int GetGatheringTimeReduction(StringName gatheringTag, EquipmentSlot slot)
+    {
+        if (gatheringTag == null || gatheringTag.IsEmpty)
+        {
+            return 0;
+        }
+
+        if (!_equippedItems.TryGetValue(slot, out var stack)
+            || stack.Item is not ToolData tool
+            || tool.TargetGatheringTag != gatheringTag)
+        {
+            return 0;
+        }
+
+        return Math.Max(0, tool.GatheringTimeReduction);
+    }
+
     private static bool CanEquipTaggedItem(ItemStack stack, EquipmentSlot slot)
     {
         return slot switch

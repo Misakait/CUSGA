@@ -12,11 +12,14 @@ using CUSGA.core.map;
 using CUSGA.core.autoloads;
 using CUSGA.entities.components;
 using CUSGA.resources.encounters;
+using CUSGA.resources.debugging;
 using CUSGA.resources.interaction;
+using CUSGA.resources.interaction.operations;
 using CUSGA.resources.crafting;
 using CUSGA.resources.item;
 using CUSGA.resources.item.card;
 using CUSGA.resources.item.equipment;
+using CUSGA.resources.item.tool;
 using CUSGA.resources.monster;
 using CUSGA.resources.monsters;
 using CUSGA.resources.stats;
@@ -43,6 +46,14 @@ tests.EquipmentDataCanAllowBothRingSlots();
 tests.QuickEquipUsesEmptyCompatibleSlotBeforeReplacingEquipment();
 tests.QuickEquipReplacesOccupiedSlotWhenNoEmptyCompatibleSlot();
 tests.EquippedTorchAppliesEncounterMultiplierUntilUnequipped();
+tests.ReusableGatheringUsesOnlyConfiguredToolSlotForTimeReduction();
+tests.ReusableGatheringClampsEffectiveTimeToMinimum();
+tests.ReusableGatheringTracksDepletionAndRefreshByGameTime();
+tests.ReusableGatheringBuildOpsUsesSnapshotTimeCostWhenProvided();
+tests.ReusableGatheringOpsDoNotRemoveSourceCard();
+tests.LegacyGatheringStillRemovesSourceCard();
+tests.DebugGeneratedEquipmentWithoutGatheringTagCreatesRegularEquipment();
+tests.DebugGeneratedToolEntryCreatesToolData();
 tests.GatheringEncounterModifierOnlyReducesNightChance();
 tests.StartingStatsExposeCombatExpansionDefaults();
 tests.PhysicalDamageFormulaAppliesFixedAndRatePenetration();
@@ -491,6 +502,195 @@ internal sealed partial class TerrainRandomizationTests
         equipment.Unequip(EquipmentSlot.Torch);
 
         Assert.Approximately(1.0f, equipment.GetNightEncounterChanceMultiplier());
+    }
+
+    /// <summary>
+    /// 验证可重复采集只读取资源配置指定装备槽中的工具时间减免。
+    /// </summary>
+    public void ReusableGatheringUsesOnlyConfiguredToolSlotForTimeReduction()
+    {
+        var gathering = new ReusableGatheringInteraction
+        {
+            GatheringTag = new StringName("wood"),
+            TimeCost = 20,
+            MinimumTimeCost = 1,
+            EffectiveToolSlot = EquipmentSlot.Axe
+        };
+        var equipment = new EquipmentComponent();
+        var pickaxe = CreateToolDataStub("wood", EquipmentSlot.Pickaxe, gatheringTimeReduction: 10);
+        var axe = CreateToolDataStub("wood", EquipmentSlot.Axe, gatheringTimeReduction: 10);
+
+        Assert.True(equipment.Equip(Stack(pickaxe, 1), EquipmentSlot.Pickaxe));
+        Assert.Equal(20, gathering.GetEffectiveTimeCost(equipment));
+
+        Assert.True(equipment.Equip(Stack(axe, 1), EquipmentSlot.Axe));
+        Assert.Equal(10, gathering.GetEffectiveTimeCost(equipment));
+    }
+
+    /// <summary>
+    /// 验证工具时间减免不会让采集时间低于资源配置的最短时间。
+    /// </summary>
+    public void ReusableGatheringClampsEffectiveTimeToMinimum()
+    {
+        var gathering = new ReusableGatheringInteraction
+        {
+            GatheringTag = new StringName("stone"),
+            TimeCost = 20,
+            MinimumTimeCost = 6,
+            EffectiveToolSlot = EquipmentSlot.Pickaxe
+        };
+        var equipment = new EquipmentComponent();
+        var pickaxe = CreateToolDataStub("stone", EquipmentSlot.Pickaxe, gatheringTimeReduction: 50);
+
+        Assert.True(equipment.Equip(Stack(pickaxe, 1), EquipmentSlot.Pickaxe));
+
+        Assert.Equal(6, gathering.GetEffectiveTimeCost(equipment));
+        Assert.Approximately(0.6f, gathering.GetRequiredHoldSeconds(equipment));
+    }
+
+    /// <summary>
+    /// 验证可重复采集点耗尽后按游戏总时间刷新并恢复满次数。
+    /// </summary>
+    public void ReusableGatheringTracksDepletionAndRefreshByGameTime()
+    {
+        var gathering = new ReusableGatheringInteraction
+        {
+            MaxHarvestCount = 2,
+            RefreshTimeCost = 30
+        };
+        var terrain = new TerrainInstance();
+
+        gathering.RefreshIfReady(terrain, totalTimePassed: 0);
+
+        Assert.True(gathering.CanHarvest(terrain, totalTimePassed: 0));
+        Assert.Equal(2, terrain.RemainingGatheringCount);
+
+        gathering.RecordSuccessfulHarvest(terrain, totalTimePassed: 10);
+
+        Assert.Equal(1, terrain.RemainingGatheringCount);
+        Assert.True(gathering.CanHarvest(terrain, totalTimePassed: 10));
+
+        gathering.RecordSuccessfulHarvest(terrain, totalTimePassed: 20);
+
+        Assert.Equal(0, terrain.RemainingGatheringCount);
+        Assert.Equal(50, terrain.RefreshReadyTotalTime);
+        Assert.False(gathering.CanHarvest(terrain, totalTimePassed: 49));
+
+        gathering.RefreshIfReady(terrain, totalTimePassed: 50);
+
+        Assert.True(gathering.CanHarvest(terrain, totalTimePassed: 50));
+        Assert.Equal(2, terrain.RemainingGatheringCount);
+        Assert.Equal(0, terrain.RefreshReadyTotalTime);
+    }
+
+    /// <summary>
+    /// 验证执行链使用长按开始时快照到的采集耗时，而不是完成瞬间重新读取装备。
+    /// </summary>
+    public void ReusableGatheringBuildOpsUsesSnapshotTimeCostWhenProvided()
+    {
+        var gathering = new ReusableGatheringInteraction
+        {
+            GatheringTag = new StringName("wood"),
+            TimeCost = 20,
+            MinimumTimeCost = 1,
+            EffectiveToolSlot = EquipmentSlot.Axe
+        };
+        var context = new TerrainInteractionBuildContext
+        {
+            Player = null,
+            Terrain = new TerrainInstance(),
+            EffectiveTimeCostOverride = 10
+        };
+
+        IReadOnlyList<TerrainOp> ops = gathering.BuildOps(context);
+
+        var passTimeOp = ops.OfType<PassTimeOp>().Single();
+        Assert.Equal(10, passTimeOp.Amount);
+    }
+
+    /// <summary>
+    /// 验证可重复采集执行链不会移除来源地形卡。
+    /// </summary>
+    public void ReusableGatheringOpsDoNotRemoveSourceCard()
+    {
+        var gathering = new ReusableGatheringInteraction
+        {
+            GatheringTag = new StringName("wood"),
+            TimeCost = 20
+        };
+        var context = new TerrainInteractionBuildContext
+        {
+            Player = null,
+            Terrain = new TerrainInstance { IsHarvested = true }
+        };
+
+        IReadOnlyList<TerrainOp> ops = gathering.BuildOps(context);
+
+        Assert.False(ops.Any(op => op is RemoveSourceCardOp));
+    }
+
+    /// <summary>
+    /// 验证旧一次性采集仍会移除来源地形卡，避免新资源卡行为泄漏。
+    /// </summary>
+    public void LegacyGatheringStillRemovesSourceCard()
+    {
+        var gathering = new GatheringInteraction
+        {
+            GatheringTag = new StringName("wood"),
+            TimeCost = 20
+        };
+        var context = new TerrainInteractionBuildContext
+        {
+            Player = null,
+            Terrain = new TerrainInstance { IsHarvested = true }
+        };
+
+        IReadOnlyList<TerrainOp> ops = gathering.BuildOps(context);
+
+        Assert.True(ops.Any(op => op is RemoveSourceCardOp));
+    }
+
+    /// <summary>
+    /// 验证旧 Debug 装备资源没有采集字段时仍能生成普通装备。
+    /// </summary>
+    public void DebugGeneratedEquipmentWithoutGatheringTagCreatesRegularEquipment()
+    {
+        var entry = new DebugGeneratedEquipmentEntry
+        {
+            Slot = EquipmentSlot.Helmet,
+            CardName = "旧配置头盔",
+            GatheringTimeReduction = 0,
+            YieldGrowth = 0
+        };
+
+        ItemStack stack = entry.CreateStack();
+
+        Assert.True(stack.Item is EquipmentData);
+        Assert.False(stack.Item is ToolData);
+    }
+
+    /// <summary>
+    /// 验证 Debug 装备配置采集字段后会生成可参与采集减免的工具数据。
+    /// </summary>
+    public void DebugGeneratedToolEntryCreatesToolData()
+    {
+        var entry = new DebugGeneratedEquipmentEntry
+        {
+            Slot = EquipmentSlot.Axe,
+            CardName = "Debug 斧头",
+            TargetGatheringTag = new StringName("wood"),
+            GatheringTimeReduction = 10,
+            YieldGrowth = 1
+        };
+
+        ItemStack stack = entry.CreateStack();
+
+        Assert.True(stack.Item is ToolData);
+        var tool = (ToolData)stack.Item;
+        Assert.Equal(new StringName("wood"), tool.TargetGatheringTag);
+        Assert.Equal(10, tool.GatheringTimeReduction);
+        Assert.Equal(1, tool.YieldGrowth);
+        Assert.True(tool.ValidSlots.Contains(EquipmentSlot.Axe));
     }
 
     /// <summary>
@@ -1422,6 +1622,24 @@ internal sealed partial class TerrainRandomizationTests
         item.ValidSlots = [.. validSlots];
         item.GrantedTags = [];
         item.AttributeBonuses = [];
+        return item;
+    }
+
+    private static ToolData CreateToolDataStub(
+        string gatheringTag,
+        EquipmentSlot slot,
+        int gatheringTimeReduction)
+    {
+        var item = new ToolData
+        {
+            MaxStackSize = 1,
+            TargetGatheringTag = new StringName(gatheringTag),
+            YieldGrowth = 0,
+            GatheringTimeReduction = gatheringTimeReduction,
+            ValidSlots = [slot],
+            GrantedTags = [],
+            AttributeBonuses = []
+        };
         return item;
     }
 

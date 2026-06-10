@@ -2,15 +2,15 @@
 
 [ext_resource type="Script" uid="uid://d3fipnri5ucw2" path="res://scripts/map_scripts/map_son_scripts/map_forest.gd" id="1_0xvl1"]
 [ext_resource type="Texture2D" uid="uid://b5nqjgxrn0ntx" path="res://res/background/森林 2-a201(1).png" id="2_tdjg7"]
+[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="3_bn557"]
 [ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="3_profile"]
-[ext_resource type="Texture2D" uid="uid://cncvtsbi3h5t" path="res://res/element_icon/wood_icon.png" id="4_lratd"]
-[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="4_mcl2d"]
 [ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_s8yer"]
-[ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="4_tdjg7"]
-[ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="5_lratd"]
+[ext_resource type="Resource" uid="uid://clm71w485dbvb" path="res://items/items/berry.tres" id="5_h8mko"]
 [ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_ypuhc"]
+[ext_resource type="Resource" uid="uid://vlltwh1x74yg" path="res://resources/item/card/res_cards/torch.tres" id="6_ll67c"]
 [ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="6_tdjg7"]
 [ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="7_pool"]
+[ext_resource type="Script" uid="uid://ddlfhrcybdk2u" path="res://resources/interaction/ReusableGatheringInteraction.cs" id="8_by5ed"]
 [ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="8_variance"]
 
 [sub_resource type="Resource" id="Variance_forest"]
@@ -28,46 +28,46 @@ MaxMagPower = 1.2
 MaxMagResist = 1.2
 MaxSpeed = 1.2
 
-[sub_resource type="Resource" id="Resource_tvqcv"]
-script = ExtResource("5_lratd")
-CardId = &"whitewood"
-CardName = "wood"
-CardIcon = ExtResource("4_lratd")
-metadata/_custom_type_script = "uid://tg4u4lol2cpi"
-
-[sub_resource type="Resource" id="Resource_bn557"]
+[sub_resource type="Resource" id="Resource_xbrgw"]
 script = ExtResource("4_s8yer")
-Item = SubResource("Resource_tvqcv")
+Item = ExtResource("5_h8mko")
 MinAmount = 2
-MaxAmount = 2
+MaxAmount = 3
 metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
 
-[sub_resource type="Resource" id="Resource_h8mko"]
+[sub_resource type="Resource" id="Resource_0tgqb"]
+script = ExtResource("4_s8yer")
+Item = ExtResource("6_ll67c")
+metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+
+[sub_resource type="Resource" id="Resource_71ugv"]
 script = ExtResource("6_tdjg7")
-Drops = Array[ExtResource("4_s8yer")]([SubResource("Resource_bn557")])
+Drops = Array[ExtResource("4_s8yer")]([SubResource("Resource_xbrgw"), SubResource("Resource_0tgqb")])
 metadata/_custom_type_script = "uid://cauw0y3vbjow1"
 
-[sub_resource type="Resource" id="Resource_tdjg7"]
-script = ExtResource("4_mcl2d")
-GatheringTag = &"wood"
-DropTable = SubResource("Resource_h8mko")
-metadata/_custom_type_script = "uid://dkhkhp61vqgdj"
+[sub_resource type="Resource" id="Resource_ah55y"]
+script = ExtResource("8_by5ed")
+GatheringTag = &"sss"
+DropTable = SubResource("Resource_71ugv")
+MaxHarvestCount = 3
+metadata/_custom_type_script = "uid://ddlfhrcybdk2u"
 
-[sub_resource type="Resource" id="Resource_s8yer"]
+[sub_resource type="Resource" id="Resource_orj84"]
 script = ExtResource("5_ypuhc")
-InteractionBehavior = SubResource("Resource_tdjg7")
-CardId = &"woodterrain"
-CardName = " 树木地形"
-CardIcon = ExtResource("4_tdjg7")
+InteractionBehavior = SubResource("Resource_ah55y")
+CardId = &"aaa"
+CardName = "sjsjs"
+CardIcon = ExtResource("3_bn557")
 metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
-[sub_resource type="Resource" id="Pool_tree"]
+[sub_resource type="Resource" id="Resource_y3i50"]
 script = ExtResource("7_pool")
-TerrainData = SubResource("Resource_s8yer")
+TerrainData = SubResource("Resource_orj84")
+metadata/_custom_type_script = "uid://cotd2deuv8hmq"
 
 [sub_resource type="Resource" id="Profile_forest"]
 script = ExtResource("3_profile")
-TerrainPool = [SubResource("Pool_tree")]
+TerrainPool = [SubResource("Resource_y3i50")]
 EncounterVarianceRange = SubResource("Variance_forest")
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]

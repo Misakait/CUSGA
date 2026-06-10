@@ -14,6 +14,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _test_spawned_terrain_card_uses_exported_resting_scale()
+	await _test_terrain_card_exposes_hold_progress_and_disabled_state()
 	_finish()
 
 
@@ -58,6 +59,39 @@ func _test_spawned_terrain_card_uses_exported_resting_scale() -> void:
 		card.scale == Vector2(tuned_scale, tuned_scale),
 		"微调导出的地形卡缩放后，RefreshView 应使用新的配置值。"
 	)
+
+	controller.queue_free()
+	await process_frame
+
+
+func _test_terrain_card_exposes_hold_progress_and_disabled_state() -> void:
+	var controller = load(BOARD_CONTROLLER_SCRIPT).new()
+	controller.CardViewScene = load(BOARD_CARD_VIEW_SCENE)
+	controller.CardsRootPath = NodePath("")
+	root.add_child(controller)
+	await process_frame
+
+	var terrain_data = load(TERRAIN_CARD_DATA_SCRIPT).new()
+	terrain_data.CardName = "测试资源点"
+	var terrain = load(TERRAIN_INSTANCE_SCRIPT).new()
+	terrain.LocalGridPos = Vector2i(1, 0)
+	terrain.TerrainData = terrain_data
+
+	var card = controller.SpawnTerrainCard(terrain, Vector2(100, 100))
+	_assert(card.has_node("HoldProgress"), "地形卡应提供长按采集进度条节点。")
+
+	if card.has_node("HoldProgress"):
+		var progress := card.get_node("HoldProgress") as ProgressBar
+		_assert(not progress.visible, "长按进度条默认应隐藏。")
+		_assert(progress.max_value == 1.0, "长按进度条应使用 0-1 归一化进度。")
+
+	card.call("SetInteractionDisabled", true)
+	_assert(not bool(card.get("input_pickable")), "禁用资源卡后应关闭输入。")
+	_assert(card.modulate.r < 1.0 and card.modulate.g < 1.0 and card.modulate.b < 1.0, "禁用资源卡应变灰。")
+
+	card.call("SetInteractionDisabled", false)
+	_assert(bool(card.get("input_pickable")), "恢复资源卡后应重新允许输入。")
+	_assert(card.modulate == Color.WHITE, "恢复资源卡后颜色应回到白色。")
 
 	controller.queue_free()
 	await process_frame

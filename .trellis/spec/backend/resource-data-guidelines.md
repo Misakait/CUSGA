@@ -28,6 +28,8 @@ Give exported fields safe defaults when the current code expects them:
 
 If a field is required by runtime logic, add validation at the use site and test it. Do not rely only on editor discipline.
 
+When adding an optional exported `StringName` to a resource that already has saved `.tres` instances, treat the runtime value as nullable even if the field initializer uses `StringName.Empty`. Older resources can deserialize the new field as null until they are saved again. Use null-safe checks such as `tag is not null && !tag.IsEmpty` before calling `IsEmpty`, and add a regression test when the field controls runtime behavior.
+
 ## Display Fallbacks
 
 Follow the existing fallback chain for card-like data:
