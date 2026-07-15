@@ -114,4 +114,14 @@ payload.AppliesDefaultCombatModifiers;
 
 Inventory-like systems use `ItemStack` as a mutable stack object with `OnStackChanged`. UI slots bind to stack references and refresh on stack events.
 
+Treat stack and inventory notifications as two different contracts:
+
+- `ItemStack.OnStackChanged` is the immediate, slot-level update for controls already bound to that stack reference.
+- `InventoryChanged` is the inventory-level synchronization point for structure, aggregate counts, crafting, and other observers.
+- A public single-stack transfer emits one source and one target `InventoryChanged` notification after mutation.
+- A batch transfer keeps per-stack events immediate, suppresses repeated inventory-level notifications inside the loop, and emits one source and one target notification only when at least one item moved.
+- Evaluate caller-supplied batch predicates before the first mutation. If a predicate throws, the method must not leave an internally-created partial batch that observers never received through `InventoryChanged`.
+
+Batch-transfer regression tests must assert moved quantities, no notification for a no-op batch, one notification per inventory for a successful batch, predicate-failure atomicity, and any special capacity invariant such as the battle deck's trailing empty slot.
+
 Equipment operations duplicate stacks when moving between systems and apply/remove attribute and tag effects at equip/unequip boundaries. If a new system moves item stacks, preserve copy/duplicate semantics so UI references and inventory slots do not accidentally alias each other.

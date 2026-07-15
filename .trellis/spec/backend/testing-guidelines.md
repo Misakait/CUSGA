@@ -26,6 +26,7 @@ Current files:
 - `tests/godot/passage_guard_tests.gd` covers map movement order, passage guard state/probability/resolver, synchronous result signals, and background resolving.
 - `tests/godot/skill_targeting_type_codegen_tests.gd` covers the C# enum parser, renderer, regeneration checks, and generated-file sync.
 - `tests/godot/multi_hit_damage_tests.gd` mirrors multi-hit combat coverage through Godot runtime loading.
+- `tests/godot/inventory_ui_performance_tests.gd` loads `Main.tscn` to cover inventory slot reuse, sorting rebinds, battle-deck capacity growth, and deferred crafting refresh across ancestor visibility changes.
 
 Use a Godot runner when the behavior depends on GDScript, scene tree timing, C# script loading from `res://`, generated GDScript files, or signal ordering across languages.
 
@@ -45,6 +46,7 @@ godot-mono --headless --path . --build-solutions --quit
 godot-mono --headless --path . --script res://tests/godot/passage_guard_tests.gd
 godot-mono --headless --path . --script res://tests/godot/skill_targeting_type_codegen_tests.gd
 godot-mono --headless --path . --script res://tests/godot/multi_hit_damage_tests.gd
+godot-mono --headless --path . --script res://tests/godot/inventory_ui_performance_tests.gd
 ```
 
 Use the C# runner when the environment can resolve GodotSharp:

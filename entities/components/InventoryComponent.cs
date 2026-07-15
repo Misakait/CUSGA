@@ -529,6 +529,14 @@ public partial class InventoryComponent : Node, ICraftingInventory
     /// <returns>成功移动或合并至少一部分物品时返回 <see langword="true"/>。</returns>
     public bool TryMoveStackToFirstAvailableSlot(InventoryComponent targetInventory, int fromIndex)
     {
+        return TryMoveStackToFirstAvailableSlot(targetInventory, fromIndex, notifyInventories: true);
+    }
+
+    private bool TryMoveStackToFirstAvailableSlot(
+        InventoryComponent targetInventory,
+        int fromIndex,
+        bool notifyInventories)
+    {
         if (targetInventory == null || targetInventory == this || !IsValidSlotIndex(fromIndex))
         {
             return false;
@@ -551,7 +559,7 @@ public partial class InventoryComponent : Node, ICraftingInventory
             }
 
             int beforeAmount = sourceSlot.Amount;
-            targetInventory.MoveItemFrom(this, fromIndex, toIndex);
+            targetInventory.MoveItemFrom(this, fromIndex, toIndex, notifyInventories);
             return sourceSlot.IsEmpty || sourceSlot.Amount < beforeAmount;
         }
 
@@ -573,7 +581,8 @@ public partial class InventoryComponent : Node, ICraftingInventory
             return 0;
         }
 
-        int movedAmount = 0;
+        // 先完整执行外部筛选条件，避免后续条件抛异常时留下已移动但尚未发送全局通知的半成品批次。
+        List<int> matchingIndices = [];
         for (int fromIndex = 0; fromIndex < Capacity; fromIndex++)
         {
             var sourceSlot = _slots[fromIndex];
@@ -582,12 +591,26 @@ public partial class InventoryComponent : Node, ICraftingInventory
                 continue;
             }
 
+            matchingIndices.Add(fromIndex);
+        }
+
+        int movedAmount = 0;
+        foreach (int fromIndex in matchingIndices)
+        {
+            var sourceSlot = _slots[fromIndex];
             int beforeAmount = sourceSlot.Amount;
-            if (TryMoveStackToFirstAvailableSlot(targetInventory, fromIndex))
+            if (TryMoveStackToFirstAvailableSlot(targetInventory, fromIndex, notifyInventories: false))
             {
                 int remainingAmount = sourceSlot.IsEmpty ? 0 : sourceSlot.Amount;
                 movedAmount += beforeAmount - remainingAmount;
             }
+        }
+
+        if (movedAmount > 0)
+        {
+            // ItemStack 已逐槽通知可见 UI；全局信号延迟到批次结束，避免每个堆叠触发整表刷新。
+            NotifyInventoryChanged();
+            targetInventory.NotifyInventoryChanged();
         }
 
         return movedAmount;
@@ -605,7 +628,22 @@ public partial class InventoryComponent : Node, ICraftingInventory
         return targetSlot.IsEmpty || (targetSlot.Item == sourceSlot.Item && !targetSlot.IsFull);
     }
 
+    /// <summary>
+    /// 将来源背包的指定物品堆叠移动或合并到当前背包的目标槽位。
+    /// </summary>
+    /// <param name="sourceInventory">提供物品堆叠的来源背包。</param>
+    /// <param name="fromIndex">来源背包中的槽位索引。</param>
+    /// <param name="toIndex">当前背包中的目标槽位索引。</param>
     public void MoveItemFrom(InventoryComponent sourceInventory, int fromIndex, int toIndex)
+    {
+        MoveItemFrom(sourceInventory, fromIndex, toIndex, notifyInventories: true);
+    }
+
+    private void MoveItemFrom(
+        InventoryComponent sourceInventory,
+        int fromIndex,
+        int toIndex,
+        bool notifyInventories)
     {
         if (!CanReceiveItemFrom(sourceInventory, fromIndex, toIndex))
         {
@@ -642,8 +680,11 @@ public partial class InventoryComponent : Node, ICraftingInventory
             sourceSlot.CopyFrom(tempStack);
         }
 
-        sourceInventory.NotifyInventoryChanged();
-        NotifyInventoryChanged();
+        if (notifyInventories)
+        {
+            sourceInventory.NotifyInventoryChanged();
+            NotifyInventoryChanged();
+        }
     }
 
     //尝试合并，之后进行交换

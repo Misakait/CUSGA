@@ -1,0 +1,3 @@
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"核对批量移动通知、异常和容量不变量。"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"核对构建、C# 测试与 Godot 运行时门禁。"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"核对 UI 节点复用、绑定与可见性恢复行为。"}

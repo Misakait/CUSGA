@@ -21,6 +21,16 @@ Pattern:
 5. Use `QueueFree` for generated child controls.
 6. Hide tooltips and unsubscribe stack events in `_ExitTree`.
 
+For inventory-like repeated controls, synchronize bindings and structure incrementally:
+
+- A `Bind` call should return early when the owner, index, and bound model reference are unchanged. Content changes arrive through the model's change event; reference changes caused by sorting must still perform a full unbind/rebind.
+- Capacity growth should instantiate only the missing child views, and capacity reduction should remove only surplus views. Do not release and recreate still-valid controls.
+- Keep one-time child configuration such as shared tooltip presenters and shortcut handlers on the creation path, then bind the new views in the normal rebind pass.
+
+Long-lived UI may remain subscribed while hidden, but an expensive signal callback that only maintains presentation should guard with `IsVisibleInTree()`. Mark the presentation dirty while hidden, refresh once from current model state when `VisibilityChanged` reports effective visibility again, and let an explicit open path clear the dirty flag after its own complete refresh. This covers both direct `Hide()` calls and ancestor `CanvasLayer`/`CanvasItem` visibility changes. Do not defer gameplay state mutation.
+
+Keep durable Godot runtime tests for structural UI optimizations. Assert stable child instance IDs across ordinary rebinds, preservation of existing child IDs during capacity growth, correct model references after sorting, and deferred refresh after ancestor visibility is restored.
+
 ## Drag And Drop
 
 Inventory/equipment drag data is carried by `DraggableData`. UI controls should call component-level `Can*` methods in `_CanDropData` and component-level mutation methods in `_DropData`.

@@ -8,6 +8,9 @@ using CUSGA.resources.item.card;
 
 namespace CUSGA.core.ui;
 
+/// <summary>
+/// 管理玩家背包、装备槽和出战卡组的物品界面与快捷交互。
+/// </summary>
 public partial class InventoryUI : Control
 {
     // SlotUI的scene
@@ -191,14 +194,15 @@ public partial class InventoryUI : Control
 
     private void GenerateSlots(GridContainer slotGrid, List<SlotUI> slotViews, InventoryComponent inventory)
     {
-        foreach (Node child in slotGrid.GetChildren())
+        while (slotViews.Count > inventory.Capacity)
         {
-            child.QueueFree();
+            int lastIndex = slotViews.Count - 1;
+            SlotUI surplusSlot = slotViews[lastIndex];
+            slotViews.RemoveAt(lastIndex);
+            surplusSlot.QueueFree();
         }
 
-        slotViews.Clear();
-
-        for (int i = 0; i < inventory.Capacity; i++)
+        for (int i = slotViews.Count; i < inventory.Capacity; i++)
         {
             SlotUI slotUI = SlotPrefab.Instantiate<SlotUI>();
             slotGrid.AddChild(slotUI);
