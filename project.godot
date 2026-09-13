@@ -25,7 +25,7 @@ resources_spreadsheet_view/freeze_first_column=true
 
 config/name="CUSGA"
 run/main_scene="uid://qwckbjjp11ca"
-config/features=PackedStringArray("4.6", "C#", "Forward Plus")
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -37,6 +37,7 @@ ItemsControl="*uid://b1nat1ps6dux8"
 GlobalWarehouse="*res://core/autoloads/global_warehouse.tscn"
 SceneManager="*uid://0cimhegik5tk"
 ScreenTransitions="*uid://byi0pyqiabw0d"
+_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
 
@@ -51,7 +52,7 @@ project/assembly_name="CUSGA"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/card_csv_sync/plugin.cfg", "res://addons/skill_targeting_type_codegen/plugin.cfg")
+enabled=PackedStringArray("res://addons/card_csv_sync/plugin.cfg", "res://addons/godot_ai/plugin.cfg", "res://addons/skill_targeting_type_codegen/plugin.cfg")
 
 [input]
 
