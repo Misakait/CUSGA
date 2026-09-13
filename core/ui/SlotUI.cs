@@ -22,6 +22,9 @@ public enum SlotShortcutKind
     AltClick
 }
 
+/// <summary>
+/// 表示绑定到背包物品堆叠的单个可交互槽位视图。
+/// </summary>
 public partial class SlotUI : PanelContainer
 {
     private int _myIndex; // 该格子背包里的真实坐标
@@ -62,8 +65,21 @@ public partial class SlotUI : PanelContainer
             CustomMinimumSize = new Vector2(CustomMinimumSize.X, Size.X);
         }
     }
+    /// <summary>
+    /// 将槽位视图绑定到指定背包索引和物品堆叠。
+    /// </summary>
+    /// <param name="index">背包中的槽位索引。</param>
+    /// <param name="stack">该索引当前持有的物品堆叠。</param>
+    /// <param name="inventory">拥有该物品堆叠的背包组件。</param>
     public void Bind(int index, ItemStack stack, InventoryComponent inventory)
     {
+        if (_myIndex == index
+            && ReferenceEquals(_itemStackInThisSlot, stack)
+            && ReferenceEquals(_inventoryComponent, inventory))
+        {
+            return;
+        }
+
         if (_itemStackInThisSlot != null)
         {
             _itemStackInThisSlot.OnStackChanged -= UpdateVisuals;

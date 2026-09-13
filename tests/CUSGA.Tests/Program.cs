@@ -40,6 +40,11 @@ tests.BattleDeckExpandsWhenAddingBeyondInitialCapacity();
 tests.RegularInventoryKeepsFixedCapacityWhenFull();
 tests.QuickTransferMovesSkillCardBetweenInventoryAndBattleDeck();
 tests.BulkTransferMovesOnlySkillCardsWithoutReplacingOtherItems();
+tests.QuickTransferEmitsOneChangePerInventory();
+tests.BulkTransferCoalescesChangesPerInventory();
+tests.BulkTransferWithoutMatchesDoesNotEmitChanges();
+tests.BulkTransferPreservesTrailingEmptySlotWhenFillingDeck();
+tests.BulkTransferPredicateFailureLeavesInventoriesUnchanged();
 tests.NewEquipmentSlotsAcceptCurrentItemTags();
 tests.MagicItemSlotRequiresExplicitMagicItemTag();
 tests.EquipmentDataCanAllowBothRingSlots();
@@ -365,6 +370,145 @@ internal sealed partial class TerrainRandomizationTests
         Assert.Equal(2, battleDeck.GetSkillCards().Count);
         Assert.Same(firstSkill, battleDeck.GetStackAt(0).Item);
         Assert.Same(secondSkill, battleDeck.GetStackAt(1).Item);
+    }
+
+    /// <summary>
+    /// 验证单次跨背包快捷移动仍分别通知来源和目标一次。
+    /// </summary>
+    public void QuickTransferEmitsOneChangePerInventory()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        var skillCard = CreateSkillCardDataStub();
+        Assert.Equal(0, inventory.AddItem(skillCard, 1));
+        int inventoryChanges = 0;
+        int battleDeckChanges = 0;
+        inventory.InventoryChanged += () => inventoryChanges++;
+        battleDeck.InventoryChanged += () => battleDeckChanges++;
+
+        Assert.True(inventory.TryMoveStackToFirstAvailableSlot(battleDeck, 0));
+
+        Assert.Equal(1, inventoryChanges);
+        Assert.Equal(1, battleDeckChanges);
+    }
+
+    /// <summary>
+    /// 验证批量快捷移动会合并全局背包通知，而不是每个物品堆叠通知一次。
+    /// </summary>
+    public void BulkTransferCoalescesChangesPerInventory()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        Assert.Equal(0, inventory.AddItem(CreateSkillCardDataStub(), 1));
+        Assert.Equal(0, inventory.AddItem(CreateSkillCardDataStub(), 1));
+        int inventoryChanges = 0;
+        int battleDeckChanges = 0;
+        inventory.InventoryChanged += () => inventoryChanges++;
+        battleDeck.InventoryChanged += () => battleDeckChanges++;
+
+        int moved = inventory.MoveAllMatchingStacksTo(battleDeck, item => item is SkillCardData);
+
+        Assert.Equal(2, moved);
+        Assert.Equal(1, inventoryChanges);
+        Assert.Equal(1, battleDeckChanges);
+    }
+
+    /// <summary>
+    /// 验证批量移动没有匹配物品时不会发出虚假的背包变化通知。
+    /// </summary>
+    public void BulkTransferWithoutMatchesDoesNotEmitChanges()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        Assert.Equal(0, inventory.AddItem(CreateItemDataStub(maxStackSize: 1), 1));
+        int inventoryChanges = 0;
+        int battleDeckChanges = 0;
+        inventory.InventoryChanged += () => inventoryChanges++;
+        battleDeck.InventoryChanged += () => battleDeckChanges++;
+
+        int moved = inventory.MoveAllMatchingStacksTo(battleDeck, item => item is SkillCardData);
+
+        Assert.Equal(0, moved);
+        Assert.Equal(0, inventoryChanges);
+        Assert.Equal(0, battleDeckChanges);
+    }
+
+    /// <summary>
+    /// 验证批量移动填满卡组后仍只通知一次，并保留一个可拖入的尾部空槽。
+    /// </summary>
+    public void BulkTransferPreservesTrailingEmptySlotWhenFillingDeck()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        var skillCard = CreateSkillCardDataStub();
+        int initialCapacity = battleDeck.Capacity;
+        Assert.Equal(0, inventory.AddItem(skillCard, initialCapacity));
+        int inventoryChanges = 0;
+        int battleDeckChanges = 0;
+        inventory.InventoryChanged += () => inventoryChanges++;
+        battleDeck.InventoryChanged += () => battleDeckChanges++;
+
+        int moved = inventory.MoveAllMatchingStacksTo(battleDeck, item => item is SkillCardData);
+
+        Assert.Equal(initialCapacity, moved);
+        Assert.Equal(initialCapacity + 1, battleDeck.Capacity);
+        Assert.True(battleDeck.Slots[battleDeck.Capacity - 1].IsEmpty);
+        Assert.Equal(1, inventoryChanges);
+        Assert.Equal(1, battleDeckChanges);
+    }
+
+    /// <summary>
+    /// 验证筛选条件抛出异常时，批量移动不会留下部分迁移且未通知的中间状态。
+    /// </summary>
+    public void BulkTransferPredicateFailureLeavesInventoriesUnchanged()
+    {
+        var inventory = new InventoryComponent();
+        inventory._Ready();
+        var battleDeck = new BattleDeckComponent();
+        battleDeck._Ready();
+        var firstSkill = CreateSkillCardDataStub();
+        var secondSkill = CreateSkillCardDataStub();
+        Assert.Equal(0, inventory.AddItem(firstSkill, 1));
+        Assert.Equal(0, inventory.AddItem(secondSkill, 1));
+        int inventoryChanges = 0;
+        int battleDeckChanges = 0;
+        inventory.InventoryChanged += () => inventoryChanges++;
+        battleDeck.InventoryChanged += () => battleDeckChanges++;
+        int predicateCalls = 0;
+        bool threwExpectedException = false;
+
+        try
+        {
+            inventory.MoveAllMatchingStacksTo(battleDeck, _ =>
+            {
+                predicateCalls++;
+                if (predicateCalls == 2)
+                {
+                    throw new InvalidOperationException("测试筛选异常");
+                }
+
+                return true;
+            });
+        }
+        catch (InvalidOperationException exception) when (exception.Message == "测试筛选异常")
+        {
+            threwExpectedException = true;
+        }
+
+        Assert.True(threwExpectedException);
+        Assert.Same(firstSkill, inventory.GetStackAt(0).Item);
+        Assert.Same(secondSkill, inventory.GetStackAt(1).Item);
+        Assert.True(battleDeck.GetStackAt(0).IsEmpty);
+        Assert.Equal(0, inventoryChanges);
+        Assert.Equal(0, battleDeckChanges);
     }
 
     /// <summary>

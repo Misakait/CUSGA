@@ -1,9 +1,4 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(godot-mono --headless --path . --check-only --script res://resources/map/scene_category.gd)"
-    ]
-  }，
   "env": {
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
   },

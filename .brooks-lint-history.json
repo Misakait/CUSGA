@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-07-15",
+    "mode": "PR Review",
+    "score": 93,
+    "findings": {
+      "critical": 0,
+      "warning": 1,
+      "suggestion": 2
+    },
+    "scope": "unstaged changes (7 files)"
+  }
+]

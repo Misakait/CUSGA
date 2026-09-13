@@ -10,8 +10,14 @@ using CUSGA.resources.item;
 
 namespace CUSGA.core.ui.crafting;
 
+/// <summary>
+/// 展示配方、材料持有量并处理合成操作的界面。
+/// </summary>
 public partial class CraftingUI : Control
 {
+    /// <summary>
+    /// 获取或设置用于接收合成界面切换请求的游戏端口路径。
+    /// </summary>
     [Export] public NodePath GameplayPortPath { get; set; }
 
     private GameplayPort _gameplayPort = null!;
@@ -27,7 +33,11 @@ public partial class CraftingUI : Control
     private Label _statusLabel = null!;
     private CraftingRecipe _selectedRecipe;
     private readonly Dictionary<CraftingRecipe, Button> _recipeButtons = [];
+    private bool _needsInventoryRefresh;
 
+    /// <summary>
+    /// 初始化界面控件并订阅游戏端口事件。
+    /// </summary>
     public override void _Ready()
     {
         _recipeGrid = GetNode<GridContainer>("%RecipeGrid");
@@ -45,6 +55,7 @@ public partial class CraftingUI : Control
 
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
         _gameplayPort.CraftingToggleRequested += HandleCraftingToggleRequest;
+        VisibilityChanged += OnVisibilityChanged;
 
         Hide();
     }
@@ -66,6 +77,10 @@ public partial class CraftingUI : Control
         Open(crafting);
     }
 
+    /// <summary>
+    /// 绑定合成组件、刷新当前配方并显示界面。
+    /// </summary>
+    /// <param name="crafting">要展示的合成组件。</param>
     public void Open(CraftingComponent crafting)
     {
         BindCrafting(crafting);
@@ -80,9 +95,13 @@ public partial class CraftingUI : Control
             RefreshSelectedRecipe();
         }
 
+        _needsInventoryRefresh = false;
         Show();
     }
 
+    /// <summary>
+    /// 隐藏合成界面。
+    /// </summary>
     public void Close()
     {
         Hide();
@@ -284,10 +303,34 @@ public partial class CraftingUI : Control
 
     private void OnInventoryChanged()
     {
+        if (!IsVisibleInTree())
+        {
+            // 父级 HUD 也会隐藏此节点；记录一次脏状态，恢复有效可见性后再合并刷新。
+            _needsInventoryRefresh = true;
+            return;
+        }
+
         if (_selectedRecipe != null)
         {
             RefreshSelectedRecipe();
         }
+
+        _needsInventoryRefresh = false;
+    }
+
+    private void OnVisibilityChanged()
+    {
+        if (!_needsInventoryRefresh || !IsVisibleInTree())
+        {
+            return;
+        }
+
+        if (_selectedRecipe != null)
+        {
+            RefreshSelectedRecipe();
+        }
+
+        _needsInventoryRefresh = false;
     }
 
     private int GetCraftQuantity()
@@ -355,6 +398,9 @@ public partial class CraftingUI : Control
         }
     }
 
+    /// <summary>
+    /// 退出场景树时断开游戏端口与库存事件。
+    /// </summary>
     public override void _ExitTree()
     {
         if (_gameplayPort != null)
@@ -362,6 +408,7 @@ public partial class CraftingUI : Control
             _gameplayPort.CraftingToggleRequested -= HandleCraftingToggleRequest;
         }
 
+        VisibilityChanged -= OnVisibilityChanged;
         DisconnectInventorySignal();
     }
 }
