@@ -38,3 +38,36 @@ Added persisted click/drag battle card controls, generic local settings storage,
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Battle card selection and impact feedback
+
+**Date**: 2026-09-14
+**Task**: Battle card selection and impact feedback
+**Branch**: `main`
+
+### Summary
+
+Implemented click-mode card lift and restored hand layout; sequenced explicit enemy card flight, hit feedback, and guarded discard completion.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9d6c4cb` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
