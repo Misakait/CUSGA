@@ -24,6 +24,10 @@ const BASIC_CARD_PATHS := [
 	"res://resources/skill_cards/earth_magic_tushu.tres",
 ]
 
+# 已结算出牌卡牌的节点元数据键。
+# 同一张展示节点只能在行动完成出口写入一次弃牌堆，防止重复入堆与重复销毁。
+const PLAYED_CARD_FINALIZED_METADATA_KEY: StringName = &"deck_manager_played_card_finalized"
+
 var _basic_card_pool: Array[SkillCardData] = []
 var _rng := RandomNumberGenerator.new()
 
@@ -69,17 +73,26 @@ func draw_cards(amount: int, need_draw_interval: bool = true):
 	print_all_card()
 	control_lock.unlock()
 
-## 处理从手牌中拖出打出的牌（由 CardManager 触发）
-## 将打出该卡牌的行为打包为一条 Action 放进 BattleManager 的待执行队列 (action_queue)
-func play_card(card: Node2D, target = null):
+## 处理从手牌中打出的卡牌（由 CardManager 触发）。
+## 卡牌节点会先脱离手牌布局、保留给行动队列表现，直到结算完成才写入弃牌堆并渐隐。
+## @param card 需要施放的手牌节点。
+## @param target 可选的显式目标节点。
+## @return void 无返回值。
+func play_card(card: Node2D, target = null) -> void:
+	if not is_instance_valid(card):
+		return
+
 	# 将卡牌行动加入行动队列
 	var source = $"../PlayerManager"
 	var targets = []
 	if target:
 		targets.append(target)
 
-	# 实例化行动封装。因为卡牌不应该在这里立即产生效果，而是要排队（也许会接在敌人的行动后面，或等待前一个动画结束）。
-	var action = Action.new(source, targets, card.data, "", "CARD")
+	# 玩家卡牌的展示节点随 Action 一起保存，确保飞行期间不会被手牌移除逻辑提前销毁。
+	var action = Action.new(source, targets, card.data, "", "CARD", card)
+
+	# 先从手牌数据与布局中移除，但不播放弃牌动画；最终弃牌只能由行动完成出口触发。
+	player_hand.remove_card_from_hand(card, false)
 
 	# 推送给主状态机
 	var battle_manager = get_parent()
@@ -88,9 +101,53 @@ func play_card(card: Node2D, target = null):
 	else:
 		# 容错：如果找不到对应方法直接执行旧版逻辑
 		card.use(target)
+		complete_played_card(card)
 
-	# 从手牌中物理移除该节点，并将其数据丢入弃牌堆
-	into_discard_pile(card)
+## 播放一次已施放卡牌的最终弃牌表现，并将其数据写入弃牌堆。
+## 只有 BattleManager 在行动表现与效果结算后调用此方法，保证节点不会过早销毁。
+## @param card 已从手牌布局移除、等待收尾的展示卡牌节点。
+## @return void 无返回值。
+func complete_played_card(card: Node2D) -> void:
+	if not is_instance_valid(card):
+		return
+	if card.get_meta(PLAYED_CARD_FINALIZED_METADATA_KEY, false):
+		return
+
+	# 元数据在写入牌堆前设置，确保同一帧内的重复调用也不会造成双重弃牌。
+	card.set_meta(PLAYED_CARD_FINALIZED_METADATA_KEY, true)
+	if card.data:
+		print(card.data.CardName,"进入弃牌堆")
+		discard_pile_data.append(card.data)
+	else:
+		push_warning("已施放卡牌缺少数据，跳过弃牌堆写入。")
+
+	await player_hand.play_discard_animation(card)
+
+## 将一张展示卡牌飞向仍存活的敌人。
+## 飞行动画集中复用 CardAnimations，避免在行动调度层复制时长与缓动参数。
+## @param card 需要飞行的展示卡牌节点。
+## @param target 作为飞行终点的怪物节点。
+## @return void 无返回值。
+func play_card_to_enemy(card: Node2D, target: Node2D) -> void:
+	if not is_instance_valid(card) or not is_instance_valid(target):
+		return
+
+	await CardAnimations.play_card(card, target.global_position).finished
+
+## 播放敌人命中反馈。
+## 优先使用目标贴图的闪白与目标节点抖动；没有贴图时仍保留节点抖动作为可靠反馈。
+## @param target 命中的怪物节点。
+## @return void 无返回值。
+func play_enemy_hit_feedback(target: Node2D) -> void:
+	if not is_instance_valid(target):
+		return
+
+	# 怪物场景的可视主体；可选查找使未来的特殊怪物节点仍能安全播放抖动。
+	var target_sprite: Sprite2D = target.get_node_or_null("Sprite2D") as Sprite2D
+	if target_sprite:
+		await CardAnimations.hit(target, target_sprite)
+	else:
+		await CardAnimations.shake_x(target).finished
 
 ## 回合结束时丢弃所有手牌
 func discard_hand():

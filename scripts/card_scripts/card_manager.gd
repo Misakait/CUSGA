@@ -39,6 +39,14 @@ const OPERATION_MODE_DRAG: String = "drag"
 @export var monster_hover_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物被选中悬停时放大
 @export var scale_tween_duration: float = 0.08 ## 缩放动画过度时间
 
+@export_group("点击模式选中参数")
+# 点击模式选中卡牌向上移动的距离。
+# 该值独立于悬停缩放，确保玩家即使移开鼠标也能识别待确认卡牌。
+@export var click_selected_card_lift_distance: float = 36.0
+# 点击模式选中卡牌上移所用的时间。
+# 时长集中在此处，避免交互流程中散落表现参数。
+@export var click_selected_card_lift_duration: float = 0.12
+
 @export_group("自我施放参数")
 @export var allow_self_cast_on_empty: bool = true ## 当卡牌为【对自己使用】时，允许拖到空白处直接施放
 
@@ -140,10 +148,13 @@ func set_operation_mode(operation_mode: String) -> void:
 		_settings_panel.call("set_active_mode", _operation_mode)
 
 ## 清除点击模式的待确认卡牌、目标与所有关联高亮。
-## 该统一出口同时被取消、模式切换和失去玩家输入权使用，确保不会遗留可误触的状态。
+## 非确认路径会将选中卡牌还原到手牌布局；确认路径则保留节点给行动队列播放飞行表现。
+## @param restore_hand_layout 为 true 时将选中卡牌返回正常手牌位置；确认施放时传入 false。
 ## @return void 无返回值。
-func clear_click_selection() -> void:
+func clear_click_selection(restore_hand_layout: bool = true) -> void:
 	if _selected_click_card and is_instance_valid(_selected_click_card):
+		if restore_hand_layout:
+			_restore_click_mode_card_to_hand(_selected_click_card)
 		highlight_card(_selected_click_card, false)
 
 	_selected_click_card = null
@@ -424,15 +435,41 @@ func _select_click_mode_card(card: SkillCard) -> void:
 		return
 
 	if _selected_click_card and _selected_click_card != card and is_instance_valid(_selected_click_card):
+		_restore_click_mode_card_to_hand(_selected_click_card)
 		highlight_card(_selected_click_card, false)
 
 	_selected_click_card = card
 	_selected_click_target = null
 	highlight_card(_selected_click_card, true)
+	_animate_click_mode_card_selection(_selected_click_card)
 	_update_click_mode_target_highlights()
 	_set_click_mode_action_bar_visible(true)
 	if tooltip_panel:
 		tooltip_panel.hide_tooltip()
+
+## 将点击模式选中的卡牌移动到其手牌位置上方。
+## 位置基于 hand_position 计算，避免悬停动画或手牌整理过程累积偏移量。
+## @param card 已选中的可用手牌节点。
+## @return void 无返回值。
+func _animate_click_mode_card_selection(card: SkillCard) -> void:
+	if not card or not is_instance_valid(card):
+		return
+
+	# 选中位置以标准手牌布局为基准，确保多次点击同一张牌不会持续上移。
+	var selected_position: Vector2 = card.hand_position + Vector2(0.0, -click_selected_card_lift_distance)
+	# 位置 Tween 与卡牌缩放分离，保留既有高亮缩放和工具提示行为。
+	var selection_tween: Tween = create_tween()
+	selection_tween.tween_property(card, "position", selected_position, click_selected_card_lift_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+## 将取消或改选的点击模式卡牌交回 PlayerHand 统一整理。
+## @param card 需要恢复到正常手牌布局的卡牌节点。
+## @return void 无返回值。
+func _restore_click_mode_card_to_hand(card: SkillCard) -> void:
+	if not card or not is_instance_valid(card) or not player_hand_referencd:
+		return
+
+	# PlayerHand 已知该卡牌时会只播放归位动画，避免重复插入手牌数据。
+	player_hand_referencd.add_card_to_hand(card)
 
 ## 根据鼠标所在位置选择点击模式的敌人目标。
 ## 没有命中怪物卡槽时清空显式目标，使确认操作按规则以玩家自身为目标。
@@ -459,9 +496,11 @@ func _confirm_click_mode_card() -> void:
 
 	# 确认瞬间仍有效的施放目标；没有有效敌人时固定为 PlayerManager。
 	var confirmed_target: Node = _get_confirmed_click_mode_target()
-	player_manager.consume_energy(_selected_click_card.data.cost)
-	deck_manager.play_card(_selected_click_card, confirmed_target)
-	clear_click_selection()
+	# 提前保存节点引用后清理点击状态，确认路径不再触发手牌归位动画，避免抢占随后的飞行动画。
+	var confirmed_card: SkillCard = _selected_click_card
+	clear_click_selection(false)
+	player_manager.consume_energy(confirmed_card.data.cost)
+	deck_manager.play_card(confirmed_card, confirmed_target)
 
 ## 返回点击模式确认时仍然有效的目标。
 ## 目标在选择后死亡、离开场上或从未选择敌人时，都会安全回退到玩家自身。

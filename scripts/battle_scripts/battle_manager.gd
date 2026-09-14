@@ -497,6 +497,20 @@ func _handle_execute_actions():
 ## @return void 无返回值。
 func _execute_single_action(action: Action):
 	print(action.source, " 执行行动 ", action.action_type, " 目标 ", action.targets)
+	# 本行动的显式首个目标；卡牌结算仍可按目标类型扩展为随机、范围或扩散目标。
+	var target: Node = action.targets[0] if action.targets.size() > 0 else null
+	# 展示层只接受二维场景节点；类型转换让卡牌飞行与受击反馈不依赖未验证的通用目标引用。
+	var monster_target: Node2D = target as Node2D
+	# 只有玩家卡牌明确命中仍在场的怪物时，才播放飞向敌人与敌人受击表现。
+	# 这让自身、范围、随机和无效目标卡牌继续使用原有安全结算路径。
+	var has_enemy_card_presentation: bool = action.action_type == "CARD" \
+		and action.presentation_card != null \
+		and is_instance_valid(action.presentation_card) \
+		and monster_target != null \
+		and is_instance_valid(monster_target) \
+		and _is_monster_actor(monster_target)
+	if has_enemy_card_presentation:
+		await deck_manager.play_card_to_enemy(action.presentation_card, monster_target)
 
 	# 使用可读性更高的显示名输出，便于战斗日志定位敌人使用的技能卡
 	if action.action_type == "SKILL":
@@ -507,7 +521,6 @@ func _execute_single_action(action: Action):
 
 	if action.action_type == "CARD" or action.action_type == "SKILL":
 		# 玩家卡牌和怪物技能共享目标解析；结算时分别调用 SkillCardData 或 CombatSkillData。
-		var target = action.targets[0] if action.targets.size() > 0 else null
 		var combat_skill = null
 		if action.action_type == "CARD" and action.card_data and action.card_data.get("Skill") != null:
 			combat_skill = action.card_data.Skill
@@ -648,6 +661,14 @@ func _execute_single_action(action: Action):
 		# 敌人基础攻击的临时占位逻辑
 		if action.targets.size() > 0 and action.targets[0].has_method("take_damage"):
 			action.targets[0].take_damage(10)
+
+	# 卡牌抵达显式敌人并完成原有技能结算后，再给目标播放短暂抖动与闪白作为打击反馈。
+	if has_enemy_card_presentation:
+		await deck_manager.play_enemy_hit_feedback(monster_target)
+
+	# 玩家卡牌无论是否存在显式敌人目标，都只在本行动的唯一收尾处进入弃牌堆并渐隐销毁。
+	if action.action_type == "CARD" and action.presentation_card != null:
+		await deck_manager.complete_played_card(action.presentation_card)
 
 	# 模拟动画或效果执行时间。将来可替换为 await 动画节点(AnimationPlayer)发出的 finished 信号
 	await get_tree().create_timer(0.5).timeout

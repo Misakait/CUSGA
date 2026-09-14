@@ -89,13 +89,19 @@ func add_card_to_hand(card):
 	else:
 		animate_card_to_position(card, card.hand_position)
 
-func remove_card_from_hand(card):
+## 从手牌布局中移除卡牌，并可选择是否立即播放既有弃牌表现。
+## 玩家主动出牌会先保留节点供行动队列播放飞行，因此该路径需要跳过即时弃牌。
+## @param card 需要从手牌列表移除的卡牌节点。
+## @param should_play_discard_animation 为 true 时按既有规则播放弃牌渐隐；为 false 时仅更新手牌布局。
+## @return void 无返回值。
+func remove_card_from_hand(card, should_play_discard_animation: bool = true) -> void:
 	if card in player_hand_card:
 		#print(card.data.name,"被移除了！")
 		player_hand_card.erase(card)
 		update_hand_positions()
-		#播放弃牌动画
-		play_discard_animation(card)
+		if should_play_discard_animation:
+			# 播放弃牌动画仍由此类统一拥有，保证回合结束弃牌与主动出牌收尾保持同一表现规则。
+			play_discard_animation(card)
 
 func update_hand_positions():
 	refresh_layout_metrics()
@@ -129,15 +135,25 @@ func animate_card_to_position(card, new_position):
 	var tween = get_tree().create_tween()
 	tween.tween_property(card, "position", new_position, card_to_position_speed)
 
-# 弃牌动画与销毁
-func play_discard_animation(card: Node2D):
+## 播放弃牌渐隐并在表现结束后销毁卡牌节点。
+## 该协程可被行动队列等待，从而保证敌人命中反馈结束后才进入弃牌表现。
+## @param card 需要播放弃牌表现的卡牌节点。
+## @return void 无返回值。
+func play_discard_animation(card: Node2D) -> void:
+	if not is_instance_valid(card):
+		return
+
 	# 待定：如果卡牌有 Area2D ，在这里禁用交互，防止飞出时被误触
 
+	# 既有弃牌终点仍使用当前视口中心，避免本次表现调整改变弃牌堆的视觉位置。
 	var screen_center = get_viewport_rect().size / 2.0
+	# 并行动画使卡牌在移向弃牌堆时同步渐隐，保留原有的弃牌节奏。
 	var tween = get_tree().create_tween()
 
 	tween.set_parallel(true)
 	tween.tween_property(card, "position", screen_center, card_discard_speed).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(card, "modulate:a", 0.0, card_discard_speed)
-	# 动画结束后销毁节点
-	tween.chain().tween_callback(card.queue_free)
+	# 等待表现完成后再释放节点，让 BattleManager 能严格串联命中与弃牌阶段。
+	await tween.finished
+	if is_instance_valid(card):
+		card.queue_free()

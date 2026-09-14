@@ -26,10 +26,22 @@ var animation_name: String
 ## 在 BattleManager 的 _execute_single_action() 中会根据此字段执行不同的逻辑分支。
 var action_type: String
 
+## 玩家打出卡牌时保留的可选展示节点。
+## 该节点仅服务于行动队列内的飞行、命中和弃牌表现；怪物技能与普通攻击保持 null。
+var presentation_card: Node2D = null
+
 ## 构造函数：初始化一个新的行动对象并直接赋值给成员变量。
-func _init(p_source: Variant, p_targets: Array, p_card_data: Resource = null, p_animation_name: String = "", p_action_type: String = "CARD") -> void:
+## @param p_source 行动的施放者。
+## @param p_targets 行动的原始目标节点集合。
+## @param p_card_data 卡牌或技能的资源数据。
+## @param p_animation_name 预留的表现名称。
+## @param p_action_type 行动类型标识。
+## @param p_presentation_card 玩家卡牌保留到队列结算时使用的展示节点；非玩家卡牌行动传入 null。
+## @return void 无返回值。
+func _init(p_source: Variant, p_targets: Array, p_card_data: Resource = null, p_animation_name: String = "", p_action_type: String = "CARD", p_presentation_card: Node2D = null) -> void:
 	source = p_source
 	targets = p_targets
 	card_data = p_card_data
 	animation_name = p_animation_name
 	action_type = p_action_type
+	presentation_card = p_presentation_card
