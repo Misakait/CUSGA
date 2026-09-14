@@ -6,6 +6,7 @@
 [ext_resource type="Resource" uid="uid://biq5mpj4n1rqp" path="res://resources/skill_cards/test_card_2.tres" id="5_kvn6b"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="6_ajc51"]
 [ext_resource type="Resource" uid="uid://dejj5ququif3b" path="res://resources/skill_cards/test_card_1.tres" id="8_eboiy"]
+[ext_resource type="Resource" uid="uid://dcf6yco4sdvxg" path="res://resources/monster/merchant_youdangdaofei.tres" id="8_kvn6b"]
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
 [ext_resource type="Resource" uid="uid://b7onaix7yqka8" path="res://resources/skill_cards/bmob.tres" id="8_qemm4"]
 [ext_resource type="Script" uid="uid://chjm56tp6xjqk" path="res://scripts/battle_scripts/monster_manager.gd" id="8_xseyc"]
@@ -77,7 +78,7 @@ corner_radius_bottom_left = 3
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
 starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("8_qemm4"), ExtResource("8_qemm4"), ExtResource("8_qemm4"), ExtResource("8_qemm4"), ExtResource("8_qemm4"), ExtResource("8_qemm4"), ExtResource("8_qemm4"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b")])
-starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("18_eboiy")])
+starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("18_eboiy"), ExtResource("8_kvn6b")])
 card_scene = SubResource("Resource_navvr")
 
 [node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
