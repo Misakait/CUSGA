@@ -170,3 +170,36 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: 目标选择视觉反馈
+
+**Date**: 2026-09-14
+**Task**: 目标选择视觉反馈
+**Branch**: `main`
+
+### Summary
+
+实现点击与拖拽选目标的呼吸、悬停、主次选中、自动选中描边和不可选变暗反馈，并补充跨语言视觉接口、测试与机制规范。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ca806c4` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

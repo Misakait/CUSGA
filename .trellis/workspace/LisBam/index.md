@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
+- **Total Sessions**: 6
 - **Last Active**: 2026-09-14
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~172 | Active |
+| `journal-1.md` | ~205 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 6 | 2026-09-14 | 目标选择视觉反馈 | `ca806c4` | `main` |
 | 5 | 2026-09-14 | Battle random target card impact animation | `3c07b7d` | `main` |
 | 4 | 2026-09-14 | Battle hit animation queue deadlock | `f332382` | `main` |
 | 3 | 2026-09-14 | Battle selection cancellation and action recovery | `9f199c2` | `main` |
