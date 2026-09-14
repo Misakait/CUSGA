@@ -283,12 +283,19 @@ static func discard_card(node: Node2D, discard_pos: Vector2) -> Tween:
 	return tween
 
 
-## 受击：水平抖动 + 闪白并行。
+## 受击：水平抖动 + 闪白并行，并在两项表现均结束或被中止后返回，供行动队列安全等待。
+## @param node 需要播放水平抖动的目标节点。
+## @param sprite 需要播放闪白的目标贴图节点。
+## @return void 无返回值。
 static func hit(node: Node2D, sprite: Sprite2D) -> void:
+	# 承担目标位移反馈的较长 Tween；它在创建后立刻被等待，避免错过自身的一次性完成信号。
 	var t1: Tween = shake_x(node)
+	# 与抖动并行的闪白 Tween；它可能比抖动更早完成，因此不能无条件在稍后等待其已发射的信号。
 	var t2: Tween = flash_white(sprite)
 	await t1.finished
-	await t2.finished
+	# Tween 的 finished 信号不会缓存：闪白若已完成或中止，直接继续；仍在运行时才等待它收尾。
+	if t2.is_valid() and t2.is_running():
+		await t2.finished
 
 
 ## 怪物死亡：闪红 → 弹跳缩小 → 淡出 → 删除。
