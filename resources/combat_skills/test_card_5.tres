@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CombatSkillData" format=3]
+
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_cardeffect"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_damage"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_combat"]
+
+[sub_resource type="Resource" id="Resource_damage"]
+script = ExtResource("2_damage")
+BaseDamage = 10
+Element = 2
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
+
+[resource]
+script = ExtResource("3_combat")
+Element = 2
+TargetingType = 3
+Effects = Array[ExtResource("1_cardeffect")]([SubResource("Resource_damage")])
+CardId = null
+CardName = "测试卡5（任意单位）"
+Description = "对任意单个单位造成10点金属性物理伤害。"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

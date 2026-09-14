@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CombatSkillData" format=3]
+
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_cardeffect"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_damage"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_combat"]
+
+[sub_resource type="Resource" id="Resource_damage"]
+script = ExtResource("2_damage")
+BaseDamage = 12
+Element = 4
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
+
+[resource]
+script = ExtResource("3_combat")
+Element = 4
+TargetingType = 6
+Effects = Array[ExtResource("1_cardeffect")]([SubResource("Resource_damage")])
+CardId = null
+CardName = "测试卡7（扩散敌人）"
+Description = "对主目标及其左右相邻敌人造成12点土属性物理伤害。"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"

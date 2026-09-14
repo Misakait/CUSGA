@@ -49,13 +49,15 @@ const OPERATION_MODE_DRAG: String = "drag"
 # 次级目标选中后的缩放，必须小于主目标但大于正常卡面以表达扩散影响范围。
 @export var monster_secondary_selected_scale: Vector2 = Vector2(1.60, 1.60)
 # 呼吸动画从最小缩放移动到最大缩放所需时间，较短节奏能保持目标提示可见但不干扰战斗阅读。
-@export var target_selection_pulse_half_duration: float = 0.50
+@export var target_selection_pulse_half_duration: float = 0.25
 # 不可选目标叠乘的颜色倍率，保留轮廓信息同时明显降低其视觉权重。
 @export var target_selection_unavailable_modulate: Color = Color(0.45, 0.45, 0.45, 1.0)
 # 已选中目标描边的绿色，用统一参数保证所有目标类型的确认反馈一致。
 @export var target_selection_outline_color: Color = Color(0.25, 1.0, 0.35, 1.0)
+# 次级目标描边使用更浅且略透明的绿色，保留扩散范围提示但避免与主目标争夺视觉焦点。
+@export var target_selection_secondary_outline_color: Color = Color(0.55, 1.0, 0.65, 0.80)
 # 已选中目标描边的像素宽度，默认值需要在卡面缩放后仍保持可辨识。
-@export_range(1.0, 12.0, 0.5) var target_selection_outline_width: float = 3.0
+@export_range(1.0, 12.0, 0.5) var target_selection_outline_width: float = 2.0
 
 @export_group("点击模式选中参数")
 # 点击模式选中卡牌向上移动的距离。
@@ -498,6 +500,8 @@ func _apply_target_visual_state(entity: Node, visual_state: int) -> void:
 	var is_dimmed: bool = visual_state == TargetSelectionVisualState.UNAVAILABLE
 	# 主选中、次级选中和自动目标都需要显示同一种绿色确认描边。
 	var show_outline: bool = visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_SELECTED
+	# 次级目标使用更淡的绿色，主选中与自动选中继续沿用主描边颜色。
+	var outline_color: Color = target_selection_secondary_outline_color if visual_state == TargetSelectionVisualState.SECONDARY_SELECTED else target_selection_outline_color
 
 	match visual_state:
 		TargetSelectionVisualState.HOVERED:
@@ -516,7 +520,7 @@ func _apply_target_visual_state(entity: Node, visual_state: int) -> void:
 		return
 
 	if entity.has_method("ApplyTargetSelectionVisual"):
-		entity.call("ApplyTargetSelectionVisual", target_scale, is_dimmed, target_selection_unavailable_modulate, show_outline, target_selection_outline_color, target_selection_outline_width, scale_tween_duration)
+		entity.call("ApplyTargetSelectionVisual", target_scale, is_dimmed, target_selection_unavailable_modulate, show_outline, outline_color, target_selection_outline_width, scale_tween_duration)
 		return
 
 	# 兜底怪物缺少新接口时仍恢复旧缩放行为，避免自定义卡面阻断目标选择流程。
@@ -627,7 +631,9 @@ func _handle_click_mode_input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT or not event.pressed:
 		return
 
-	if get_viewport().gui_get_hovered_control() != null:
+	# 鼠标下的 GUI 控件用于阻止设置、确认和结束回合等界面误触；怪物卡面控件则必须放行给物理卡槽查询。
+	var hovered_control: Control = get_viewport().gui_get_hovered_control()
+	if hovered_control and not _is_monster_card_presentation_control(hovered_control):
 		return
 
 	# 本次鼠标点击命中的最上层手牌；命中手牌优先于目标选择以支持直接改选卡牌。
@@ -638,6 +644,19 @@ func _handle_click_mode_input(event: InputEvent) -> void:
 
 	if _selected_click_card:
 		_select_click_mode_target_at_mouse()
+
+## 判断 GUI 控件是否属于怪物卡面的纯展示节点。
+## 通过父链识别可覆盖 MonsterAttribute 的动态子控件，避免名称、属性、元素等展示层阻挡敌人目标选择。
+## @param control 当前鼠标下被 GUI 系统命中的控件。
+## @return bool 为 true 时应继续执行怪物卡槽的目标选择。
+func _is_monster_card_presentation_control(control: Control) -> bool:
+	# 从当前控件逐级向上查找怪物根节点，保证不依赖固定的属性栏或标签节点名称。
+	var current_node: Node = control
+	while current_node:
+		if _is_monster_entity(current_node):
+			return true
+		current_node = current_node.get_parent()
+	return false
 
 ## 在点击模式中选择一张待确认施放的卡牌。
 ## @param card 玩家点击命中的卡牌节点。

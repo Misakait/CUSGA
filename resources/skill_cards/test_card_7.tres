@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillCardData" format=3]
+
+[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_card"]
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_7.tres" id="combat_skill"]
+[ext_resource type="Texture2D" uid="uid://qxs3uwurpt08" path="res://res/skillcard/water_skill_card.png" id="icon_skillcard"]
+
+[resource]
+script = ExtResource("1_card")
+Skill = ExtResource("combat_skill")
+cost = 0
+CardTags = Array[String](["测试", "扩散敌人"])
+CardId = null
+CardName = "测试卡7（扩散敌人）"
+CardIcon = ExtResource("icon_skillcard")
+Description = "对主目标及其左右相邻敌人造成12点土属性物理伤害。"
+metadata/_custom_type_script = "uid://bejho62d28qir"
