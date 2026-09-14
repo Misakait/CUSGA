@@ -39,6 +39,24 @@ const OPERATION_MODE_DRAG: String = "drag"
 @export var monster_hover_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物被选中悬停时放大
 @export var scale_tween_duration: float = 0.08 ## 缩放动画过度时间
 
+@export_group("目标选择视觉参数")
+# 可手动指定目标时呼吸动画的最小缩放，略大于正常卡面以提示可点击性。
+@export var monster_selectable_min_scale: Vector2 = Vector2(1.53, 1.53)
+# 可手动指定目标时呼吸动画的最大缩放，必须大于最小缩放以形成可感知的循环变化。
+@export var monster_selectable_max_scale: Vector2 = Vector2(1.56, 1.56)
+# 主目标选中后的缩放，必须大于悬停和次级目标以表达目标优先级。
+@export var monster_primary_selected_scale: Vector2 = Vector2(1.66, 1.66)
+# 次级目标选中后的缩放，必须小于主目标但大于正常卡面以表达扩散影响范围。
+@export var monster_secondary_selected_scale: Vector2 = Vector2(1.60, 1.60)
+# 呼吸动画从最小缩放移动到最大缩放所需时间，较短节奏能保持目标提示可见但不干扰战斗阅读。
+@export var target_selection_pulse_half_duration: float = 0.50
+# 不可选目标叠乘的颜色倍率，保留轮廓信息同时明显降低其视觉权重。
+@export var target_selection_unavailable_modulate: Color = Color(0.45, 0.45, 0.45, 1.0)
+# 已选中目标描边的绿色，用统一参数保证所有目标类型的确认反馈一致。
+@export var target_selection_outline_color: Color = Color(0.25, 1.0, 0.35, 1.0)
+# 已选中目标描边的像素宽度，默认值需要在卡面缩放后仍保持可辨识。
+@export_range(1.0, 12.0, 0.5) var target_selection_outline_width: float = 3.0
+
 @export_group("点击模式选中参数")
 # 点击模式选中卡牌向上移动的距离。
 # 该值独立于悬停缩放，确保玩家即使移开鼠标也能识别待确认卡牌。
@@ -57,6 +75,17 @@ var player_hand_referencd #玩家手牌引用
 var drag_offset: Vector2 # 用于记录拖拽偏移量
 #var currently_hovered_slot: Node2D = null # 记录当前被悬停的卡槽，修改为下面
 var currently_highlighted_entities: Array[Node] = [] # 记录当前被悬停的卡槽
+# 目标选择视觉状态常量由 CardManager 统一拥有，避免输入模式和怪物卡面各自解释状态含义。
+enum TargetSelectionVisualState {
+	NORMAL,
+	AVAILABLE,
+	HOVERED,
+	PRIMARY_SELECTED,
+	SECONDARY_SELECTED,
+	UNAVAILABLE,
+}
+# 上一轮已应用到怪物卡的视觉状态，以实体为键避免 _process 每帧重复创建 Tween。
+var _target_selection_visual_states: Dictionary = {}
 # 当前生效的卡牌操作模式。
 # 值仅允许为 OPERATION_MODE_CLICK 或 OPERATION_MODE_DRAG，默认点击模式可保证首次进入战斗可直接选卡。
 var _operation_mode: String = OPERATION_MODE_CLICK
@@ -91,6 +120,9 @@ func _process(delta: float) -> void:
 		if player_hand_referencd and player_hand_referencd.has_method("is_release_in_hand_area"):
 			release_in_hand_area = player_hand_referencd.is_release_in_hand_area(card_being_dragged.global_position)
 		update_hovered_targets(card_slot_found, release_in_hand_area)
+	elif _is_click_operation_mode() and _selected_click_card:
+		# 点击模式没有拖拽位置更新，需主动读取鼠标下目标以提供未点击前的悬停放大反馈。
+		_update_click_mode_target_highlights()
 
 	check_cards_energy()
 	if _is_click_operation_mode() and _selected_click_card and (control_lock.is_lock or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN):
@@ -227,16 +259,140 @@ func _on_click_mode_cancel_requested() -> void:
 func update_hovered_targets(new_slot: Node2D, release_in_hand_area: bool = false):
 	# 当前命中卡槽所属的战斗实体；空卡槽命中表示没有显式目标。
 	var primary_target: Node = new_slot.get_parent() if new_slot else null
-	# 仅保留拖拽模式原有的空白处自我施放预览条件，避免本次抽取改变旧操作的视觉提示。
-	# 该布尔值为 true 时，目标范围计算才会在无卡槽命中时显示玩家自身。
+	# 只有拖拽未回到手牌区且命中目标时，才把悬停目标预览为主选中状态。
+	var is_primary_preview: bool = primary_target != null and not release_in_hand_area
+	# 只有自身目标牌在非回手拖拽时沿用既有的自身默认目标时间轴高亮。
 	var should_default_to_self: bool = allow_self_cast_on_empty and not release_in_hand_area and is_self_target_card(card_being_dragged)
-	_apply_target_highlights(_resolve_intended_targets(card_being_dragged, primary_target, should_default_to_self))
+	_refresh_target_selection_visuals(card_being_dragged, primary_target, is_primary_preview, should_default_to_self)
 
 ## 更新点击模式当前卡牌和目标的预览高亮。
 ## 点击模式始终允许以玩家自身作为缺省目标，因此没有选择敌人时也会给出明确反馈。
 ## @return void 无返回值。
 func _update_click_mode_target_highlights() -> void:
-	_apply_target_highlights(_resolve_intended_targets(_selected_click_card, _selected_click_target, true))
+	if not _selected_click_card:
+		_apply_target_highlights([])
+		return
+
+	# 点击模式在尚未点击目标时读取鼠标下卡槽，以显示仅放大、不描边的悬停反馈。
+	var hovered_slot: Node2D = raycast_check_for_card_slot_at_position(get_global_mouse_position())
+	# 鼠标下的敌人仅用于悬停预览，真正确认的主目标仍由点击状态独立保存。
+	var hovered_target: Node = hovered_slot.get_parent() if hovered_slot else null
+	# 已点击目标优先于悬停目标，确保鼠标移开后主选中状态仍能稳定保留。
+	var primary_target: Node = _selected_click_target if _selected_click_target else hovered_target
+	# 只有已点击目标才在点击模式中显示绿色主选中状态。
+	var is_primary_selected: bool = _selected_click_target != null
+	_refresh_target_selection_visuals(_selected_click_card, primary_target, is_primary_selected, true)
+
+## 从卡牌数据读取目标类型，并在数据缺失时使用既有的单体敌人保守回退。
+## @param card 需要读取目标类型的卡牌对象。
+## @return int 生成的 SkillTargetingType 枚举值。
+func _get_card_targeting_type(card: Variant) -> int:
+	# 单体敌人是历史逻辑的默认目标类型，缺少数据时继续使用它可保持既有结算行为。
+	var targeting_type: int = SKILL_TARGETING_TYPE.Value.SingleEnemy
+	if card and card.data and card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
+		targeting_type = int(card.data.Skill.TargetingType)
+	return targeting_type
+
+## 返回当前仍有效的场上怪物，集中过滤已删除节点以避免目标预览访问过期实体。
+## @return Array[Node] 当前可展示目标视觉的怪物节点列表。
+func _get_active_monsters() -> Array[Node]:
+	# 返回数组只保存本次刷新仍有效的怪物，不持久化战斗管理器的可变数组引用。
+	var active_monsters: Array[Node] = []
+	if not battle_manager or not battle_manager.monster_manager or not battle_manager.monster_manager.active_monsters:
+		return active_monsters
+
+	for monster in battle_manager.monster_manager.active_monsters:
+		if is_instance_valid(monster):
+			active_monsters.append(monster)
+	return active_monsters
+
+## 根据当前卡牌、主目标与输入阶段推导所有敌人怪物卡的视觉状态。
+## @param card 当前点击或拖拽中的卡牌；为空时会清除全部目标选择表现。
+## @param primary_target 鼠标悬停或已点击的敌人主目标；自动目标卡可以为空。
+## @param is_primary_selected 为 true 时将主目标作为已选中预览，否则只显示悬停状态。
+## @param default_to_self 为 true 时沿用既有逻辑，将无显式敌人目标的预览回退为玩家自身。
+## @return void 无返回值。
+func _refresh_target_selection_visuals(card: Variant, primary_target: Node, is_primary_selected: bool, default_to_self: bool) -> void:
+	if not card or not card.data:
+		_apply_target_visual_states({})
+		return
+
+	# 当前在场怪物是唯一需要渲染目标选择状态的卡面集合，玩家 HUD 不纳入本功能。
+	var active_monsters: Array[Node] = _get_active_monsters()
+	# 默认先将所有敌人标记为不可选，再按目标类型覆盖为可选或选中状态。
+	var next_states: Dictionary = {}
+	for monster in active_monsters:
+		next_states[monster] = TargetSelectionVisualState.UNAVAILABLE
+
+	# 当前卡牌的目标类型来自既有生成枚举，不引入新的目标规则或跨语言数据格式。
+	var targeting_type: int = _get_card_targeting_type(card)
+	match targeting_type:
+		SKILL_TARGETING_TYPE.Value.Self:
+			# 自身目标没有敌人候选；保留全部不可选状态即可满足敌人变暗要求。
+			pass
+
+		SKILL_TARGETING_TYPE.Value.SingleEnemy, SKILL_TARGETING_TYPE.Value.AnySingleUnit:
+			for monster in active_monsters:
+				next_states[monster] = TargetSelectionVisualState.AVAILABLE
+			_apply_primary_target_visual_state(next_states, active_monsters, primary_target, is_primary_selected)
+
+		SKILL_TARGETING_TYPE.Value.SpreadFromEnemy:
+			for monster in active_monsters:
+				next_states[monster] = TargetSelectionVisualState.AVAILABLE
+			_apply_spread_target_visual_states(next_states, active_monsters, primary_target, is_primary_selected)
+
+		SKILL_TARGETING_TYPE.Value.AllEnemies, SKILL_TARGETING_TYPE.Value.RandomEnemy, SKILL_TARGETING_TYPE.Value.AllUnits:
+			# 自动目标卡不等待鼠标或点击确认；所有受影响敌人直接显示已选中反馈。
+			for monster in active_monsters:
+				next_states[monster] = TargetSelectionVisualState.PRIMARY_SELECTED
+
+		_:
+			# 未识别类型沿用旧的单体敌人回退，避免新视觉层扩大未知卡牌的行为差异。
+			for monster in active_monsters:
+				next_states[monster] = TargetSelectionVisualState.AVAILABLE
+			_apply_primary_target_visual_state(next_states, active_monsters, primary_target, is_primary_selected)
+
+	# 时间轴继续消费旧的范围解析结果，确保本功能只替换怪物卡面表现而不改变行动提示语义。
+	var timeline_targets: Array[Node] = _resolve_intended_targets(card, primary_target, default_to_self)
+	_apply_target_visual_states(next_states, timeline_targets, true)
+
+## 为单体目标设置主选中或悬停状态，并拒绝场外或已失效节点。
+## @param next_states 本次刷新即将应用的实体状态映射。
+## @param active_monsters 当前仍在场的有效怪物列表。
+## @param primary_target 需要显示主目标反馈的候选节点。
+## @param is_primary_selected 为 true 时显示主选中，否则显示悬停。
+## @return void 无返回值。
+func _apply_primary_target_visual_state(next_states: Dictionary, active_monsters: Array[Node], primary_target: Node, is_primary_selected: bool) -> void:
+	if primary_target and is_instance_valid(primary_target) and primary_target in active_monsters:
+		next_states[primary_target] = TargetSelectionVisualState.PRIMARY_SELECTED if is_primary_selected else TargetSelectionVisualState.HOVERED
+
+## 为扩散目标设置主目标与左右相邻次级目标，未确认时只保留主目标的悬停反馈。
+## @param next_states 本次刷新即将应用的实体状态映射。
+## @param active_monsters 当前仍在场的有效怪物列表，数组顺序定义左右相邻关系。
+## @param primary_target 需要作为扩散中心的候选节点。
+## @param is_primary_selected 为 true 时同时展示主/次级选中状态。
+## @return void 无返回值。
+func _apply_spread_target_visual_states(next_states: Dictionary, active_monsters: Array[Node], primary_target: Node, is_primary_selected: bool) -> void:
+	if not primary_target or not is_instance_valid(primary_target):
+		return
+
+	# 主目标的数组索引既用于验证其仍在场，也用于保持既有左右相邻扩散规则。
+	var primary_index: int = active_monsters.find(primary_target)
+	if primary_index == -1:
+		return
+
+	next_states[primary_target] = TargetSelectionVisualState.PRIMARY_SELECTED if is_primary_selected else TargetSelectionVisualState.HOVERED
+	if not is_primary_selected:
+		return
+
+	if primary_index > 0:
+		# 左侧相邻怪物只有在主目标已确认或拖拽预览时才显示次级绿色描边。
+		var left_secondary_target: Node = active_monsters[primary_index - 1]
+		next_states[left_secondary_target] = TargetSelectionVisualState.SECONDARY_SELECTED
+	if primary_index < active_monsters.size() - 1:
+		# 右侧相邻怪物与左侧使用相同状态，避免扩散范围在两个方向表现不一致。
+		var right_secondary_target: Node = active_monsters[primary_index + 1]
+		next_states[right_secondary_target] = TargetSelectionVisualState.SECONDARY_SELECTED
 
 ## 根据卡牌目标类型和主目标计算应高亮的实体集合。
 ## 该函数被拖拽与点击模式共用，确保相同卡牌在两种输入方式下遵循同一套范围提示规则。
@@ -250,48 +406,29 @@ func _resolve_intended_targets(card: Variant, primary_target: Node, default_to_s
 	if not card or not card.data or (not primary_target and not default_to_self):
 		return intended_targets
 
-	# 使用编辑器生成的原生枚举，避免运行时解析 C# 文本。
-	# “自身”目标类型对应的跨语言枚举值。
-	var target_self = SKILL_TARGETING_TYPE.Value.Self
-	# “单体敌人”目标类型对应的跨语言枚举值。
-	var target_single_enemy = SKILL_TARGETING_TYPE.Value.SingleEnemy
-	# “全体敌人”目标类型对应的跨语言枚举值。
-	var target_all_enemies = SKILL_TARGETING_TYPE.Value.AllEnemies
-	# “任意单体”目标类型对应的跨语言枚举值。
-	var target_any_single = SKILL_TARGETING_TYPE.Value.AnySingleUnit
-	# “全体单位”目标类型对应的跨语言枚举值。
-	var target_all_units = SKILL_TARGETING_TYPE.Value.AllUnits
-	# “随机敌人”目标类型对应的跨语言枚举值。
-	var target_random_enemy = SKILL_TARGETING_TYPE.Value.RandomEnemy
-	# “以敌人为中心扩散”目标类型对应的跨语言枚举值。
-	var target_spread_from_enemy = SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
-	# 当前卡牌实际配置的目标类型；技能数据缺失时保留单体敌人的保守默认值。
-	var targeting_type: int = target_single_enemy
-
-	# 尝试安全获取目标类型。
-	if card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
-		targeting_type = int(card.data.Skill.TargetingType)
+	# 目标类型解析集中在共享函数内，避免视觉预览与自我施放判断对缺失数据做出不同回退。
+	var targeting_type: int = _get_card_targeting_type(card)
 
 	match targeting_type:
-		target_self:
+		SKILL_TARGETING_TYPE.Value.Self:
 			intended_targets.append(player_manager)
 
-		target_single_enemy, target_any_single:
+		SKILL_TARGETING_TYPE.Value.SingleEnemy, SKILL_TARGETING_TYPE.Value.AnySingleUnit:
 			if primary_target:
 				intended_targets.append(primary_target)
 			elif default_to_self:
 				intended_targets.append(player_manager)
 
-		target_all_enemies, target_random_enemy:
+		SKILL_TARGETING_TYPE.Value.AllEnemies, SKILL_TARGETING_TYPE.Value.RandomEnemy:
 			# 全体和随机都会高亮所有敌人，以提示波及范围。
 			if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
 				intended_targets.assign(battle_manager.monster_manager.active_monsters)
 
-		target_all_units:
+		SKILL_TARGETING_TYPE.Value.AllUnits:
 			# 所有人，包括玩家。
 			intended_targets.assign(battle_manager.get_all_combatants())
 
-		target_spread_from_enemy:
+		SKILL_TARGETING_TYPE.Value.SpreadFromEnemy:
 			# 扩散逻辑：主目标加上左右相邻敌人；没有敌人主目标时，点击模式回退为玩家自身。
 			if primary_target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
 				# 当前仍在场的怪物顺序，用于按位置求取相邻扩散目标。
@@ -320,17 +457,107 @@ func _resolve_intended_targets(card: Variant, primary_target: Node, default_to_s
 ## @param intended_targets 本次应保持高亮的实体集合。
 ## @return void 无返回值。
 func _apply_target_highlights(intended_targets: Array[Node]) -> void:
-	# 找出需要取消高亮的实体。
-	for entity in currently_highlighted_entities:
-		if not entity in intended_targets:
-			set_entity_highlight(entity, false)
-
-	# 找出需要新增高亮的实体。
+	# 兼容旧调用入口：缺少完整状态语义时，旧高亮集合仍按主选中状态呈现。
+	var legacy_states: Dictionary = {}
 	for entity in intended_targets:
-		if not entity in currently_highlighted_entities:
-			set_entity_highlight(entity, true)
+		legacy_states[entity] = TargetSelectionVisualState.PRIMARY_SELECTED
+	_apply_target_visual_states(legacy_states)
 
-	currently_highlighted_entities = intended_targets
+## 将本次状态映射与上一轮作差后应用到怪物卡，并同步既有时间轴高亮。
+## @param next_states 当前所有需要显示目标选择状态的怪物卡映射。
+## @return void 无返回值。
+func _apply_target_visual_states(next_states: Dictionary, timeline_targets: Array[Node] = [], use_explicit_timeline_targets: bool = false) -> void:
+	# 先还原已离开目标选择集合的旧实体，避免取消、目标死亡或切换模式后遗留边框与呼吸。
+	for entity in _target_selection_visual_states:
+		if is_instance_valid(entity) and not next_states.has(entity):
+			_apply_target_visual_state(entity, TargetSelectionVisualState.NORMAL)
+
+	# 仅在状态发生变化时创建新的怪物 Tween，点击模式的每帧悬停检查不会造成动画抖动。
+	for entity in next_states:
+		if not is_instance_valid(entity):
+			continue
+		# 从映射读取的值始终是本地枚举整数，显式转换可避免动态 Dictionary 值参与分支时类型漂移。
+		var next_state: int = int(next_states[entity])
+		if not _target_selection_visual_states.has(entity) or int(_target_selection_visual_states[entity]) != next_state:
+			_apply_target_visual_state(entity, next_state)
+
+	_target_selection_visual_states = next_states.duplicate()
+	_sync_target_timeline_highlights(next_states, timeline_targets, use_explicit_timeline_targets)
+
+## 将单个怪物卡切换到指定目标选择状态，并通过 C# 接口保持血条不受卡面缩放影响。
+## @param entity 需要更新视觉状态的怪物节点。
+## @param visual_state TargetSelectionVisualState 枚举值。
+## @return void 无返回值。
+func _apply_target_visual_state(entity: Node, visual_state: int) -> void:
+	if not _is_monster_entity(entity):
+		return
+
+	# 默认表现对应正常卡面；后续状态只覆盖缩放、边框或不可选颜色这些必要差异。
+	var target_scale: Vector2 = monster_normal_scale
+	# 不可选状态只降低怪物卡面及内部内容的亮度，血条继续保持可读。
+	var is_dimmed: bool = visual_state == TargetSelectionVisualState.UNAVAILABLE
+	# 主选中、次级选中和自动目标都需要显示同一种绿色确认描边。
+	var show_outline: bool = visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_SELECTED
+
+	match visual_state:
+		TargetSelectionVisualState.HOVERED:
+			target_scale = monster_hover_scale
+		TargetSelectionVisualState.PRIMARY_SELECTED:
+			target_scale = monster_primary_selected_scale
+		TargetSelectionVisualState.SECONDARY_SELECTED:
+			target_scale = monster_secondary_selected_scale
+
+	if visual_state == TargetSelectionVisualState.AVAILABLE and entity.has_method("StartTargetSelectionPulse"):
+		entity.call("StartTargetSelectionPulse", monster_selectable_min_scale, monster_selectable_max_scale, target_selection_pulse_half_duration)
+		return
+
+	if visual_state == TargetSelectionVisualState.NORMAL and entity.has_method("ResetTargetSelectionVisual"):
+		entity.call("ResetTargetSelectionVisual", monster_normal_scale, scale_tween_duration)
+		return
+
+	if entity.has_method("ApplyTargetSelectionVisual"):
+		entity.call("ApplyTargetSelectionVisual", target_scale, is_dimmed, target_selection_unavailable_modulate, show_outline, target_selection_outline_color, target_selection_outline_width, scale_tween_duration)
+		return
+
+	# 兜底怪物缺少新接口时仍恢复旧缩放行为，避免自定义卡面阻断目标选择流程。
+	var fallback_sprite: Sprite2D = entity.get_node_or_null("Sprite2D")
+	if fallback_sprite:
+		fallback_sprite.modulate = target_selection_unavailable_modulate if is_dimmed else Color.WHITE
+		var fallback_tween: Tween = create_tween()
+		fallback_tween.tween_property(fallback_sprite, "scale", target_scale, scale_tween_duration)
+
+## 根据选中状态映射维护既有行动时间轴高亮，不把可选或不可选状态错误写入时间轴。
+## @param visual_states 当前所有怪物卡的目标选择状态映射。
+## @param timeline_targets 既有范围解析得到的时间轴目标集合。
+## @param use_explicit_timeline_targets 为 true 时优先使用 timeline_targets，保留旧的范围提示语义。
+## @return void 无返回值。
+func _sync_target_timeline_highlights(visual_states: Dictionary, timeline_targets: Array[Node] = [], use_explicit_timeline_targets: bool = false) -> void:
+	# 时间轴可继续使用旧范围解析集合；兼容入口没有该集合时才从主/次级视觉状态推导。
+	var timeline_highlighted_entities: Array[Node] = []
+	if use_explicit_timeline_targets:
+		for entity in timeline_targets:
+			if is_instance_valid(entity):
+				timeline_highlighted_entities.append(entity)
+	else:
+		for entity in visual_states:
+			var visual_state: int = int(visual_states[entity])
+			if visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_SELECTED:
+				timeline_highlighted_entities.append(entity)
+
+	# 找到行动时间轴后再同步，保持战斗场景缺少该可选 UI 时的安全降级。
+	var timeline: Node = get_node_or_null("../UI/ActionTimeline")
+	if not timeline:
+		currently_highlighted_entities = timeline_highlighted_entities
+		return
+
+	for entity in currently_highlighted_entities:
+		if is_instance_valid(entity) and not entity in timeline_highlighted_entities:
+			timeline.highlight_entity(entity, false)
+	for entity in timeline_highlighted_entities:
+		if not entity in currently_highlighted_entities:
+			timeline.highlight_entity(entity, true)
+
+	currently_highlighted_entities = timeline_highlighted_entities
 
 ## 辅助函数：统一处理实体的视觉放大和时间轴高亮
 ## @param entity 需要高亮或取消高亮的战斗实体。
@@ -340,26 +567,11 @@ func set_entity_highlight(entity: Node, is_highlighted: bool):
 	if not entity:
 		return
 
-	# 处理缩放动画（怪物：统一调用怪物自身的视觉缩放接口，只放大卡面和内部内容，不影响 HealthBar）
-	if _is_monster_entity(entity):
-		var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
-		if entity.has_method("TweenVisualScale"):
-			# 这里复用 Monster.TweenVisualScale，避免拖拽指定目标和敌方行动使用两套不同的放大规则。
-			entity.call("TweenVisualScale", target_scale, scale_tween_duration)
-		else:
-			# 兜底兼容：如果未来出现非 C# Monster 的怪物节点，至少保持旧的卡面缩放表现。
-			var tween = create_tween()
-			tween.tween_property(entity.get_node("Sprite2D"), "scale", target_scale, scale_tween_duration)
-	elif entity.has_node("Sprite2D"):
-		# 兼容其它实体：保持旧逻辑，仅缩放贴图
-		var target_scale = monster_hover_scale if is_highlighted else monster_normal_scale
-		var tween = create_tween()
-		tween.tween_property(entity.get_node("Sprite2D"), "scale", target_scale, scale_tween_duration)
-
-	# 处理时间轴的高亮联动
-	var timeline = get_node_or_null("../UI/ActionTimeline")
-	if timeline:
-		timeline.highlight_entity(entity, is_highlighted)
+	# 保留旧方法供动态调用方兼容，并将其映射到新的完整视觉状态接口。
+	var legacy_states: Dictionary = {}
+	if is_highlighted:
+		legacy_states[entity] = TargetSelectionVisualState.PRIMARY_SELECTED
+	_apply_target_visual_states(legacy_states)
 
 func _is_monster_entity(entity: Node) -> bool:
 	return entity is Node2D \
@@ -540,12 +752,8 @@ func start_drag(card):
 func is_self_target_card(card: SkillCard) -> bool:
 	if not card or not card.data:
 		return false
-	var target_self = SKILL_TARGETING_TYPE.Value.Self
-	var targeting_type: int = SKILL_TARGETING_TYPE.Value.SingleEnemy
-	# 尝试安全获取目标类型
-	if card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
-		targeting_type = int(card.data.Skill.TargetingType)
-	return targeting_type == target_self
+	# 复用统一的目标类型读取逻辑，避免自身施放分支与视觉状态在技能数据缺失时出现不同回退。
+	return _get_card_targeting_type(card) == SKILL_TARGETING_TYPE.Value.Self
 
 ## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
 ## @return void 无返回值。
@@ -574,11 +782,9 @@ func finish_drag():
 		else:
 			player_hand_referencd.add_card_to_hand(card_being_dragged)
 
-	# 松开鼠标时，恢复最后悬停的怪物的缩放
-	# 这里强制按“在手牌区”处理，确保不再触发自我施放高亮
-	update_hovered_targets(null, true)
-
+	# 松开后卡牌会立刻入队或回手，必须清理预览状态以停止呼吸并避免绿色描边残留到行动结算。
 	card_being_dragged = null
+	_apply_target_highlights([])
 
 ## 初始化卡牌本身的鼠标悬停信号，在卡牌实例化时绑定过来
 func connect_card_signals(card):

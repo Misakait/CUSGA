@@ -145,6 +145,81 @@ battle_manager.enqueue_action(action)
 await deck_manager.complete_played_card(action.presentation_card)
 ```
 
+## 目标选择视觉状态与怪物卡面接口
+
+### 1. Scope / Trigger
+
+当 `CardManager` 在点击选目标或拖拽落点预览期间，需要表达可选、悬停、主选、次选、不可选和自动选中状态时，必须通过统一的目标选择视觉状态驱动怪物卡面。该状态只服务于输入反馈，不能改变 `SkillTargetingType` 的实际目标结算、行动队列或资源消耗。
+
+### 2. Signatures
+
+`CardManager` 负责从卡牌目标类型和输入阶段计算 `TargetSelectionVisualState`，并通过 `_refresh_target_selection_visuals(card, primary_target, is_primary_selected, should_default_to_self)` 将状态同步到所有存活怪物。`Monster` 提供下列 GDScript 可调用的展示接口：
+
+```csharp
+public void ApplyTargetSelectionVisual(
+    Vector2 targetSpriteScale,
+    bool isDimmed,
+    Color dimColor,
+    bool showOutline,
+    Color outlineColor,
+    float outlineWidth,
+    double duration);
+public void StartTargetSelectionPulse(
+    Vector2 minimumSpriteScale,
+    Vector2 maximumSpriteScale,
+    double halfCycleDuration);
+public void StopTargetSelectionPulse();
+public void ResetTargetSelectionVisual(Vector2 normalSpriteScale, double duration);
+```
+
+### 3. Contracts
+
+- `CardManager` 独占“目标类型 → 视觉状态”的决策权；`Monster` 只应用缩放、变暗和描边，不能自行推断技能目标类型。
+- `SingleEnemy`、`AnySingleUnit` 的可选敌人呼吸缩放；悬停放大；已确认点击或拖拽预览目标为主选状态。`SpreadFromEnemy` 的相邻受影响敌人为较小倍率的次选状态。
+- `AllEnemies`、`RandomEnemy`、`AllUnits` 的全部受影响敌人直接处于主选状态并显示绿色描边；这仅表示自动选择范围，`RandomEnemy` 的实际随机结算保持原逻辑。
+- `Self` 仅使敌人怪物卡面变暗，不缩放或变暗玩家生命/属性 UI。任何非普通状态切换前都要停止原有呼吸 Tween；结束选牌、结束拖拽或目标离场后必须恢复正常缩放、白色调制和隐藏描边。
+- 视觉缓存只能包含怪物卡面节点，必须排除 `HealthBar`，以免输入反馈污染生命条。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 期望行为 |
+| --- | --- |
+| 怪物实现展示接口 | 使用 `Monster` 接口，状态变更时才创建或停止 Tween。 |
+| 自定义怪物缺少展示接口 | `CardManager` 退化为操作其 `Sprite2D`，且不得中断出牌。 |
+| 描边节点缺失 | 安全跳过描边，缩放和变暗仍可执行。 |
+| 选牌取消、拖拽释放或目标删除 | 清空状态缓存并复位仍存活目标，不能遗留呼吸或绿色边框。 |
+| 行动结算开始缩放卡面 | 必须先停止目标选择呼吸 Tween，避免两个缩放 Tween 竞争。 |
+
+### 5. Good / Base / Bad
+
+- **Good：** 点击扩散牌选中主目标后，主目标以主选倍率显示绿色边框，左右相邻的实际受影响敌人以较小倍率显示同色边框；取消选牌后全部还原。
+- **Base：** 自身牌仅将所有敌人卡面变暗，同时保留原有时间轴高亮和出牌结算。
+- **Bad：** 为了显示随机敌人的自动选择，提前写入随机结果或改写 `_selected_click_target`；这样会把视觉预览错误地变成结算数据。
+
+### 6. Tests Required
+
+- 运行 `tests/godot/target_selection_visual_tests.gd`，验证主选缩放与绿色描边、不可选变暗、呼吸开始后的复位行为。
+- 手动覆盖点击与拖拽：单体、任意单位、扩散、自身、全体敌人、随机敌人和全体单位；确认悬停、确认选中、取消和释放后均无残留状态。
+- 对随机敌人额外断言：视觉上可显示全部敌人自动选中，但行动结算仍由原随机目标逻辑决定。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# 展示层直接决定随机结果，会改变原有结算语义。
+if targeting_type == SKILL_TARGETING_TYPE.Value.RandomEnemy:
+    targets = battle_manager.monster_manager.active_monsters
+```
+
+#### Correct
+
+```gdscript
+# 输入层只投影视觉状态；原目标解析函数继续承担结算结果。
+_refresh_target_selection_visuals(card, hovered_target, true, false)
+var targets = _resolve_intended_targets(card, hovered_target, false)
+```
+
 ## Resources As Configuration State
 
 Godot `Resource` objects are configuration, not mutable runtime stores, unless a class explicitly models runtime state. `TerrainInstance` and `ItemStack` are runtime-like `RefCounted` objects; `ItemData`, `CombatSkillData`, `MonsterData`, recipes, and settings are editable content data.
