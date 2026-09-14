@@ -203,3 +203,36 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: 目标选择与测试卡池优化
+
+**Date**: 2026-09-14
+**Task**: 目标选择与测试卡池优化
+**Branch**: `main`
+
+### Summary
+
+加快可选目标呼吸反馈，修复怪物卡面展示层遮挡点击，调整主次目标描边，并补齐覆盖七种目标类型的初始化测试牌池与回归测试。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4d35eaa` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
