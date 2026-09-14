@@ -434,6 +434,11 @@ func _select_click_mode_card(card: SkillCard) -> void:
 	if not card or card.is_lock or player_manager.energy < card.data.cost:
 		return
 
+	if _selected_click_card == card:
+		# 再次点击同一张待确认卡牌表示主动撤销整次选择，统一出口会归位卡牌并清除目标与操作栏。
+		clear_click_selection()
+		return
+
 	if _selected_click_card and _selected_click_card != card and is_instance_valid(_selected_click_card):
 		_restore_click_mode_card_to_hand(_selected_click_card)
 		highlight_card(_selected_click_card, false)
@@ -477,7 +482,13 @@ func _restore_click_mode_card_to_hand(card: SkillCard) -> void:
 func _select_click_mode_target_at_mouse() -> void:
 	# 鼠标所在位置命中的怪物卡槽；为空时按规则清除敌人目标并预览自身目标。
 	var target_slot = raycast_check_for_card_slot_at_position(get_global_mouse_position())
-	_selected_click_target = target_slot.get_parent() if target_slot else null
+	# 本次点击解析到的候选敌人；它只在点击模式已有待确认卡牌时才会被写入临时选择状态。
+	var clicked_target: Node = target_slot.get_parent() if target_slot else null
+	if clicked_target and clicked_target == _selected_click_target:
+		# 再次点击同一敌人只撤销显式敌人目标，已选卡牌与确认操作仍保留并回退为默认自身目标。
+		_selected_click_target = null
+	else:
+		_selected_click_target = clicked_target
 	_update_click_mode_target_highlights()
 
 ## 确认点击模式的当前卡牌选择并将其送入既有行动队列。

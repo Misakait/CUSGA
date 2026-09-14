@@ -129,7 +129,7 @@ func complete_played_card(card: Node2D) -> void:
 ## @param target 作为飞行终点的怪物节点。
 ## @return void 无返回值。
 func play_card_to_enemy(card: Node2D, target: Node2D) -> void:
-	if not is_instance_valid(card) or not is_instance_valid(target):
+	if not is_instance_valid(card) or not is_instance_valid(target) or target.is_queued_for_deletion():
 		return
 
 	await CardAnimations.play_card(card, target.global_position).finished
@@ -139,7 +139,7 @@ func play_card_to_enemy(card: Node2D, target: Node2D) -> void:
 ## @param target 命中的怪物节点。
 ## @return void 无返回值。
 func play_enemy_hit_feedback(target: Node2D) -> void:
-	if not is_instance_valid(target):
+	if not is_instance_valid(target) or target.is_queued_for_deletion():
 		return
 
 	# 怪物场景的可视主体；可选查找使未来的特殊怪物节点仍能安全播放抖动。

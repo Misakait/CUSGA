@@ -508,9 +508,12 @@ func _execute_single_action(action: Action):
 		and is_instance_valid(action.presentation_card) \
 		and monster_target != null \
 		and is_instance_valid(monster_target) \
+		and not monster_target.is_queued_for_deletion() \
 		and _is_monster_actor(monster_target)
 	if has_enemy_card_presentation:
 		await deck_manager.play_card_to_enemy(action.presentation_card, monster_target)
+		# 受击 Tween 必须在效果结算前结束：致死效果会同步 QueueFree 怪物，之后等待绑定到该节点的 Tween 会永久锁住行动队列。
+		await deck_manager.play_enemy_hit_feedback(monster_target)
 
 	# 使用可读性更高的显示名输出，便于战斗日志定位敌人使用的技能卡
 	if action.action_type == "SKILL":
@@ -661,10 +664,6 @@ func _execute_single_action(action: Action):
 		# 敌人基础攻击的临时占位逻辑
 		if action.targets.size() > 0 and action.targets[0].has_method("take_damage"):
 			action.targets[0].take_damage(10)
-
-	# 卡牌抵达显式敌人并完成原有技能结算后，再给目标播放短暂抖动与闪白作为打击反馈。
-	if has_enemy_card_presentation:
-		await deck_manager.play_enemy_hit_feedback(monster_target)
 
 	# 玩家卡牌无论是否存在显式敌人目标，都只在本行动的唯一收尾处进入弃牌堆并渐隐销毁。
 	if action.action_type == "CARD" and action.presentation_card != null:
