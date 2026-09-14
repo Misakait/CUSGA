@@ -37,6 +37,7 @@ ItemsControl="*uid://b1nat1ps6dux8"
 GlobalWarehouse="*res://core/autoloads/global_warehouse.tscn"
 SceneManager="*uid://0cimhegik5tk"
 ScreenTransitions="*uid://byi0pyqiabw0d"
+SettingsManager="*res://core/autoloads/SettingsManager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

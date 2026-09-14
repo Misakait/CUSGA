@@ -8,10 +8,28 @@ extends Node2D
 @onready var player_manager = $"../PlayerManager"
 @onready var battle_manager = $".."
 @onready var tooltip_panel = $"../UI/TooltipPanel"
+# 战斗右上角的操作模式设置组件。
+# 它只负责展示和发出选择信号，具体模式状态仍由本管理器拥有。
+@onready var _settings_panel: Control = $"../UI/BattleSettingsPanel"
+# 点击模式下显示确认与取消按钮的操作栏组件。
+# 它通过信号请求操作，避免 UI 直接修改卡牌或战斗状态。
+@onready var _click_mode_action_bar: HBoxContainer = $"../UI/ClickModeActionBar"
 
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
 const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
+# 操作模式设置在通用本地配置中的分组名称。
+# 该分组只定义战斗偏好，修改会导致已保存模式无法被后续版本读取。
+const OPERATION_MODE_SETTINGS_SECTION: String = "battle"
+# 操作模式设置在战斗分组中的键名。
+# 使用稳定英文键可避免 UI 文案变化影响已保存玩家偏好。
+const OPERATION_MODE_SETTINGS_KEY: String = "operation_mode"
+# 点击模式的稳定存储值。
+# 它是首次运行、缺失配置和无效配置时的默认值。
+const OPERATION_MODE_CLICK: String = "click"
+# 拖拽模式的稳定存储值。
+# 该值对应改动前已有的卡牌按下、拖动和松开交互。
+const OPERATION_MODE_DRAG: String = "drag"
 
 @export_group("视觉缩放参数")
 @export var card_normal_scale: Vector2 = Vector2(1.0, 1.0) ## 卡牌正常大小
@@ -31,10 +49,22 @@ var player_hand_referencd #玩家手牌引用
 var drag_offset: Vector2 # 用于记录拖拽偏移量
 #var currently_hovered_slot: Node2D = null # 记录当前被悬停的卡槽，修改为下面
 var currently_highlighted_entities: Array[Node] = [] # 记录当前被悬停的卡槽
+# 当前生效的卡牌操作模式。
+# 值仅允许为 OPERATION_MODE_CLICK 或 OPERATION_MODE_DRAG，默认点击模式可保证首次进入战斗可直接选卡。
+var _operation_mode: String = OPERATION_MODE_CLICK
+# 点击模式下等待确认施放的卡牌。
+# 为 null 表示尚未选择卡牌，此时确认/取消操作栏必须隐藏。
+var _selected_click_card: SkillCard = null
+# 点击模式下显式选择的敌人目标。
+# 为 null 时确认操作会以玩家自身为目标，符合未选择敌人的默认规则。
+var _selected_click_target: Node = null
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
 	player_hand_referencd = $"../PlayerHand"
+	_operation_mode = _load_operation_mode()
+	# UI 节点与 CardManager 是同级节点，延后到所有同级节点完成 _ready 后再绑定，避免读取到未初始化的 @onready 引用。
+	call_deferred("_initialize_operation_mode_components")
 
 func _process(delta: float) -> void:
 	if card_being_dragged:
@@ -55,82 +85,240 @@ func _process(delta: float) -> void:
 		update_hovered_targets(card_slot_found, release_in_hand_area)
 
 	check_cards_energy()
+	if _is_click_operation_mode() and _selected_click_card and (control_lock.is_lock or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN):
+		# 玩家失去输入权时必须丢弃临时选择，防止下一个回合误用已经过期的目标或卡牌。
+		clear_click_selection()
+
+## 初始化操作模式设置面板与点击模式操作栏。
+## 该方法延后调用，以确保场景中所有同级 UI 节点都已完成自身初始化。
+## @return void 无返回值。
+func _initialize_operation_mode_components() -> void:
+	if _settings_panel:
+		if _settings_panel.has_method("configure_options"):
+			_settings_panel.call("configure_options", get_operation_mode_options(), _operation_mode)
+		if _settings_panel.has_signal("operation_mode_selected") and not _settings_panel.is_connected("operation_mode_selected", _on_operation_mode_selected):
+			_settings_panel.connect("operation_mode_selected", _on_operation_mode_selected)
+
+	if _click_mode_action_bar:
+		if _click_mode_action_bar.has_signal("confirm_requested") and not _click_mode_action_bar.is_connected("confirm_requested", _on_click_mode_confirm_requested):
+			_click_mode_action_bar.connect("confirm_requested", _on_click_mode_confirm_requested)
+		if _click_mode_action_bar.has_signal("cancel_requested") and not _click_mode_action_bar.is_connected("cancel_requested", _on_click_mode_cancel_requested):
+			_click_mode_action_bar.connect("cancel_requested", _on_click_mode_cancel_requested)
+		_set_click_mode_action_bar_visible(false)
+
+## 返回设置面板所需的操作模式选项。
+## 由 CardManager 作为稳定值与显示文案的唯一来源，避免 UI 与输入层各自维护一套模式定义。
+## @return Array[Dictionary] 每项包含 value（存储值）和 label（显示文案）。
+func get_operation_mode_options() -> Array[Dictionary]:
+	return [
+		{"value": OPERATION_MODE_CLICK, "label": "点击"},
+		{"value": OPERATION_MODE_DRAG, "label": "拖拽"},
+	]
+
+## 返回当前已经生效的卡牌操作模式。
+## @return String 当前模式的稳定存储值。
+func get_operation_mode() -> String:
+	return _operation_mode
+
+## 切换并持久化卡牌操作模式。
+## 切换前先清理临时卡牌与目标状态，避免两种输入方式之间遗留高亮、缩放或待确认操作。
+## @param operation_mode 需要切换到的稳定模式值。
+## @return void 无返回值。
+func set_operation_mode(operation_mode: String) -> void:
+	if not _is_valid_operation_mode(operation_mode):
+		push_warning("忽略未知的卡牌操作模式：%s" % operation_mode)
+		return
+
+	if _operation_mode == operation_mode:
+		return
+
+	_cancel_active_drag()
+	clear_click_selection()
+	_operation_mode = operation_mode
+	SettingsManager.set_setting(OPERATION_MODE_SETTINGS_SECTION, OPERATION_MODE_SETTINGS_KEY, _operation_mode)
+	if _settings_panel and _settings_panel.has_method("set_active_mode"):
+		_settings_panel.call("set_active_mode", _operation_mode)
+
+## 清除点击模式的待确认卡牌、目标与所有关联高亮。
+## 该统一出口同时被取消、模式切换和失去玩家输入权使用，确保不会遗留可误触的状态。
+## @return void 无返回值。
+func clear_click_selection() -> void:
+	if _selected_click_card and is_instance_valid(_selected_click_card):
+		highlight_card(_selected_click_card, false)
+
+	_selected_click_card = null
+	_selected_click_target = null
+	_apply_target_highlights([])
+	_set_click_mode_action_bar_visible(false)
+
+## 取消尚未松开的拖拽卡牌并将其放回手牌布局。
+## 模式在拖拽期间改变时不能让卡牌停留在鼠标位置，否则下次输入会使用过期的拖拽状态。
+## @return void 无返回值。
+func _cancel_active_drag() -> void:
+	if not card_being_dragged:
+		return
+
+	# 被模式切换中止的卡牌节点，需要回到 PlayerHand 的正常布局。
+	var dragged_card: Node2D = card_being_dragged
+	card_being_dragged = null
+	update_hovered_targets(null, true)
+	if player_hand_referencd:
+		player_hand_referencd.add_card_to_hand(dragged_card)
+
+## 从本地设置读取操作模式，并将缺失或无效值安全回退为点击模式。
+## @return String 经过校验的操作模式值。
+func _load_operation_mode() -> String:
+	# 从通用配置读取的原始模式值；必须先校验再作为输入分支条件使用。
+	var saved_mode: String = str(SettingsManager.get_setting(OPERATION_MODE_SETTINGS_SECTION, OPERATION_MODE_SETTINGS_KEY, OPERATION_MODE_CLICK))
+	if _is_valid_operation_mode(saved_mode):
+		return saved_mode
+	push_warning("已保存的卡牌操作模式无效，已回退为点击模式：%s" % saved_mode)
+	return OPERATION_MODE_CLICK
+
+## 判断一个模式值是否属于当前支持的操作模式。
+## @param operation_mode 待校验的模式值。
+## @return bool 为 true 表示该值可以安全用于卡牌输入。
+func _is_valid_operation_mode(operation_mode: String) -> bool:
+	return operation_mode == OPERATION_MODE_CLICK or operation_mode == OPERATION_MODE_DRAG
+
+## 判断当前是否处于点击操作模式。
+## @return bool 为 true 时输入按“选卡—选目标—确认”处理。
+func _is_click_operation_mode() -> bool:
+	return _operation_mode == OPERATION_MODE_CLICK
+
+## 更新点击模式操作栏的可见性。
+## @param is_visible 为 true 时显示确认/取消按钮，为 false 时隐藏。
+## @return void 无返回值。
+func _set_click_mode_action_bar_visible(is_visible: bool) -> void:
+	if _click_mode_action_bar and _click_mode_action_bar.has_method("set_actions_available"):
+		_click_mode_action_bar.call("set_actions_available", is_visible)
+
+## 接收设置面板发出的模式选择请求。
+## @param operation_mode 设置面板选择的稳定模式值。
+## @return void 无返回值。
+func _on_operation_mode_selected(operation_mode: String) -> void:
+	set_operation_mode(operation_mode)
+
+## 接收点击模式操作栏的确认请求。
+## @return void 无返回值。
+func _on_click_mode_confirm_requested() -> void:
+	_confirm_click_mode_card()
+
+## 接收点击模式操作栏的取消请求。
+## @return void 无返回值。
+func _on_click_mode_cancel_requested() -> void:
+	clear_click_selection()
 
 ## 根据拖拽的卡牌类型，动态计算并更新受影响范围的实体高亮
 ## @param new_slot 鼠标射线命中的卡槽节点，可能为空。
 ## @param release_in_hand_area 当前拖拽位置是否回到手牌区（用于避免误判）。
 ## @return void 无返回值。
 func update_hovered_targets(new_slot: Node2D, release_in_hand_area: bool = false):
+	# 当前命中卡槽所属的战斗实体；空卡槽命中表示没有显式目标。
+	var primary_target: Node = new_slot.get_parent() if new_slot else null
+	# 仅保留拖拽模式原有的空白处自我施放预览条件，避免本次抽取改变旧操作的视觉提示。
+	# 该布尔值为 true 时，目标范围计算才会在无卡槽命中时显示玩家自身。
+	var should_default_to_self: bool = allow_self_cast_on_empty and not release_in_hand_area and is_self_target_card(card_being_dragged)
+	_apply_target_highlights(_resolve_intended_targets(card_being_dragged, primary_target, should_default_to_self))
+
+## 更新点击模式当前卡牌和目标的预览高亮。
+## 点击模式始终允许以玩家自身作为缺省目标，因此没有选择敌人时也会给出明确反馈。
+## @return void 无返回值。
+func _update_click_mode_target_highlights() -> void:
+	_apply_target_highlights(_resolve_intended_targets(_selected_click_card, _selected_click_target, true))
+
+## 根据卡牌目标类型和主目标计算应高亮的实体集合。
+## 该函数被拖拽与点击模式共用，确保相同卡牌在两种输入方式下遵循同一套范围提示规则。
+## @param card 需要预览目标范围的卡牌。
+## @param primary_target 鼠标悬停或点击选中的主目标；为空时由 default_to_self 决定是否回退。
+## @param default_to_self 为 true 时没有主目标也以玩家自身作为默认目标。
+## @return Array[Node] 应显示高亮的战斗实体。
+func _resolve_intended_targets(card: Variant, primary_target: Node, default_to_self: bool) -> Array[Node]:
+	# 计算所得的目标预览集合；它会与上一次高亮状态作差量同步。
 	var intended_targets: Array[Node] = []
+	if not card or not card.data or (not primary_target and not default_to_self):
+		return intended_targets
 
-	# 只有在手里抓着牌时才计算高亮，避免无意义的 UI 抖动
-	if card_being_dragged and card_being_dragged.data:
-		# 如果悬停在有效卡槽上，开始计算波及范围
-		if new_slot:
-			var target = new_slot.get_parent()
-			# 使用编辑器生成的原生枚举，避免运行时解析 C# 文本。
-			var target_self = SKILL_TARGETING_TYPE.Value.Self
-			var target_single_enemy = SKILL_TARGETING_TYPE.Value.SingleEnemy
-			var target_all_enemies = SKILL_TARGETING_TYPE.Value.AllEnemies
-			var target_any_single = SKILL_TARGETING_TYPE.Value.AnySingleUnit
-			var target_all_units = SKILL_TARGETING_TYPE.Value.AllUnits
-			var target_random_enemy = SKILL_TARGETING_TYPE.Value.RandomEnemy
-			var target_spread_from_enemy = SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
+	# 使用编辑器生成的原生枚举，避免运行时解析 C# 文本。
+	# “自身”目标类型对应的跨语言枚举值。
+	var target_self = SKILL_TARGETING_TYPE.Value.Self
+	# “单体敌人”目标类型对应的跨语言枚举值。
+	var target_single_enemy = SKILL_TARGETING_TYPE.Value.SingleEnemy
+	# “全体敌人”目标类型对应的跨语言枚举值。
+	var target_all_enemies = SKILL_TARGETING_TYPE.Value.AllEnemies
+	# “任意单体”目标类型对应的跨语言枚举值。
+	var target_any_single = SKILL_TARGETING_TYPE.Value.AnySingleUnit
+	# “全体单位”目标类型对应的跨语言枚举值。
+	var target_all_units = SKILL_TARGETING_TYPE.Value.AllUnits
+	# “随机敌人”目标类型对应的跨语言枚举值。
+	var target_random_enemy = SKILL_TARGETING_TYPE.Value.RandomEnemy
+	# “以敌人为中心扩散”目标类型对应的跨语言枚举值。
+	var target_spread_from_enemy = SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
+	# 当前卡牌实际配置的目标类型；技能数据缺失时保留单体敌人的保守默认值。
+	var targeting_type: int = target_single_enemy
 
-			var targeting_type: int = target_single_enemy
+	# 尝试安全获取目标类型。
+	if card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
+		targeting_type = int(card.data.Skill.TargetingType)
 
-			# 尝试安全获取目标类型
-			if card_being_dragged.data.get("Skill") != null and card_being_dragged.data.Skill.get("TargetingType") != null:
-				targeting_type = int(card_being_dragged.data.Skill.TargetingType)
+	match targeting_type:
+		target_self:
+			intended_targets.append(player_manager)
 
-			match targeting_type:
-				target_self:
-					intended_targets.append(player_manager)
-
-				target_single_enemy, target_any_single:
-					if target:
-						intended_targets.append(target)
-
-				target_all_enemies, target_random_enemy:
-					# 全体和随机都会高亮所有敌人，以提示波及范围
-					if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
-						intended_targets.assign(battle_manager.monster_manager.active_monsters)
-
-				target_all_units:
-					# 所有人，包括玩家
-					intended_targets.assign(battle_manager.get_all_combatants())
-
-				target_spread_from_enemy:
-					# 扩散逻辑：主目标 + 左右相邻
-					if target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
-						var monsters = battle_manager.monster_manager.active_monsters
-						var target_index = monsters.find(target)
-
-						if target_index != -1:
-							intended_targets.append(target) # 本身
-							if target_index > 0:
-								intended_targets.append(monsters[target_index - 1]) # 左侧
-							if target_index < monsters.size() - 1:
-								intended_targets.append(monsters[target_index + 1]) # 右侧
-				_:
-					if target:
-						intended_targets.append(target)
-		else:
-			# 当没有命中卡槽时，若当前是自我施放卡且位置可释放，则提前高亮玩家（用于行动条提示）
-			if allow_self_cast_on_empty and not release_in_hand_area and is_self_target_card(card_being_dragged):
+		target_single_enemy, target_any_single:
+			if primary_target:
+				intended_targets.append(primary_target)
+			elif default_to_self:
 				intended_targets.append(player_manager)
 
-	# 1. 找出需要取消高亮的实体（在旧数组中，但不在新数组中）
+		target_all_enemies, target_random_enemy:
+			# 全体和随机都会高亮所有敌人，以提示波及范围。
+			if battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
+				intended_targets.assign(battle_manager.monster_manager.active_monsters)
+
+		target_all_units:
+			# 所有人，包括玩家。
+			intended_targets.assign(battle_manager.get_all_combatants())
+
+		target_spread_from_enemy:
+			# 扩散逻辑：主目标加上左右相邻敌人；没有敌人主目标时，点击模式回退为玩家自身。
+			if primary_target and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters:
+				# 当前仍在场的怪物顺序，用于按位置求取相邻扩散目标。
+				var monsters = battle_manager.monster_manager.active_monsters
+				# 主目标在场上怪物顺序中的位置；-1 说明目标已离场或不属于当前战斗。
+				var target_index = monsters.find(primary_target)
+				if target_index != -1:
+					intended_targets.append(primary_target)
+					if target_index > 0:
+						intended_targets.append(monsters[target_index - 1])
+					if target_index < monsters.size() - 1:
+						intended_targets.append(monsters[target_index + 1])
+			elif default_to_self:
+				intended_targets.append(player_manager)
+
+		_:
+			if primary_target:
+				intended_targets.append(primary_target)
+			elif default_to_self:
+				intended_targets.append(player_manager)
+
+	return intended_targets
+
+## 将实体高亮从上一帧状态同步到新的目标集合。
+## 统一处理可避免拖拽预览、点击预览和取消操作在视觉状态上相互残留。
+## @param intended_targets 本次应保持高亮的实体集合。
+## @return void 无返回值。
+func _apply_target_highlights(intended_targets: Array[Node]) -> void:
+	# 找出需要取消高亮的实体。
 	for entity in currently_highlighted_entities:
 		if not entity in intended_targets:
 			set_entity_highlight(entity, false)
 
-	# 2. 找出需要新增高亮的实体（在新数组中，但不在旧数组中）
+	# 找出需要新增高亮的实体。
 	for entity in intended_targets:
 		if not entity in currently_highlighted_entities:
 			set_entity_highlight(entity, true)
 
-	# 更新当前的记录
 	currently_highlighted_entities = intended_targets
 
 ## 辅助函数：统一处理实体的视觉放大和时间轴高亮
@@ -181,19 +369,107 @@ func check_cards_energy():
 		else:
 			card.unlock()
 
-## 监听全局输入事件，捕捉卡牌拖拽意图。
+## 监听全局输入事件，并根据当前操作模式分发给拖拽或点击流程。
 ## 增加条件：如果不处于玩家操作回合（如敌方回合或技能结算时），直接拦截操作。
-func _input(event):
+## @param event Godot 传入的输入事件。
+## @return void 无返回值。
+func _input(event: InputEvent) -> void:
 	if control_lock.is_lock or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN:
 		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			var card = raycast_check_for_card()
-			if card:
-				start_drag(card)
-		else:
-			if card_being_dragged:
-				finish_drag()
+
+	if _is_click_operation_mode():
+		_handle_click_mode_input(event)
+	else:
+		_handle_drag_mode_input(event)
+
+## 处理与改动前保持一致的按下、拖动、松开卡牌流程。
+## @param event Godot 传入的输入事件。
+## @return void 无返回值。
+func _handle_drag_mode_input(event: InputEvent) -> void:
+	if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+
+	if event.pressed:
+		var card = raycast_check_for_card()
+		if card:
+			start_drag(card)
+	elif card_being_dragged:
+		finish_drag()
+
+## 处理点击模式的选卡和选敌人操作。
+## GUI 控件位于鼠标下方时不处理世界输入，避免点击确认、取消、设置或结束回合时意外改写目标。
+## @param event Godot 传入的输入事件。
+## @return void 无返回值。
+func _handle_click_mode_input(event: InputEvent) -> void:
+	if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT or not event.pressed:
+		return
+
+	if get_viewport().gui_get_hovered_control() != null:
+		return
+
+	# 本次鼠标点击命中的最上层手牌；命中手牌优先于目标选择以支持直接改选卡牌。
+	var clicked_card = raycast_check_for_card()
+	if clicked_card:
+		_select_click_mode_card(clicked_card)
+		return
+
+	if _selected_click_card:
+		_select_click_mode_target_at_mouse()
+
+## 在点击模式中选择一张待确认施放的卡牌。
+## @param card 玩家点击命中的卡牌节点。
+## @return void 无返回值。
+func _select_click_mode_card(card: SkillCard) -> void:
+	if not card or card.is_lock or player_manager.energy < card.data.cost:
+		return
+
+	if _selected_click_card and _selected_click_card != card and is_instance_valid(_selected_click_card):
+		highlight_card(_selected_click_card, false)
+
+	_selected_click_card = card
+	_selected_click_target = null
+	highlight_card(_selected_click_card, true)
+	_update_click_mode_target_highlights()
+	_set_click_mode_action_bar_visible(true)
+	if tooltip_panel:
+		tooltip_panel.hide_tooltip()
+
+## 根据鼠标所在位置选择点击模式的敌人目标。
+## 没有命中怪物卡槽时清空显式目标，使确认操作按规则以玩家自身为目标。
+## @return void 无返回值。
+func _select_click_mode_target_at_mouse() -> void:
+	# 鼠标所在位置命中的怪物卡槽；为空时按规则清除敌人目标并预览自身目标。
+	var target_slot = raycast_check_for_card_slot_at_position(get_global_mouse_position())
+	_selected_click_target = target_slot.get_parent() if target_slot else null
+	_update_click_mode_target_highlights()
+
+## 确认点击模式的当前卡牌选择并将其送入既有行动队列。
+## 未选择有效敌人时将 PlayerManager 作为显式目标传入，从而实现玩家自身的默认目标规则。
+## @return void 无返回值。
+func _confirm_click_mode_card() -> void:
+	if not _selected_click_card or not is_instance_valid(_selected_click_card):
+		clear_click_selection()
+		return
+	if control_lock.is_lock or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN:
+		clear_click_selection()
+		return
+	if player_manager.energy < _selected_click_card.data.cost:
+		clear_click_selection()
+		return
+
+	# 确认瞬间仍有效的施放目标；没有有效敌人时固定为 PlayerManager。
+	var confirmed_target: Node = _get_confirmed_click_mode_target()
+	player_manager.consume_energy(_selected_click_card.data.cost)
+	deck_manager.play_card(_selected_click_card, confirmed_target)
+	clear_click_selection()
+
+## 返回点击模式确认时仍然有效的目标。
+## 目标在选择后死亡、离开场上或从未选择敌人时，都会安全回退到玩家自身。
+## @return Node 用于既有 DeckManager.play_card 的目标节点。
+func _get_confirmed_click_mode_target() -> Node:
+	if _selected_click_target and is_instance_valid(_selected_click_target) and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters.has(_selected_click_target):
+		return _selected_click_target
+	return player_manager
 
 ## 当鼠标按下并检测到点中某张可用的卡时触发，开始拖拽逻辑。
 func start_drag(card):
@@ -286,7 +562,8 @@ func highlight_card(card, hovered):
 	if not card is SkillCard:
 		return
 
-	if card.is_lock:
+	# 锁定卡牌不应再次获得悬停高亮，但仍必须允许取消流程恢复其原始缩放和层级。
+	if card.is_lock and hovered:
 		return
 
 	if hovered:
@@ -322,12 +599,20 @@ func raycast_check_for_card():
 
 ## 同样是通过射线检测目标卡槽（通常在实体身上）
 func raycast_check_for_card_slot():
+	if not card_being_dragged:
+		return null
+	return raycast_check_for_card_slot_at_position(card_being_dragged.global_position)
+
+## 使用给定的世界坐标检测目标卡槽。
+## 拖拽模式传入卡牌中心，点击模式传入鼠标位置，以复用同一套怪物卡槽碰撞层规则。
+## @param query_position 需要进行点查询的世界坐标。
+## @return Node2D 命中的卡槽节点；没有命中时返回 null。
+func raycast_check_for_card_slot_at_position(query_position: Vector2):
 	var space_state = get_world_2d().direct_space_state
 	var parameters = PhysicsPointQueryParameters2D.new()
 
-	#将鼠标改为卡牌中心，即卡牌中心进入框内即可放入卡槽
-	parameters.position = card_being_dragged.global_position
-	#parameters.position = get_global_mouse_position()
+	# 拖拽和点击共享该查询；调用方决定使用卡牌中心或鼠标位置。
+	parameters.position = query_position
 
 	parameters.collide_with_areas = true
 	parameters.collision_mask = COLLISION_MASK_CARD_SLOT
