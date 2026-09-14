@@ -71,3 +71,36 @@ Implemented click-mode card lift and restored hand layout; sequenced explicit en
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Battle selection cancellation and action recovery
+
+**Date**: 2026-09-14
+**Task**: Battle selection cancellation and action recovery
+**Branch**: `main`
+
+### Summary
+
+Added click-mode re-click cancellation and moved target hit feedback before fatal effect resolution to prevent action queue deadlock.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9f199c2` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
