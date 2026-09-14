@@ -104,3 +104,36 @@ Added click-mode re-click cancellation and moved target hit feedback before fata
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Battle hit animation queue deadlock
+
+**Date**: 2026-09-14
+**Task**: Battle hit animation queue deadlock
+**Branch**: `main`
+
+### Summary
+
+Fixed the actual single-target card deadlock by avoiding a second await on the already-emitted flash Tween finished signal.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f332382` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 3
+- **Total Sessions**: 4
 - **Last Active**: 2026-09-14
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~106 | Active |
+| `journal-1.md` | ~139 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 4 | 2026-09-14 | Battle hit animation queue deadlock | `f332382` | `main` |
 | 3 | 2026-09-14 | Battle selection cancellation and action recovery | `9f199c2` | `main` |
 | 2 | 2026-09-14 | Battle card selection and impact feedback | `9d6c4cb` | `main` |
 | 1 | 2026-09-14 | Implement battle card operation modes | `33d08cf` | `main` |
