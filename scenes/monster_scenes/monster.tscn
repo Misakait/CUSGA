@@ -94,14 +94,14 @@ BaseData = SubResource("Resource_43qb6")
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("8_bgonl")
 
-[node name="TargetSelectionOutline" type="Line2D" parent="."]
+[node name="TargetSelectionOutline" type="Line2D" parent="." unique_id=1073654958]
 visible = false
 z_index = 1
 points = PackedVector2Array(-75, -105, 75, -105, 75, 105, -75, 105)
+closed = true
 width = 3.0
 default_color = Color(0.25, 1, 0.35, 1)
 joint_mode = 2
-closed = true
 antialiased = true
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1411665323]

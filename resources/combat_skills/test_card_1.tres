@@ -36,7 +36,6 @@ metadata/_custom_type_script = "uid://eb5trb48cjvk"
 [resource]
 script = ExtResource("3_xwuh1")
 Element = 1
-TargetingType = 1
 Effects = Array[ExtResource("1_lqd6v")]([SubResource("Resource_nx2k3"), SubResource("Resource_xwuh1")])
 CardId = null
 CardName = "测试卡1"
