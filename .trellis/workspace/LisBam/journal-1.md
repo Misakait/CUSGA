@@ -137,3 +137,36 @@ Fixed the actual single-target card deadlock by avoiding a second await on the a
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Battle random target card impact animation
+
+**Date**: 2026-09-14
+**Task**: Battle random target card impact animation
+**Branch**: `main`
+
+### Summary
+
+Resolved each RandomEnemy player card target once before presentation so card flight, hit feedback, and SkillExecutionContext damage use the same enemy.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3c07b7d` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
