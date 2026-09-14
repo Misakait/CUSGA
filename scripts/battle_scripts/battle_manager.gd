@@ -499,10 +499,19 @@ func _execute_single_action(action: Action):
 	print(action.source, " 执行行动 ", action.action_type, " 目标 ", action.targets)
 	# 本行动的显式首个目标；卡牌结算仍可按目标类型扩展为随机、范围或扩散目标。
 	var target: Node = action.targets[0] if action.targets.size() > 0 else null
+	# 标记当前玩家卡牌是否必须随机敌人；随机结果要在表现开始前确定，才能与后续效果共用同一目标。
+	var card_targets_random_enemy: bool = action.action_type == "CARD" \
+		and action.card_data \
+		and action.card_data.get("Skill") != null \
+		and action.card_data.Skill.get("TargetingType") != null \
+		and int(action.card_data.Skill.TargetingType) == SKILL_TARGETING_TYPE.Value.RandomEnemy
+	if card_targets_random_enemy:
+		# 随机卡牌忽略输入阶段点中的敌人，始终从当前敌对单位中选择一次，保持卡牌固有的随机语义。
+		target = _pick_random_from(_get_enemies_for_source(action.source))
 	# 展示层只接受二维场景节点；类型转换让卡牌飞行与受击反馈不依赖未验证的通用目标引用。
 	var monster_target: Node2D = target as Node2D
 	# 只有玩家卡牌明确命中仍在场的怪物时，才播放飞向敌人与敌人受击表现。
-	# 这让自身、范围、随机和无效目标卡牌继续使用原有安全结算路径。
+	# 自身、范围和无效目标继续跳过表现；提前解析的随机敌人则复用同一条单体表现路径。
 	var has_enemy_card_presentation: bool = action.action_type == "CARD" \
 		and action.presentation_card != null \
 		and is_instance_valid(action.presentation_card) \
@@ -609,8 +618,8 @@ func _execute_single_action(action: Action):
 						context = ContextClass.FromPrimaryTargets(real_source, all_units, real_enemy_candidates)
 
 				target_random_enemy:
-					# 随机单体敌人：根据施放者阵营动态选择敌对单位
-					var random_enemy = _pick_random_from(real_enemy_candidates)
+					# 玩家卡牌已在表现前锁定随机目标；其他行动或回退路径才在这里按原规则随机。
+					var random_enemy = real_target if real_target else _pick_random_from(real_enemy_candidates)
 					if random_enemy:
 						context = ContextClass.FromSingleTarget(real_source, random_enemy, real_enemy_candidates)
 					else:

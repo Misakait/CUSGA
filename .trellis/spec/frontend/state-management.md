@@ -83,7 +83,7 @@ func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
 - `Action.presentation_card` 对怪物技能和普通攻击始终可选，调用方不得假设它非空；旧的五参数 `Action.new(...)` 构造方式必须继续可用。
 - `DeckManager.play_card_to_enemy` 与 `DeckManager.play_enemy_hit_feedback` 在创建 Tween 前必须拒绝无效或已进入删除队列的目标；`DeckManager.complete_played_card` 是唯一允许写入主动出牌弃牌数据并启动渐隐销毁的出口，必须用节点元数据防止重复调用。
 - `CardAnimations.hit` 同时启动抖动和闪白时，必须立即等待其中一个 Tween，并在之后仅等待另一个仍有效且运行中的 Tween。`Tween.finished` 是一次性信号，不能先等待较长 Tween 再无条件等待可能已经完成的较短 Tween，否则行动队列会永久保持控制锁。
-- 没有单一显式怪物目标（自身、全体、随机、扩散或目标失效）的玩家卡牌跳过飞行与单体受击反馈，但仍从同一个完成出口仅一次弃牌。
+- `RandomEnemy` 玩家卡牌必须在飞行前从当前敌人包装节点中随机一次，并把同一局部目标交给飞行、受击和 `SkillExecutionContext`；不能为表现和效果分别随机。自身、全体、扩散或目标失效的玩家卡牌继续跳过飞行与单体受击反馈，但仍从同一个完成出口仅一次弃牌。
 - 动画原子操作复用 `CardAnimations.play_card`、`CardAnimations.hit` 和 `PlayerHand.play_discard_animation`；不要在 `BattleManager` 写入新的时长或缓动常量。
 
 ### 4. Validation & Error Matrix
@@ -93,6 +93,8 @@ func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
 | `presentation_card` 为空或节点已失效 | 跳过节点表现 | 既有行动结算不受影响 |
 | 显式目标不是仍在场的怪物 | 跳过飞行与受击反馈 | 卡牌照常结算并最终弃置 |
 | 显式目标已进入删除队列 | 拒绝创建飞行或受击 Tween | 不等待被终止的 Tween，行动队列继续推进 |
+| `RandomEnemy` 有可用敌人 | 行动开始时随机一次并复用该节点 | 飞行、受击和伤害命中同一敌人 |
+| `RandomEnemy` 没有可用敌人 | 局部目标保持空，跳过敌人表现 | 既有自身上下文回退和一次弃牌继续成立 |
 | 并行受击中的较短 Tween 已完成 | 跳过对其 `finished` 的二次等待 | 避免等待不会补发的信号，行动队列继续推进 |
 | 目标缺少 `Sprite2D` | 仅执行目标节点抖动 | 不因特殊怪物场景中断行动队列 |
 | 已完成卡牌再次调用 `complete_played_card` | 检查完成元数据并直接返回 | 不重复写入弃牌堆、不重复 `queue_free` |
@@ -104,6 +106,7 @@ func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
 ### 5. Good / Base / Bad Cases
 
 - Good：点击模式选择一张卡和一个在场怪物，确认后卡牌飞至该怪物、怪物抖动闪白、再结算卡牌效果并一次性进入弃牌堆渐隐；即使敌人保持存活或该效果击败怪物，行动队列都不会等待已完成或被删除节点的 Tween。
+- Good：随机敌人卡牌无论点击或拖拽时指向何处，都在行动开始时随机一次；卡牌飞向该实际敌人、播放受击并对同一敌人结算伤害。
 - Base：未选敌人确认施放，卡牌保留原有自身目标结算；跳过敌人飞行与命中反馈，仍只在动作完成后弃置。
 - Bad：`DeckManager.play_card` 入队后立刻调用 `into_discard_pile(card)`。这会在动画开始前让节点渐隐销毁，使队列持有无效展示节点。
 
@@ -112,9 +115,10 @@ func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
 - 点击模式选中、取消、改选、模式切换和玩家失去回合：断言选中卡牌上移，并在每个非确认出口恢复 `hand_position` 且保留在 `player_hand_card`；再次点击已选卡牌必须走同一取消出口。
 - 敌人目标取消：断言再次点击同一敌人只清空 `_selected_click_target`，已选卡牌与操作栏保持可用，确认时以玩家自身为默认目标。
 - 显式敌人目标：断言 `Action.presentation_card` 与原手牌节点一致；断言节点先到目标位置、目标反馈先于伤害结算完成，`discard_pile_data` 只新增一次。
+- 随机敌人卡牌：断言飞行和受击目标与 `SkillExecutionContext` 的主目标相同；显式点击敌人不覆盖随机结果，无敌人时跳过表现并安全回退。
 - 并行受击：断言闪白先于抖动完成时，`CardAnimations.hit` 直接收尾而不等待已发射的 `finished` 信号；动作仍进入效果、弃牌并恢复输入。
 - 致死目标：断言效果使怪物进入删除队列时，受击 Tween 已完成，行动队列不会永久等待且玩家输入会恢复。
-- 自身、随机、全体、扩散和失效目标：断言不调用敌人飞行/受击方法，仍完成既有 `SkillTargetingType` 结算和一次弃置。
+- 自身、全体、扩散和失效目标：断言不调用敌人飞行/受击方法，仍完成既有 `SkillTargetingType` 结算和一次弃置。
 - 重复收尾保护：对同一节点连续调用两次 `complete_played_card`，断言弃牌堆只增加一张数据，且只请求一次节点销毁。
 - 兼容性：以旧五参数构造怪物 `SKILL`、`ATTACK` 行动，断言不访问展示节点且行动队列继续推进。
 
