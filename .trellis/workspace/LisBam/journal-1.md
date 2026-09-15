@@ -302,3 +302,36 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: 战斗反馈数值曲线与全量命中
+
+**Date**: 2026-09-15
+**Task**: 战斗反馈数值曲线与全量命中
+**Branch**: `main`
+
+### Summary
+
+将战斗反馈改为绝对数值饱和曲线，移除多段与范围节流并以目标/屏幕 FIFO 保留每次命中；补充静态回归、玩法文档与跨语言类型契约。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fa95327` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
