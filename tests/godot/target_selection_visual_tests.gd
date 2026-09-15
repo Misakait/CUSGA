@@ -2,6 +2,7 @@ extends SceneTree
 
 const MONSTER_SCENE := preload("res://scenes/monster_scenes/monster.tscn")
 const CARD_MANAGER_SCRIPT := preload("res://scripts/card_scripts/card_manager.gd")
+const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 
 # 累积断言失败信息，使一次运行能报告所有目标选择视觉回归。
 var _failures: Array[String] = []
@@ -15,6 +16,7 @@ func _run() -> void:
 	await _test_static_selected_and_unavailable_visuals()
 	await _test_pulse_can_be_stopped_and_reset()
 	await _test_monster_presentation_controls_allow_target_selection()
+	_test_auto_target_types_reject_manual_enemy_selection()
 	_finish()
 
 
@@ -85,6 +87,29 @@ func _test_monster_presentation_controls_allow_target_selection() -> void:
 	unrelated_control.queue_free()
 	monster.queue_free()
 	await process_frame
+
+
+func _test_auto_target_types_reject_manual_enemy_selection() -> void:
+	# CardManager 的目标类型策略函数不依赖战斗场景，可直接验证自动目标不会进入手动敌人选择分支。
+	var card_manager = CARD_MANAGER_SCRIPT.new()
+	# 单体敌人是传统点击选目标卡，必须保留人工选择能力。
+	var single_enemy_type: int = SKILL_TARGETING_TYPE.Value.SingleEnemy
+	# 扩散敌人依赖中心敌人计算相邻目标，也必须保留人工选择能力。
+	var spread_enemy_type: int = SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
+	# 全体敌人会由卡牌固有目标规则展开，不应采纳鼠标下单个敌人。
+	var all_enemies_type: int = SKILL_TARGETING_TYPE.Value.AllEnemies
+	# 随机敌人必须在行动开始时重新随机一次，同样不应采纳点击目标。
+	var random_enemy_type: int = SKILL_TARGETING_TYPE.Value.RandomEnemy
+	# 全体单位属于自动范围目标，不能生成单体飞行动画目标。
+	var all_units_type: int = SKILL_TARGETING_TYPE.Value.AllUnits
+
+	_assert(bool(card_manager.call("_requires_manual_enemy_target", single_enemy_type)), "单体敌人牌应继续允许点击选择目标。")
+	_assert(bool(card_manager.call("_requires_manual_enemy_target", spread_enemy_type)), "扩散敌人牌应继续允许点击选择中心目标。")
+	_assert(not bool(card_manager.call("_requires_manual_enemy_target", all_enemies_type)), "全体敌人牌不应允许点击选择单个敌人。")
+	_assert(not bool(card_manager.call("_requires_manual_enemy_target", random_enemy_type)), "随机敌人牌不应允许点击选择单个敌人。")
+	_assert(not bool(card_manager.call("_requires_manual_enemy_target", all_units_type)), "全体单位牌不应允许点击选择单个敌人。")
+
+	card_manager.queue_free()
 
 
 func _test_pulse_can_be_stopped_and_reset() -> void:

@@ -275,6 +275,13 @@ func _update_click_mode_target_highlights() -> void:
 		_apply_target_highlights([])
 		return
 
+	# 自动目标牌不能在点击模式保存敌人主目标，否则确认后会把该敌人错误传入单体飞行动画。
+	var targeting_type: int = _get_card_targeting_type(_selected_click_card)
+	if not _requires_manual_enemy_target(targeting_type):
+		_selected_click_target = null
+		_refresh_target_selection_visuals(_selected_click_card, null, false, true)
+		return
+
 	# 点击模式在尚未点击目标时读取鼠标下卡槽，以显示仅放大、不描边的悬停反馈。
 	var hovered_slot: Node2D = raycast_check_for_card_slot_at_position(get_global_mouse_position())
 	# 鼠标下的敌人仅用于悬停预览，真正确认的主目标仍由点击状态独立保存。
@@ -294,6 +301,15 @@ func _get_card_targeting_type(card: Variant) -> int:
 	if card and card.data and card.data.get("Skill") != null and card.data.Skill.get("TargetingType") != null:
 		targeting_type = int(card.data.Skill.TargetingType)
 	return targeting_type
+
+## 判断目标类型是否必须由玩家点击一名敌人作为主目标。
+## 自动目标与自身目标必须返回 false，保证点击模式不会把鼠标下敌人错误写入行动动画目标。
+## @param targeting_type 当前卡牌的 SkillTargetingType 枚举值。
+## @return bool 为 true 时允许保存并确认一名显式敌人主目标。
+func _requires_manual_enemy_target(targeting_type: int) -> bool:
+	return targeting_type == SKILL_TARGETING_TYPE.Value.SingleEnemy \
+		or targeting_type == SKILL_TARGETING_TYPE.Value.AnySingleUnit \
+		or targeting_type == SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
 
 ## 返回当前仍有效的场上怪物，集中过滤已删除节点以避免目标预览访问过期实体。
 ## @return Array[Node] 当前可展示目标视觉的怪物节点列表。
@@ -711,6 +727,12 @@ func _restore_click_mode_card_to_hand(card: SkillCard) -> void:
 ## 没有命中怪物卡槽时清空显式目标，使确认操作按规则以玩家自身为目标。
 ## @return void 无返回值。
 func _select_click_mode_target_at_mouse() -> void:
+	# 全体、随机、全体单位和自身等自动目标牌不接受敌人点击，避免产生错误的单体表现目标。
+	if not _selected_click_card or not _requires_manual_enemy_target(_get_card_targeting_type(_selected_click_card)):
+		_selected_click_target = null
+		_update_click_mode_target_highlights()
+		return
+
 	# 鼠标所在位置命中的怪物卡槽；为空时按规则清除敌人目标并预览自身目标。
 	var target_slot = raycast_check_for_card_slot_at_position(get_global_mouse_position())
 	# 本次点击解析到的候选敌人；它只在点击模式已有待确认卡牌时才会被写入临时选择状态。
@@ -748,6 +770,9 @@ func _confirm_click_mode_card() -> void:
 ## 目标在选择后死亡、离开场上或从未选择敌人时，都会安全回退到玩家自身。
 ## @return Node 用于既有 DeckManager.play_card 的目标节点。
 func _get_confirmed_click_mode_target() -> Node:
+	# 自动目标牌不允许携带显式敌人到行动队列，范围效果会在 BattleManager 按卡牌固有目标类型展开。
+	if not _selected_click_card or not _requires_manual_enemy_target(_get_card_targeting_type(_selected_click_card)):
+		return player_manager
 	if _selected_click_target and is_instance_valid(_selected_click_target) and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters.has(_selected_click_target):
 		return _selected_click_target
 	return player_manager
