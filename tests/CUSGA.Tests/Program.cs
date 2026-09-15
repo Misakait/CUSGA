@@ -68,6 +68,8 @@ tests.DamageFormulaCalculatesActualDamageBeforeLifesteal();
 tests.DamagePayloadWithoutModifiersSkipsDirectAttackModifiers();
 tests.DefaultDamageStillAppliesDirectAttackModifiers();
 tests.DamagePayloadWithoutModifiersStillUsesBeforeHealthDamageHooks();
+tests.DamageResolutionReportsCombatOutcomeFacts();
+tests.DamageEffectPublishesSegmentPresentationMetadata();
 tests.StatusDamageDefaultsToNoDirectAttackModifiers();
 tests.StatusDamageCanEnableCriticalWithoutOtherDirectAttackModifiers();
 tests.AttributeComponentInitializesExpandedCombatAttributes();
@@ -1037,6 +1039,100 @@ internal sealed partial class TerrainRandomizationTests
 
         Assert.Equal(96, GetHealth(target).CurrentValue);
         Assert.False(GetStatus(target).HasStatus(shieldData.Id));
+    }
+
+    /// <summary>
+    /// 验证伤害结果会准确记录闪避、暴击、实际扣血、护盾吸收与护盾破裂，供表现层安全消费。
+    /// </summary>
+    public void DamageResolutionReportsCombatOutcomeFacts()
+    {
+        var evasionSource = CreateCombatEntity("EvasionSource", health: 100);
+        var evasionTarget = CreateCombatEntity("EvasionTarget", health: 100);
+        AddAttributes(evasionTarget, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseEvasionRate = 1f
+        });
+
+        DamageResolutionResult evaded = GetDamageReceiver(evasionTarget).ReceiveDamage(new DamagePayload
+        {
+            Source = evasionSource,
+            Target = evasionTarget,
+            Damage = 10,
+            Type = DamageType.Real,
+            Element = ElementType.None
+        });
+
+        Assert.True(evaded.IsEvaded);
+        Assert.Equal(0, evaded.ActualDamage);
+        Assert.Equal(100, GetHealth(evasionTarget).CurrentValue);
+
+        var shieldSource = CreateCombatEntity("ShieldSource", health: 100);
+        var shieldTarget = CreateCombatEntity("ShieldTarget", health: 10, withStatus: true);
+        var shieldData = new ShieldStatusData { Id = new StringName("result_trace_shield") };
+        GetStatus(shieldTarget).AddStatus(
+            shieldData.CreateInstance(shieldSource, shieldTarget, shieldAmount: 6f)
+        );
+        DamageResolutionResult shielded = GetDamageReceiver(shieldTarget).ReceiveDamage(new DamagePayload
+        {
+            Source = shieldSource,
+            Target = shieldTarget,
+            Damage = 10,
+            Type = DamageType.Real,
+            Element = ElementType.None,
+            DamageModifiers = DamageModifierFlags.None
+        });
+
+        Assert.Equal(10, shielded.PreGuardDamage);
+        Assert.Equal(6, shielded.ShieldAbsorbedDamage);
+        Assert.True(shielded.ShieldWasBroken);
+        Assert.Equal(4, shielded.ActualDamage);
+        Assert.Equal(4, shielded.GetFeedbackInt(nameof(DamageResolutionResult.ActualDamage)));
+        Assert.True(shielded.GetFeedbackBool(nameof(DamageResolutionResult.ShieldWasBroken)));
+        Assert.Same(shieldTarget, shielded.GetFeedbackNode(nameof(DamageResolutionResult.Target)));
+
+        var criticalSource = CreateCombatEntity("CriticalSource", health: 100);
+        var criticalTarget = CreateCombatEntity("CriticalTarget", health: 10);
+        AddAttributes(criticalSource, new StartingStats
+        {
+            BaseMaxHealth = 100f,
+            BaseCritRate = 1f,
+            BaseCritDamage = 2f
+        });
+        DamageResolutionResult critical = GetDamageReceiver(criticalTarget).ReceiveDamage(new DamagePayload
+        {
+            Source = criticalSource,
+            Target = criticalTarget,
+            Damage = 10,
+            Type = DamageType.Real,
+            Element = ElementType.None,
+            DamageModifiers = DamageModifierFlags.Critical
+        });
+
+        Assert.True(critical.IsCritical);
+        Assert.True(critical.IsLethal);
+        Assert.Equal(20, critical.PreGuardDamage);
+        Assert.Equal(10, critical.ActualDamage);
+    }
+
+    /// <summary>
+    /// 验证多段伤害的每一段都会发出独立结果，并保留段号和总段数供表现层节流。
+    /// </summary>
+    public void DamageEffectPublishesSegmentPresentationMetadata()
+    {
+        var source = CreateCombatEntity("SegmentSource", withStatus: true);
+        var target = CreateCombatEntity("SegmentTarget", health: 100);
+        var results = new List<DamageResolutionResult>();
+        GetDamageReceiver(target).DamageResolved += results.Add;
+        var effect = CreateRealDamageEffect(baseDamage: 10, hitCount: 3);
+
+        effect.Execute(SkillExecutionContext.FromSingleTarget(source, target));
+
+        Assert.Equal(3, results.Count);
+        Assert.Equal(0, results[0].HitIndex);
+        Assert.Equal(1, results[1].HitIndex);
+        Assert.Equal(2, results[2].HitIndex);
+        Assert.True(results.All(result => result.HitCount == 3));
     }
 
     /// <summary>

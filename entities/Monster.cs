@@ -14,6 +14,12 @@ namespace CUSGA.entities;
 [GlobalClass]
 public partial class Monster : Node2D
 {
+    /// <summary>
+    /// 当怪物已经在玩法层死亡、但仍可播放一次视觉收尾时发出。
+    /// </summary>
+    [Signal]
+    public delegate void DeathPresentationRequestedEventHandler();
+
     [Export]
     public MonsterData BaseData { get; set; }
 
@@ -30,6 +36,10 @@ public partial class Monster : Node2D
     private Label _elementLabel;
     private Node _tooltipPanel;
     private Tween _visualScaleTween;
+    // 防止生命归零、状态效果或重复信号同时触发多个死亡收尾入口。
+    private bool _isCombatDefeated;
+    // 只有战斗反馈导演成功认领后才延迟销毁，缺失导演时仍会在下一帧安全回收。
+    private bool _isDeathPresentationClaimed;
     // 目标选择呼吸动画独立保存，避免状态切换时遗留循环 Tween 持续写入卡面缩放。
     private Tween _targetSelectionPulseTween;
     // 绿色目标描边节点仅在选中状态显示，缺失时视觉接口会安全降级。
@@ -143,8 +153,62 @@ public partial class Monster : Node2D
 
     private void HandleDeath()
     {
+        if (_isCombatDefeated)
+        {
+            return;
+        }
+
+        _isCombatDefeated = true;
         Loot?.TriggerDrop(GlobalPosition, 0);
-        QueueFree();
+        if (_area2D != null)
+        {
+            // 逻辑死亡后立刻关闭鼠标拾取，避免视觉尸体在渐隐期间仍能成为卡牌目标。
+            _area2D.InputPickable = false;
+            _area2D.Monitoring = false;
+        }
+
+        EmitSignal(SignalName.DeathPresentationRequested);
+        // 信号监听者会在同一帧认领视觉死亡；没有导演时必须保留原有的即时销毁安全语义。
+        CallDeferred(nameof(FinalizeUnclaimedDeath));
+    }
+
+    /// <summary>
+    /// 尝试认领当前怪物的视觉死亡收尾。
+    /// </summary>
+    /// <returns>仅首个有效导演可认领时返回 true；否则返回 false。</returns>
+    public bool TryClaimDeathPresentation()
+    {
+        if (!_isCombatDefeated || _isDeathPresentationClaimed)
+        {
+            return false;
+        }
+
+        _isDeathPresentationClaimed = true;
+        return true;
+    }
+
+    /// <summary>
+    /// 完成视觉死亡收尾并释放怪物节点。
+    /// </summary>
+    /// <returns>无返回值。</returns>
+    public void FinalizeCombatDeathPresentation()
+    {
+        if (!IsQueuedForDeletion())
+        {
+            QueueFree();
+        }
+    }
+
+    /// <summary>
+    /// 在没有任何表现导演认领死亡时，延续旧流程立即释放怪物节点。
+    /// </summary>
+    /// <returns>无返回值。</returns>
+    public void FinalizeUnclaimedDeath()
+    {
+        if (!_isDeathPresentationClaimed)
+        {
+            FinalizeCombatDeathPresentation();
+        }
     }
 
     public override void _ExitTree()

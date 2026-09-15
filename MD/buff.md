@@ -155,27 +155,24 @@ Buff 栏悬停提示的标题会通过 `StatusEffectBar` 生成：
 
 `DamageReceiverComponent.ReceiveDamage(payload)` 的伤害处理顺序如下：
 
-1. 读取攻击方属性：
-   - 物理伤害：`damage += PhysAtk`，再乘 `1 + PhysDamageBoost`。
-   - 魔法伤害：`damage += MagPower`，再乘 `1 + MagicDamageBoost`。
-   - 真实伤害：不吃攻击属性加成。
-2. 攻击方 `StatusComponent.ProcessModifyOutgoingDamage()`。
-3. 防御方 `StatusComponent.ProcessModifyIncomingDamageBeforeMitigation()`。
-4. 元素克制倍率。
-5. 防御/抗性减伤：
-   - 物理伤害读取 `PhysDef`。
-   - 魔法伤害读取 `MagResist`。
-   - 真实伤害跳过防御减伤。
-   - 减伤公式：`100 / (100 + defense)`。
-6. 防御方 `StatusComponent.ProcessModifyIncomingDamageAfterMitigation()`。
-7. 防御方 `StatusComponent.ProcessBeforeHealthDamage()`。
-8. 四舍五入为整数，调用 `HealthComponent.TakeDamage()`。
+1. 若载荷启用闪避修饰，先进行闪避判定；成功时立即结束，不扣血也不触发吸血。
+2. 按伤害类型计算基础伤害：物理和魔法使用攻击方属性、防御方有效抗性及穿透；真实伤害直接使用技能威力。
+3. 若载荷启用暴击修饰，按攻击方暴击率判定，并以 `CritDamage` 乘到当前伤害。
+4. 攻击方 `StatusComponent.ProcessModifyOutgoingDamage()`。
+5. 防御方 `StatusComponent.ProcessModifyIncomingDamageBeforeMitigation()`。
+6. 应用元素克制倍率。
+7. 防御方 `StatusComponent.ProcessModifyIncomingDamageAfterMitigation()`。
+8. 记录护盾和单次伤害上限处理前的候选伤害，再执行 `StatusComponent.ProcessBeforeHealthDamage()`。
+9. 若载荷启用随机浮动修饰，应用随机浮动后四舍五入为整数，调用 `HealthComponent.TakeDamage()`。
+10. 若载荷启用吸血修饰，按实际扣除生命值计算吸血。
+11. 返回并发射只读 `DamageResolutionResult`；该结果仅供日志、UI 和战斗表现读取，不参与伤害规则回写。
 
 因此：
 
 - 易伤类想被防御减伤影响，应放在 `OnModifyIncomingDamageBeforeMitigation`。
 - 护盾、最终伤害上限应放在 `OnBeforeHealthDamage`。
 - 需要攻击方增伤时，应放在 `OnModifyOutgoingDamage`。
+- `DamageResolutionTrace` 只记录护盾实际吸收量、是否破盾及伤害上限削减量；它不改变 Hook 顺序或最终伤害。
 
 ---
 
@@ -520,6 +517,7 @@ ApplyStatusCardEffect
 2. 从拥有者查找 `HealthComponent`。
 3. 计算 `maxAllowedDamage = health.MaxValue * MaxHealthDamageRatio`。
 4. 最终伤害取 `Min(damage, maxAllowedDamage)`。
+5. 若发生封顶，将被削减的数值写入本次 `DamagePayload.ResolutionTrace`，供表现层区分封顶与护盾吸收。
 
 使用场景：
 
@@ -630,6 +628,7 @@ BurnStatusData
 4. `damage -= absorbed`。
 5. UI 悬停描述会通过 `DisplayDescription` 显示剩余护盾值，如 `抵挡1000点伤害`。
 6. 如果护盾耗尽，移除该状态。
+7. 将本次实际吸收值和是否耗尽写入 `DamagePayload.ResolutionTrace`；战斗表现可据此显示 `BLOCK` 或 `BREAK`，但不会回写状态或伤害。
 
 重复施加逻辑：
 

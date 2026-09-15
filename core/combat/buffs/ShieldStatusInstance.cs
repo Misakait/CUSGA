@@ -47,6 +47,9 @@ public sealed partial class ShieldStatusInstance(
         ShieldAmount -= absorbed;
         damage -= absorbed;
 
+        // 护盾是唯一能准确声明“格挡”结果的状态；把事实写入本次载荷，避免表现层通过伤害差值猜测原因。
+        payload.ResolutionTrace.RecordShieldAbsorption(absorbed, ShieldAmount <= 0f);
+
         if (ShieldAmount <= 0f)
         {
             Owner.GetStatusComponentOrNull()

@@ -17,6 +17,7 @@ func _run() -> void:
 	await _test_static_selected_and_unavailable_visuals()
 	await _test_pulse_can_be_stopped_and_reset()
 	await _test_monster_presentation_controls_allow_target_selection()
+	await _test_confirmed_target_keeps_other_hover_feedback()
 	_test_drag_ghost_keeps_real_card_and_ignores_input()
 	_test_auto_target_types_reject_manual_enemy_selection()
 	_finish()
@@ -88,6 +89,57 @@ func _test_monster_presentation_controls_allow_target_selection() -> void:
 	card_manager.queue_free()
 	unrelated_control.queue_free()
 	monster.queue_free()
+	await process_frame
+
+## 验证点击模式确认扩散主目标后，悬停次级目标会保留范围描边并二次放大。
+## @return void 无返回值。
+func _test_confirmed_target_keeps_other_hover_feedback() -> void:
+	# 主目标用于模拟点击模式中已经确认、必须保留绿色描边的敌人。
+	var selected_monster: Node2D = await _create_monster()
+	# 悬停目标用于模拟扩散范围内已放大的次级敌人。
+	var hovered_secondary_monster: Node2D = await _create_monster()
+	# 普通悬停目标用于确认非扩散范围的其他敌人仍使用原有独立放大状态。
+	var hovered_available_monster: Node2D = await _create_monster()
+	# 正式 CardManager 脚本提供目标状态辅助函数，避免测试复制状态覆盖规则。
+	var card_manager: Node2D = CARD_MANAGER_SCRIPT.new()
+	# 零时长用于让测试直接观察最终缩放，而不依赖渲染帧间隔等待补间结束。
+	card_manager.set("scale_tween_duration", 0.0)
+	# 状态映射先记录主选中与扩散次级目标，数值与 TargetSelectionVisualState 枚举定义一致。
+	var next_states: Dictionary = {
+		selected_monster: 3,
+		hovered_secondary_monster: 4,
+	}
+	# 有效怪物列表用于模拟当前战场中仍可选择的目标集合。
+	var active_monsters: Array[Node] = []
+	active_monsters.append(selected_monster)
+	active_monsters.append(hovered_secondary_monster)
+	active_monsters.append(hovered_available_monster)
+	# 普通可选目标的映射保留原有 HOVERED 行为，防止次级状态修复影响其他敌人的悬停反馈。
+	var normal_hover_states: Dictionary = {
+		selected_monster: 3,
+		hovered_available_monster: 1,
+	}
+	card_manager.call("_apply_hovered_target_visual_state", normal_hover_states, active_monsters, selected_monster, hovered_available_monster)
+	_assert(int(normal_hover_states[hovered_available_monster]) == 2, "确认主目标后悬停普通其他敌人仍应获得独立悬停放大状态。")
+
+	card_manager.call("_apply_hovered_target_visual_state", next_states, active_monsters, selected_monster, hovered_secondary_monster)
+	_assert(int(next_states[selected_monster]) == 3, "已确认目标应保留主选中状态，不应被其他敌人的悬停覆盖。")
+	_assert(int(next_states[hovered_secondary_monster]) == 5, "悬停扩散次级目标应进入保留浅绿描边的次级悬停状态。")
+
+	# 次级怪物的精灵节点用于验证悬停会在原次级缩放基础上继续放大。
+	var hovered_secondary_sprite: Sprite2D = hovered_secondary_monster.get_node("Sprite2D")
+	# 次级怪物的描边节点用于验证鼠标悬停不会抹去扩散范围反馈。
+	var hovered_secondary_outline: Line2D = hovered_secondary_monster.get_node("TargetSelectionOutline")
+	card_manager.call("_apply_target_visual_state", hovered_secondary_monster, int(next_states[hovered_secondary_monster]))
+	await process_frame
+	_assert(hovered_secondary_outline.visible, "悬停扩散次级目标时必须继续显示浅绿色范围描边。")
+	_assert(hovered_secondary_outline.default_color == Color(0.55, 1.0, 0.65, 0.80), "次级悬停目标必须继续使用浅绿色范围描边。")
+	_assert(hovered_secondary_sprite.scale == Vector2(1.64, 1.64), "次级悬停目标应在原有次级缩放基础上再次放大。")
+
+	card_manager.queue_free()
+	selected_monster.queue_free()
+	hovered_secondary_monster.queue_free()
+	hovered_available_monster.queue_free()
 	await process_frame
 
 

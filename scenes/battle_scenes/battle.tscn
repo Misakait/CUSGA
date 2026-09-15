@@ -10,8 +10,15 @@
 [ext_resource type="Script" uid="uid://p0u0175ihy1h" path="res://scripts/card_scripts/card_manager.gd" id="8_ptgcx"]
 [ext_resource type="Script" uid="uid://chjm56tp6xjqk" path="res://scripts/battle_scripts/monster_manager.gd" id="8_xseyc"]
 [ext_resource type="Script" uid="uid://bxcdktnfciqv1" path="res://scripts/battle_scripts/control_lock.gd" id="9_sugqx"]
+[ext_resource type="Resource" uid="uid://b7onaix7yqka8" path="res://resources/skill_cards/bmob.tres" id="10_bjehq"]
 [ext_resource type="Script" uid="uid://dnjoopfag4yx2" path="res://scripts/card_scripts/player_hand.gd" id="10_navvr"]
+[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="11_s3yaj"]
 [ext_resource type="Script" uid="uid://diyef04pc1sj4" path="res://scripts/battle_scripts/player_manager.gd" id="11_to08p"]
+[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="12_bjehq"]
+[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="13_waaxm"]
+[ext_resource type="Resource" uid="uid://b7sk1cm7siws7" path="res://resources/monster/tree_kumujing.tres" id="14_kgjmv"]
+[ext_resource type="Resource" uid="uid://bqi8y7dq2heho" path="res://resources/monster/fishingspot_shenshuijuao.tres" id="15_7ebbf"]
+[ext_resource type="Resource" uid="uid://bw071g6epimlf" path="res://resources/monster/anvil_cuihuotiewei.tres" id="16_lbcxr"]
 [ext_resource type="Resource" uid="uid://b57sfyhlvplgf" path="res://resources/monster/sandpile_huangshayanyinshou.tres" id="18_eboiy"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="18_sep7c"]
 [ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="24_317fs"]
@@ -25,6 +32,9 @@
 [ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="37_3juot"]
 [ext_resource type="Script" uid="uid://cfcj8kansah88" path="res://scripts/battle_scripts/battle_settings_panel.gd" id="battle_settings_panel_script"]
 [ext_resource type="Script" uid="uid://c4gauakj31i5k" path="res://scripts/battle_scripts/click_mode_action_bar.gd" id="click_mode_action_bar_script"]
+[ext_resource type="Script" uid="uid://be77luvd8k25j" path="res://scripts/battle_scripts/combat_feedback_director.gd" id="combat_feedback_director_script"]
+[ext_resource type="Script" uid="uid://cxpw1p66e2c33" path="res://scripts/battle_scripts/combat_feedback_profile.gd" id="combat_feedback_profile_script"]
+[ext_resource type="Script" uid="uid://dangbh5lxhwnu" path="res://scripts/battle_scripts/combat_screen_impulse.gd" id="combat_screen_impulse_script"]
 [ext_resource type="Script" uid="uid://ck6vnjbp88ek7" path="res://scripts/ui_scripts/status_effect_bar.gd" id="status_bar_script"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="test_card_3"]
@@ -35,8 +45,34 @@
 [ext_resource type="Script" uid="uid://b74g378xtw11y" path="res://scripts/ui_scripts/action_timeline.gd" id="timeline_script"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="tooltip_panel_scene"]
 
+[sub_resource type="Resource" id="Resource_lbcxr"]
+script = ExtResource("12_bjehq")
+BaseDamage = 50
+HitCount = 20
+Element = 1
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
+
+[sub_resource type="Resource" id="Resource_7ebbf"]
+script = ExtResource("13_waaxm")
+Element = 1
+Effects = Array[ExtResource("11_s3yaj")]([SubResource("Resource_lbcxr")])
+CardId = null
+CardName = "临时卡2"
+Description = "高频！！"
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+
+[sub_resource type="Resource" id="Resource_kgjmv"]
+script = ExtResource("2_navvr")
+Skill = SubResource("Resource_7ebbf")
+CardTags = Array[String](["高额伤害"])
+CardId = null
+metadata/_custom_type_script = "uid://bejho62d28qir"
+
 [sub_resource type="Resource" id="Resource_navvr"]
 metadata/__load_path__ = "res://scenes/skill_card_scenes/Card.tscn"
+
+[sub_resource type="Resource" id="CombatFeedbackProfile_default"]
+script = ExtResource("combat_feedback_profile_script")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
 bg_color = Color(0.15, 0.15, 0.15, 0.8)
@@ -81,8 +117,8 @@ corner_radius_bottom_left = 3
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("test_card_3"), ExtResource("test_card_3"), ExtResource("test_card_3"), ExtResource("test_card_4"), ExtResource("test_card_4"), ExtResource("test_card_4"), ExtResource("test_card_5"), ExtResource("test_card_5"), ExtResource("test_card_5"), ExtResource("test_card_6"), ExtResource("test_card_6"), ExtResource("test_card_6"), ExtResource("test_card_7"), ExtResource("test_card_7"), ExtResource("test_card_7")])
-starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("18_eboiy"), ExtResource("8_kvn6b")])
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("test_card_3"), ExtResource("test_card_3"), ExtResource("test_card_4"), ExtResource("test_card_4"), ExtResource("test_card_5"), ExtResource("test_card_5"), ExtResource("test_card_6"), ExtResource("test_card_6"), ExtResource("test_card_7"), ExtResource("test_card_7"), ExtResource("10_bjehq"), ExtResource("10_bjehq"), SubResource("Resource_kgjmv"), SubResource("Resource_kgjmv")])
+starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("18_eboiy"), ExtResource("8_kvn6b"), ExtResource("14_kgjmv"), ExtResource("15_7ebbf"), ExtResource("16_lbcxr")])
 card_scene = SubResource("Resource_navvr")
 
 [node name="DeckManager" type="Node2D" parent="." unique_id=2026592215]
@@ -99,6 +135,30 @@ script = ExtResource("10_navvr")
 
 [node name="ControlLock" type="Node2D" parent="." unique_id=1188347824]
 script = ExtResource("9_sugqx")
+
+[node name="CombatFeedbackLayer" type="CanvasLayer" parent="." unique_id=898731579]
+layer = 20
+
+[node name="PopupContainer" type="Control" parent="CombatFeedbackLayer" unique_id=313565266]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CombatScreenImpulse" type="Node" parent="." unique_id=2113113189]
+script = ExtResource("combat_screen_impulse_script")
+battle_root_path = NodePath("..")
+
+[node name="CombatFeedbackDirector" type="Node" parent="." unique_id=1719615560]
+script = ExtResource("combat_feedback_director_script")
+profile = SubResource("CombatFeedbackProfile_default")
+feedback_layer_path = NodePath("../CombatFeedbackLayer")
+popup_container_path = NodePath("../CombatFeedbackLayer/PopupContainer")
+player_feedback_anchor_path = NodePath("../UI/PlayerFeedbackAnchor")
+screen_impulse_path = NodePath("../CombatScreenImpulse")
 
 [node name="Button" type="Marker2D" parent="." unique_id=194508577]
 
@@ -301,6 +361,9 @@ auto_find_player_entity = true
 empty_bar_visible = true
 stack_font = null
 
+[node name="PlayerFeedbackAnchor" type="Marker2D" parent="UI" unique_id=1590203619]
+position = Vector2(600, 415)
+
 [node name="ActionTimeline" type="Control" parent="UI" unique_id=987654321]
 layout_mode = 3
 anchors_preset = 0
@@ -334,7 +397,7 @@ visible = false
 layout_mode = 0
 offset_top = 48.0
 offset_right = 250.0
-offset_bottom = 166.0
+offset_bottom = 238.0
 theme = ExtResource("24_317fs")
 
 [node name="MarginContainer" type="MarginContainer" parent="UI/BattleSettingsPanel/SettingsPopup" unique_id=1300177301]
@@ -353,6 +416,14 @@ layout_mode = 2
 text = "卡牌操作模式"
 
 [node name="OperationModeOption" type="OptionButton" parent="UI/BattleSettingsPanel/SettingsPopup/MarginContainer/ModeContainer" unique_id=576729900]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="FeedbackIntensityTitle" type="Label" parent="UI/BattleSettingsPanel/SettingsPopup/MarginContainer/ModeContainer" unique_id=514473196]
+layout_mode = 2
+text = "战斗表现强度"
+
+[node name="FeedbackIntensityOption" type="OptionButton" parent="UI/BattleSettingsPanel/SettingsPopup/MarginContainer/ModeContainer" unique_id=660168929]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 

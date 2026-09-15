@@ -50,6 +50,8 @@ const OPERATION_MODE_DRAG: String = "drag"
 @export var monster_primary_selected_scale: Vector2 = Vector2(1.66, 1.66)
 # 次级目标选中后的缩放，必须小于主目标但大于正常卡面以表达扩散影响范围。
 @export var monster_secondary_selected_scale: Vector2 = Vector2(1.60, 1.60)
+# 次级目标在鼠标悬停时的二次放大倍率，必须介于次级选中与主选中之间以保留主次层级。
+@export var monster_secondary_hover_scale: Vector2 = Vector2(1.64, 1.64)
 # 呼吸动画从最小缩放移动到最大缩放所需时间，较短节奏能保持目标提示可见但不干扰战斗阅读。
 @export var target_selection_pulse_half_duration: float = 0.25
 # 不可选目标叠乘的颜色倍率，保留轮廓信息同时明显降低其视觉权重。
@@ -88,6 +90,7 @@ enum TargetSelectionVisualState {
 	HOVERED,
 	PRIMARY_SELECTED,
 	SECONDARY_SELECTED,
+	SECONDARY_HOVERED,
 	UNAVAILABLE,
 }
 # 上一轮已应用到怪物卡的视觉状态，以实体为键避免 _process 每帧重复创建 Tween。
@@ -290,7 +293,8 @@ func _update_click_mode_target_highlights() -> void:
 	var primary_target: Node = _selected_click_target if _selected_click_target else hovered_target
 	# 只有已点击目标才在点击模式中显示绿色主选中状态。
 	var is_primary_selected: bool = _selected_click_target != null
-	_refresh_target_selection_visuals(_selected_click_card, primary_target, is_primary_selected, true)
+	# 已选目标与当前鼠标目标分别传入；这样确认前仍可观察其他敌人的悬停放大，不会丢失已选目标描边。
+	_refresh_target_selection_visuals(_selected_click_card, primary_target, is_primary_selected, true, hovered_target)
 
 ## 从卡牌数据读取目标类型，并在数据缺失时使用既有的单体敌人保守回退。
 ## @param card 需要读取目标类型的卡牌对象。
@@ -329,8 +333,9 @@ func _get_active_monsters() -> Array[Node]:
 ## @param primary_target 鼠标悬停或已点击的敌人主目标；自动目标卡可以为空。
 ## @param is_primary_selected 为 true 时将主目标作为已选中预览，否则只显示悬停状态。
 ## @param default_to_self 为 true 时沿用既有逻辑，将无显式敌人目标的预览回退为玩家自身。
+## @param hovered_target 当前鼠标悬停的敌人；已确认主目标存在时仍用于显示其他敌人的悬停放大。
 ## @return void 无返回值。
-func _refresh_target_selection_visuals(card: Variant, primary_target: Node, is_primary_selected: bool, default_to_self: bool) -> void:
+func _refresh_target_selection_visuals(card: Variant, primary_target: Node, is_primary_selected: bool, default_to_self: bool, hovered_target: Node = null) -> void:
 	if not card or not card.data:
 		_apply_target_visual_states({})
 		return
@@ -369,6 +374,8 @@ func _refresh_target_selection_visuals(card: Variant, primary_target: Node, is_p
 			for monster in active_monsters:
 				next_states[monster] = TargetSelectionVisualState.AVAILABLE
 			_apply_primary_target_visual_state(next_states, active_monsters, primary_target, is_primary_selected)
+
+	_apply_hovered_target_visual_state(next_states, active_monsters, primary_target, hovered_target)
 
 	# 时间轴继续消费旧的范围解析结果，确保本功能只替换怪物卡面表现而不改变行动提示语义。
 	var timeline_targets: Array[Node] = _resolve_intended_targets(card, primary_target, default_to_self)
@@ -411,6 +418,27 @@ func _apply_spread_target_visual_states(next_states: Dictionary, active_monsters
 		# 右侧相邻怪物与左侧使用相同状态，避免扩散范围在两个方向表现不一致。
 		var right_secondary_target: Node = active_monsters[primary_index + 1]
 		next_states[right_secondary_target] = TargetSelectionVisualState.SECONDARY_SELECTED
+
+## 在已确认主目标后，仍为其他鼠标悬停敌人保留独立放大反馈。
+## 已在扩散范围内的次级目标会保留浅绿色描边，并进入独立的二次放大状态。
+## @param next_states 本次刷新即将应用的实体状态映射。
+## @param active_monsters 当前仍在场的有效怪物列表。
+## @param primary_target 已确认或预览中的主目标；它必须保留主选中样式。
+## @param hovered_target 当前鼠标下的候选敌人。
+## @return void 无返回值。
+func _apply_hovered_target_visual_state(next_states: Dictionary, active_monsters: Array[Node], primary_target: Node, hovered_target: Node) -> void:
+	if hovered_target == null or not is_instance_valid(hovered_target) or hovered_target == primary_target or active_monsters.find(hovered_target) == -1:
+		return
+
+	# 读取原状态以识别当前鼠标是否落在已由扩散范围确认的次级目标上。
+	var current_state: int = int(next_states.get(hovered_target, TargetSelectionVisualState.NORMAL))
+	if current_state == TargetSelectionVisualState.SECONDARY_SELECTED:
+		# 次级目标悬停不得降级为普通悬停，否则会错误移除其浅绿色范围描边。
+		next_states[hovered_target] = TargetSelectionVisualState.SECONDARY_HOVERED
+		return
+
+	# 悬停只覆盖当前鼠标下的其他普通敌人，主选目标及其确认描边继续稳定保留。
+	next_states[hovered_target] = TargetSelectionVisualState.HOVERED
 
 ## 根据卡牌目标类型和主目标计算应高亮的实体集合。
 ## 该函数被拖拽与点击模式共用，确保相同卡牌在两种输入方式下遵循同一套范围提示规则。
@@ -514,10 +542,12 @@ func _apply_target_visual_state(entity: Node, visual_state: int) -> void:
 	var target_scale: Vector2 = monster_normal_scale
 	# 不可选状态只降低怪物卡面及内部内容的亮度，血条继续保持可读。
 	var is_dimmed: bool = visual_state == TargetSelectionVisualState.UNAVAILABLE
-	# 主选中、次级选中和自动目标都需要显示同一种绿色确认描边。
-	var show_outline: bool = visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_SELECTED
+	# 次级选中和次级悬停共用浅绿色描边，避免鼠标反馈抹去已经确认的扩散范围。
+	var is_secondary_outline: bool = visual_state == TargetSelectionVisualState.SECONDARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_HOVERED
+	# 主选中、次级选中、次级悬停和自动目标都需要显示确认描边。
+	var show_outline: bool = visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or is_secondary_outline
 	# 次级目标使用更淡的绿色，主选中与自动选中继续沿用主描边颜色。
-	var outline_color: Color = target_selection_secondary_outline_color if visual_state == TargetSelectionVisualState.SECONDARY_SELECTED else target_selection_outline_color
+	var outline_color: Color = target_selection_secondary_outline_color if is_secondary_outline else target_selection_outline_color
 
 	match visual_state:
 		TargetSelectionVisualState.HOVERED:
@@ -526,6 +556,8 @@ func _apply_target_visual_state(entity: Node, visual_state: int) -> void:
 			target_scale = monster_primary_selected_scale
 		TargetSelectionVisualState.SECONDARY_SELECTED:
 			target_scale = monster_secondary_selected_scale
+		TargetSelectionVisualState.SECONDARY_HOVERED:
+			target_scale = monster_secondary_hover_scale
 
 	if visual_state == TargetSelectionVisualState.AVAILABLE and entity.has_method("StartTargetSelectionPulse"):
 		entity.call("StartTargetSelectionPulse", monster_selectable_min_scale, monster_selectable_max_scale, target_selection_pulse_half_duration)
@@ -561,7 +593,7 @@ func _sync_target_timeline_highlights(visual_states: Dictionary, timeline_target
 	else:
 		for entity in visual_states:
 			var visual_state: int = int(visual_states[entity])
-			if visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_SELECTED:
+			if visual_state == TargetSelectionVisualState.PRIMARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_SELECTED or visual_state == TargetSelectionVisualState.SECONDARY_HOVERED:
 				timeline_highlighted_entities.append(entity)
 
 	# 找到行动时间轴后再同步，保持战斗场景缺少该可选 UI 时的安全降级。

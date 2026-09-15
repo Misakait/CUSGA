@@ -152,7 +152,10 @@ public partial class DamageEffect : CardEffect
         ApplyDamageToNode(
             source: context.Source,
             target: target.Unit,
-            damage: damage
+            damage: damage,
+            hitIndex: hitIndex,
+            hitCount: effectiveHitCount,
+            targetRoleId: (int)target.Role
         );
     }
 
@@ -212,7 +215,13 @@ public partial class DamageEffect : CardEffect
         return health is { CurrentValue: > 0 };
     }
 
-    private void ApplyDamageToNode(Node source, Node target, int damage)
+    private void ApplyDamageToNode(
+        Node source,
+        Node target,
+        int damage,
+        int hitIndex,
+        int hitCount,
+        int targetRoleId)
     {
         if (damage <= 0)
         {
@@ -235,7 +244,10 @@ public partial class DamageEffect : CardEffect
             Target = target,
             Damage = damage,
             Type = Type,
-            Element = Element
+            Element = Element,
+            HitIndex = hitIndex,
+            HitCount = hitCount,
+            TargetRoleId = targetRoleId
         };
 
         receiver.ReceiveDamage(payload);

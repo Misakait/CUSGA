@@ -9,6 +9,8 @@ signal battle_ended(is_victory: bool)
 @onready var player_manager = $PlayerManager
 @onready var monster_manager = $MonsterManager
 @onready var action_timeline = $UI/ActionTimeline
+## 战斗反馈导演只负责播放行动与结算表现，不参与行动队列或伤害规则。
+@onready var combat_feedback_director: CombatFeedbackDirector = $CombatFeedbackDirector
 #endregion
 
 #region exprot
@@ -29,6 +31,7 @@ signal battle_ended(is_victory: bool)
 
 #region 其他参数
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
+const DAMAGE_PAYLOAD_SCRIPT_PATH : String = "res://core/combat/DamagePayload.cs"
 const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 const SKILL_CARD_DIR_PATH : String = "res://resources/skill_cards" ## 技能卡资源目录，用于反查怪物技能的显示名
 
@@ -521,8 +524,7 @@ func _execute_single_action(action: Action):
 		and _is_monster_actor(monster_target)
 	if has_enemy_card_presentation:
 		await deck_manager.play_card_to_enemy(action.presentation_card, monster_target)
-		# 受击 Tween 必须在效果结算前结束：致死效果会同步 QueueFree 怪物，之后等待绑定到该节点的 Tween 会永久锁住行动队列。
-		await deck_manager.play_enemy_hit_feedback(monster_target)
+		# 命中表现必须等待真实伤害结果；飞卡只表达施放，不再在结算前假定目标一定受击。
 
 	# 使用可读性更高的显示名输出，便于战斗日志定位敌人使用的技能卡
 	if action.action_type == "SKILL":
@@ -530,6 +532,10 @@ func _execute_single_action(action: Action):
 		if not action_card_name.is_empty():
 			var actor_label = _get_action_actor_label(action.source)
 			print(actor_label + "打出了卡牌：" + action_card_name)
+
+	if (action.action_type == "SKILL" or action.action_type == "ATTACK") and _is_monster_actor(action.source) and combat_feedback_director:
+		# 怪物在权威伤害结算前开始下冲；Tween 不 await，避免表现动画阻塞伤害与回合队列。
+		combat_feedback_director.play_monster_attack_feedback(_unwrap_combat_entity(action.source))
 
 	if action.action_type == "CARD" or action.action_type == "SKILL":
 		# 玩家卡牌和怪物技能共享目标解析；结算时分别调用 SkillCardData 或 CombatSkillData。
@@ -670,9 +676,22 @@ func _execute_single_action(action: Action):
 				combat_skill.Execute(context)
 
 	elif action.action_type == "ATTACK":
-		# 敌人基础攻击的临时占位逻辑
-		if action.targets.size() > 0 and action.targets[0].has_method("take_damage"):
-			action.targets[0].take_damage(10)
+		# 临时普通攻击也通过标准伤害载荷进入 C# 结算，确保玩家受击能获得与技能相同的结果事件。
+		var attack_target: Node = action.targets[0] if action.targets.size() > 0 else null
+		var real_attack_source: Node = _unwrap_combat_entity(action.source)
+		var real_attack_target: Node = _unwrap_combat_entity(attack_target)
+		var attack_receiver: Node = real_attack_target.get_node_or_null("Components/DamageReceiverComponent") if real_attack_target else null
+		if attack_receiver and attack_receiver.has_method("ReceiveDamage"):
+			var DamagePayloadClass = load(DAMAGE_PAYLOAD_SCRIPT_PATH)
+			var payload = DamagePayloadClass.new()
+			payload.Source = real_attack_source
+			payload.Target = real_attack_target
+			payload.Damage = 10
+			payload.Type = 0
+			payload.Element = 0
+			attack_receiver.ReceiveDamage(payload)
+		else:
+			push_warning("普通攻击目标缺少 DamageReceiverComponent，已跳过反馈与结算。")
 
 	# 玩家卡牌无论是否存在显式敌人目标，都只在本行动的唯一收尾处进入弃牌堆并渐隐销毁。
 	if action.action_type == "CARD" and action.presentation_card != null:

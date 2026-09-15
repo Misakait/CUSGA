@@ -104,6 +104,30 @@ public class DamagePayload
     public bool IsExtraDamage { get; set; } = false;
 
     /// <summary>
+    /// 获取本段伤害在所属伤害效果内的从零开始索引。
+    /// 该字段仅用于表现层排序，不参与伤害数值计算。
+    /// </summary>
+    public int HitIndex { get; set; } = 0;
+
+    /// <summary>
+    /// 获取所属伤害效果本次实际执行的总段数。
+    /// 该字段仅用于表现层节流，不参与伤害数值计算。
+    /// </summary>
+    public int HitCount { get; set; } = 1;
+
+    /// <summary>
+    /// 获取目标在技能目标选择中的角色枚举整数。
+    /// 使用整数可避免载荷反向依赖表现层，同时保留主次目标信息。
+    /// </summary>
+    public int TargetRoleId { get; set; } = 0;
+
+    /// <summary>
+    /// 获取本次结算的内部追踪数据。
+    /// 状态 Hook 只记录自身造成的吸收或封顶，最终由伤害接收组件汇总为只读结果。
+    /// </summary>
+    public DamageResolutionTrace ResolutionTrace { get; } = new();
+
+    /// <summary>
     /// 判断本次伤害是否启用指定修饰。
     /// </summary>
     /// <param name="modifier">需要判断的伤害修饰。</param>

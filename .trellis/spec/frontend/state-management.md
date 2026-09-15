@@ -72,17 +72,19 @@ func PlayerHand.remove_card_from_hand(card, should_play_discard_animation: bool 
 func PlayerHand.play_discard_animation(card: Node2D) -> void
 func DeckManager.complete_played_card(card: Node2D) -> void
 func DeckManager.play_card_to_enemy(card: Node2D, target: Node2D) -> void
-func DeckManager.play_enemy_hit_feedback(target: Node2D) -> void
-func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
+func CombatFeedbackDirector._on_damage_resolved(result: RefCounted) -> void
+func CombatFeedbackDirector.play_monster_attack_feedback(monster: Node) -> void
 ```
 
 ### 3. Contracts
 
 - `DeckManager.play_card` 必须先以 `remove_card_from_hand(card, false)` 让节点退出手牌布局，再把同一节点存入 `Action.presentation_card` 后入队；不能立即写入弃牌堆或调用渐隐销毁。
-- `BattleManager._execute_single_action` 是玩家卡牌展示的唯一编排者：显式目标仍是场上怪物时，顺序固定为“飞向目标 → 目标抖动和闪白 → 原有效果结算 → 最终弃牌”。受击必须先于可能同步 `QueueFree()` 目标的伤害结算，避免外层行动队列等待已被删除节点的 Tween。
+- `PlayerHand.draw_card_data` 的容量判断与 `PlayerHand.update_hand_positions` 的位置写入都必须先从 `player_hand_card` 清除已释放或已进入删除队列的节点，再为剩余有效卡牌计算位置；节点缓存不能替代 `is_instance_valid` 校验。
+- `BattleManager._execute_single_action` 是玩家卡牌施放展示的唯一编排者：卡牌行动在显式目标仍是场上怪物时飞向目标，随后立即执行原有效果结算并最终弃牌。它不得调用 `play_enemy_hit_feedback` 预判命中；`CombatFeedbackDirector` 必须在 `DamageResolved` 后播放目标受力、浮字和 Hit Stop。
+- 敌方 `SKILL` 与 `ATTACK` 行动开始时，`BattleManager` 仅请求 `CombatFeedbackDirector.play_monster_attack_feedback` 播放下冲，不得等待该 Tween 或让它改变伤害目标与结算顺序。
 - `Action.presentation_card` 对怪物技能和普通攻击始终可选，调用方不得假设它非空；旧的五参数 `Action.new(...)` 构造方式必须继续可用。
 - `DeckManager.play_card_to_enemy` 与 `DeckManager.play_enemy_hit_feedback` 在创建 Tween 前必须拒绝无效或已进入删除队列的目标；`DeckManager.complete_played_card` 是唯一允许写入主动出牌弃牌数据并启动渐隐销毁的出口，必须用节点元数据防止重复调用。
-- `CardAnimations.hit` 同时启动抖动和闪白时，必须立即等待其中一个 Tween，并在之后仅等待另一个仍有效且运行中的 Tween。`Tween.finished` 是一次性信号，不能先等待较长 Tween 再无条件等待可能已经完成的较短 Tween，否则行动队列会永久保持控制锁。
+- `CombatFeedbackDirector` 的浮字、震屏和目标 Tween 都是非权威异步表现；它们不能被行动队列 `await`。怪物逻辑死亡后立即退出目标池，导演若成功认领死亡表现才在渐隐结束时调用 `FinalizeCombatDeathPresentation()`；未认领则由怪物延迟收尾安全释放。
 - `RandomEnemy` 玩家卡牌必须在飞行前从当前敌人包装节点中随机一次，并把同一局部目标交给飞行、受击和 `SkillExecutionContext`；不能为表现和效果分别随机。自身、全体、扩散或目标失效的玩家卡牌继续跳过飞行与单体受击反馈，但仍从同一个完成出口仅一次弃牌。
 - 动画原子操作复用 `CardAnimations.play_card`、`CardAnimations.hit` 和 `PlayerHand.play_discard_animation`；不要在 `BattleManager` 写入新的时长或缓动常量。
 
@@ -91,12 +93,13 @@ func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
 | 条件 | 行为 | 结果 |
 | --- | --- | --- |
 | `presentation_card` 为空或节点已失效 | 跳过节点表现 | 既有行动结算不受影响 |
-| 显式目标不是仍在场的怪物 | 跳过飞行与受击反馈 | 卡牌照常结算并最终弃置 |
-| 显式目标已进入删除队列 | 拒绝创建飞行或受击 Tween | 不等待被终止的 Tween，行动队列继续推进 |
+| `player_hand_card` 留有已释放或待删除节点 | 重排前剔除无效引用 | 新抽卡和剩余手牌照常布局，不会写入已释放节点 |
+| 显式目标不是仍在场的怪物 | 跳过飞行 | 卡牌照常结算；实际伤害仍由 `DamageResolved` 统一反馈 |
+| 显式目标已进入删除队列 | 拒绝创建飞行 | 不等待被终止的 Tween，行动队列继续推进 |
 | `RandomEnemy` 有可用敌人 | 行动开始时随机一次并复用该节点 | 飞行、受击和伤害命中同一敌人 |
 | `RandomEnemy` 没有可用敌人 | 局部目标保持空，跳过敌人表现 | 既有自身上下文回退和一次弃牌继续成立 |
-| 并行受击中的较短 Tween 已完成 | 跳过对其 `finished` 的二次等待 | 避免等待不会补发的信号，行动队列继续推进 |
-| 目标缺少 `Sprite2D` | 仅执行目标节点抖动 | 不因特殊怪物场景中断行动队列 |
+| 反馈目标缺少 `Sprite2D` | 导演仅执行节点受力或跳过颜色闪白 | 不因特殊怪物场景中断行动队列 |
+| 导演或浮字锚点缺失 | 仅跳过对应表现项 | 同步伤害、弃牌与回合继续推进 |
 | 已完成卡牌再次调用 `complete_played_card` | 检查完成元数据并直接返回 | 不重复写入弃牌堆、不重复 `queue_free` |
 | 玩家取消、改选、切换模式或失去回合 | `CardManager.clear_click_selection(true)` 交回 `PlayerHand` | 卡牌返回标准手牌布局，不产生行动或弃牌 |
 | 再次点击已选卡牌 | `CardManager.clear_click_selection(true)` | 撤销整次选择、清除目标高亮并隐藏操作栏 |
@@ -105,20 +108,21 @@ func CardAnimations.hit(node: Node2D, sprite: Sprite2D) -> void
 
 ### 5. Good / Base / Bad Cases
 
-- Good：点击模式选择一张卡和一个在场怪物，确认后卡牌飞至该怪物、怪物抖动闪白、再结算卡牌效果并一次性进入弃牌堆渐隐；即使敌人保持存活或该效果击败怪物，行动队列都不会等待已完成或被删除节点的 Tween。
-- Good：随机敌人卡牌无论点击或拖拽时指向何处，都在行动开始时随机一次；卡牌飞向该实际敌人、播放受击并对同一敌人结算伤害。
+- Good：点击模式选择一张卡和一个在场怪物，确认后卡牌飞至该怪物，再结算卡牌效果；每段真实伤害由导演播放结果反馈，卡牌只一次性进入弃牌堆渐隐。
+- Good：随机敌人卡牌无论点击或拖拽时指向何处，都在行动开始时随机一次；卡牌飞向该实际敌人并对同一敌人结算伤害，命中表现由该段结算结果决定。
 - Base：未选敌人确认施放，卡牌保留原有自身目标结算；跳过敌人飞行与命中反馈，仍只在动作完成后弃置。
 - Bad：`DeckManager.play_card` 入队后立刻调用 `into_discard_pile(card)`。这会在动画开始前让节点渐隐销毁，使队列持有无效展示节点。
 
 ### 6. Tests Required
 
 - 点击模式选中、取消、改选、模式切换和玩家失去回合：断言选中卡牌上移，并在每个非确认出口恢复 `hand_position` 且保留在 `player_hand_card`；再次点击已选卡牌必须走同一取消出口。
+- 运行 `tests/godot/player_hand_lifecycle_tests.gd`：在缓存中保留一张已释放卡牌后触发 `update_hand_positions`，断言无效引用被清理、有效卡牌仍按索引写入正确 `hand_position`。
 - 敌人目标取消：断言再次点击同一敌人只清空 `_selected_click_target`，已选卡牌与操作栏保持可用，确认时以玩家自身为默认目标。
-- 显式敌人目标：断言 `Action.presentation_card` 与原手牌节点一致；断言节点先到目标位置、目标反馈先于伤害结算完成，`discard_pile_data` 只新增一次。
-- 随机敌人卡牌：断言飞行和受击目标与 `SkillExecutionContext` 的主目标相同；显式点击敌人不覆盖随机结果，无敌人时跳过表现并安全回退。
-- 并行受击：断言闪白先于抖动完成时，`CardAnimations.hit` 直接收尾而不等待已发射的 `finished` 信号；动作仍进入效果、弃牌并恢复输入。
-- 致死目标：断言效果使怪物进入删除队列时，受击 Tween 已完成，行动队列不会永久等待且玩家输入会恢复。
-- 自身、全体、扩散和失效目标：断言不调用敌人飞行/受击方法，仍完成既有 `SkillTargetingType` 结算和一次弃置。
+- 显式敌人目标：断言 `Action.presentation_card` 与原手牌节点一致；断言节点先到目标位置、随后执行伤害结算，`discard_pile_data` 只新增一次。
+- 随机敌人卡牌：断言飞行目标与 `SkillExecutionContext` 的主目标相同；显式点击敌人不覆盖随机结果，无敌人时跳过飞行并安全回退。
+- 结果反馈：断言 `DamageResolved` 的闪避、护盾、暴击、击杀和多段元数据分别映射正确表现；行动队列不得等待这些表现 Tween。
+- 致死目标：断言效果使怪物立即退出活动目标池，视觉收尾结束后才释放节点；行动队列不会永久等待且玩家输入会恢复。
+- 自身、全体、扩散和失效目标：断言不调用敌人飞行方法，仍完成既有 `SkillTargetingType` 结算和一次弃置。
 - 重复收尾保护：对同一节点连续调用两次 `complete_played_card`，断言弃牌堆只增加一张数据，且只请求一次节点销毁。
 - 兼容性：以旧五参数构造怪物 `SKILL`、`ATTACK` 行动，断言不访问展示节点且行动队列继续推进。
 
@@ -149,11 +153,11 @@ await deck_manager.complete_played_card(action.presentation_card)
 
 ### 1. Scope / Trigger
 
-当 `CardManager` 在点击选目标或拖拽落点预览期间，需要表达可选、悬停、主选、次选、不可选和自动选中状态时，必须通过统一的目标选择视觉状态驱动怪物卡面。该状态只服务于输入反馈，不能改变 `SkillTargetingType` 的实际目标结算、行动队列或资源消耗。
+当 `CardManager` 在点击选目标或拖拽落点预览期间，需要表达可选、悬停、主选、次选、次级悬停、不可选和自动选中状态时，必须通过统一的目标选择视觉状态驱动怪物卡面。该状态只服务于输入反馈，不能改变 `SkillTargetingType` 的实际目标结算、行动队列或资源消耗。
 
 ### 2. Signatures
 
-`CardManager` 负责从卡牌目标类型和输入阶段计算 `TargetSelectionVisualState`，并通过 `_refresh_target_selection_visuals(card, primary_target, is_primary_selected, should_default_to_self)` 将状态同步到所有存活怪物。`Monster` 提供下列 GDScript 可调用的展示接口：
+`CardManager` 负责从卡牌目标类型和输入阶段计算 `TargetSelectionVisualState`，并通过 `_refresh_target_selection_visuals(card, primary_target, is_primary_selected, should_default_to_self, hovered_target)` 将状态同步到所有存活怪物。`Monster` 提供下列 GDScript 可调用的展示接口：
 
 ```csharp
 public void ApplyTargetSelectionVisual(
@@ -182,11 +186,12 @@ func _is_monster_card_presentation_control(control: Control) -> bool
 ### 3. Contracts
 
 - `CardManager` 独占“目标类型 → 视觉状态”的决策权；`Monster` 只应用缩放、变暗和描边，不能自行推断技能目标类型。
-- `SingleEnemy`、`AnySingleUnit` 的可选敌人呼吸缩放；悬停放大；已确认点击或拖拽预览目标为主选状态。`SpreadFromEnemy` 的相邻受影响敌人为较小倍率的次选状态。
+- `SingleEnemy`、`AnySingleUnit` 的可选敌人呼吸缩放；悬停放大；已确认点击或拖拽预览目标为主选状态。`SpreadFromEnemy` 的相邻受影响敌人为较小倍率的次选状态；悬停已选次级目标时进入 `SECONDARY_HOVERED`，仍保留次级描边并二次放大。
+- 点击模式已经确认主目标但尚未点击“确定”时，主目标必须继续保留主选中描边；当前鼠标下的其他有效敌人同时切换为 `HOVERED` 放大。若该敌人原为 `SECONDARY_SELECTED`，必须改为 `SECONDARY_HOVERED` 而非普通 `HOVERED`，以保留浅绿色范围描边；该悬停状态不能改写 `_selected_click_target`、范围结算或主目标描边。
 - `AllEnemies`、`RandomEnemy`、`AllUnits` 的全部受影响敌人直接处于主选状态并显示绿色描边；这仅表示自动选择范围，`RandomEnemy` 的实际随机结算保持原逻辑。
 - `Self` 仅使敌人怪物卡面变暗，不缩放或变暗玩家生命/属性 UI。任何非普通状态切换前都要停止原有呼吸 Tween；结束选牌、结束拖拽或目标离场后必须恢复正常缩放、白色调制和隐藏描边。
 - 视觉缓存只能包含怪物卡面节点，必须排除 `HealthBar`，以免输入反馈污染生命条。
-- 可选目标呼吸半周期固定为 `0.25` 秒（完整放大缩小周期 `0.50` 秒）；主选中/自动选中描边宽度为 `2px`、颜色为 `Color(0.25, 1.00, 0.35, 1.00)`，次级目标同宽但必须使用 `Color(0.55, 1.00, 0.65, 0.80)`。
+- 可选目标呼吸半周期固定为 `0.25` 秒（完整放大缩小周期 `0.50` 秒）；主选中/自动选中描边宽度为 `2px`、颜色为 `Color(0.25, 1.00, 0.35, 1.00)`，次级目标及次级悬停同宽但必须使用 `Color(0.55, 1.00, 0.65, 0.80)`；默认次级选中缩放为 `1.60`，次级悬停缩放为 `1.64`，且两者均低于主选中 `1.66`。
 - 点击模式检查 `gui_get_hovered_control()` 时，只有 `_is_monster_card_presentation_control` 通过父链定位到怪物根节点的展示控件可以继续执行物理卡槽点查询。设置、确认、取消、结束回合及任何非怪物 GUI 都必须继续中止世界目标选择；不得通过硬编码 `MonsterAttribute`、标签等具体节点名绕过拦截。
 
 ### 4. Validation & Error Matrix
@@ -212,6 +217,7 @@ func _is_monster_card_presentation_control(control: Control) -> bool
 ### 6. Tests Required
 
 - 运行 `tests/godot/target_selection_visual_tests.gd`，验证主选缩放与绿色描边、不可选变暗、呼吸开始后的复位行为。
+- `target_selection_visual_tests.gd` 必须覆盖“已确认主目标 + 悬停其他敌人”：普通可选目标应为 `HOVERED`；已选次级目标应为 `SECONDARY_HOVERED`，并断言它仍显示浅绿色描边且缩放为 `1.64`。
 - `target_selection_visual_tests.gd` 还必须断言主描边宽度为 `2px`、次级描边使用更淡颜色，以及怪物名称、元素和 `MonsterAttribute` 子控件会被输入白名单放行、无关 GUI 不会被放行。
 - 运行 `tests/godot/initial_test_deck_targeting_tests.gd`，断言 `battle.tscn` 初始牌池共 21 张，目标枚举 `Self` 至 `SpreadFromEnemy` 各至少三张。
 - 手动覆盖点击与拖拽：单体、任意单位、扩散、自身、全体敌人、随机敌人和全体单位；确认悬停、确认选中、取消和释放后均无残留状态。

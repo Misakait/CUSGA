@@ -32,6 +32,9 @@ public sealed partial class BossDamageCapStatusInstance(
             return;
         }
         float maxAllowedDamage = health.MaxValue * _data.MaxHealthDamageRatio;
+        float uncappedDamage = damage;
         damage = Mathf.Min(damage, maxAllowedDamage);
+        // 伤害上限与护盾都发生在扣血前，但它们的表现语义不同，必须分开记录。
+        payload.ResolutionTrace.RecordDamageCap(uncappedDamage - damage);
     }
 }

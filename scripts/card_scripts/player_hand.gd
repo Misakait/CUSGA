@@ -72,6 +72,8 @@ func is_release_in_hand_area(release_position: Vector2) -> bool:
 	return release_position.x >= min_x and release_position.x <= max_x and release_position.y >= min_y and release_position.y <= max_y
 
 func draw_card_data(card_data) -> bool:
+	# 先清理上一帧已释放的展示节点，避免过期缓存把实际可抽的手牌容量错误占满。
+	_remove_invalid_hand_cards()
 	if player_hand_card.size()>=12:
 		print("玩家手牌数达到上限，摸牌失败！")
 		return false
@@ -103,12 +105,28 @@ func remove_card_from_hand(card, should_play_discard_animation: bool = true) -> 
 			# 播放弃牌动画仍由此类统一拥有，保证回合结束弃牌与主动出牌收尾保持同一表现规则。
 			play_discard_animation(card)
 
-func update_hand_positions():
+## 清理手牌缓存中已被释放或已进入删除队列的展示节点。
+## 卡牌动画可能在上一帧完成释放，而抽牌、弃牌或窗口缩放会在下一帧立即触发重排；
+## 因此必须先移除失效引用，不能把 UI 缓存当作节点仍然存活的保证。
+## @return void 无返回值。
+func _remove_invalid_hand_cards() -> void:
+	# 使用副本遍历，保证从原数组删除失效节点时不会跳过后续卡牌。
+	for card: Node2D in player_hand_card.duplicate():
+		if not is_instance_valid(card) or card.is_queued_for_deletion():
+			player_hand_card.erase(card)
+
+## 按当前手牌列表重新计算并播放每张有效卡牌的归位动画。
+## @return void 无返回值。
+func update_hand_positions() -> void:
+	_remove_invalid_hand_cards()
 	refresh_layout_metrics()
-	for i in range(player_hand_card.size()):
+	for card_index: int in range(player_hand_card.size()):
 		# 直接获取计算好的 Vector2 坐标
-		var new_position = calculate_card_position(i)
-		var card = player_hand_card[i]
+		var new_position: Vector2 = calculate_card_position(card_index)
+		# 经过清理后的手牌节点仍再次校验，避免未来在此函数中插入异步逻辑后重新引入悬空访问。
+		var card: Node2D = player_hand_card[card_index]
+		if not is_instance_valid(card) or card.is_queued_for_deletion():
+			continue
 		card.hand_position = new_position
 		animate_card_to_position(card, new_position)
 

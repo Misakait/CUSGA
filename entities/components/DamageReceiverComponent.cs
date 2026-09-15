@@ -10,6 +10,14 @@ public partial class DamageReceiverComponent : Node
 {
     private readonly RandomNumberGenerator _rng = new();
 
+    /// <summary>
+    /// 当一次伤害完成所有公式、状态和生命扣除后发出。
+    /// 结果只用于表现和日志，不允许监听方修改已经完成的战斗状态。
+    /// </summary>
+    /// <param name="result">本次伤害的不可变结算结果。</param>
+    [Signal]
+    public delegate void DamageResolvedEventHandler(DamageResolutionResult result);
+
     [Export]
     public float RandomVarianceMin { get; set; } = 0.95f;
 
@@ -25,15 +33,22 @@ public partial class DamageReceiverComponent : Node
     /// 接收伤害载荷，按载荷配置结算闪避、暴击、属性克制、随机浮动和吸血。
     /// </summary>
     /// <param name="payload">伤害来源、目标、技能威力、伤害类型、五行属性和修饰配置。</param>
-    public void ReceiveDamage(DamagePayload payload)
+    /// <returns>已完成的伤害结算结果；配置异常时返回不产生生命变化的结果。</returns>
+    public DamageResolutionResult ReceiveDamage(DamagePayload payload)
     {
+        if (payload == null)
+        {
+            GD.PushError($"{nameof(DamageReceiverComponent)} received null damage payload.");
+            return new DamageResolutionResult(null, 0, 0, false, false, false);
+        }
+
         Node defenderComponents = GetParent();
         Node defenderRoot = payload.Target ?? defenderComponents?.GetParent() ?? defenderComponents;
 
         if (defenderComponents == null)
         {
             GD.PushError($"{nameof(DamageReceiverComponent)} has no parent defender.");
-            return;
+            return new DamageResolutionResult(payload, 0, 0, false, false, false);
         }
 
         var attackerStats = FindComponent<AttributeComponent>(payload.Source, "AttributeComponent");
@@ -49,6 +64,15 @@ public partial class DamageReceiverComponent : Node
             DamageFormula.ShouldEvade(defenderStats?.EvasionRate ?? 0f, _rng.Randf())
         )
         {
+            var evadedResult = new DamageResolutionResult(
+                payload,
+                preGuardDamage: 0,
+                actualDamage: 0,
+                isEvaded: true,
+                isCritical: false,
+                isLethal: false
+            );
+            EmitSignal(SignalName.DamageResolved, evadedResult);
             GD.Print(
                 $"[Damage] Target: {defenderRoot?.Name ?? defenderComponents.Name} | " +
                 $"Source: {payload.Source?.Name ?? "Unknown"} | " +
@@ -56,7 +80,7 @@ public partial class DamageReceiverComponent : Node
                 $"Element: {payload.Element} | " +
                 $"Type: {payload.Type}"
             );
-            return;
+            return evadedResult;
         }
 
         float damage = CalculateBaseDamage(payload, attackerStats, defenderStats);
@@ -73,6 +97,7 @@ public partial class DamageReceiverComponent : Node
         ApplyElementMultiplier(payload, defenderRoot, ref damage);
 
         defenderStatus?.ProcessModifyIncomingDamageAfterMitigation(payload, ref damage);
+        int preGuardDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
         defenderStatus?.ProcessBeforeHealthDamage(payload, ref damage);
         if (payload.HasDamageModifier(DamageModifierFlags.RandomVariance))
         {
@@ -88,6 +113,17 @@ public partial class DamageReceiverComponent : Node
             ApplyLifesteal(payload.Source, attackerStats, actualDamage);
         }
 
+        bool isLethal = actualDamage > 0 && defenderHealth is { CurrentValue: <= 0 };
+        var result = new DamageResolutionResult(
+            payload,
+            preGuardDamage,
+            actualDamage,
+            isEvaded: false,
+            isCritical,
+            isLethal
+        );
+        EmitSignal(SignalName.DamageResolved, result);
+
         GD.Print(
             $"[Damage] Target: {defenderRoot?.Name ?? defenderComponents.Name} | " +
             $"Source: {payload.Source?.Name ?? "Unknown"} | " +
@@ -96,6 +132,7 @@ public partial class DamageReceiverComponent : Node
             $"Element: {payload.Element} | " +
             $"Type: {payload.Type}"
         );
+        return result;
     }
 
     private static float CalculateBaseDamage(
