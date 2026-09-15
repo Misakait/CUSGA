@@ -64,7 +64,7 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 [sub_resource type="Resource" id="Resource_kgjmv"]
 script = ExtResource("2_navvr")
 Skill = SubResource("Resource_7ebbf")
-CardTags = Array[String](["高额伤害"])
+CardTags = Array[String](["高频伤害"])
 CardId = null
 metadata/_custom_type_script = "uid://bejho62d28qir"
 

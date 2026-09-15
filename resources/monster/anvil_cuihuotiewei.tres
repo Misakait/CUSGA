@@ -25,12 +25,12 @@ BaseMagPower = 120.0
 BaseMagResist = 240.0
 BaseSpeed = 105.0
 BaseFixedPhysPenetration = 10.0
-BasePhysPenetrationRate = 13.0
+BasePhysPenetrationRate = 0.13
 BaseFixedMagicPenetration = 23
-BaseMagicPenetrationRate = 10.0
-BaseCritRate = 5.0
+BaseMagicPenetrationRate = 0.1
+BaseCritRate = 0.05
 BaseCritDamage = 2.0
-BaseEvasionRate = 5.0
+BaseEvasionRate = 0.05
 
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")

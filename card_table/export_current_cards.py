@@ -150,6 +150,107 @@ STAT_FIELDS = [
     ("lifesteal_rate_growth", "LifestealRateGrowth", "0.0"),
 ]
 
+# 表格里的百分比字段沿用"省略百分号"的书写习惯：5 表示 5%，13 表示 13%。
+# 运行时（AttributeComponent 会把百分比钳制到 0~1，AttributeSummaryUI 显示时再乘以 100）
+# 统一使用 0~1 小数，因此两个方向必须在这里换算，否则表格里的 5 会被钳制成 100%。
+# 注意：暴击伤害是"倍率"而不是百分比（2.0 表示 200% 伤害），不参与该换算。
+PERCENT_STAT_KEYS = frozenset(
+    {
+        "base_phys_penetration_rate",
+        "base_magic_penetration_rate",
+        "base_crit_rate",
+        "base_evasion_rate",
+        "base_lifesteal_rate",
+        "phys_penetration_rate_growth",
+        "magic_penetration_rate_growth",
+        "crit_rate_growth",
+        "evasion_rate_growth",
+        "lifesteal_rate_growth",
+    }
+)
+
+# 百分比字段在表格中的换算比例与合理范围（百分号写法下不应超过 100）。
+PERCENT_SCALE = 100.0
+
+
+def _format_stat_number(value: float) -> str:
+    """把属性数值格式化为稳定的表格/资源字面量，避免浮点误差污染同步结果。
+
+    参数:
+        value: 待格式化的数值。
+    返回:
+        至少保留一位小数的十进制字符串，例如 ``5.0``、``0.05``、``13.0``。
+    """
+    rounded = round(value, 6)
+    text = f"{rounded:.6f}".rstrip("0")
+    return text if not text.endswith(".") else text + "0"
+
+
+def _parse_stat_number(text: str) -> float | None:
+    """解析表格或资源中的数值文本。
+
+    参数:
+        text: 单元格或字段文本，可能为空、带空白或包含非法内容。
+    返回:
+        解析成功时返回浮点数；文本为空或非法时返回 None，交由调用方保持原值。
+    """
+    try:
+        return float((text or "").strip())
+    except ValueError:
+        return None
+
+
+def _warn_if_percent_out_of_range(csv_key: str, percent_value: float) -> None:
+    """对明显不合理的百分比表格值打印可见警告。
+
+    曾经表格里写成 5 的闪避率被原样写入资源，运行时又被静默钳制到 1.0，导致"必定命中/必定闪避"
+    这类无法从战斗表现反推的数据问题。这里主动把越界值暴露出来，替代无声的钳制。
+
+    参数:
+        csv_key: 表格列名，用于在日志中定位具体字段。
+        percent_value: 表格中书写为百分号的原始数值。
+    """
+    if percent_value < 0.0 or percent_value > PERCENT_SCALE:
+        print(
+            f"[警告] {csv_key} = {percent_value} 超出百分比合理范围 "
+            f"0~{PERCENT_SCALE:g}（表格中 5 表示 5%），导入后会被运行时钳制，请检查表格。"
+        )
+
+
+def percent_to_runtime(csv_key: str, text: str) -> str:
+    """把表格中的百分比写法换算为运行时使用的 0~1 小数。
+
+    参数:
+        csv_key: 表格列名，用于判断该字段是否属于百分比字段。
+        text: 表格单元格原始文本，例如 ``"5"`` 或 ``"0.0"``。
+    返回:
+        百分比字段返回换算后的十进制字符串（如 ``"0.05"``）；非百分比字段或无法解析时原样返回。
+    """
+    if csv_key not in PERCENT_STAT_KEYS:
+        return text
+    percent_value = _parse_stat_number(text)
+    if percent_value is None:
+        return text
+    _warn_if_percent_out_of_range(csv_key, percent_value)
+    return _format_stat_number(percent_value / PERCENT_SCALE)
+
+
+def runtime_to_percent(csv_key: str, text: str) -> str:
+    """把运行时小数换算回表格使用的百分比写法，保证双向同步稳定。
+
+    参数:
+        csv_key: 表格列名，用于判断该字段是否属于百分比字段。
+        text: ``.tres`` 中的原始文本，例如 ``"0.05"``。
+    返回:
+        百分比字段返回乘以 100 后的十进制字符串（如 ``"5.0"``）；非百分比字段或无法解析时原样返回。
+    """
+    if csv_key not in PERCENT_STAT_KEYS:
+        return text
+    runtime_value = _parse_stat_number(text)
+    if runtime_value is None:
+        return text
+    return _format_stat_number(runtime_value * PERCENT_SCALE)
+
 
 def to_res_path(path: Path) -> str:
     """把磁盘路径转换为 Godot `res://` 路径。"""
@@ -1026,7 +1127,10 @@ def export_monster_csv(monster_skills: dict[str, list[str]]) -> list[dict[str, s
                 else parse_scalar(text, gd_key)
             )
             # .tres 中未配置的字段使用 StartingStats 默认值，保证 CSV/XLSX 始终有数据
-            row[csv_key] = raw if raw != "" else default_value
+            # 百分比字段在资源里是 0~1 小数，回写表格时换算回"省略百分号"的写法
+            row[csv_key] = runtime_to_percent(
+                csv_key, raw if raw != "" else default_value
+            )
         rows.append(row)
     write_csv_rows(MONSTER_CSV, MONSTER_HEADERS, rows)
     return rows
@@ -1106,7 +1210,11 @@ def create_monster_resource(row: dict[str, str], skill_paths: list[str]) -> str:
         ]
     )
     for csv_key, gd_key, default_value in STAT_FIELDS:
-        lines.append(f"{gd_key} = {row.get(csv_key) or default_value}")
+        # 表格中的百分比字段是"省略百分号"的写法，写入资源前必须换算成 0~1 小数
+        stat_literal = percent_to_runtime(
+            csv_key, row.get(csv_key) or default_value
+        )
+        lines.append(f"{gd_key} = {stat_literal}")
     for index, _skill_path in enumerate(skill_paths, start=1):
         lines.extend(
             [
@@ -1279,7 +1387,11 @@ def update_monster_stats(text: str, row: dict[str, str]) -> str:
     ]
     for csv_key, gd_key, default_value in STAT_FIELDS:
         csv_val = row.get(csv_key, "")
-        stats_lines.append(f"{gd_key} = {csv_val if csv_val != '' else default_value}")
+        # 表格中的百分比字段是"省略百分号"的写法，写入资源前必须换算成 0~1 小数
+        stat_literal = percent_to_runtime(
+            csv_key, csv_val if csv_val != "" else default_value
+        )
+        stats_lines.append(f"{gd_key} = {stat_literal}")
     insert_at = text.find("[resource]")
     if insert_at >= 0:
         text = text[:insert_at] + "\n".join(stats_lines) + "\n\n" + text[insert_at:]
