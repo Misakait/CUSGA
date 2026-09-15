@@ -269,3 +269,36 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: 增强战斗打击反馈
+
+**Date**: 2026-09-15
+**Task**: 增强战斗打击反馈
+**Branch**: `main`
+
+### Summary
+
+实现统一伤害结算反馈、浮字与表现强度设置；完成护盾、治疗、敌方下冲、目标选择、手牌生命周期修复及文档测试同步。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5cd061b` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
