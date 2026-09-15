@@ -131,7 +131,7 @@ func _test_drag_ghost_keeps_real_card_and_ignores_input() -> void:
 
 
 func _test_auto_target_types_reject_manual_enemy_selection() -> void:
-	# CardManager 的目标类型策略函数不依赖战斗场景，可直接验证自动目标不会进入手动敌人选择分支。
+	# CardManager 的目标类型策略函数由点击确认和拖拽释放共用，不依赖战斗场景即可验证自动目标不会进入手动敌人选择分支。
 	var card_manager = CARD_MANAGER_SCRIPT.new()
 	# 单体敌人是传统点击选目标卡，必须保留人工选择能力。
 	var single_enemy_type: int = SKILL_TARGETING_TYPE.Value.SingleEnemy

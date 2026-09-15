@@ -909,7 +909,11 @@ func finish_drag() -> void:
 		# 命中目标：扣除能量
 		player_manager.consume_energy(dragged_card.data.cost)
 		# 让DeckManager将卡牌推入战斗状态机的 Action Queue (行动队列)
-		deck_manager.play_card(dragged_card, card_slot_found.get_parent())
+		# 范围、随机、全体单位与自身等自动目标牌只把命中卡槽当作有效释放区域，不能把该实体传入行动队列成为单体表现目标。
+		if _requires_manual_enemy_target(_get_card_targeting_type(dragged_card)):
+			deck_manager.play_card(dragged_card, card_slot_found.get_parent())
+		else:
+			deck_manager.play_card(dragged_card)
 	else:
 		# 真实卡始终留在手牌区；无效释放只需要结束虚影预览，不再播放多余归位动画。
 		# 特例：当卡牌是【对自己使用】类型时，允许直接在空白处施放
