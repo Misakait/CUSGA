@@ -35,6 +35,8 @@ const OPERATION_MODE_DRAG: String = "drag"
 @export var card_normal_scale: Vector2 = Vector2(1.0, 1.0) ## 卡牌正常大小
 @export var card_hover_scale: Vector2 = Vector2(1.05, 1.05) ## 卡牌悬停放大
 @export var card_drag_scale: Vector2 = Vector2(0.95, 0.95) ## 卡牌拖拽时略微缩小
+# 拖拽虚影的固定不透明度；50% 能清楚区分目标预览与仍留在手牌区的真实卡牌。
+@export_range(0.0, 1.0, 0.05) var card_drag_ghost_opacity: float = 0.5
 @export var monster_normal_scale: Vector2 = Vector2(1.5, 1.5) ## 怪物正常大小
 @export var monster_hover_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物被选中悬停时放大
 @export var scale_tween_duration: float = 0.08 ## 缩放动画过度时间
@@ -72,6 +74,8 @@ const OPERATION_MODE_DRAG: String = "drag"
 
 var screen_size
 var card_being_dragged:Node2D
+# 当前跟随鼠标的临时卡牌虚影；它只提供拖拽预览，绝不能进入手牌或行动队列。
+var _card_drag_ghost: Node2D = null
 var is_hovering_on_card:bool
 var player_hand_referencd #玩家手牌引用
 var drag_offset: Vector2 # 用于记录拖拽偏移量
@@ -107,21 +111,19 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if card_being_dragged:
-		var mouse_pos = get_global_mouse_position()
-		# 将偏移量应用到目标位置上
-		var target_pos = mouse_pos + drag_offset
-		card_being_dragged.position = Vector2(
-			clamp(target_pos.x, 0, screen_size.x),
-			clamp(target_pos.y, 0, screen_size.y)
-		)
-
-		# 检测是否拖拽到了某个卡槽上，将命中结果交由多目标高亮方法处理
-		var card_slot_found = raycast_check_for_card_slot()
-		# 同步检测当前位置是否在手牌区，避免自我施放卡在回收路径上误触高亮
-		var release_in_hand_area: bool = false
-		if player_hand_referencd and player_hand_referencd.has_method("is_release_in_hand_area"):
-			release_in_hand_area = player_hand_referencd.is_release_in_hand_area(card_being_dragged.global_position)
-		update_hovered_targets(card_slot_found, release_in_hand_area)
+		if control_lock.is_lock or battle_manager.current_state != battle_manager.BattleState.PLAYER_TURN:
+			# 玩家失去输入权时立即回收虚影，避免结算或敌方回合残留不可操作的拖拽状态。
+			_cancel_active_drag()
+		else:
+			# 虚影独占鼠标跟随；真实手牌继续停在 PlayerHand 已计算的标准位置。
+			var drag_preview_position: Vector2 = _update_card_drag_ghost_position()
+			# 检测虚影当前位置命中的卡槽，将结果交由既有多目标高亮方法处理。
+			var card_slot_found: Node2D = raycast_check_for_card_slot_at_position(drag_preview_position)
+			# 同步检测虚影是否回到手牌区，避免自身目标卡在回收路径上误触施放。
+			var release_in_hand_area: bool = false
+			if player_hand_referencd and player_hand_referencd.has_method("is_release_in_hand_area"):
+				release_in_hand_area = player_hand_referencd.is_release_in_hand_area(drag_preview_position)
+			update_hovered_targets(card_slot_found, release_in_hand_area)
 	elif _is_click_operation_mode() and _selected_click_card:
 		# 点击模式没有拖拽位置更新，需主动读取鼠标下目标以提供未点击前的悬停放大反馈。
 		_update_click_mode_target_highlights()
@@ -196,19 +198,17 @@ func clear_click_selection(restore_hand_layout: bool = true) -> void:
 	_apply_target_highlights([])
 	_set_click_mode_action_bar_visible(false)
 
-## 取消尚未松开的拖拽卡牌并将其放回手牌布局。
-## 模式在拖拽期间改变时不能让卡牌停留在鼠标位置，否则下次输入会使用过期的拖拽状态。
+## 取消尚未松开的拖拽预览并清理其目标视觉。
+## 真实卡从未离开 PlayerHand，因此取消时不能额外触发归位或弃牌表现。
 ## @return void 无返回值。
 func _cancel_active_drag() -> void:
-	if not card_being_dragged:
+	if not card_being_dragged and not _card_drag_ghost:
 		return
 
-	# 被模式切换中止的卡牌节点，需要回到 PlayerHand 的正常布局。
-	var dragged_card: Node2D = card_being_dragged
+	# 先关闭真实卡的拖拽状态，再回收虚影，防止同一帧的输入继续读取过期预览节点。
 	card_being_dragged = null
+	_clear_card_drag_ghost()
 	update_hovered_targets(null, true)
-	if player_hand_referencd:
-		player_hand_referencd.add_card_to_hand(dragged_card)
 
 ## 从本地设置读取操作模式，并将缺失或无效值安全回退为点击模式。
 ## @return String 经过校验的操作模式值。
@@ -777,20 +777,102 @@ func _get_confirmed_click_mode_target() -> Node:
 		return _selected_click_target
 	return player_manager
 
-## 当鼠标按下并检测到点中某张可用的卡时触发，开始拖拽逻辑。
-func start_drag(card):
-	# 如果当前能量小于该卡牌的消耗则不能拖拽
+## 当鼠标按下并检测到点中某张可用的卡时创建拖拽虚影。
+## 真实卡只保存为行动队列候选节点，拖拽期间始终保留在原手牌布局中。
+## @param card 被按住的真实手牌节点。
+## @return void 无返回值。
+func start_drag(card: SkillCard) -> void:
+	# 如果当前能量小于该卡牌的消耗则不能拖拽。
 	if player_manager.energy < card.data.cost:
 		return
 	card_being_dragged = card
-	# 记录鼠标点击位置与卡牌原点之间的差值
+	# 记录鼠标点击位置与卡牌原点之间的差值，使虚影保持原有按住位置而不是跳到鼠标中心。
 	drag_offset = card.position - get_global_mouse_position()
-
-	var tween = create_tween()
-	tween.tween_property(card, "scale", card_drag_scale, scale_tween_duration)
+	# 真实卡恢复普通手牌缩放，避免鼠标离开后仍保留悬停表现而与虚影争夺视觉焦点。
+	highlight_card(card, false)
+	_create_card_drag_ghost(card)
+	_update_card_drag_ghost_position()
 
 	if tooltip_panel:
 		tooltip_panel.hide_tooltip()
+
+## 创建只承担视觉预览的卡牌虚影。
+## 完整复制卡面内容以避免维护第二套展示节点，但随后必须隔离复制节点的所有输入能力。
+## @param card 用于创建虚影的真实手牌节点。
+## @return Node2D 新建的虚影节点；复制失败时返回 null。
+func _create_card_drag_ghost(card: SkillCard) -> Node2D:
+	_clear_card_drag_ghost()
+	if not card or not is_instance_valid(card):
+		return null
+
+	# 从真实手牌复制完整卡面，保证名称、元素、费用和锁定遮罩与原卡始终一致。
+	var drag_ghost: Node2D = card.duplicate() as Node2D
+	if not drag_ghost:
+		push_warning("无法创建卡牌拖拽虚影，已保留真实手牌位置。")
+		return null
+
+	# 复制节点沿用真实卡的主题颜色，但统一覆写透明度以形成明确的临时预览层。
+	var ghost_modulate: Color = card.modulate
+	ghost_modulate.a = card_drag_ghost_opacity
+	drag_ghost.modulate = ghost_modulate
+	drag_ghost.scale = card_drag_scale
+	drag_ghost.name = "CardDragGhost"
+	_disable_card_drag_ghost_input(drag_ghost)
+	add_child(drag_ghost)
+	drag_ghost.global_position = card.global_position
+	_card_drag_ghost = drag_ghost
+	return drag_ghost
+
+## 让完整卡面副本穿透鼠标和物理点查询。
+## 递归处理可以覆盖未来加入 SkillCard 场景的标签或额外 Area2D，而无需在此处硬编码节点路径。
+## @param node 需要解除输入能力的虚影节点或其后代。
+## @return void 无返回值。
+func _disable_card_drag_ghost_input(node: Node) -> void:
+	if node is Area2D:
+		# 虚影不能出现在手牌或目标卡槽的 PhysicsPointQuery 结果中。
+		var ghost_area: Area2D = node as Area2D
+		ghost_area.collision_layer = 0
+		ghost_area.collision_mask = 0
+		ghost_area.input_pickable = false
+		ghost_area.monitoring = false
+		ghost_area.monitorable = false
+	if node is Control:
+		# 卡面标签也必须允许鼠标穿透，避免虚影在 UI 层遮挡后续交互。
+		var ghost_control: Control = node as Control
+		ghost_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_disable_card_drag_ghost_input(child)
+
+## 计算并更新当前拖拽预览的屏幕位置。
+## 真实卡绝不在此方法中移动；虚影创建失败时仍返回计算位置以保证目标判定安全退化。
+## @return Vector2 经过屏幕边界限制的预览位置。
+func _update_card_drag_ghost_position() -> Vector2:
+	# 鼠标与按下偏移共同决定预览位置，保持改动前拖拽手感。
+	var drag_preview_position: Vector2 = _get_drag_preview_position()
+	if _card_drag_ghost and is_instance_valid(_card_drag_ghost):
+		_card_drag_ghost.position = drag_preview_position
+	return drag_preview_position
+
+## 返回当前拖拽虚影应使用的屏幕位置。
+## @return Vector2 已按当前视口范围裁剪的预览位置。
+func _get_drag_preview_position() -> Vector2:
+	# 预览坐标沿用旧拖拽的鼠标偏移规则，避免切换为虚影后出现位置跳变。
+	var target_position: Vector2 = get_global_mouse_position() + drag_offset
+	return Vector2(
+		clamp(target_position.x, 0, screen_size.x),
+		clamp(target_position.y, 0, screen_size.y)
+	)
+
+## 立即隐藏并延迟释放拖拽虚影。
+## 隐藏保证松开鼠标后的当前帧不再可见，延迟释放保持 Godot 场景树迭代安全。
+## @return void 无返回值。
+func _clear_card_drag_ghost() -> void:
+	if not _card_drag_ghost:
+		return
+	if is_instance_valid(_card_drag_ghost):
+		_card_drag_ghost.hide()
+		_card_drag_ghost.queue_free()
+	_card_drag_ghost = null
 
 ## 辅助函数：判断卡牌是否为【对自己使用】
 func is_self_target_card(card: SkillCard) -> bool:
@@ -799,35 +881,43 @@ func is_self_target_card(card: SkillCard) -> bool:
 	# 复用统一的目标类型读取逻辑，避免自身施放分支与视觉状态在技能数据缺失时出现不同回退。
 	return _get_card_targeting_type(card) == SKILL_TARGETING_TYPE.Value.Self
 
-## 当鼠标松开时触发，结束拖拽判定，主要用射线检测当前位置是否在“卡槽”或目标身上
+## 当鼠标松开时触发，使用虚影位置确认目标并将真实手牌交给既有行动队列。
 ## @return void 无返回值。
-func finish_drag():
-	var tween = create_tween()
-	tween.tween_property(card_being_dragged, "scale", card_hover_scale, scale_tween_duration)
+func finish_drag() -> void:
+	if not card_being_dragged or not is_instance_valid(card_being_dragged):
+		_cancel_active_drag()
+		return
 
-	# 先判断是否回到手牌区，用于避免自我施放卡在回收时误触。
+	# 保存真实卡引用；虚影会在施放判定前清理，真实卡才是唯一可进入 Action.presentation_card 的节点。
+	var dragged_card: SkillCard = card_being_dragged as SkillCard
+	if not dragged_card:
+		_cancel_active_drag()
+		return
+	# 松开位置必须在回收虚影前读取，确保判定使用玩家看到的预览位置。
+	var release_position: Vector2 = _get_drag_preview_position()
+	# 先判断是否回到手牌区，用于避免自我施放卡在回收路径上误触。
 	var release_in_hand_area: bool = false
 	if player_hand_referencd and player_hand_referencd.has_method("is_release_in_hand_area"):
-		release_in_hand_area = player_hand_referencd.is_release_in_hand_area(card_being_dragged.global_position)
+		release_in_hand_area = player_hand_referencd.is_release_in_hand_area(release_position)
 
-	# 通过射线获取是否命中了一个接收区域
-	var card_slot_found = raycast_check_for_card_slot()
+	# 通过虚影释放位置获取是否命中了一个接收区域。
+	var card_slot_found: Node2D = raycast_check_for_card_slot_at_position(release_position)
+	# 虚影必须先于真实卡进入既有飞行链路消失，避免两张卡同时出现在目标区域。
+	_clear_card_drag_ghost()
+	card_being_dragged = null
 	if card_slot_found:
 		# 命中目标：扣除能量
-		player_manager.consume_energy(card_being_dragged.data.cost)
+		player_manager.consume_energy(dragged_card.data.cost)
 		# 让DeckManager将卡牌推入战斗状态机的 Action Queue (行动队列)
-		deck_manager.play_card(card_being_dragged, card_slot_found.get_parent())
+		deck_manager.play_card(dragged_card, card_slot_found.get_parent())
 	else:
-		# 如果拖动后没进入有效区域(比如丢到空白处)，则卡牌原路弹回玩家手中
+		# 真实卡始终留在手牌区；无效释放只需要结束虚影预览，不再播放多余归位动画。
 		# 特例：当卡牌是【对自己使用】类型时，允许直接在空白处施放
-		if allow_self_cast_on_empty and is_self_target_card(card_being_dragged) and not release_in_hand_area:
-			player_manager.consume_energy(card_being_dragged.data.cost)
-			deck_manager.play_card(card_being_dragged)
-		else:
-			player_hand_referencd.add_card_to_hand(card_being_dragged)
+		if allow_self_cast_on_empty and is_self_target_card(dragged_card) and not release_in_hand_area:
+			player_manager.consume_energy(dragged_card.data.cost)
+			deck_manager.play_card(dragged_card)
 
-	# 松开后卡牌会立刻入队或回手，必须清理预览状态以停止呼吸并避免绿色描边残留到行动结算。
-	card_being_dragged = null
+	# 松开后卡牌会立刻入队或保留在手牌区，必须清理预览状态以停止呼吸并避免绿色描边残留。
 	_apply_target_highlights([])
 
 ## 初始化卡牌本身的鼠标悬停信号，在卡牌实例化时绑定过来
@@ -897,11 +987,12 @@ func raycast_check_for_card():
 		return get_card_with_highest_z_index(valid_results)
 	return null
 
-## 同样是通过射线检测目标卡槽（通常在实体身上）
+## 同样是通过射线检测目标卡槽（通常在实体身上）。
+## 拖拽模式始终使用虚影预览位置，不能再读取真实手牌的固定位置。
 func raycast_check_for_card_slot():
 	if not card_being_dragged:
 		return null
-	return raycast_check_for_card_slot_at_position(card_being_dragged.global_position)
+	return raycast_check_for_card_slot_at_position(_get_drag_preview_position())
 
 ## 使用给定的世界坐标检测目标卡槽。
 ## 拖拽模式传入卡牌中心，点击模式传入鼠标位置，以复用同一套怪物卡槽碰撞层规则。

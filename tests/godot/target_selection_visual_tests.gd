@@ -2,6 +2,7 @@ extends SceneTree
 
 const MONSTER_SCENE := preload("res://scenes/monster_scenes/monster.tscn")
 const CARD_MANAGER_SCRIPT := preload("res://scripts/card_scripts/card_manager.gd")
+const SKILL_CARD_SCENE := preload("res://scenes/skill_card_scenes/SkillCard.tscn")
 const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 
 # 累积断言失败信息，使一次运行能报告所有目标选择视觉回归。
@@ -16,6 +17,7 @@ func _run() -> void:
 	await _test_static_selected_and_unavailable_visuals()
 	await _test_pulse_can_be_stopped_and_reset()
 	await _test_monster_presentation_controls_allow_target_selection()
+	_test_drag_ghost_keeps_real_card_and_ignores_input()
 	_test_auto_target_types_reject_manual_enemy_selection()
 	_finish()
 
@@ -87,6 +89,45 @@ func _test_monster_presentation_controls_allow_target_selection() -> void:
 	unrelated_control.queue_free()
 	monster.queue_free()
 	await process_frame
+
+
+func _test_drag_ghost_keeps_real_card_and_ignores_input() -> void:
+	# 独立 CardManager 足以覆盖虚影创建契约，不需要启动完整战斗状态机。
+	var card_manager: Node2D = CARD_MANAGER_SCRIPT.new()
+	# 正式卡牌场景保证虚影验证覆盖真实 Area2D、标签与锁定遮罩节点。
+	var source_card: Node2D = SKILL_CARD_SCENE.instantiate()
+	# 真实卡的初始位置用于验证创建虚影不会移动手牌本身。
+	var source_position := Vector2(180.0, 620.0)
+	source_card.position = source_position
+	card_manager.add_child(source_card)
+
+	# 通过正式创建入口获得完整展示副本，而不是在测试中手工重建卡面。
+	var drag_ghost: Node2D = card_manager.call("_create_card_drag_ghost", source_card) as Node2D
+	_assert(drag_ghost != null, "拖拽开始时应创建独立的卡牌虚影。")
+	if drag_ghost == null:
+		return
+	_assert(drag_ghost != source_card, "拖拽虚影不能复用真实手牌节点。")
+	_assert(source_card.position == source_position, "创建虚影不能移动真实手牌。")
+	_assert(drag_ghost.position == source_position, "虚影初始位置应与真实手牌重合。")
+	_assert(is_equal_approx(drag_ghost.modulate.a, 0.5), "拖拽虚影应固定为 50% 不透明度。")
+	_assert(drag_ghost.scale == card_manager.get("card_drag_scale"), "拖拽虚影应复用既有拖拽缩放参数。")
+
+	# 虚影复制了真实 Area2D，但必须退出物理点查询与鼠标输入，不能遮挡卡牌或目标卡槽。
+	var ghost_area: Area2D = drag_ghost.get_node("Area2D") as Area2D
+	# 真实卡名称用于确认虚影复制的是完整卡面内容，而不只是背景贴图。
+	var source_name_label: Label = source_card.get_node("CardName") as Label
+	# 虚影标签是 GUI 透传策略的代表节点，验证递归配置不会遗漏卡面文字。
+	var ghost_name_label: Label = drag_ghost.get_node("CardName") as Label
+	_assert(ghost_name_label.text == source_name_label.text, "拖拽虚影应保留真实卡的卡面内容。")
+	_assert(ghost_area.collision_layer == 0, "拖拽虚影不应保留手牌物理碰撞层。")
+	_assert(ghost_area.collision_mask == 0, "拖拽虚影不应参与任何物理碰撞查询。")
+	_assert(not ghost_area.input_pickable, "拖拽虚影的 Area2D 不应接收鼠标输入。")
+	_assert(ghost_name_label.mouse_filter == Control.MOUSE_FILTER_IGNORE, "拖拽虚影的卡面标签应允许鼠标穿透。")
+
+	# 清理入口需先隐藏虚影，保证松开鼠标的当前帧不会同时显示虚影与真实飞行牌。
+	card_manager.call("_clear_card_drag_ghost")
+	_assert(not drag_ghost.visible, "清理拖拽虚影后应立即隐藏该节点。")
+	card_manager.queue_free()
 
 
 func _test_auto_target_types_reject_manual_enemy_selection() -> void:

@@ -252,6 +252,76 @@ if hovered_control and not _is_monster_card_presentation_control(hovered_control
 	return
 ```
 
+## 拖拽虚影与真实手牌的状态契约
+
+### 1. Scope / Trigger
+
+当战斗卡牌拖拽需要“保留真实手牌、以临时副本跟随鼠标选目标”时，状态仍由 `CardManager` 本地拥有。该模式的关键风险是误将展示副本传入 `DeckManager`，从而让行动队列失去真实手牌节点或让复制的碰撞节点遮挡输入。
+
+### 2. Signatures
+
+```gdscript
+@export_range(0.0, 1.0, 0.05) var card_drag_ghost_opacity: float = 0.5
+var card_being_dragged: Node2D
+var _card_drag_ghost: Node2D = null
+
+func start_drag(card: SkillCard) -> void
+func _create_card_drag_ghost(card: SkillCard) -> Node2D
+func _update_card_drag_ghost_position() -> Vector2
+func _clear_card_drag_ghost() -> void
+func finish_drag() -> void
+```
+
+### 3. Contracts
+
+- `card_being_dragged` 始终指向真实 `SkillCard`；虚影只保存于 `_card_drag_ghost`，不得加入 `PlayerHand.player_hand_card`，更不能传给 `DeckManager.play_card` 或 `Action.presentation_card`。
+- 虚影从真实卡完整复制，默认不透明度固定为 `0.5`，缩放复用 `card_drag_scale`；真实卡在拖拽开始后恢复普通手牌表现并保持原位置。
+- 目标卡槽查询、手牌区释放判定和目标高亮必须使用虚影预览位置；卡牌目标类型与能量读取仍来自真实卡。
+- 复制 `SkillCard` 后必须将所有虚影 `Area2D` 的碰撞层和掩码设为 `0`、关闭 `input_pickable`，并把后代 `Control.mouse_filter` 设为 `MOUSE_FILTER_IGNORE`。这是防止虚影拦截物理点查询和 GUI 鼠标的必要组合，不能只做其中一项。
+- 有效释放时先隐藏并 `queue_free` 虚影，再以真实卡调用 `DeckManager.play_card`；无效释放、切换操作模式或失去玩家回合时只清理虚影和目标视觉，不产生能量、行动或弃牌副作用。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 行为 | 结果 |
+| --- | --- | --- |
+| 虚影复制成功 | 将其设为 50% 不透明度、拖拽缩放并隔离输入 | 真实卡保持在手牌，虚影可安全跟随鼠标 |
+| 虚影复制失败 | 记录警告，真实卡仍保持原位 | 不移动真实卡；目标判定按预览坐标安全退化 |
+| 松开命中有效敌人卡槽 | 先清理虚影，再传入真实卡 | 既有行动链路从手牌区飞出真实卡 |
+| 松开无效区域或手牌区 | 清理虚影与高亮 | 真实卡保留在手牌且不消耗能量 |
+| 自身目标卡松开于手牌区外空白 | 清理虚影后传入真实卡 | 保留既有自身施放规则 |
+| 模式切换、输入锁定或回合结束 | 调用统一虚影清理出口 | 无残留节点、卡槽高亮或过期拖拽状态 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：拖到敌人时，玩家同时看到原位真实卡和 50% 透明虚影；松开后虚影消失，真实卡从手牌位置飞向该敌人。
+- Base：拖到无效位置时，虚影消失，真实卡没有归位 Tween，因为它从未离开手牌布局。
+- Bad：直接移动 `card_being_dragged` 作为拖拽预览，或把 `_card_drag_ghost` 传给 `DeckManager.play_card`。前者破坏“原卡留在原地”，后者会让行动展示与手牌数据脱节。
+
+### 6. Tests Required
+
+- `tests/godot/target_selection_visual_tests.gd` 必须断言虚影是独立节点、真实卡位置未变化、虚影不透明度为 `0.5` 且缩放等于 `card_drag_scale`。
+- 同一测试必须断言虚影 `Area2D` 的碰撞层/掩码为 `0`、`input_pickable` 为 false，且卡面 `Control` 使用 `MOUSE_FILTER_IGNORE`。
+- 手动或场景级流程需要覆盖：有效敌人释放只扣一次能量并让真实卡飞行；无效释放与模式/回合取消不残留虚影或目标高亮。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# 移动的是真实卡，之后它不能从原手牌位置自然飞出。
+card_being_dragged.position = get_global_mouse_position() + drag_offset
+deck_manager.play_card(card_being_dragged, target)
+```
+
+#### Correct
+
+```gdscript
+# 虚影只承担预览；真实卡是唯一进入行动队列的节点。
+_card_drag_ghost.position = _get_drag_preview_position()
+_clear_card_drag_ghost()
+deck_manager.play_card(card_being_dragged, target)
+```
+
 ## Resources As Configuration State
 
 Godot `Resource` objects are configuration, not mutable runtime stores, unless a class explicitly models runtime state. `TerrainInstance` and `ItemStack` are runtime-like `RefCounted` objects; `ItemData`, `CombatSkillData`, `MonsterData`, recipes, and settings are editable content data.
