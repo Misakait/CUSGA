@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 7
-- **Last Active**: 2026-09-14
+- **Total Sessions**: 8
+- **Last Active**: 2026-09-15
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~238 | Active |
+| `journal-1.md` | ~271 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 8 | 2026-09-15 | 优化卡牌拖拽虚影目标选择 | `e5c574e` | `main` |
 | 7 | 2026-09-14 | 目标选择与测试卡池优化 | `4d35eaa` | `main` |
 | 6 | 2026-09-14 | 目标选择视觉反馈 | `ca806c4` | `main` |
 | 5 | 2026-09-14 | Battle random target card impact animation | `3c07b7d` | `main` |

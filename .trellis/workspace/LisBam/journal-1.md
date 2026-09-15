@@ -236,3 +236,36 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: 优化卡牌拖拽虚影目标选择
+
+**Date**: 2026-09-15
+**Task**: 优化卡牌拖拽虚影目标选择
+**Branch**: `main`
+
+### Summary
+
+将拖拽输入改为无交互虚影预览，真实手牌复用既有出牌飞行链路，并同步测试、玩法文档与前端状态契约。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e5c574e` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
