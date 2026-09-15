@@ -33,17 +33,17 @@ var _connected_health_components: Dictionary = {}
 ## 已连接的怪物死亡信号及其 Callable，必须缓存以便可靠断连。
 var _connected_death_presenters: Dictionary = {}
 
-## 正在控制目标反应的 Tween，新的高优先级命中会安全替换旧反应。
+## 正在控制目标反应的 Tween；同一目标的后续命中会进入队列，绝不覆盖已开始的反馈。
 var _impact_tweens: Dictionary = {}
+
+## 按目标实例 ID 存储的待播放受力配方，保证多段和范围中的每次命中都完整可见。
+var _impact_queues: Dictionary = {}
 
 ## 正在控制怪物下冲攻击的 Tween 及其归位位置，防止连续行动争夺怪物位置。
 var _monster_attack_tweens: Dictionary = {}
 
 ## 导演当前生效的表现强度稳定值。
 var _feedback_intensity: String = "full"
-
-## 上次 Hit Stop 请求的时间，用于范围命中节流。
-var _last_hit_stop_msec: int = -1000000
 
 ## 浮字所在的 CanvasLayer。
 var _feedback_layer: CanvasLayer
@@ -145,7 +145,8 @@ func _connect_entity_feedback(entity: Node) -> void:
 	if entity.has_signal("DeathPresentationRequested"):
 		var entity_id: int = entity.get_instance_id()
 		if not _connected_death_presenters.has(entity_id):
-			var death_callable := _on_monster_death_requested.bind(entity)
+			# 死亡信号回调用明确 Callable 类型保存，避免 bind 结果在警告即错误配置下退化为 Variant。
+			var death_callable: Callable = _on_monster_death_requested.bind(entity)
 			entity.connect("DeathPresentationRequested", death_callable)
 			_connected_death_presenters[entity_id] = {"entity": entity, "callable": death_callable}
 
@@ -155,41 +156,51 @@ func _connect_entity_feedback(entity: Node) -> void:
 func _on_damage_resolved(result: RefCounted) -> void:
 	if not profile.enabled or result == null:
 		return
+	# 伤害目标决定浮字锚点与局部受力队列，缺失目标时只能安全跳过表现。
 	var target: Node = _read_result_node(result, "Target")
 	if target == null or not is_instance_valid(target):
 		return
+	# 实际扣血量是主伤害浮字的绝对数值输入。
 	var actual_damage: int = _read_result_int(result, "ActualDamage")
+	# 段号只服务于同锚点浮字的空间布局，绝不再改变强度或播放时序。
 	var hit_index: int = _read_result_int(result, "HitIndex")
+	# 总段数只服务于同锚点浮字的空间布局，至少为一以避免除零。
 	var hit_count: int = maxi(1, _read_result_int(result, "HitCount"))
+	# 闪避结果没有数值碰撞，但仍需要显示固定轻量提示。
 	var is_evaded: bool = _read_result_bool(result, "IsEvaded")
+	# 暴击结果为数值曲线配方增加可配置的结果语义加成。
 	var is_critical: bool = _read_result_bool(result, "IsCritical")
+	# 致死结果为数值曲线配方增加可配置的终结语义加成。
 	var is_lethal: bool = _read_result_bool(result, "IsLethal")
+	# 护盾吸收量驱动灰色数字；与实际伤害相加后代表本次碰撞总量。
 	var shield_absorbed: int = _read_result_int(result, "ShieldAbsorbedDamage")
+	# 护盾破裂结果为数值曲线配方增加可配置的结果语义加成。
 	var shield_broken: bool = _read_result_bool(result, "ShieldWasBroken")
 	if actual_damage <= 0 and not is_evaded and shield_absorbed <= 0:
 		return
 
-	var priority: int = _resolve_priority(is_lethal, is_critical, shield_broken, is_evaded, actual_damage)
-	var is_high_damage: bool = actual_damage >= profile.high_damage_hit_stop_threshold
-	var is_combo_middle: bool = hit_count > 1 and hit_index > 0 and hit_index < hit_count - 1
-	var display: Dictionary = _build_damage_display(actual_damage, is_evaded, is_critical, is_lethal, shield_absorbed, is_combo_middle, hit_index, hit_count)
+	# 主数字配方只由本次真实结果和数值曲线决定，不区分首段、中段或末段。
+	var display: Dictionary = _build_damage_display(actual_damage, is_evaded, is_critical, is_lethal, shield_absorbed)
+	# 目标锚点确保怪物与玩家 HUD 使用各自正确的浮字位置。
 	var anchor_position: Vector2 = _resolve_feedback_position(target)
-	_spawn_popup(display, anchor_position)
+	# 同锚点多段仅以空间分布避免重叠，不再缩短时长或延迟入场。
+	var popup_offset: Vector2 = _resolve_hit_popup_offset(hit_index, hit_count)
+	_spawn_popup(display, anchor_position + popup_offset)
 	if shield_absorbed > 0 and actual_damage > 0:
-		# 部分吸收不能把实际扣血数字染成灰色，因此以第二条较小浮字保留护盾事实。
-		_spawn_popup({
-			"text": "%d" % shield_absorbed,
-			"color": profile.guard_color,
-			"scale": 0.76,
-			"rise": profile.popup_rise_distance * 0.78,
-			"duration": float(display.get("duration", profile.popup_duration)),
-			"delay": float(display.get("delay", 0.0))
-		}, anchor_position + Vector2(0.0, 24.0))
+		# 部分吸收保留独立灰色数值，并按吸收量使用同一条曲线而非固定小字号。
+		var shield_display: Dictionary = _build_guard_display(shield_absorbed)
+		# 护盾数字的轻微下移只分离两条同时显示的数值，不改变它自己的曲线强度。
+		var shield_popup_offset: Vector2 = Vector2(0.0, profile.multi_hit_popup_spread_distance * profile.multi_hit_popup_vertical_spread_ratio)
+		_spawn_popup(shield_display, anchor_position + popup_offset + shield_popup_offset)
+	if is_evaded:
+		return
 
-	# 多段中间段只保留紧凑数字；首段和末段才驱动完整受力与画面冲击。
-	if not is_combo_middle:
-		_play_target_impact(target, maxi(priority, 85) if is_high_damage else priority, display.get("color", Color.WHITE))
-		_request_high_priority_impulse(priority, is_high_damage)
+	# 总碰撞量让部分护盾既保留实际伤害的数字语义，也保留被吸收部分的受击重量。
+	var impact_amount: int = actual_damage + shield_absorbed
+	# 同一数值配方同时交给局部目标反应与全局冲击，避免两条视觉曲线发生漂移。
+	var impact_recipe: Dictionary = _build_impact_recipe(impact_amount, is_critical, is_lethal, shield_broken)
+	_enqueue_target_impact(target, display.get("color", Color.WHITE), impact_recipe)
+	_request_value_scaled_impulse(impact_recipe)
 
 ## 仅在生命值实际增加时创建治疗浮字；伤害继续由 DamageResolved 保证带有暴击、护盾等完整语义。
 ## @param current_value 生命组件发出的当前生命值。
@@ -209,14 +220,11 @@ func _on_health_value_changed(current_value: int, _max_value: int, owner: Node, 
 	_connected_health_components[health_id] = health_entry
 	if not profile.enabled or current_value <= previous_value or owner == null or not is_instance_valid(owner):
 		return
+	# 实际生命增量是治疗浮字唯一的绝对数值输入。
 	var recovered_amount: int = current_value - previous_value
-	_spawn_popup({
-		"text": "+%d" % recovered_amount,
-		"color": profile.heal_color,
-		"scale": 1.0,
-		"rise": profile.popup_rise_distance,
-		"duration": profile.popup_duration
-	}, _resolve_feedback_position(owner))
+	# 治疗只放大自身浮字，不请求受击、震屏或 Hit Stop。
+	var heal_display: Dictionary = _build_heal_display(recovered_amount)
+	_spawn_popup(heal_display, _resolve_feedback_position(owner))
 
 ## 在怪物逻辑死亡时抢占视觉收尾；若没有导演或配置禁用，怪物会走自身的安全即时销毁兜底。
 ## @param monster 需要播放死亡收尾的怪物节点。
@@ -236,8 +244,10 @@ func _play_monster_death(monster: Node) -> void:
 		if monster.has_method("FinalizeCombatDeathPresentation"):
 			monster.call("FinalizeCombatDeathPresentation")
 		return
-	var monster_2d := monster as Node2D
-	var tween := monster_2d.create_tween()
+	# 怪物节点使用显式 Node2D 类型，确保死亡表现只修改可定位的视觉实体。
+	var monster_2d: Node2D = monster as Node2D
+	# 死亡收尾 Tween 使用显式类型，避免工厂调用的静态推断受项目警告设置影响。
+	var tween: Tween = monster_2d.create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(monster_2d, "scale", monster_2d.scale * 1.12, 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(monster_2d, "modulate:a", 0.0, 0.26).set_delay(0.08)
@@ -246,37 +256,99 @@ func _play_monster_death(monster: Node) -> void:
 			monster.call("FinalizeCombatDeathPresentation")
 	)
 
-## 根据结果优先级构建文字、颜色、大小与时长。
+## 根据实际数值与结果语义构建伤害、护盾或闪避浮字配方。
 ## @param actual_damage 实际扣血量。
 ## @param is_evaded 是否闪避。
 ## @param is_critical 是否暴击。
 ## @param is_lethal 是否致死。
 ## @param shield_absorbed 护盾吸收量。
-## @param is_combo_middle 是否为多段中间段。
+## @return Dictionary 浮字播放参数。
+func _build_damage_display(actual_damage: int, is_evaded: bool, is_critical: bool, is_lethal: bool, shield_absorbed: int) -> Dictionary:
+	if is_evaded:
+		# 闪避没有数值输入，使用曲线最小值维持固定的轻量可读提示。
+		var evade_intensity: float = profile.resolve_feedback_intensity(0.0)
+		return {
+			"text": "MISS",
+			"color": profile.evade_color,
+			"scale": profile.resolve_popup_scale(evade_intensity),
+			"rise": profile.resolve_popup_rise_distance(evade_intensity),
+			"duration": profile.resolve_popup_duration(evade_intensity),
+			"delay": 0.0
+		}
+	if shield_absorbed > 0 and actual_damage <= 0:
+		return _build_guard_display(shield_absorbed)
+
+	# 实际扣血量决定伤害数字的连续视觉强度。
+	var damage_intensity: float = profile.resolve_feedback_intensity(float(actual_damage))
+	# 数值曲线先得到基础缩放，暴击和击杀再叠加可配置的结果语义强化。
+	var damage_scale: float = profile.resolve_popup_scale(damage_intensity)
+	if is_critical:
+		damage_scale *= profile.critical_popup_scale_multiplier
+	if is_lethal:
+		damage_scale *= profile.lethal_popup_scale_multiplier
+	# 最终钳制使结果语义叠加和超高数值都不会超出 Inspector 的安全上限。
+	damage_scale = minf(damage_scale, profile.popup_scale_cap)
+	# 暴击改用深红色，但数字大小仍以实际伤害曲线为基础。
+	var damage_color: Color = profile.critical_damage_color if is_critical else profile.normal_damage_color
+	# 击杀仅增加下划线而不插入额外文字标签。
+	var is_underlined: bool = is_lethal
+	# 暴击保持加粗字形，击杀沿用数字与下划线表达终结感。
+	var is_emphasized: bool = is_critical
+	return {
+		"text": "%d" % actual_damage,
+		"color": damage_color,
+		"scale": damage_scale,
+		"rise": profile.resolve_popup_rise_distance(damage_intensity),
+		"duration": profile.resolve_popup_duration(damage_intensity),
+		"delay": 0.0,
+		"underlined": is_underlined,
+		"emphasized": is_emphasized
+	}
+
+## 根据护盾吸收量构建灰色数值浮字配方。
+## @param shield_absorbed 本次护盾实际吸收的数值。
+## @return Dictionary 护盾浮字播放参数。
+func _build_guard_display(shield_absorbed: int) -> Dictionary:
+	# 护盾吸收量使用自身的绝对数值曲线，避免固定小数字掩盖高额防御。
+	var guard_intensity: float = profile.resolve_feedback_intensity(float(shield_absorbed))
+	return {
+		"text": "%d" % shield_absorbed,
+		"color": profile.guard_color,
+		"scale": profile.resolve_popup_scale(guard_intensity),
+		"rise": profile.resolve_popup_rise_distance(guard_intensity),
+		"duration": profile.resolve_popup_duration(guard_intensity),
+		"delay": 0.0
+	}
+
+## 根据实际回复量构建绿色治疗浮字配方。
+## @param recovered_amount 本次生命真实增加的数值。
+## @return Dictionary 治疗浮字播放参数。
+func _build_heal_display(recovered_amount: int) -> Dictionary:
+	# 治疗量使用同一条绝对数值曲线，使大额回复也能直观表达其数值价值。
+	var heal_intensity: float = profile.resolve_feedback_intensity(float(recovered_amount))
+	return {
+		"text": "+%d" % recovered_amount,
+		"color": profile.heal_color,
+		"scale": profile.resolve_popup_scale(heal_intensity),
+		"rise": profile.resolve_popup_rise_distance(heal_intensity),
+		"duration": profile.resolve_popup_duration(heal_intensity),
+		"delay": 0.0
+	}
+
+## 为同一锚点的多段数字生成确定性空间偏移，不改动任何播放强度或时序。
 ## @param hit_index 当前伤害在多段序列中的零基索引。
 ## @param hit_count 本次伤害序列的总段数。
-## @return Dictionary 浮字播放参数。
-func _build_damage_display(actual_damage: int, is_evaded: bool, is_critical: bool, is_lethal: bool, shield_absorbed: int, is_combo_middle: bool, hit_index: int, hit_count: int) -> Dictionary:
-	# 多段浮字以更短时长完成相同上浮距离，形成更快的连击节奏。
-	var duration: float = profile.popup_duration * profile.multi_hit_popup_duration_multiplier if hit_count > 1 else profile.popup_duration
-	# 同帧结算的多段数字按段号依次进入画面，避免彼此完全遮挡。
-	var start_delay: float = profile.multi_hit_popup_stagger_seconds * float(hit_index) if hit_count > 1 else 0.0
-	if is_evaded:
-		return {"text": "MISS", "color": profile.evade_color, "scale": 1.00, "rise": profile.popup_rise_distance, "duration": duration, "delay": start_delay}
-	if shield_absorbed > 0 and actual_damage <= 0:
-		return {"text": "%d" % shield_absorbed, "color": profile.guard_color, "scale": 0.95, "rise": profile.popup_rise_distance, "duration": duration, "delay": start_delay}
-	var color: Color = profile.normal_damage_color
-	var scale_multiplier: float = 0.74 if is_combo_middle else 1.0
-	var is_underlined: bool = false
-	var is_emphasized: bool = false
-	if is_critical:
-		color = profile.critical_damage_color
-		scale_multiplier = 1.42
-		is_emphasized = true
-	if is_lethal:
-		scale_multiplier = maxf(scale_multiplier, 1.58)
-		is_underlined = true
-	return {"text": "%d" % actual_damage, "color": color, "scale": scale_multiplier, "rise": profile.popup_rise_distance, "duration": duration, "delay": start_delay, "underlined": is_underlined, "emphasized": is_emphasized}
+## @return Vector2 本次浮字叠加到锚点的位置偏移。
+func _resolve_hit_popup_offset(hit_index: int, hit_count: int) -> Vector2:
+	if hit_count <= 1 or profile.multi_hit_popup_spread_distance <= 0.0:
+		return Vector2.ZERO
+	# 有效索引确保不规范的跨语言数据不会产生不可预测的布局角度。
+	var safe_hit_index: int = clampi(hit_index, 0, hit_count - 1)
+	# 均匀环绕角度让同帧数字可读，同时不通过时间错开制造多段节流。
+	var slot_angle: float = TAU * float(safe_hit_index) / float(hit_count)
+	# 纵向压缩由 Profile 参数决定，避免环绕布局干扰卡面名称区域。
+	var vertical_distance: float = profile.multi_hit_popup_spread_distance * profile.multi_hit_popup_vertical_spread_ratio
+	return Vector2(cos(slot_angle) * profile.multi_hit_popup_spread_distance, sin(slot_angle) * vertical_distance)
 
 ## 创建或复用一个浮字；每次结算都获得独立显示，不按目标或战场数量丢弃结果。
 ## @param display 文字、颜色和时长参数。
@@ -293,8 +365,8 @@ func _spawn_popup(display: Dictionary, anchor_position: Vector2) -> void:
 		display.get("color", Color.WHITE),
 		anchor_position,
 		float(display.get("scale", 1.0)),
-		float(display.get("rise", profile.popup_rise_distance)),
-		float(display.get("duration", profile.popup_duration)),
+		float(display.get("rise", profile.popup_rise_min)),
+		float(display.get("duration", profile.popup_duration_min)),
 		bool(display.get("underlined", false)),
 		bool(display.get("emphasized", false)),
 		float(display.get("delay", 0.0))
@@ -354,79 +426,129 @@ func _on_monster_attack_finished(monster: Node2D, base_position: Vector2) -> voi
 		monster.position = base_position
 		_monster_attack_tweens.erase(monster.get_instance_id())
 
-## 对怪物卡面或玩家 HUD 播放短促受力与颜色反馈。
+## 根据本次总碰撞数值和结果语义构建局部与全局共用的冲击配方。
+## @param impact_amount 本次实际伤害与护盾吸收量组成的总碰撞数值。
+## @param is_critical 是否为暴击结果。
+## @param is_lethal 是否为击杀结果。
+## @param shield_broken 是否为护盾破裂结果。
+## @return Dictionary 已钳制的受力、震屏与 Hit Stop 参数。
+func _build_impact_recipe(impact_amount: int, is_critical: bool, is_lethal: bool, shield_broken: bool) -> Dictionary:
+	# 总碰撞数值是所有冲击动画共享的绝对输入，避免局部与全局强度曲线不一致。
+	var impact_intensity: float = profile.resolve_feedback_intensity(float(impact_amount))
+	return {
+		"offset": profile.resolve_impact_offset(impact_intensity, is_critical, is_lethal, shield_broken),
+		"duration": profile.resolve_impact_duration(impact_intensity),
+		"screen_shake_pixels": profile.resolve_screen_shake_pixels(impact_intensity, is_critical, is_lethal, shield_broken),
+		"screen_shake_duration": profile.resolve_screen_shake_duration(impact_intensity),
+		"hit_stop_seconds": profile.resolve_hit_stop_seconds(impact_intensity, is_critical, is_lethal, shield_broken)
+	}
+
+## 将一次目标受力配方追加到目标专属 FIFO，保证连续命中不会覆盖前一段表现。
 ## @param target 本次结算目标。
-## @param priority 决定普通或重击强度。
 ## @param impact_color 结果语义色。
+## @param impact_recipe 已由绝对数值曲线生成的冲击配方。
 ## @return void 无返回值。
-func _play_target_impact(target: Node, priority: int, impact_color: Color) -> void:
+func _enqueue_target_impact(target: Node, impact_color: Color, impact_recipe: Dictionary) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	# 实例 ID 作为队列键，确保不同范围目标的反馈彼此独立。
+	var target_id: int = target.get_instance_id()
+	# 同一目标的历史待播配方需要保留；不存在时从空队列开始。
+	var target_queue: Array = _impact_queues.get(target_id, []) as Array
+	# 队列条目同时保存颜色与数值配方，后续播放时不再读取可能变化的结算对象。
+	var queued_impact: Dictionary = impact_recipe.duplicate()
+	queued_impact["color"] = impact_color
+	target_queue.append(queued_impact)
+	_impact_queues[target_id] = target_queue
+	if not _impact_tweens.has(target_id):
+		_play_next_target_impact(target, target_id)
+
+## 播放某个目标 FIFO 的下一条受力反馈；完成后再继续下一条，绝不杀死前一段 Tween。
+## @param target 当前队列对应的战斗实体。
+## @param target_id 队列键对应的实体实例 ID。
+## @return void 无返回值。
+func _play_next_target_impact(target: Node, target_id: int) -> void:
+	if target == null or not is_instance_valid(target):
+		_impact_queues.erase(target_id)
+		_impact_tweens.erase(target_id)
+		return
+	# 队列从 Dictionary 取回后仍以数组形式保存，避免动态容器推断为 Variant。
+	var target_queue: Array = _impact_queues.get(target_id, []) as Array
+	if target_queue.is_empty():
+		_impact_queues.erase(target_id)
+		_impact_tweens.erase(target_id)
+		return
+	# 显式声明字典类型，避免 pop_front 的 Variant 返回值在警告即错误配置下失去类型信息。
+	var next_impact: Dictionary = target_queue.pop_front()
+	_impact_queues[target_id] = target_queue
+	# 该命中的受力位移由数值曲线生成，读取时保留安全默认值以支持缺少可选字段的测试配方。
+	var impact_offset: float = float(next_impact.get("offset", 0.0))
+	# 该命中的总时长由数值曲线生成，不能在队列中被后续命中重写。
+	var impact_duration: float = float(next_impact.get("duration", profile.impact_duration_min))
+	# 该命中的结果色由结算语义决定。
+	var impact_color: Color = next_impact.get("color", Color.WHITE)
 	if target is Node2D:
-		var target_2d := target as Node2D
-		var target_id: int = target_2d.get_instance_id()
-		var old_tween: Tween = _impact_tweens.get(target_id)
-		if old_tween and old_tween.is_valid() and old_tween.is_running():
-			old_tween.kill()
+		# Node2D 目标以当前位置作为每一段的独立归位基准，避免队列累积偏移。
+		var target_2d: Node2D = target as Node2D
+		# 受力起点在实际播放时读取，确保前一段已经精确复位。
 		var base_position: Vector2 = target_2d.position
-		var offset: float = profile.heavy_impact_offset if priority >= 90 else profile.normal_impact_offset
+		# 实例 ID 决定左右方向，使同一目标的连续反馈保持稳定而非随机跳动。
 		var direction: float = -1.0 if target_id % 2 == 0 else 1.0
-		var tween := target_2d.create_tween()
-		tween.set_parallel(true)
-		tween.tween_property(target_2d, "position", base_position + Vector2(offset * direction, -offset * 0.16), profile.impact_duration * 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		tween.chain().tween_property(target_2d, "position", base_position, profile.impact_duration * 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		var sprite := target_2d.get_node_or_null("Sprite2D") as Sprite2D
+		# 本条 Tween 只负责当前队首命中，结束信号会继续消费下一条。
+		var impact_tween: Tween = target_2d.create_tween()
+		impact_tween.set_parallel(true)
+		impact_tween.tween_property(target_2d, "position", base_position + Vector2(impact_offset * direction, -impact_offset * 0.16), impact_duration * 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		impact_tween.chain().tween_property(target_2d, "position", base_position, impact_duration * 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		# Sprite2D 缺失时仍完成位置受力，保持自定义怪物场景的安全降级。
+		var sprite: Sprite2D = target_2d.get_node_or_null("Sprite2D") as Sprite2D
 		if sprite:
-			tween.tween_property(sprite, "self_modulate", impact_color.lightened(0.28), profile.impact_duration * 0.25)
-			tween.chain().tween_property(sprite, "self_modulate", Color.WHITE, profile.impact_duration * 0.75)
-		_impact_tweens[target_id] = tween
+			impact_tween.tween_property(sprite, "self_modulate", impact_color.lightened(0.28), impact_duration * 0.25)
+			impact_tween.chain().tween_property(sprite, "self_modulate", Color.WHITE, impact_duration * 0.75)
+		_impact_tweens[target_id] = impact_tween
+		impact_tween.finished.connect(_on_target_impact_finished.bind(target, target_id), CONNECT_ONE_SHOT)
 		return
-	if _player_feedback_anchor:
-		var player_ui := _player_feedback_anchor.get_parent()
-		var health_bar := player_ui.get_node_or_null("HpBar") as CanvasItem if player_ui else null
-		if health_bar:
-			var player_tween := health_bar.create_tween()
-			player_tween.tween_property(health_bar, "modulate", impact_color.lightened(0.18), profile.impact_duration * 0.35)
-			player_tween.tween_property(health_bar, "modulate", Color.WHITE, profile.impact_duration * 0.65)
+	if _player_feedback_anchor == null:
+		_on_target_impact_finished(target, target_id)
+		return
+	# 玩家实体以血量 UI 作为受击锚点，继续不把 HUD 路径泄露到结算层。
+	var player_ui: Node = _player_feedback_anchor.get_parent()
+	# 可选血条节点缺失时安全跳过本条并继续队列，不中断后续命中表现。
+	var health_bar: CanvasItem = player_ui.get_node_or_null("HpBar") as CanvasItem if player_ui else null
+	if health_bar == null:
+		_on_target_impact_finished(target, target_id)
+		return
+	# 玩家血条的颜色闪白使用同一条数值时长曲线。
+	var player_impact_tween: Tween = health_bar.create_tween()
+	player_impact_tween.tween_property(health_bar, "modulate", impact_color.lightened(0.18), impact_duration * 0.35)
+	player_impact_tween.tween_property(health_bar, "modulate", Color.WHITE, impact_duration * 0.65)
+	_impact_tweens[target_id] = player_impact_tween
+	player_impact_tween.finished.connect(_on_target_impact_finished.bind(target, target_id), CONNECT_ONE_SHOT)
 
-## 只允许暴击、击杀、高额命中和护盾破裂申请屏幕冲击；减弱模式保留信息但禁用 Hit Stop。
-## @param priority 本次结果优先级。
-## @param is_high_damage 是否达到 Profile 配置的高额伤害阈值。
+## 在一条目标受力完成后释放占用并继续消费同一目标的下一条命中。
+## @param target 当前队列对应的战斗实体。
+## @param target_id 队列键对应的实体实例 ID。
 ## @return void 无返回值。
-func _request_high_priority_impulse(priority: int, is_high_damage: bool) -> void:
-	if _screen_impulse == null or (priority < 80 and not is_high_damage):
-		return
-	var now_msec: int = Time.get_ticks_msec()
-	if now_msec - _last_hit_stop_msec < profile.hit_stop_cooldown_msec:
-		return
-	_last_hit_stop_msec = now_msec
-	var reduced: bool = _feedback_intensity == "reduced"
-	var shake_pixels: float = profile.full_screen_shake_pixels * (profile.reduced_screen_shake_ratio if reduced else 1.0)
-	var hit_stop_seconds: float = 0.0
-	if not reduced:
-		if priority >= 100:
-			hit_stop_seconds = profile.lethal_hit_stop_seconds
-		elif priority >= 90:
-			hit_stop_seconds = profile.critical_hit_stop_seconds
-		else:
-			hit_stop_seconds = profile.shield_break_hit_stop_seconds if priority >= 80 else profile.high_damage_hit_stop_seconds
-	_screen_impulse.request_impulse(shake_pixels, 0.12, hit_stop_seconds, profile.hit_stop_time_scale)
+func _on_target_impact_finished(target: Node, target_id: int) -> void:
+	_impact_tweens.erase(target_id)
+	_play_next_target_impact(target, target_id)
 
-## 根据结果事实给出独占反馈优先级。
-## @param is_lethal 是否致死。
-## @param is_critical 是否暴击。
-## @param shield_broken 是否破盾。
-## @param is_evaded 是否闪避。
-## @param actual_damage 实际扣血量。
-## @return int 优先级数值，越大越重要。
-func _resolve_priority(is_lethal: bool, is_critical: bool, shield_broken: bool, is_evaded: bool, actual_damage: int) -> int:
-	if is_lethal:
-		return 100
-	if is_critical and actual_damage > 0:
-		return 90
-	if shield_broken:
-		return 80
-	if is_evaded:
-		return 70
-	return 60 if actual_damage > 0 else 50
+## 为每个有效命中申请数值驱动的全局震屏与 Hit Stop；控制器自身保证请求不会互相覆盖。
+## @param impact_recipe 已由绝对数值曲线生成的冲击配方。
+## @return void 无返回值。
+func _request_value_scaled_impulse(impact_recipe: Dictionary) -> void:
+	if _screen_impulse == null:
+		return
+	# 减弱模式只按固定比例缩小已计算的震屏，不重新解释伤害数值。
+	var is_reduced: bool = _feedback_intensity == "reduced"
+	# 震屏幅度从数值配方读取，减弱模式仅在最终输出阶段叠乘偏好比例。
+	var shake_pixels: float = float(impact_recipe.get("screen_shake_pixels", 0.0))
+	if is_reduced:
+		shake_pixels *= profile.reduced_screen_shake_ratio
+	# 震屏时长完全保留数值曲线结果，确保减弱模式与完整模式的节奏一致。
+	var shake_duration: float = float(impact_recipe.get("screen_shake_duration", profile.screen_shake_duration_min))
+	# 减弱模式禁用每一条 Hit Stop，但仍把每一条震屏请求送入无节流队列。
+	var hit_stop_seconds: float = 0.0 if is_reduced else float(impact_recipe.get("hit_stop_seconds", 0.0))
+	_screen_impulse.enqueue_impulse(shake_pixels, shake_duration, hit_stop_seconds, profile.hit_stop_time_scale)
 
 ## 将玩家、怪物或通用 CanvasItem 转换到浮字层可使用的屏幕坐标。
 ## @param target 本次结算目标。
@@ -456,7 +578,8 @@ func _is_player_feedback_target(target: Node) -> bool:
 func _read_result_int(result: RefCounted, property_name: StringName) -> int:
 	if result.has_method("GetFeedbackInt"):
 		return int(result.call("GetFeedbackInt", str(property_name)))
-	var value = result.get(property_name)
+	# 跨语言属性读取天然返回 Variant，显式标注以通过警告即错误的静态检查。
+	var value: Variant = result.get(property_name)
 	return int(value) if value != null else 0
 
 ## 从跨语言 RefCounted 结果中安全读取布尔值。
@@ -466,7 +589,8 @@ func _read_result_int(result: RefCounted, property_name: StringName) -> int:
 func _read_result_bool(result: RefCounted, property_name: StringName) -> bool:
 	if result.has_method("GetFeedbackBool"):
 		return bool(result.call("GetFeedbackBool", str(property_name)))
-	var value = result.get(property_name)
+	# 跨语言属性读取天然返回 Variant，显式标注以通过警告即错误的静态检查。
+	var value: Variant = result.get(property_name)
 	return bool(value) if value != null else false
 
 ## 从跨语言 RefCounted 结果中安全读取节点引用。
@@ -476,7 +600,8 @@ func _read_result_bool(result: RefCounted, property_name: StringName) -> bool:
 func _read_result_node(result: RefCounted, property_name: StringName) -> Node:
 	if result.has_method("GetFeedbackNode"):
 		return result.call("GetFeedbackNode", str(property_name)) as Node
-	var value = result.get(property_name)
+	# 跨语言属性读取天然返回 Variant，显式标注以通过警告即错误的静态检查。
+	var value: Variant = result.get(property_name)
 	return value as Node
 
 ## 从跨语言 RefCounted 结果中安全读取字符串。
@@ -500,14 +625,16 @@ func set_feedback_intensity(intensity: String, should_persist: bool = true) -> v
 	_feedback_intensity = intensity
 	if should_persist:
 		SettingsManager.set_setting("battle", "feedback_intensity", _feedback_intensity)
-	var settings_panel := _battle_root.get_node_or_null("UI/BattleSettingsPanel") if _battle_root else null
+	# 设置面板可能不存在，使用显式 Node 类型避免三元表达式推断为 Variant。
+	var settings_panel: Node = _battle_root.get_node_or_null("UI/BattleSettingsPanel") if _battle_root else null
 	if settings_panel and settings_panel.has_method("set_active_feedback_intensity"):
 		settings_panel.call("set_active_feedback_intensity", _feedback_intensity)
 
 ## 配置设置面板并接收用户的强度选择意图。
 ## @return void 无返回值。
 func _configure_settings_panel() -> void:
-	var settings_panel := _battle_root.get_node_or_null("UI/BattleSettingsPanel") if _battle_root else null
+	# 设置面板可能不存在，使用显式 Node 类型避免三元表达式推断为 Variant。
+	var settings_panel: Node = _battle_root.get_node_or_null("UI/BattleSettingsPanel") if _battle_root else null
 	if settings_panel == null:
 		return
 	if settings_panel.has_method("configure_feedback_intensity_options"):
@@ -550,3 +677,10 @@ func _exit_tree() -> void:
 		if attack_tween and attack_tween.is_valid() and attack_tween.is_running():
 			attack_tween.kill()
 	_monster_attack_tweens.clear()
+	# 场景退出时终止正在播放的局部受力，防止回调继续访问已释放的战斗节点。
+	for impact_tween in _impact_tweens.values():
+		if impact_tween and impact_tween.is_valid() and impact_tween.is_running():
+			impact_tween.kill()
+	_impact_tweens.clear()
+	# 未播放的队列只属于当前战斗，离开场景后必须丢弃而不能带入下一场战斗。
+	_impact_queues.clear()
