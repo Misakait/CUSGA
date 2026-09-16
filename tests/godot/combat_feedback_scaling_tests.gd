@@ -31,6 +31,7 @@ func _init() -> void:
 func _run() -> void:
 	_test_absolute_value_curve_is_monotonic_and_capped()
 	_test_multi_hit_feedback_caps_impact_and_accelerates_popups()
+	await _test_director_exit_ignores_freed_signal_targets()
 	await _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode()
 	_finish()
 
@@ -117,6 +118,51 @@ func _test_multi_hit_feedback_caps_impact_and_accelerates_popups() -> void:
 	_assert(first_offset != middle_offset, "多段浮字只能以空间偏移区分，不能以缩放或时序节流区分。")
 
 	director.queue_free()
+
+
+## 验证怪物先释放后，导演退出时会安全跳过失效信号目标。
+## @return void 无返回值。
+func _test_director_exit_ignores_freed_signal_targets() -> void:
+	# 独立节点树负责产生真实的已释放对象，避免测试只覆盖空缓存分支。
+	var fixture_root: Node = Node.new()
+	root.add_child(fixture_root)
+	var health_component: Node = Node.new()
+	fixture_root.add_child(health_component)
+	var death_presenter: Node = Node.new()
+	fixture_root.add_child(death_presenter)
+	var health_component_id: int = health_component.get_instance_id()
+	var death_presenter_id: int = death_presenter.get_instance_id()
+	var director: CombatFeedbackDirector = COMBAT_FEEDBACK_DIRECTOR_SCRIPT.new()
+
+	# 直接写入与运行时相同的缓存形状，模拟已连接的怪物在场景退出前先死亡。
+	director.set("_connected_health_components", {
+		health_component_id: {
+			"component": health_component,
+			"callable": Callable()
+		}
+	})
+	director.set("_connected_death_presenters", {
+		death_presenter_id: {
+			"entity": death_presenter,
+			"callable": Callable()
+		}
+	})
+	health_component.queue_free()
+	death_presenter.queue_free()
+	await process_frame
+
+	# 旧实现会在转换已释放 Node 时中断；修复后两个缓存都会被稳定清空。
+	director.call("_exit_tree")
+	_assert(
+		director.get("_connected_health_components").is_empty(),
+		"导演退出时应清空包含已释放生命组件的连接缓存。"
+	)
+	_assert(
+		director.get("_connected_death_presenters").is_empty(),
+		"导演退出时应清空包含已释放死亡实体的连接缓存。"
+	)
+	fixture_root.queue_free()
+	await process_frame
 
 
 ## 验证全局冲击 FIFO 在高频批次只保留前三次震屏与一次 Hit Stop；减弱模式仍将停顿置零。

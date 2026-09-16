@@ -675,15 +675,24 @@ func _exit_tree() -> void:
 			receiver.disconnect("DamageResolved", _on_damage_resolved)
 	_connected_receivers.clear()
 	for health_entry in _connected_health_components.values():
-		var health_component: Node = health_entry.get("component") as Node
+		# 生命组件可能在怪物死亡时先于导演释放；必须先在 Variant 层校验，
+		# 否则把已释放对象强转为 Node 会在 is_instance_valid 前直接报错。
+		var health_candidate: Variant = health_entry.get("component")
+		if not is_instance_valid(health_candidate):
+			continue
+		var health_component: Node = health_candidate as Node
 		var health_callable: Callable = health_entry.get("callable")
-		if is_instance_valid(health_component) and health_component.has_signal("ValueChanged") and health_component.is_connected("ValueChanged", health_callable):
+		if health_component and health_component.has_signal("ValueChanged") and health_component.is_connected("ValueChanged", health_callable):
 			health_component.disconnect("ValueChanged", health_callable)
 	_connected_health_components.clear()
 	for death_presenter in _connected_death_presenters.values():
-		var entity: Node = death_presenter.get("entity")
+		# 怪物死亡后同样可能遗留已经释放的实体引用，和生命组件走同一保护顺序。
+		var entity_candidate: Variant = death_presenter.get("entity")
+		if not is_instance_valid(entity_candidate):
+			continue
+		var entity: Node = entity_candidate as Node
 		var death_callable: Callable = death_presenter.get("callable")
-		if is_instance_valid(entity) and entity.has_signal("DeathPresentationRequested") and entity.is_connected("DeathPresentationRequested", death_callable):
+		if entity and entity.has_signal("DeathPresentationRequested") and entity.is_connected("DeathPresentationRequested", death_callable):
 			entity.disconnect("DeathPresentationRequested", death_callable)
 	_connected_death_presenters.clear()
 	for monster_id in _monster_attack_tweens.keys():
