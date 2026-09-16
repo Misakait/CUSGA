@@ -335,3 +335,36 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: 局外长按交互确认
+
+**Date**: 2026-09-16
+**Task**: 局外长按交互确认
+**Branch**: `main`
+
+### Summary
+
+新增局外交互长按确认、目标进度圆环与地图移动完成信号，并完成右下角锚点回归测试和玩法文档同步。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3087a33` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

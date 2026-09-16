@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 10
-- **Last Active**: 2026-09-15
+- **Total Sessions**: 11
+- **Last Active**: 2026-09-16
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~337 | Active |
+| `journal-1.md` | ~370 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 11 | 2026-09-16 | 局外长按交互确认 | `3087a33` | `main` |
 | 10 | 2026-09-15 | 战斗反馈数值曲线与全量命中 | `fa95327` | `main` |
 | 9 | 2026-09-15 | 增强战斗打击反馈 | `5cd061b` | `main` |
 | 8 | 2026-09-15 | 优化卡牌拖拽虚影目标选择 | `e5c574e` | `main` |
