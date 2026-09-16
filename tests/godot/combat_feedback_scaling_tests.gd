@@ -23,12 +23,12 @@ func _init() -> void:
 	call_deferred(&"_run")
 
 
-## 按顺序执行数值曲线、无节流多段配方与全局 FIFO 验证。
+## 按顺序执行数值曲线、多段配方与全局 FIFO 验证。
 ## @return void 无返回值。
 func _run() -> void:
 	_test_absolute_value_curve_is_monotonic_and_capped()
 	_test_multi_hit_display_recipe_has_no_segment_throttle()
-	await _test_impulse_queue_and_reduced_mode()
+	await _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode()
 	_finish()
 
 
@@ -105,9 +105,9 @@ func _test_multi_hit_display_recipe_has_no_segment_throttle() -> void:
 	director.queue_free()
 
 
-## 验证全局冲击 FIFO 完整消费每条请求，并验证减弱模式把每条 Hit Stop 置零而不丢弃震屏请求。
+## 验证全局冲击 FIFO 完整消费每条震屏，但范围和高频连续命中只保留一次 Hit Stop；减弱模式仍将停顿置零。
 ## @return void 无返回值。
-func _test_impulse_queue_and_reduced_mode() -> void:
+func _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode() -> void:
 	# 独立战斗根节点提供正式冲击控制器所需的位置恢复目标。
 	var battle_root: Node2D = Node2D.new()
 	battle_root.name = "CombatFeedbackScalingHarness"
@@ -130,7 +130,8 @@ func _test_impulse_queue_and_reduced_mode() -> void:
 	_assert(_started_hit_stop_seconds.size() == 3, "多段或范围的每条全局冲击请求都必须进入 FIFO。")
 	_assert(_finished_impulse_count == 3, "多段或范围的每条全局冲击请求都必须完整结束而非被覆盖。")
 	if _started_hit_stop_seconds.size() == 3:
-		_assert(_started_hit_stop_seconds[0] > 0.0 and _started_hit_stop_seconds[1] > 0.0 and _started_hit_stop_seconds[2] > 0.0, "完整模式的每条 FIFO 请求都必须保留自己的 Hit Stop。")
+		_assert(_started_hit_stop_seconds[0] > 0.0, "连续命中的首条请求必须保留 Hit Stop。")
+		_assert(is_zero_approx(_started_hit_stop_seconds[1]) and is_zero_approx(_started_hit_stop_seconds[2]), "范围或高频连续命中的后续请求不得叠加 Hit Stop。")
 
 	# 正式 Profile 用于生成减弱模式仍应使用的同一份数值冲击配方。
 	var profile: CombatFeedbackProfile = COMBAT_FEEDBACK_PROFILE_SCRIPT.new()

@@ -68,6 +68,25 @@ CardTags = Array[String](["高频伤害"])
 CardId = null
 metadata/_custom_type_script = "uid://bejho62d28qir"
 
+[sub_resource type="Resource" id="Resource_waaxm"]
+script = ExtResource("12_bjehq")
+BaseDamage = 999
+metadata/_custom_type_script = "uid://b2df0ritlplj8"
+
+[sub_resource type="Resource" id="Resource_bjehq"]
+script = ExtResource("13_waaxm")
+Element = 2
+Effects = Array[ExtResource("11_s3yaj")]([SubResource("Resource_waaxm")])
+CardId = null
+metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+
+[sub_resource type="Resource" id="Resource_s3yaj"]
+script = ExtResource("2_navvr")
+Skill = SubResource("Resource_bjehq")
+CardTags = Array[String](["高额"])
+CardId = null
+metadata/_custom_type_script = "uid://bejho62d28qir"
+
 [sub_resource type="Resource" id="Resource_navvr"]
 metadata/__load_path__ = "res://scenes/skill_card_scenes/Card.tscn"
 
@@ -117,7 +136,7 @@ corner_radius_bottom_left = 3
 
 [node name="Battle" type="Node2D" unique_id=1622409558]
 script = ExtResource("1_ckntb")
-starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("test_card_3"), ExtResource("test_card_3"), ExtResource("test_card_4"), ExtResource("test_card_4"), ExtResource("test_card_5"), ExtResource("test_card_5"), ExtResource("test_card_6"), ExtResource("test_card_6"), ExtResource("test_card_7"), ExtResource("test_card_7"), ExtResource("10_bjehq"), ExtResource("10_bjehq"), SubResource("Resource_kgjmv"), SubResource("Resource_kgjmv")])
+starting_deck_data = Array[ExtResource("2_navvr")]([ExtResource("8_eboiy"), ExtResource("8_eboiy"), ExtResource("5_kvn6b"), ExtResource("5_kvn6b"), ExtResource("test_card_3"), ExtResource("test_card_3"), ExtResource("test_card_4"), ExtResource("test_card_4"), ExtResource("test_card_5"), ExtResource("test_card_5"), ExtResource("test_card_6"), ExtResource("test_card_6"), ExtResource("test_card_7"), ExtResource("test_card_7"), ExtResource("10_bjehq"), ExtResource("10_bjehq"), SubResource("Resource_kgjmv"), SubResource("Resource_kgjmv"), SubResource("Resource_s3yaj")])
 starting_monster_data = Array[ExtResource("6_ajc51")]([ExtResource("18_eboiy"), ExtResource("8_kvn6b"), ExtResource("14_kgjmv"), ExtResource("15_7ebbf"), ExtResource("16_lbcxr")])
 card_scene = SubResource("Resource_navvr")
 
