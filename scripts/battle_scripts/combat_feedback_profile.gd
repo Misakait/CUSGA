@@ -34,6 +34,8 @@ const MINIMUM_CURVE_REFERENCE_AMOUNT: float = 0.001
 @export_range(0.05, 1.00, 0.01) var popup_duration_min: float = 0.24
 ## 曲线饱和时浮字的总播放时长，保证高数值有足够停留时间。
 @export_range(0.05, 1.00, 0.01) var popup_duration_max: float = 0.42
+## 多段浮字按段数加速后的最小时长倍率；限制下限可避免高段数数字快到无法辨认。
+@export_range(0.10, 1.00, 0.01) var multi_hit_popup_duration_scale_min: float = 0.35
 ## 同一锚点的多段浮字环绕分布半径；只改变位置，绝不改变段间强度或时序。
 @export_range(0.0, 96.0, 1.0) var multi_hit_popup_spread_distance: float = 18.0
 ## 多段浮字环绕布局的纵向压缩比例，避免数字过多时遮挡怪物卡名。
@@ -68,6 +70,8 @@ const MINIMUM_CURVE_REFERENCE_AMOUNT: float = 0.001
 @export_range(0.02, 0.60, 0.01) var impact_duration_min: float = 0.10
 ## 曲线饱和时目标受力与颜色闪白的总时长。
 @export_range(0.02, 0.60, 0.01) var impact_duration_max: float = 0.20
+## 同一高频冲击批次最多保留的局部受击动画与全局震屏次数；后续段仍保留浮字。
+@export_range(1, 10, 1) var multi_hit_feedback_max_count: int = 3
 
 @export_group("屏幕冲击")
 ## 曲线最小强度下完整模式的震屏位移。
@@ -90,7 +94,7 @@ const MINIMUM_CURVE_REFERENCE_AMOUNT: float = 0.001
 @export_range(0.0, 1.0, 0.05) var reduced_screen_shake_ratio: float = 0.40
 
 @export_group("Hit Stop")
-## 曲线最小强度下完整模式 Hit Stop 时长；每个有效命中都独立申请该时长。
+## 曲线最小强度下完整模式 Hit Stop 时长；每个有效命中都会计算该值，实际触发由屏幕冲击控制器按连续批次限制。
 @export_range(0.0, 0.15, 0.001) var hit_stop_seconds_min: float = 0.012
 ## 曲线饱和时完整模式 Hit Stop 时长。
 @export_range(0.0, 0.15, 0.001) var hit_stop_seconds_max: float = 0.055
@@ -150,6 +154,32 @@ func resolve_popup_duration(intensity: float) -> float:
 	var safe_intensity: float = clampf(intensity, 0.0, 1.0)
 	return lerpf(popup_duration_min, popup_duration_max, safe_intensity)
 
+## 按多段总数缩短浮字时长，使高频数字更快离场而不丢失每段结算。
+## @param base_duration 当前数值曲线计算出的单段浮字时长。
+## @param hit_count 当前多段伤害的总段数。
+## @return float 应用于本段浮字的加速后时长。
+func resolve_multi_hit_popup_duration(base_duration: float, hit_count: int) -> float:
+	# 非法或缺失的段数按单段处理，避免开方与除法使用零值。
+	var safe_hit_count: int = maxi(hit_count, 1)
+	# 根号衰减让段数增加时持续加速，同时避免线性缩短导致常见三段伤害过快消失。
+	var dynamic_duration_scale: float = 1.0 / sqrt(float(safe_hit_count))
+	# Inspector 值即使被运行时脚本改写，也必须保持可读性所需的合法范围。
+	var minimum_duration_scale: float = clampf(multi_hit_popup_duration_scale_min, 0.01, 1.0)
+	return maxf(base_duration, 0.0) * maxf(dynamic_duration_scale, minimum_duration_scale)
+
+## 计算同一目标多段浮字的顺序入场延迟，确保下一段在前一段离场后再显示。
+## @param popup_duration 已按总段数加速后的单段浮字时长。
+## @param hit_index 当前伤害在多段序列中的零基索引。
+## @param hit_count 当前多段伤害的总段数。
+## @return float 当前浮字开始显示前的延迟时长。
+func resolve_multi_hit_popup_delay(popup_duration: float, hit_index: int, hit_count: int) -> float:
+	# 总段数与索引均做安全钳制，避免异常跨语言数据制造过长等待。
+	var safe_hit_count: int = maxi(hit_count, 1)
+	# 超出范围的段号按末段处理，负数按首段处理。
+	var safe_hit_index: int = clampi(hit_index, 0, safe_hit_count - 1)
+	# 每段间隔等于自身的加速后时长，保证同一目标的数字不会同时漂浮。
+	return maxf(popup_duration, 0.0) * float(safe_hit_index)
+
 ## 将曲线强度和结果语义插值为目标受力位移。
 ## @param intensity 已钳制的数值反馈强度。
 ## @param is_critical 是否为暴击结果。
@@ -176,6 +206,14 @@ func resolve_impact_duration(intensity: float) -> float:
 	# 规范化强度避免外部调用者传入越界值影响 Inspector 上限。
 	var safe_intensity: float = clampf(intensity, 0.0, 1.0)
 	return lerpf(impact_duration_min, impact_duration_max, safe_intensity)
+
+## 判断某段多段伤害是否仍可播放目标受击动画。
+## @param hit_index 当前伤害在多段序列中的零基索引。
+## @return bool 是否处于配置允许的受击动画次数内。
+func should_play_multi_hit_impact(hit_index: int) -> bool:
+	# 最大次数最少为一，防止运行时错误配置令任何有效命中都失去基础受击反馈。
+	var safe_maximum_count: int = maxi(multi_hit_feedback_max_count, 1)
+	return hit_index >= 0 and hit_index < safe_maximum_count
 
 ## 将曲线强度和结果语义插值为完整模式震屏幅度。
 ## @param intensity 已钳制的数值反馈强度。

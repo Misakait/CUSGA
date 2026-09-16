@@ -13,6 +13,9 @@ var _failures: Array[String] = []
 # 已开始全局冲击的 Hit Stop 时长集合，用于验证减弱模式不会写入时间缩放。
 var _started_hit_stop_seconds: Array[float] = []
 
+# 已开始全局冲击的震屏幅度集合，用于验证高频批次最多保留配置次数的实际震屏。
+var _started_shake_pixels: Array[float] = []
+
 # 已完整结束的全局冲击数量，用于验证同帧多段请求没有被覆盖或合并。
 var _finished_impulse_count: int = 0
 
@@ -27,7 +30,7 @@ func _init() -> void:
 ## @return void 无返回值。
 func _run() -> void:
 	_test_absolute_value_curve_is_monotonic_and_capped()
-	_test_multi_hit_display_recipe_has_no_segment_throttle()
+	_test_multi_hit_feedback_caps_impact_and_accelerates_popups()
 	await _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode()
 	_finish()
 
@@ -78,23 +81,34 @@ func _test_absolute_value_curve_is_monotonic_and_capped() -> void:
 	director.queue_free()
 
 
-## 验证同数值的多段首段、中段和末段具有相同浮字配方，段号只影响空间位置。
+## 验证多段伤害限制目标受击动画次数，并按总段数加速且顺序显示浮字，段号仅影响空间位置。
 ## @return void 无返回值。
-func _test_multi_hit_display_recipe_has_no_segment_throttle() -> void:
+func _test_multi_hit_feedback_caps_impact_and_accelerates_popups() -> void:
 	# 正式 Profile 提供多段位置分布参数与数值曲线。
 	var profile: CombatFeedbackProfile = COMBAT_FEEDBACK_PROFILE_SCRIPT.new()
 	# 正式导演提供浮字配方与段号布局函数，避免测试复制运行时规则。
 	var director: CombatFeedbackDirector = COMBAT_FEEDBACK_DIRECTOR_SCRIPT.new()
 	director.profile = profile
-	# 同数值首段配方代表多段中的第一条真实结算结果。
-	var first_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0)
-	# 同数值中段配方代表此前被缩小和跳过的路径。
-	var middle_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0)
-	# 同数值末段配方代表多段中的最后一条真实结算结果。
-	var last_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0)
+	# 单段配方作为多段加速前的基准。
+	var single_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0, 1)
+	# 同数值首段配方代表三段伤害中的第一条真实结算结果。
+	var first_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0, 3)
+	# 同数值中段配方必须沿用同一总段数，因此具有相同的加速时长。
+	var middle_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0, 3)
+	# 同数值末段配方不能因索引不同而再次缩放或改变时长。
+	var last_display: Dictionary = director.call("_build_damage_display", 12, false, false, false, 0, 3)
 	_assert(first_display["scale"] == middle_display["scale"] and middle_display["scale"] == last_display["scale"], "相同数值的多段浮字不得因段号缩小。")
-	_assert(first_display["duration"] == middle_display["duration"] and middle_display["duration"] == last_display["duration"], "相同数值的多段浮字不得因段号缩短时长。")
-	_assert(float(first_display["delay"]) == 0.0 and float(middle_display["delay"]) == 0.0 and float(last_display["delay"]) == 0.0, "多段浮字不得因段号延迟入场。")
+	_assert(float(first_display["duration"]) < float(single_display["duration"]), "多段浮字必须按总段数加速离场。")
+	_assert(first_display["duration"] == middle_display["duration"] and middle_display["duration"] == last_display["duration"], "同一多段序列的浮字时长不得因段号而不一致。")
+	# 第一段立即显示，后续段以加速后时长为间隔顺序出现，避免同一锚点数字重叠。
+	var first_popup_delay: float = profile.resolve_multi_hit_popup_delay(float(first_display["duration"]), 0, 3)
+	var middle_popup_delay: float = profile.resolve_multi_hit_popup_delay(float(middle_display["duration"]), 1, 3)
+	var last_popup_delay: float = profile.resolve_multi_hit_popup_delay(float(last_display["duration"]), 2, 3)
+	_assert(is_zero_approx(first_popup_delay), "多段首个浮字必须立即入场。")
+	_assert(is_equal_approx(middle_popup_delay, float(middle_display["duration"])), "第二段浮字必须在第一段加速后时长结束时入场。")
+	_assert(is_equal_approx(last_popup_delay, float(last_display["duration"]) * 2.0), "末段浮字必须按段号顺序延后，不能与前段同时漂浮。")
+	_assert(profile.should_play_multi_hit_impact(0) and profile.should_play_multi_hit_impact(1) and profile.should_play_multi_hit_impact(2), "默认配置必须保留多段伤害的前三次受击动画。")
+	_assert(not profile.should_play_multi_hit_impact(3), "默认配置下第四段及后续命中不得继续播放目标受击动画。")
 
 	# 首段位置只用于验证位置布局仍可保留数字可读性。
 	var first_offset: Vector2 = director.call("_resolve_hit_popup_offset", 0, 3)
@@ -105,7 +119,7 @@ func _test_multi_hit_display_recipe_has_no_segment_throttle() -> void:
 	director.queue_free()
 
 
-## 验证全局冲击 FIFO 完整消费每条震屏，但范围和高频连续命中只保留一次 Hit Stop；减弱模式仍将停顿置零。
+## 验证全局冲击 FIFO 在高频批次只保留前三次震屏与一次 Hit Stop；减弱模式仍将停顿置零。
 ## @return void 无返回值。
 func _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode() -> void:
 	# 独立战斗根节点提供正式冲击控制器所需的位置恢复目标。
@@ -122,16 +136,20 @@ func _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode() -> voi
 
 	# 开始记录前清空历史信号，避免未来增加的测试顺序影响本用例断言。
 	_started_hit_stop_seconds.clear()
+	_started_shake_pixels.clear()
 	_finished_impulse_count = 0
 	impulse.enqueue_impulse(2.0, 0.01, 0.015, 0.05)
 	impulse.enqueue_impulse(6.0, 0.01, 0.015, 0.05)
 	impulse.enqueue_impulse(12.0, 0.01, 0.015, 0.05)
+	impulse.enqueue_impulse(18.0, 0.01, 0.015, 0.05)
 	await create_timer(0.20, true, false, true).timeout
-	_assert(_started_hit_stop_seconds.size() == 3, "多段或范围的每条全局冲击请求都必须进入 FIFO。")
-	_assert(_finished_impulse_count == 3, "多段或范围的每条全局冲击请求都必须完整结束而非被覆盖。")
-	if _started_hit_stop_seconds.size() == 3:
+	_assert(_started_hit_stop_seconds.size() == 4, "高频冲击请求必须安全完成 FIFO 消费，即使超出实际震屏上限。")
+	_assert(_finished_impulse_count == 4, "高频批次中的节流请求也必须完整结束，不能阻塞后续战斗反馈。")
+	if _started_hit_stop_seconds.size() == 4 and _started_shake_pixels.size() == 4:
+		_assert(_started_shake_pixels[0] > 0.0 and _started_shake_pixels[1] > 0.0 and _started_shake_pixels[2] > 0.0, "高频批次必须保留前三次震屏。")
+		_assert(is_zero_approx(_started_shake_pixels[3]), "高频批次第四次及后续请求不得继续震屏。")
 		_assert(_started_hit_stop_seconds[0] > 0.0, "连续命中的首条请求必须保留 Hit Stop。")
-		_assert(is_zero_approx(_started_hit_stop_seconds[1]) and is_zero_approx(_started_hit_stop_seconds[2]), "范围或高频连续命中的后续请求不得叠加 Hit Stop。")
+		_assert(is_zero_approx(_started_hit_stop_seconds[1]) and is_zero_approx(_started_hit_stop_seconds[2]) and is_zero_approx(_started_hit_stop_seconds[3]), "范围或高频连续命中的后续请求不得叠加 Hit Stop。")
 
 	# 正式 Profile 用于生成减弱模式仍应使用的同一份数值冲击配方。
 	var profile: CombatFeedbackProfile = COMBAT_FEEDBACK_PROFILE_SCRIPT.new()
@@ -143,6 +161,7 @@ func _test_impulse_queue_plays_hit_stop_once_per_batch_and_reduced_mode() -> voi
 	# 高数值冲击配方确保减弱模式测试覆盖原本会触发明显 Hit Stop 的路径。
 	var reduced_recipe: Dictionary = _build_impact_recipe(profile, 1000)
 	_started_hit_stop_seconds.clear()
+	_started_shake_pixels.clear()
 	director.call("_request_value_scaled_impulse", reduced_recipe)
 	await create_timer(0.20).timeout
 	_assert(_started_hit_stop_seconds.size() == 1, "减弱模式仍必须保留每一条震屏请求。")
@@ -173,11 +192,12 @@ func _build_impact_recipe(profile: CombatFeedbackProfile, amount: int) -> Dictio
 	}
 
 
-## 记录每条 FIFO 请求实际开始时的 Hit Stop 时长。
-## @param _shake_pixels 当前请求的震屏幅度，本测试只验证其请求是否被消费。
+## 记录每条 FIFO 请求实际开始时的震屏幅度与 Hit Stop 时长。
+## @param shake_pixels 当前请求的震屏幅度。
 ## @param hit_stop_seconds 当前请求的 Hit Stop 时长。
 ## @return void 无返回值。
-func _on_impulse_started(_shake_pixels: float, hit_stop_seconds: float) -> void:
+func _on_impulse_started(shake_pixels: float, hit_stop_seconds: float) -> void:
+	_started_shake_pixels.append(shake_pixels)
 	_started_hit_stop_seconds.append(hit_stop_seconds)
 
 

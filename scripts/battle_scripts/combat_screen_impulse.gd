@@ -3,7 +3,7 @@
 class_name CombatScreenImpulse
 extends Node
 
-## 每条全局冲击开始播放时发出，供聚焦测试验证范围与多段震屏没有被覆盖，以及同批停顿只触发一次。
+## 每条全局冲击开始播放时发出，供聚焦测试验证高频批次只保留有限震屏与一次停顿。
 signal impulse_started(shake_pixels: float, hit_stop_seconds: float)
 
 ## 每条全局冲击完整结束并恢复时间缩放后发出。
@@ -21,7 +21,7 @@ var _base_position: Vector2
 ## 当前运行中的震屏 Tween；同一时刻仅播放队首请求，后续请求不会取消它。
 var _shake_tween: Tween
 
-## 按接收顺序保存的全局冲击请求，确保多段和范围中的每次震屏都不会被合并或丢弃。
+## 按接收顺序保存的全局冲击请求；超过批次震屏上限的请求会保留为零冲击以维持时序安全。
 var _impulse_queue: Array[Dictionary] = []
 
 ## 是否正在异步消费全局冲击队列，防止每次入队都启动重复消费者。
@@ -29,6 +29,9 @@ var _is_processing_impulses: bool = false
 
 ## 当前连续冲击批次是否已认领 Hit Stop；同批后续命中仍保留震屏，但不再累积全局慢放。
 var _has_hit_stop_in_current_batch: bool = false
+
+## 当前连续冲击批次已经播放的实际震屏次数，用于限制高频伤害造成的连续晃动。
+var _screen_shake_count_in_current_batch: int = 0
 
 ## Hit Stop 前的全局时间缩放，退出时必须恢复以免污染其它场景。
 var _time_scale_before_hit_stop: float = 1.0
@@ -45,23 +48,34 @@ func _ready() -> void:
 	else:
 		push_warning("CombatScreenImpulse 缺少 Battle 根节点，已禁用震屏。")
 
-## 将一次数值驱动的震屏与可选 Hit Stop 加入 FIFO；每条震屏都会被消费，但连续批次只保留首个有效 Hit Stop。
+## 将一次数值驱动的震屏与可选 Hit Stop 加入 FIFO；连续批次只保留有限震屏和首个有效 Hit Stop。
 ## @param shake_pixels 本次命中已计算的震屏幅度。
 ## @param shake_duration 本次命中已计算的震屏收束时长。
 ## @param hit_stop_seconds 本次命中已计算的停顿时长；零代表减弱模式仅震屏。
 ## @param time_scale 停顿期间的目标时间缩放。
+## @param max_continuous_screen_shake_count 当前连续批次允许播放的最大震屏次数。
 ## @return void 无返回值。
-func enqueue_impulse(shake_pixels: float, shake_duration: float, hit_stop_seconds: float, time_scale: float) -> void:
+func enqueue_impulse(shake_pixels: float, shake_duration: float, hit_stop_seconds: float, time_scale: float, max_continuous_screen_shake_count: int = 3) -> void:
+	# 震屏参数先标准化，避免负值被计入高频批次的有限震屏次数。
+	var safe_shake_pixels: float = maxf(shake_pixels, 0.0)
+	# 震屏时长只有在对应幅度有效时才会占用队首窗口。
+	var safe_shake_duration: float = maxf(shake_duration, 0.0)
+	# 最大次数最少为一，避免运行时配置错误令所有命中失去基础屏幕反馈。
+	var safe_maximum_screen_shake_count: int = maxi(max_continuous_screen_shake_count, 1)
+	# 高速连续命中只允许前几条实际移动战斗根节点，后续请求仍可安全完成队列消费。
+	var should_play_screen_shake: bool = safe_shake_pixels > 0.0 and safe_shake_duration > 0.0 and _screen_shake_count_in_current_batch < safe_maximum_screen_shake_count
+	if should_play_screen_shake:
+		_screen_shake_count_in_current_batch += 1
 	# 先钳制原始停顿时长，避免非法输入占用当前连续批次的唯一停顿资格。
 	var safe_hit_stop_seconds: float = maxf(hit_stop_seconds, 0.0)
 	# 同一批次只允许首个有效请求写入时间缩放，防止范围和高频伤害把短暂停顿串行累加成明显卡顿。
 	var should_play_hit_stop: bool = safe_hit_stop_seconds > 0.0 and not _has_hit_stop_in_current_batch
 	if should_play_hit_stop:
 		_has_hit_stop_in_current_batch = true
-	# 每条请求独立保存震屏；被节流的后续请求仅将停顿时长置零，不会丢失冲击反馈。
+	# 被节流的后续请求将震屏和停顿都置零，避免保留无意义的全局动画却不影响队列恢复。
 	var impulse_request: Dictionary = {
-		"shake_pixels": maxf(shake_pixels, 0.0),
-		"shake_duration": maxf(shake_duration, 0.0),
+		"shake_pixels": safe_shake_pixels if should_play_screen_shake else 0.0,
+		"shake_duration": safe_shake_duration if should_play_screen_shake else 0.0,
 		"hit_stop_seconds": safe_hit_stop_seconds if should_play_hit_stop else 0.0,
 		"time_scale": clampf(time_scale, 0.01, 1.0)
 	}
@@ -75,9 +89,10 @@ func enqueue_impulse(shake_pixels: float, shake_duration: float, hit_stop_second
 ## @param shake_duration 本次命中已计算的震屏收束时长。
 ## @param hit_stop_seconds 本次命中已计算的停顿时长。
 ## @param time_scale 停顿期间的目标时间缩放。
+## @param max_continuous_screen_shake_count 当前连续批次允许播放的最大震屏次数。
 ## @return void 无返回值。
-func request_impulse(shake_pixels: float, shake_duration: float, hit_stop_seconds: float, time_scale: float) -> void:
-	enqueue_impulse(shake_pixels, shake_duration, hit_stop_seconds, time_scale)
+func request_impulse(shake_pixels: float, shake_duration: float, hit_stop_seconds: float, time_scale: float, max_continuous_screen_shake_count: int = 3) -> void:
+	enqueue_impulse(shake_pixels, shake_duration, hit_stop_seconds, time_scale, max_continuous_screen_shake_count)
 
 ## 依照入队顺序完整播放全局冲击，避免一个根节点与全局时间缩放同时被多个 Tween 争夺。
 ## @return void 无返回值。
@@ -85,11 +100,11 @@ func _consume_impulse_queue() -> void:
 	while not _impulse_queue.is_empty():
 		# 显式声明字典类型，避免 pop_front 的 Variant 返回值在警告即错误配置下失去类型信息。
 		var impulse_request: Dictionary = _impulse_queue.pop_front()
-		# 当前请求的震屏幅度由导演的数值曲线配方提供。
+		# 当前请求的震屏幅度由导演配方提供；高频批次超过上限时会被安全置零。
 		var shake_pixels: float = float(impulse_request.get("shake_pixels", 0.0))
-		# 当前请求的震屏时长由导演的数值曲线配方提供。
+		# 当前请求的震屏时长由导演配方提供；置零请求不会移动战斗根节点。
 		var shake_duration: float = float(impulse_request.get("shake_duration", 0.0))
-		# 当前请求的 Hit Stop 时长在减弱模式或同批后续命中中为零，但震屏请求本身仍完整保留。
+		# 当前请求的 Hit Stop 时长在减弱模式或同批后续命中中为零，超过震屏上限时同样不会写入时间缩放。
 		var hit_stop_seconds: float = float(impulse_request.get("hit_stop_seconds", 0.0))
 		# 当前请求的时间缩放由 Profile 配置提供并已在入队时完成安全钳制。
 		var requested_time_scale: float = float(impulse_request.get("time_scale", 1.0))
@@ -110,8 +125,9 @@ func _consume_impulse_queue() -> void:
 			Engine.time_scale = _time_scale_before_hit_stop
 			_owns_time_scale = false
 		impulse_finished.emit()
-	# 队列耗尽才开启下一批次，避免 await 期间抵达的高频命中绕过当前批次的单次停顿限制。
+	# 队列耗尽才开启下一批次，避免 await 期间抵达的高频命中绕过当前批次的停顿和震屏上限。
 	_has_hit_stop_in_current_batch = false
+	_screen_shake_count_in_current_batch = 0
 	_is_processing_impulses = false
 
 ## 用固定的三段偏移产生冲击后快速归位；请求已串行，因此不会为了新命中取消前一段震屏。
@@ -136,6 +152,7 @@ func _exit_tree() -> void:
 	_impulse_queue.clear()
 	_is_processing_impulses = false
 	_has_hit_stop_in_current_batch = false
+	_screen_shake_count_in_current_batch = 0
 	if _battle_root:
 		_battle_root.position = _base_position
 	if _owns_time_scale:

@@ -85,7 +85,7 @@ func CombatFeedbackDirector.play_monster_attack_feedback(monster: Node) -> void
 - `Action.presentation_card` 对怪物技能和普通攻击始终可选，调用方不得假设它非空；旧的五参数 `Action.new(...)` 构造方式必须继续可用。
 - `DeckManager.play_card_to_enemy` 与 `DeckManager.play_enemy_hit_feedback` 在创建 Tween 前必须拒绝无效或已进入删除队列的目标；`DeckManager.complete_played_card` 是唯一允许写入主动出牌弃牌数据并启动渐隐销毁的出口，必须用节点元数据防止重复调用。
 - `CombatFeedbackDirector` 的浮字、震屏和目标 Tween 都是非权威异步表现；它们不能被行动队列 `await`。怪物逻辑死亡后立即退出目标池，导演若成功认领死亡表现才在渐隐结束时调用 `FinalizeCombatDeathPresentation()`；未认领则由怪物延迟收尾安全释放。
-- 多段与范围的每条 `DamageResolved` 都必须产生完整表现配方。`HitIndex` 与 `HitCount` 只能用于同锚点浮字的空间布局；同一目标的受力通过目标 FIFO、全局冲击通过屏幕 FIFO 保留每个请求，不能按段号缩放、缩短、延迟、合并或取消任何一条反馈。
+- 多段与范围的每条 `DamageResolved` 都必须产生独立浮字配方。`HitIndex` 用于同锚点浮字的空间布局与顺序入场；每段的延迟等于已加速浮字时长乘以索引，确保同一目标的数字不同时漂浮。`HitCount` 用 `1 / sqrt(HitCount)` 缩短浮字时长，且不得低于 `CombatFeedbackProfile.multi_hit_popup_duration_scale_min`。同一目标的受击 FIFO 仅接收 `HitIndex` 小于 `CombatFeedbackProfile.multi_hit_feedback_max_count` 的请求（默认前三次）；后续段仍保留浮字。全局冲击通过屏幕 FIFO 消费请求，但同一连续批次只播放 `multi_hit_feedback_max_count` 次实际震屏，且只允许首个有效请求触发 Hit Stop。
 - `RandomEnemy` 玩家卡牌必须在飞行前从当前敌人包装节点中随机一次，并把同一局部目标交给飞行、受击和 `SkillExecutionContext`；不能为表现和效果分别随机。自身、全体、扩散或目标失效的玩家卡牌继续跳过飞行与单体受击反馈，但仍从同一个完成出口仅一次弃牌。
 - 动画原子操作复用 `CardAnimations.play_card`、`CardAnimations.hit` 和 `PlayerHand.play_discard_animation`；不要在 `BattleManager` 写入新的时长或缓动常量。
 
@@ -121,7 +121,7 @@ func CombatFeedbackDirector.play_monster_attack_feedback(monster: Node) -> void
 - 敌人目标取消：断言再次点击同一敌人只清空 `_selected_click_target`，已选卡牌与操作栏保持可用，确认时以玩家自身为默认目标。
 - 显式敌人目标：断言 `Action.presentation_card` 与原手牌节点一致；断言节点先到目标位置、随后执行伤害结算，`discard_pile_data` 只新增一次。
 - 随机敌人卡牌：断言飞行目标与 `SkillExecutionContext` 的主目标相同；显式点击敌人不覆盖随机结果，无敌人时跳过飞行并安全回退。
-- 结果反馈：断言 `DamageResolved` 的闪避、护盾、暴击、击杀和多段元数据分别映射正确表现；同数值的多段配方必须一致且无延迟，超高数值必须受 Profile 上限钳制，FIFO 必须消费每一条局部与全局反馈请求；行动队列不得等待这些表现 Tween。
+- 结果反馈：断言 `DamageResolved` 的闪避、护盾、暴击、击杀和多段元数据分别映射正确表现；同数值的多段浮字必须保持相同强度、随 `HitCount` 加速离场并按索引顺序显示；Profile 默认配置必须只允许索引 `0..2` 入局部受击 FIFO；高频全局冲击的前三条实际震屏后必须被置零，且批次只触发一次 Hit Stop；超高数值必须受 Profile 上限钳制，行动队列不得等待这些表现 Tween。
 - 致死目标：断言效果使怪物立即退出活动目标池，视觉收尾结束后才释放节点；行动队列不会永久等待且玩家输入会恢复。
 - 自身、全体、扩散和失效目标：断言不调用敌人飞行方法，仍完成既有 `SkillTargetingType` 结算和一次弃置。
 - 重复收尾保护：对同一节点连续调用两次 `complete_played_card`，断言弃牌堆只增加一张数据，且只请求一次节点销毁。
