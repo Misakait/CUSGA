@@ -29,10 +29,7 @@ public partial class BoardCardView : Area2D
     private Sprite2D _iconSprite;
     private Label _titleLabel;
     private Label _amountLabel;
-    private ProgressBar _holdProgressBar;
     private Tween _activeTween;
-    private Tween _holdTween;
-    private Action _holdCompleted;
     private bool _interactionDisabled;
 
     public override void _Ready()
@@ -40,10 +37,8 @@ public partial class BoardCardView : Area2D
         _iconSprite = GetNode<Sprite2D>("Icon");
         _titleLabel = GetNode<Label>("Title");
         _amountLabel = GetNode<Label>("Amount");
-        _holdProgressBar = GetNode<ProgressBar>("HoldProgress");
 
         InputPickable = true;
-        ResetHoldProgress();
 
         MouseEntered += OnMouseEnteredInternal;
         MouseExited += OnMouseExitedInternal;
@@ -52,7 +47,6 @@ public partial class BoardCardView : Area2D
     public override void _ExitTree()
     {
         StopActiveTween();
-        CancelHoldProgress();
     }
 
     internal BoardCardState State => _state;
@@ -221,56 +215,7 @@ public partial class BoardCardView : Area2D
     public void SetInteractionDisabled(bool disabled)
     {
         _interactionDisabled = disabled;
-        if (disabled)
-        {
-            CancelHoldProgress();
-        }
         ApplyInteractionDisabledVisual();
-    }
-
-    /// <summary>
-    /// 开始显示长按进度，并在进度完成后调用回调。
-    /// </summary>
-    /// <param name="durationSeconds">长按需要持续的真实秒数。</param>
-    /// <param name="onCompleted">进度完成后的回调。</param>
-    public void StartHoldProgress(float durationSeconds, Action onCompleted)
-    {
-        if (_interactionDisabled)
-        {
-            return;
-        }
-
-        CancelHoldProgress();
-        _holdCompleted = onCompleted;
-        _holdProgressBar.Visible = true;
-        _holdProgressBar.Value = 0.0;
-
-        if (durationSeconds <= 0.0f)
-        {
-            CompleteHoldProgress();
-            return;
-        }
-
-        _holdTween = GetTree().CreateTween();
-        _holdTween.TweenProperty(_holdProgressBar, "value", 1.0, durationSeconds)
-            .SetTrans(Tween.TransitionType.Linear)
-            .SetEase(Tween.EaseType.InOut);
-        _holdTween.Finished += CompleteHoldProgress;
-    }
-
-    /// <summary>
-    /// 取消正在进行的长按采集进度。
-    /// </summary>
-    public void CancelHoldProgress()
-    {
-        if (_holdTween != null && _holdTween.IsValid())
-        {
-            _holdTween.Kill();
-        }
-
-        _holdTween = null;
-        _holdCompleted = null;
-        ResetHoldProgress();
     }
 
     private Vector2 GetRestingScale()
@@ -288,26 +233,6 @@ public partial class BoardCardView : Area2D
             _activeTween.Kill();
             _activeTween = null;
         }
-    }
-
-    private void CompleteHoldProgress()
-    {
-        Action completed = _holdCompleted;
-        _holdTween = null;
-        _holdCompleted = null;
-        ResetHoldProgress();
-        completed?.Invoke();
-    }
-
-    private void ResetHoldProgress()
-    {
-        if (_holdProgressBar == null)
-        {
-            return;
-        }
-
-        _holdProgressBar.Value = 0.0;
-        _holdProgressBar.Visible = false;
     }
 
     private void ApplyInteractionDisabledVisual()

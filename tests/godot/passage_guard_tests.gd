@@ -39,6 +39,29 @@ class FakeWorldInteractionCoordinator:
 		emit_signal(&"PassageGuardEncounterFinished", next_result)
 
 
+class FakeWorldHoldCoordinator:
+	extends Node
+
+	signal WorldHoldCompleted(owner: Node)
+
+	# 记录地图是否把长按请求交给稳定的协调器边界。
+	var begin_hold_count: int = 0
+	# 保存开始时快照的行动值，以验证长按时长输入没有被地图脚本丢失。
+	var received_action_point_cost: int = -1
+	# 保存地图传入的可见方向按钮，验证圆环不会错误锚定地图脚本根节点。
+	var received_progress_target: Node
+	# 记录松开按钮是否会走同一协调器的取消出口。
+	var cancel_hold_count: int = 0
+
+	func BeginWorldHoldForMap(_owner: Node, action_point_cost: int, progress_target: Node) -> void:
+		begin_hold_count += 1
+		received_action_point_cost = action_point_cost
+		received_progress_target = progress_target
+
+	func CancelWorldHoldFor(_owner: Node) -> void:
+		cancel_hold_count += 1
+
+
 class FakeMapControl:
 	extends Node
 
@@ -89,6 +112,9 @@ class FakeMapInstantiator:
 class FakeTimeSystem:
 	extends Node
 
+	# 模拟 C# 自动加载对地图脚本暴露的移动行动值属性。
+	var MapMoveTimeCost: int = 10
+	# 记录实际移动完成后结算行动值的原有调用顺序。
 	var call_log: Array[String]
 
 	func PassMapMoveTime() -> void:
@@ -101,6 +127,8 @@ func _init() -> void:
 
 func _run() -> void:
 	await _test_guard_battle_handles_synchronous_result_signal()
+	_test_map_move_hold_routes_through_world_interaction_coordinator()
+	await _test_map_move_hold_completion_signal_starts_move()
 	await _test_map_move_time_is_settled_before_loading_target_room()
 	_test_map_instantiator_dims_loaded_backgrounds_without_touching_other_sprites()
 	await _test_background_resolver_uses_map_instantiator_current_scene()
@@ -144,6 +172,76 @@ func _test_guard_battle_handles_synchronous_result_signal() -> void:
 func _capture_guard_battle_result(controller: Node, from: Vector2i, to: Vector2i, completion: Dictionary) -> void:
 	completion["result"] = await controller.request_guard_battle(from, to)
 	completion["done"] = true
+
+
+func _test_map_move_hold_routes_through_world_interaction_coordinator() -> void:
+	# 地图按钮实例只验证跨语言桥接；移动协程仍由既有独立测试覆盖。
+	var map_button: Node = MapButtonScript.new()
+	# 该假协调器模拟 Main 场景中已验证的局外交互入口。
+	var coordinator := FakeWorldHoldCoordinator.new()
+	# 该假自动加载提供地图移动的默认十点行动值。
+	var time_system := FakeTimeSystem.new()
+	map_button.world_interaction_coordinator = coordinator
+	map_button.time_system = time_system
+	map_button.current_position = Vector2i(1, 1)
+	# 模拟场景中方向容器及其直属可见精灵，让锚点选择逻辑走真实路径。
+	var right_direction_button: Node2D = Node2D.new()
+	# 精灵位置用于与地图根节点区分，避免测试在错误锚点下仍然通过。
+	var right_button_sprite: Sprite2D = Sprite2D.new()
+	right_direction_button.add_child(right_button_sprite)
+	map_button.add_child(right_direction_button)
+	map_button.RightButton = right_direction_button
+
+	map_button._begin_move_hold(1)
+
+	_assert(coordinator.begin_hold_count == 1, "地图方向按下必须经由 WorldInteractionCoordinator 开始长按。")
+	_assert(coordinator.received_action_point_cost == 10, "地图长按必须读取 MapMoveTimeCost 作为行动值快照。")
+	_assert(coordinator.received_progress_target == right_button_sprite, "地图长按必须传递实际可见的方向按钮作为圆环锚点。")
+
+	map_button._cancel_move_hold()
+
+	_assert(coordinator.cancel_hold_count == 1, "地图方向松开必须经由 WorldInteractionCoordinator 取消长按。")
+	map_button.free()
+	coordinator.free()
+	time_system.free()
+
+
+func _test_map_move_hold_completion_signal_starts_move() -> void:
+	# 使用独立调用日志验证完成信号会回到既有“结算时间后加载场景”流程。
+	var call_log: Array[String] = []
+	# 地图按钮只挂载必要的假依赖，避免该回归依赖完整主场景。
+	var map_button: Node = MapButtonScript.new()
+	# 假协调器模拟 C# 在自身 Callable 中发出的完成信号。
+	var coordinator := FakeWorldHoldCoordinator.new()
+	# 小地图依赖保留原有移动调用接口。
+	var map_little := FakeMapLittle.new()
+	# 场景实例化依赖记录加载行为。
+	var map_instantiator := FakeMapInstantiator.new()
+	# 自动加载提供行动值结算接口。
+	var time_system := FakeTimeSystem.new()
+	# 过场假节点异步发出既有淡出完成信号。
+	var screen_transitions := FakeScreenTransitions.new()
+	map_instantiator.call_log = call_log
+	time_system.call_log = call_log
+	map_button.world_interaction_coordinator = coordinator
+	map_button.map_little = map_little
+	map_button.map_instantiator = map_instantiator
+	map_button.time_system = time_system
+	map_button.screen_transitions = screen_transitions
+	map_button.current_position = Vector2i(1, 1)
+	map_button._pending_move_target = Vector2i(1, 2)
+	map_button._connect_world_hold_completion()
+
+	coordinator.emit_signal(&"WorldHoldCompleted", map_button)
+	await create_timer(0.05).timeout
+
+	_assert(call_log == ["time", "load"], "地图长按完成信号必须启动原有移动流程，并保持先结算时间再加载场景。")
+	map_button.free()
+	coordinator.free()
+	map_little.free()
+	map_instantiator.free()
+	time_system.free()
+	screen_transitions.free()
 
 
 func _test_map_move_time_is_settled_before_loading_target_room() -> void:

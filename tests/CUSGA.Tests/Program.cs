@@ -53,6 +53,7 @@ tests.QuickEquipReplacesOccupiedSlotWhenNoEmptyCompatibleSlot();
 tests.EquippedTorchAppliesEncounterMultiplierUntilUnequipped();
 tests.ReusableGatheringUsesOnlyConfiguredToolSlotForTimeReduction();
 tests.ReusableGatheringClampsEffectiveTimeToMinimum();
+tests.WorldHoldDurationKeepsActionPointProportion();
 tests.ReusableGatheringTracksDepletionAndRefreshByGameTime();
 tests.ReusableGatheringBuildOpsUsesSnapshotTimeCostWhenProvided();
 tests.ReusableGatheringOpsDoNotRemoveSourceCard();
@@ -692,6 +693,17 @@ internal sealed partial class TerrainRandomizationTests
 
         Assert.Equal(6, gathering.GetEffectiveTimeCost(equipment));
         Assert.Approximately(0.6f, gathering.GetRequiredHoldSeconds(equipment));
+    }
+
+    /// <summary>
+    /// 验证所有局外交互共用的长按换算严格随行动值成正比。
+    /// </summary>
+    public void WorldHoldDurationKeepsActionPointProportion()
+    {
+        Assert.Approximately(0.0f, WorldInteractionTiming.GetHoldDurationSeconds(0));
+        Assert.Approximately(1.0f, WorldInteractionTiming.GetHoldDurationSeconds(10));
+        Assert.Approximately(2.0f, WorldInteractionTiming.GetHoldDurationSeconds(20));
+        Assert.Approximately(0.0f, WorldInteractionTiming.GetHoldDurationSeconds(-10));
     }
 
     /// <summary>

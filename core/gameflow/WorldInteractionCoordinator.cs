@@ -16,10 +16,20 @@ public partial class WorldInteractionCoordinator : Node
 {
     [Signal] public delegate void PassageGuardEncounterFinishedEventHandler(bool isVictory);
 
+    /// <summary>
+    /// 当局外长按完成时通知 GDScript 地图拥有者执行其保留的业务流程。
+    /// </summary>
+    /// <param name="owner">完成本次长按的有效节点拥有者。</param>
+    [Signal] public delegate void WorldHoldCompletedEventHandler(Node owner);
+
     [Export] public NodePath BoardControllerPath { get; set; } = null!;
     [Export] public NodePath GameplayPortPath { get; set; } = null!;
     [Export] public NodePath BackpackFlyTargetPath { get; set; } = null!;
     [Export] public NodePath EncounterManagerPath { get; set; } = null!;
+    /// <summary>
+    /// 指向统一管理局外长按输入与圆环反馈的子组件。
+    /// </summary>
+    [Export] public NodePath HoldInteractionControllerPath { get; set; } = new("WorldHoldInteractionController");
     public NodePath ScreenTransitionsPath { get; set; } = new("/root/ScreenTransitions");
 
     [ExportGroup("World View")]
@@ -35,8 +45,8 @@ public partial class WorldInteractionCoordinator : Node
     private GameplayPort _gameplayPort = null!;
     private Control _backpackFlyTarget;
     private TimeSystem _timeSystem;
-    private BoardCardView _holdingCard;
-    private int _holdingEffectiveTimeCost;
+    // 统一处理地图按钮与棋盘地形之间互斥的长按状态。
+    private WorldHoldInteractionController _holdInteractionController = null!;
 
     public override void _Ready()
     {
@@ -65,6 +75,7 @@ public partial class WorldInteractionCoordinator : Node
             _boardController,
             _encounterManager
         );
+        _holdInteractionController = GetNode<WorldHoldInteractionController>(HoldInteractionControllerPath);
 
         _boardController.CardClicked += OnBoardCardClicked;
         _boardController.CardPressed += OnBoardCardPressed;
@@ -96,10 +107,11 @@ public partial class WorldInteractionCoordinator : Node
         {
             _timeSystem.TimeChanged -= OnTimeChanged;
         }
+        _holdInteractionController?.CancelActiveHold();
     }
 
     /// <summary>
-    /// 监听全局鼠标松开，确保拖出卡牌范围后也会取消长按采集。
+    /// 监听全局鼠标松开，确保拖出目标范围后也会取消局外长按。
     /// </summary>
     /// <param name="event">Godot 输入事件。</param>
     public override void _UnhandledInput(InputEvent @event)
@@ -110,7 +122,7 @@ public partial class WorldInteractionCoordinator : Node
                 Pressed: false
             })
         {
-            CancelReusableGatheringHold();
+            _holdInteractionController.CancelActiveHold();
         }
     }
 
@@ -133,6 +145,43 @@ public partial class WorldInteractionCoordinator : Node
         EmitSignal(SignalName.PassageGuardEncounterFinished, isVictory);
     }
 
+    /// <summary>
+    /// 为 GDScript 地图控件开始一个局外长按，并在进度填满后以信号通知对应拥有者。
+    /// </summary>
+    /// <param name="owner">本次长按的地图节点拥有者。</param>
+    /// <param name="actionPointCost">开始时快照的实际行动值消耗。</param>
+    /// <param name="progressTarget">地图方向按钮中用于绘制圆环的可见目标节点。</param>
+    public void BeginWorldHoldForMap(Node owner, int actionPointCost, Node progressTarget)
+    {
+        if (_holdInteractionController == null || !IsInstanceValid(_holdInteractionController))
+        {
+            GD.PushError("WorldInteractionCoordinator 未找到 WorldHoldInteractionController，无法开始局外长按。");
+            return;
+        }
+
+        // 由 C# 创建回调可避免 GDScript Callable 经 Object.call 封送后退化为空实例。
+        _holdInteractionController.BeginHold(
+            owner,
+            actionPointCost,
+            Callable.From(() => EmitSignal(SignalName.WorldHoldCompleted, owner)),
+            progressTarget
+        );
+    }
+
+    /// <summary>
+    /// 为 GDScript 地图控件取消指定拥有者的局外长按。
+    /// </summary>
+    /// <param name="owner">请求取消的地图或棋盘节点拥有者。</param>
+    public void CancelWorldHoldFor(Node owner)
+    {
+        if (_holdInteractionController == null || !IsInstanceValid(_holdInteractionController))
+        {
+            return;
+        }
+
+        _holdInteractionController.CancelHoldFor(owner);
+    }
+
     private void OnBoardCardClicked(BoardCardView card)
     {
         ArgumentNullException.ThrowIfNull(card);
@@ -147,7 +196,7 @@ public partial class WorldInteractionCoordinator : Node
         TerrainInstance terrain = card.GetTerrainInstanceOrNull();
         if (terrain != null)
         {
-            if (terrain.TerrainData?.InteractionBehavior is ReusableGatheringInteraction)
+            if (GetInteractionActionPointCost(terrain.TerrainData?.InteractionBehavior) > 0)
             {
                 return;
             }
@@ -181,18 +230,24 @@ public partial class WorldInteractionCoordinator : Node
 
     private void OnBoardCardPressed(BoardCardView card)
     {
-        if (TryGetReusableGathering(card, out TerrainInstance terrain, out ReusableGatheringInteraction interaction))
+        if (TryGetHoldableTerrain(
+                card,
+                out TerrainInstance terrain,
+                out TerrainInteraction interaction,
+                out int actionPointCost))
         {
-            StartReusableGatheringHold(card, terrain, interaction);
+            _holdInteractionController.BeginHold(
+                card,
+                actionPointCost,
+                Callable.From(() => CompleteTerrainHold(card, terrain, interaction, actionPointCost)),
+                card.GetNodeOrNull<Sprite2D>("Icon") as Node ?? card
+            );
         }
     }
 
     private void OnBoardCardReleased(BoardCardView card)
     {
-        if (card == _holdingCard)
-        {
-            CancelReusableGatheringHold();
-        }
+        _holdInteractionController.CancelHoldFor(card);
     }
 
     private void OnBoardCardSpawned(BoardCardView card)
@@ -222,62 +277,69 @@ public partial class WorldInteractionCoordinator : Node
         }
     }
 
-    private void StartReusableGatheringHold(
+    private bool TryGetHoldableTerrain(
         BoardCardView card,
-        TerrainInstance terrain,
-        ReusableGatheringInteraction interaction)
+        out TerrainInstance terrain,
+        out TerrainInteraction interaction,
+        out int actionPointCost)
     {
-        CancelReusableGatheringHold();
+        terrain = card?.GetTerrainInstanceOrNull();
+        interaction = terrain?.TerrainData?.InteractionBehavior;
+        actionPointCost = GetInteractionActionPointCost(interaction);
+        if (terrain == null || interaction == null || actionPointCost <= 0)
+        {
+            return false;
+        }
+
+        if (interaction is not ReusableGatheringInteraction reusableGathering)
+        {
+            return true;
+        }
 
         int totalTimePassed = GetCurrentTotalTime();
-        RefreshReusableGatheringCard(card, terrain, interaction, totalTimePassed);
-        if (!interaction.CanHarvest(terrain, totalTimePassed))
-        {
-            return;
-        }
-
-        _holdingCard = card;
-        _holdingEffectiveTimeCost = interaction.GetEffectiveTimeCost(_gameplayPort.Player?.Equipment);
-        float holdSeconds = _holdingEffectiveTimeCost / ReusableGatheringInteraction.GameTimePointsPerHoldSecond;
-        card.StartHoldProgress(
-            holdSeconds,
-            () => CompleteReusableGatheringHold(card, terrain, interaction)
-        );
+        RefreshReusableGatheringCard(card, terrain, reusableGathering, totalTimePassed);
+        return reusableGathering.CanHarvest(terrain, totalTimePassed);
     }
 
-    private void CompleteReusableGatheringHold(
+    private void CompleteTerrainHold(
         BoardCardView card,
         TerrainInstance terrain,
-        ReusableGatheringInteraction interaction)
+        TerrainInteraction interaction,
+        int actionPointCost)
     {
-        if (_holdingCard != card)
+        if (!IsInstanceValid(card)
+            || card.GetTerrainInstanceOrNull() != terrain)
         {
             return;
         }
 
-        _holdingCard = null;
-        int effectiveTimeCost = _holdingEffectiveTimeCost;
-        _holdingEffectiveTimeCost = 0;
-        int totalTimePassed = GetCurrentTotalTime();
-        if (!interaction.CanHarvest(terrain, totalTimePassed))
+        if (interaction is ReusableGatheringInteraction reusableGathering)
         {
-            RefreshReusableGatheringCard(card, terrain, interaction, totalTimePassed);
-            return;
+            int totalTimePassed = GetCurrentTotalTime();
+            if (!reusableGathering.CanHarvest(terrain, totalTimePassed))
+            {
+                RefreshReusableGatheringCard(card, terrain, reusableGathering, totalTimePassed);
+                return;
+            }
         }
 
-        _terrainInteractionExecutor.Execute(card, terrain, effectiveTimeCost);
-        RefreshReusableGatheringCard(card, terrain, interaction, GetCurrentTotalTime());
+        // 传回开始时快照的采集耗时，确保工具在长按中变化也不会改变已显示的等待成本。
+        _terrainInteractionExecutor.Execute(card, terrain, actionPointCost);
+
+        if (interaction is ReusableGatheringInteraction completedReusableGathering)
+        {
+            RefreshReusableGatheringCard(card, terrain, completedReusableGathering, GetCurrentTotalTime());
+        }
     }
 
-    private void CancelReusableGatheringHold()
+    private int GetInteractionActionPointCost(TerrainInteraction interaction)
     {
-        if (_holdingCard != null && IsInstanceValid(_holdingCard))
+        if (interaction is ReusableGatheringInteraction reusableGathering)
         {
-            _holdingCard.CancelHoldProgress();
+            return reusableGathering.GetEffectiveTimeCost(_gameplayPort.Player?.Equipment);
         }
 
-        _holdingCard = null;
-        _holdingEffectiveTimeCost = 0;
+        return Math.Max(0, interaction?.TimeCost ?? 0);
     }
 
     private static bool TryGetReusableGathering(

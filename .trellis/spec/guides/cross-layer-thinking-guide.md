@@ -53,6 +53,25 @@ For each boundary:
 
 ## Common Cross-Layer Mistakes
 
+### Mistake 0: Treating Scene Text As Runtime State
+
+Godot 的 `.tscn` 文本包含导出属性，并不等于运行时 C# 实例一定收到了该值。脚本程序集未刷新、导出元数据变化或场景反序列化异常，都可能让运行时属性保持空默认值。
+
+对于会阻断整条输入或业务链路的必需 `NodePath`：
+
+- 在组件内提供安全且可审查的非空默认路径，场景只负责按需覆盖；
+- 在 `_Ready` 遇到空 `NodePath` 时恢复该默认值并记录警告，再验证目标节点类型正确；
+- 回归测试必须实例化真实脚本并读取运行时属性，不能只搜索 `.tscn` 文本；
+- 集成故障优先读取 Godot 运行日志，确认失败发生在输入、跨语言调用还是依赖初始化阶段。
+
+这能避免“信号与调用代码都正确，但依赖早已在 `_Ready` 失败”的表面无响应问题。
+
+### Mistake 0.1: Passing Callback Objects Through Dynamic Calls
+
+GDScript 的 `Callable` 经过 `Object.call()` 传入 C# 时，编译不会验证其原始对象与绑定参数能否保留。若运行时显示进度已完成、日志却报 `Attempt to call callable 'null::null'`，说明业务回调已在跨语言封送时丢失。
+
+对于需要在 C# 完成异步工作后回到 GDScript 的流程，应由 C# 持有自己的 `Callable.From(...)`，再发出携带最小事实数据（例如 owner 节点）的 Godot 信号；GDScript 在开始操作前连接该信号并保存自身需要的局部状态。这样回调生命周期由各自语言维护，跨层边界只传递 Godot 原生信号参数。
+
 ### Mistake 1: Implicit Format Assumptions
 
 **Bad**: Assuming date format without checking

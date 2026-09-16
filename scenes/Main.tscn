@@ -23,6 +23,8 @@
 [ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
 [ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
+[ext_resource type="Script" path="res://core/gameflow/WorldHoldInteractionController.cs" id="19_world_hold"]
+[ext_resource type="Script" path="res://core/ui/hud/WorldHoldProgressIndicator.cs" id="20_hold_indicator"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -77,6 +79,10 @@ GameplayPortPath = NodePath("../GameplayPort")
 BackpackFlyTargetPath = NodePath("../../UI/HUDLayer/HUDRoot/BackpackButton/BackpackFlyTarget")
 EncounterManagerPath = NodePath("../EncounterManager")
 
+[node name="WorldHoldInteractionController" type="Node" parent="Gameplay/WorldInteractionCoordinator" node_paths=PackedStringArray("ProgressIndicatorPath")]
+script = ExtResource("19_world_hold")
+ProgressIndicatorPath = NodePath("../../../UI/HUDLayer/HUDRoot/WorldHoldProgressIndicator")
+
 [node name="EncounterManager" type="Node" parent="Gameplay" unique_id=2003392084]
 script = ExtResource("8_ft6cd")
 GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3"), SubResource("Resource_2ofn6")])
@@ -103,6 +109,16 @@ mouse_filter = 2
 script = ExtResource("9_wp0k4")
 GameplayPortPath = NodePath("../../../Gameplay/GameplayPort")
 BackpackButtonPath = NodePath("BackpackButton")
+
+[node name="WorldHoldProgressIndicator" type="Control" parent="UI/HUDLayer/HUDRoot" unique_id=1109283167]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("20_hold_indicator")
 
 [node name="BackpackButton" type="Button" parent="UI/HUDLayer/HUDRoot" unique_id=1417693561]
 layout_mode = 1

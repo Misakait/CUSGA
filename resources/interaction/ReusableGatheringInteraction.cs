@@ -18,7 +18,7 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
     /// <summary>
     /// 游戏时间点数到长按秒数的换算比例。
     /// </summary>
-    public const float GameTimePointsPerHoldSecond = 10.0f;
+    public const float GameTimePointsPerHoldSecond = WorldInteractionTiming.GameTimePointsPerHoldSecond;
 
     /// <summary>
     /// 获取或设置用于掉落和采集遭遇匹配的采集标签。
@@ -71,7 +71,7 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
     /// <returns>返回长按进度条需要运行的秒数。</returns>
     public float GetRequiredHoldSeconds(EquipmentComponent equipment)
     {
-        return GetEffectiveTimeCost(equipment) / GameTimePointsPerHoldSecond;
+        return WorldInteractionTiming.GetHoldDurationSeconds(GetEffectiveTimeCost(equipment));
     }
 
     /// <summary>
