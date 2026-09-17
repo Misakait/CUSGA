@@ -24,6 +24,8 @@ public partial class InventoryUI : Control
     private GridContainer _equipmentSlotGrid = null!;
     private GridContainer _deckSlotGrid = null!;
     private GameplayPort _gameplayPort = null!;
+    // 标题栏上的“合成”按钮：只负责向 GameplayPort 发一个打开请求，不直接持有 CraftingUI。
+    private Button _craftingButton = null!;
     private ItemTooltipPresenter _tooltipPresenter = ItemTooltipPresenter.Empty;
 
     private InventoryComponent _playerInventory = null!;
@@ -41,6 +43,8 @@ public partial class InventoryUI : Control
     {
         var closeButton = GetNode<Button>("%CloseButton");
         closeButton.Pressed += Close;
+        _craftingButton = GetNode<Button>("%CraftingButton");
+        _craftingButton.Pressed += OnCraftingButtonPressed;
         _attributeSummary = GetNode<AttributeSummaryUI>("%AttributeSummaryUI");
         _slotGrid = GetNode<GridContainer>("%SlotGrid");
         _equipmentSlotGrid = GetNode<GridContainer>("%EquipmentSlotGrid");
@@ -118,6 +122,21 @@ public partial class InventoryUI : Control
     {
         Hide();
     }
+
+    /// <summary>
+    /// 响应标题栏的“合成”按钮：先收起背包，再请求打开合成界面。
+    /// </summary>
+    /// <remarks>
+    /// 为什么先收起自己：背包与合成界面同为 <c>CenterOverlay</c> 的子节点，两者同时可见会互相重叠。
+    /// 为什么经 <see cref="GameplayPort"/> 转发而不是直接引用 <c>CraftingUI</c>：两个界面保持零耦合，
+    /// 各自的绑定与刷新逻辑仍由自身负责，这里只表达“我要打开合成界面”这一意图。
+    /// </remarks>
+    private void OnCraftingButtonPressed()
+    {
+        Close();
+        _gameplayPort.RequestOpenCrafting();
+    }
+
     private void BindPlayerInventory(InventoryComponent inventory)
     {
         if (_playerInventory == inventory)
@@ -377,6 +396,12 @@ public partial class InventoryUI : Control
     public override void _ExitTree()
     {
         _gameplayPort.InventoryToggleRequested -= HandleInventoryToggleRequest;
+
+        if (_craftingButton != null)
+        {
+            _craftingButton.Pressed -= OnCraftingButtonPressed;
+        }
+
         DisconnectInventorySignals();
         DisconnectEquipmentSignals();
         DisconnectBattleDeckSignals();

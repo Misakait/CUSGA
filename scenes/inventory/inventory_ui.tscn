@@ -36,6 +36,12 @@ size_flags_horizontal = 3
 text = "物品管理"
 horizontal_alignment = 1
 
+[node name="CraftingButton" type="Button" parent="MainPanel/VBoxContainer/TitleBar" unique_id=38290223]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+text = "合成"
+
 [node name="CloseButton" type="Button" parent="MainPanel/VBoxContainer/TitleBar" unique_id=1997663957]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 0)

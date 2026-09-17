@@ -14,6 +14,7 @@ public partial class GameplayPort : Node
 {
     [Signal] public delegate void InventoryToggleRequestedEventHandler(InventoryComponent inventory);
     [Signal] public delegate void CraftingToggleRequestedEventHandler(CraftingComponent crafting);
+    [Signal] public delegate void CraftingOpenRequestedEventHandler(CraftingComponent crafting);
     [Signal] public delegate void FarmingPanelRequestedEventHandler(TerrainInstance terrain);
     [Signal] public delegate void WarehouseRequestedEventHandler(InventoryComponent playerInventory, InventoryComponent warehouseInventory);
     [Signal]
@@ -75,6 +76,20 @@ public partial class GameplayPort : Node
     public void RequestToggleCrafting()
     {
         EmitSignal(SignalName.CraftingToggleRequested, PlayerCrafting);
+    }
+
+    /// <summary>
+    /// 请求打开合成界面（幂等，不切换）。
+    /// </summary>
+    /// <remarks>
+    /// 与 <see cref="RequestToggleCrafting"/> 并存而不是复用它，是因为两者语义不同：切换版服务于快捷键
+    /// （再按一次即关闭），而背包标题栏的"合成"按钮期望点击后一定是打开。若复用切换版，当合成界面
+    /// 已因快捷键处于可见状态时，玩家点"合成"反而会把它关掉。
+    /// 两个界面都不持有对方，一律经本端口转发，从而保持背包与合成零耦合。
+    /// </remarks>
+    public void RequestOpenCrafting()
+    {
+        EmitSignal(SignalName.CraftingOpenRequested, PlayerCrafting);
     }
 
     public bool TryAddItemToInventory(ItemStack stack)

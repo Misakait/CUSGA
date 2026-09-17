@@ -55,6 +55,7 @@ public partial class CraftingUI : Control
 
         _gameplayPort = GetNode<GameplayPort>(GameplayPortPath);
         _gameplayPort.CraftingToggleRequested += HandleCraftingToggleRequest;
+        _gameplayPort.CraftingOpenRequested += HandleCraftingOpenRequest;
         VisibilityChanged += OnVisibilityChanged;
 
         Hide();
@@ -71,6 +72,25 @@ public partial class CraftingUI : Control
         if (Visible)
         {
             Close();
+            return;
+        }
+
+        Open(crafting);
+    }
+
+    /// <summary>
+    /// 响应"打开合成界面"请求，供背包标题栏的"合成"按钮等入口使用。
+    /// </summary>
+    /// <param name="crafting">要展示的合成组件。</param>
+    /// <remarks>
+    /// 与 <see cref="HandleCraftingToggleRequest"/> 的唯一差别是不对 <c>Visible</c> 取反：
+    /// 由界面内按钮发起的请求必须稳定地"打开"，否则合成界面已可见时点击会被误解为关闭。
+    /// </remarks>
+    private void HandleCraftingOpenRequest(CraftingComponent crafting)
+    {
+        if (crafting == null)
+        {
+            GD.PushError("CraftingUI 收到空 CraftingComponent。");
             return;
         }
 
@@ -406,6 +426,7 @@ public partial class CraftingUI : Control
         if (_gameplayPort != null)
         {
             _gameplayPort.CraftingToggleRequested -= HandleCraftingToggleRequest;
+            _gameplayPort.CraftingOpenRequested -= HandleCraftingOpenRequest;
         }
 
         VisibilityChanged -= OnVisibilityChanged;
