@@ -33,7 +33,7 @@ addons/                编辑器插件（如技能目标类型代码生成）
 
 ## 环境要求
 
-- Godot 4.6（Mono/C# 版本）
+- Godot 4.7（Mono/C# 版本）— 当前 `project.godot` 的 `config/features` 为 `("4.7", "C#", "Forward Plus")`
 - .NET SDK 8.0+
 
 ## 快速开始
@@ -44,11 +44,13 @@ addons/                编辑器插件（如技能目标类型代码生成）
    cd /path/to/CUSGA
    ```
 
-2. 使用 Godot 打开 `project.godot`（推荐），或命令行运行：
+2. 用 Godot 打开 `project.godot`。
 
-   ```bash
-   godot-mono --path .
-   ```
+   项目通过编辑器内的 `addons/godot_ai` 插件对外提供 MCP 接口：AI 可据此读写场景与脚本、运行游戏、抓取运行日志、执行 Godot 运行时测试，甚至直接在运行中的游戏里执行 GDScript 并取回返回值。
+
+   > **不使用 `godot-mono` 命令行。**
+   > 本机虽已安装 Godot Mono（`E:\Godot\` 下有 4.5.1 / 4.6.1 / 4.6.3 / 4.7.1），但未加入 PATH，也不在验证流程内。
+   > 需要 Godot 侧验证时，请保持**编辑器处于打开状态**，由 AI 通过编辑器 MCP 完成；编辑器未打开时请先打开 Godot，不要改用命令行。
 
 ## 构建与验证
 
@@ -68,10 +70,12 @@ env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj
 
 ### 3) 运行 Godot 运行时测试
 
-```bash
-godot-mono --headless --path . --script res://tests/godot/passage_guard_tests.gd
-godot-mono --headless --path . --script res://tests/godot/skill_targeting_type_codegen_tests.gd
-```
+统一通过**编辑器 MCP**执行，不再使用 `godot-mono --headless`：
+
+- `test_run` — 执行 `tests/godot/` 下的全部运行时脚本测试（等价于原先逐条 `--script` 调用），可用 `suite` / `test_name` 过滤单个用例
+- `game_eval` — 在运行中的游戏里执行 GDScript 并取回返回值
+- `logs_read(source="game")` — 读取游戏运行日志，捕获 `SCRIPT ERROR` / `push_error`
+- `project_run` — 启动游戏（`mode="custom"` 可指定场景），结束用 `project_manage(op="stop")`
 
 ### 4) （可选）格式化 C# 代码
 
