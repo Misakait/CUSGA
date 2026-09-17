@@ -147,13 +147,21 @@ func _connect_status_changed_signal() -> void:
 	if not _status_component.is_connected("StatusChanged", callable):
 		_status_component.connect("StatusChanged", callable)
 
-## 定位战斗场景里唯一的 TooltipPanel，复用卡牌和怪物已有的悬停提示框样式。
+## 定位状态栏所在战斗场景里的 TooltipPanel，复用卡牌和怪物已有的悬停提示框样式。
+## 局内触发的战斗会把 battle.tscn 挂在世界主场景 Main 之下，此时全局 "tooltip_panel" 分组的第一顺位
+## 是 Main 场景中随 HUDLayer 一起被隐藏的提示框；直接取分组首个会命中不可见节点，
+## 因此这里必须优先限定在自身所处的场景子树内查找。
 func _resolve_tooltip_panel() -> void:
 	_tooltip_panel = null
 	if not is_inside_tree():
 		# @tool 脚本在编辑器构建阶段可能被脱离场景树刷新，此时不能访问 SceneTree。
 		return
 
+	_tooltip_panel = _find_tooltip_panel_in_own_scene()
+	if _tooltip_panel:
+		return
+
+	# 兜底：自身场景完全没有提示框时才退回旧的全局查找，保持其它复用场景的行为不变。
 	var tree := get_tree()
 	var panels := tree.get_nodes_in_group("tooltip_panel")
 	if panels.size() > 0:
@@ -165,7 +173,38 @@ func _resolve_tooltip_panel() -> void:
 		if ui_node:
 			_tooltip_panel = ui_node.get_node_or_null("TooltipPanel")
 
-## 玩家 Buff 栏处于 UI 层，不能通过父级链路找到实体，因此优先读取 PlayerManager 暴露的战斗实体。
+## 从自身逐级向上，在最近的、含 TooltipPanel 的祖先子树内定位提示框。
+## 采用“最近的祖先”而不是全局搜索，是因为局内战斗时 battle.tscn 只是 Main 的子节点：
+## 全局搜索会越界命中主场景中被 HideWorldView() 隐藏的提示框，而最近的祖先恰好就是战斗场景根节点。
+## 返回值：与状态栏同处一个场景子树的 TooltipPanel；找不到时返回 null。
+func _find_tooltip_panel_in_own_scene() -> Node:
+	var ancestor := self as Node
+	while ancestor:
+		var panel := _find_tooltip_panel_in_subtree(ancestor)
+		if panel:
+			return panel
+		ancestor = ancestor.get_parent()
+
+	return null
+
+## 深度优先查找子树中首个属于 "tooltip_panel" 分组的节点。
+## 参数 subtree_root：本次搜索的子树根节点。
+## 返回值：找到的提示框节点；子树内不存在时返回 null。
+func _find_tooltip_panel_in_subtree(subtree_root: Node) -> Node:
+	if subtree_root.is_in_group("tooltip_panel"):
+		return subtree_root
+
+	for child in subtree_root.get_children():
+		var found := _find_tooltip_panel_in_subtree(child)
+		if found:
+			return found
+
+	return null
+
+## 玩家 Buff 栏处于 UI 层，不能通过父级链路找到实体，因此优先读取当前战斗场景 PlayerManager 暴露的战斗实体。
+## 局内触发的战斗会把 battle.tscn 挂在世界主场景之下，current_scene 仍指向 Main，所以 PlayerManager 必须
+## 从自身向上查找，而不能依赖 current_scene；后续兜底顺序与 player_attribute.gd 保持一致，
+## 保证玩家属性面板与 Buff 栏始终绑定同一个玩家实体。
 ## 返回值：玩家实体节点；无法定位时返回 null。
 func _find_player_entity() -> Node:
 	if not is_inside_tree():
@@ -173,8 +212,7 @@ func _find_player_entity() -> Node:
 		return null
 
 	var tree := get_tree()
-	var current_scene := tree.current_scene
-	var player_manager := current_scene.get_node_or_null("PlayerManager") if current_scene else null
+	var player_manager := _find_player_manager()
 	if player_manager:
 		if player_manager.has_method("get_combat_entity"):
 			var combat_entity = player_manager.call("get_combat_entity")
@@ -188,6 +226,25 @@ func _find_player_entity() -> Node:
 	var grouped_players := tree.get_nodes_in_group("Player")
 	if grouped_players.size() > 0:
 		return grouped_players[0]
+
+	# 局内战斗兜底：战斗场景尚未初始化出 PlayerManager 时，世界玩家实体由 GameplayPort 持有。
+	var gameplay_port := tree.root.get_node_or_null("Main/Gameplay/GameplayPort")
+	if gameplay_port and gameplay_port.get("Player") != null:
+		return gameplay_port.get("Player")
+
+	return tree.root.get_node_or_null("Main/Player")
+
+## 从自身向上查找所属战斗场景的 PlayerManager。
+## 局内战斗时 get_tree().current_scene 指向 Main（其下没有 PlayerManager），
+## 因此只能依靠祖先链定位战斗场景自己的 PlayerManager，独立运行 battle.tscn 时结果同样正确。
+## 返回值：找到的 PlayerManager 节点；不在战斗场景内时返回 null。
+func _find_player_manager() -> Node:
+	var ancestor := self as Node
+	while ancestor:
+		var manager := ancestor.get_node_or_null("PlayerManager")
+		if manager:
+			return manager
+		ancestor = ancestor.get_parent()
 
 	return null
 
