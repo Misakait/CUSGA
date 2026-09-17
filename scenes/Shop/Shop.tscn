@@ -1,0 +1,344 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/shop/shop_control.gd" id="1_control"]
+[ext_resource type="Script" path="res://core/shop/ShopTradeBridge.cs" id="2_bridge"]
+[ext_resource type="Texture2D" path="res://res/UI/按钮-未选中-选中-按下的样子.png" id="3_button"]
+[ext_resource type="Resource" path="res://resources/shop/shop_catalog.tres" id="4_catalog"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.16, 0.17, 0.24, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.33, 0.3, 0.45, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yellow_normal"]
+texture = ExtResource("3_button")
+region_rect = Rect2(0, 0, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yellow_hover"]
+texture = ExtResource("3_button")
+region_rect = Rect2(0, 32, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yellow_pressed"]
+texture = ExtResource("3_button")
+region_rect = Rect2(0, 64, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cyan_normal"]
+texture = ExtResource("3_button")
+region_rect = Rect2(64, 0, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cyan_hover"]
+texture = ExtResource("3_button")
+region_rect = Rect2(64, 32, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cyan_pressed"]
+texture = ExtResource("3_button")
+region_rect = Rect2(64, 64, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_red_normal"]
+texture = ExtResource("3_button")
+region_rect = Rect2(128, 0, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_red_hover"]
+texture = ExtResource("3_button")
+region_rect = Rect2(128, 32, 64, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_red_pressed"]
+texture = ExtResource("3_button")
+region_rect = Rect2(128, 64, 64, 32)
+
+[node name="Shop" type="Node2D"]
+script = ExtResource("1_control")
+
+[node name="ShopTradeBridge" type="Node" parent="."]
+script = ExtResource("2_bridge")
+Catalog = ExtResource("4_catalog")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.15, 1)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="Root" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="UILayer/Root"]
+offset_left = 40.0
+offset_top = 14.0
+offset_right = 640.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.93, 0.72, 1)
+theme_override_font_sizes/font_size = 38
+text = "商  店"
+vertical_alignment = 1
+
+[node name="GoldLabel" type="Label" parent="UILayer/Root"]
+offset_left = 800.0
+offset_top = 14.0
+offset_right = 1240.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.87, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "金币：0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WarehousePanelBg" type="Panel" parent="UILayer/Root"]
+offset_left = 16.0
+offset_top = 72.0
+offset_right = 478.0
+offset_bottom = 606.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="WarehouseHeader" type="Label" parent="UILayer/Root"]
+offset_left = 36.0
+offset_top = 80.0
+offset_right = 458.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "我的仓库（可出售）"
+vertical_alignment = 1
+
+[node name="WarehouseGrid" type="GridContainer" parent="UILayer/Root"]
+offset_left = 43.0
+offset_top = 118.0
+offset_right = 451.0
+offset_bottom = 558.0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 4
+
+[node name="WarehousePrev" type="Button" parent="UILayer/Root"]
+offset_left = 80.0
+offset_top = 566.0
+offset_right = 144.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "◀"
+
+[node name="WarehousePage" type="Label" parent="UILayer/Root"]
+offset_left = 152.0
+offset_top = 566.0
+offset_right = 342.0
+offset_bottom = 598.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 19
+text = "1 / 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WarehouseNext" type="Button" parent="UILayer/Root"]
+offset_left = 350.0
+offset_top = 566.0
+offset_right = 414.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "▶"
+
+[node name="ShopPanelBg" type="Panel" parent="UILayer/Root"]
+offset_left = 802.0
+offset_top = 72.0
+offset_right = 1264.0
+offset_bottom = 606.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="ShopHeader" type="Label" parent="UILayer/Root"]
+offset_left = 822.0
+offset_top = 80.0
+offset_right = 1244.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "商 品（可购买）"
+vertical_alignment = 1
+
+[node name="ShopGrid" type="GridContainer" parent="UILayer/Root"]
+offset_left = 829.0
+offset_top = 118.0
+offset_right = 1237.0
+offset_bottom = 558.0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 4
+
+[node name="ShopPrev" type="Button" parent="UILayer/Root"]
+offset_left = 866.0
+offset_top = 566.0
+offset_right = 930.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "◀"
+
+[node name="ShopPage" type="Label" parent="UILayer/Root"]
+offset_left = 938.0
+offset_top = 566.0
+offset_right = 1128.0
+offset_bottom = 598.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 19
+text = "1 / 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ShopNext" type="Button" parent="UILayer/Root"]
+offset_left = 1136.0
+offset_top = 566.0
+offset_right = 1200.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "▶"
+
+[node name="SelectedLabel" type="Label" parent="UILayer/Root"]
+offset_left = 488.0
+offset_top = 130.0
+offset_right = 792.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+text = "先点选左侧的仓库物品或右侧的商品"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HintLabel" type="Label" parent="UILayer/Root"]
+offset_left = 488.0
+offset_top = 208.0
+offset_right = 792.0
+offset_bottom = 256.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BuyButton" type="Button" parent="UILayer/Root"]
+offset_left = 560.0
+offset_top = 300.0
+offset_right = 720.0
+offset_bottom = 380.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/disabled = SubResource("StyleBoxTexture_yellow_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_yellow_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_yellow_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_yellow_pressed")
+text = "购 买"
+
+[node name="SellButton" type="Button" parent="UILayer/Root"]
+offset_left = 560.0
+offset_top = 396.0
+offset_right = 720.0
+offset_bottom = 476.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "出 售"
+
+[node name="StatusLabel" type="Label" parent="UILayer/Root"]
+offset_left = 488.0
+offset_top = 492.0
+offset_right = 792.0
+offset_bottom = 580.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ExitButton" type="Button" parent="UILayer/Root"]
+offset_left = 560.0
+offset_top = 612.0
+offset_right = 720.0
+offset_bottom = 692.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_red_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_red_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_red_pressed")
+text = "离开商店"
+
+[connection signal="pressed" from="UILayer/Root/WarehousePrev" to="." method="_on_warehouse_prev_pressed"]
+[connection signal="pressed" from="UILayer/Root/WarehouseNext" to="." method="_on_warehouse_next_pressed"]
+[connection signal="pressed" from="UILayer/Root/ShopPrev" to="." method="_on_shop_prev_pressed"]
+[connection signal="pressed" from="UILayer/Root/ShopNext" to="." method="_on_shop_next_pressed"]
+[connection signal="pressed" from="UILayer/Root/BuyButton" to="." method="_on_buy_button_pressed"]
+[connection signal="pressed" from="UILayer/Root/SellButton" to="." method="_on_sell_button_pressed"]
+[connection signal="pressed" from="UILayer/Root/ExitButton" to="." method="_on_exit_button_pressed"]
