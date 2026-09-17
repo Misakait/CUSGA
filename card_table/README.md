@@ -17,20 +17,32 @@ Godot 编辑器会通过 `Card CSV Sync` 插件调用本目录中的同步脚本
 | `monster_cards.csv` | 可选 | 怪物卡 CSV，适合纯文本批量处理和查看 Git 差异。 |
 | `export_current_cards.py` | 否 | Godot 插件调用的同步脚本。 |
 | `.sync_state.json` | 否 | 本地同步状态缓存，会自动生成，不应提交。 |
+| `.card_csv_sync_result.json` | 否 | Godot 与 Python 之间的 UTF-8 结果文件，带本次请求标识并自动覆盖，不应手动编辑或提交。 |
 | `card_tables.pending.xlsx` | 否 | 当 `card_tables.xlsx` 被 Excel/WPS 锁定时生成的待应用工作簿。 |
+| `.sync_backups/` | 否 | 每次成功导入前自动创建的资源备份，最多保留最近 10 份。 |
 | `.gdignore` | 否 | 让 Godot 忽略本目录，避免把 CSV 当资源导入。 |
 
 ## 推荐使用方式
 
+### 先记住这一条
+
+一次只在**一个地方**修改同一张卡牌：要么修改表格，要么修改 Godot Inspector。保存后再点击“安全同步卡牌表格”，不要在两个地方同时编辑同一张卡牌。
+
 1. 打开 Godot 编辑器。
-2. 点击顶部菜单中的 `项目 -> 工具 -> 导出卡牌 CSV`。
-3. 用 Excel、WPS 或 LibreOffice 打开 `card_table/card_tables.xlsx`。
-4. 修改表格内容。
-5. 保存并关闭 `card_tables.xlsx`。
-6. 回到 Godot，点击 `项目 -> 工具 -> 同步卡牌 CSV`。
-7. 在 Godot 控制台确认同步日志，例如：
-   - `正在读取 XLSX 表格：card_table\card_tables.xlsx`
-   - `读取到技能行 ... 条，怪物行 ... 条。`
+2. 点击顶部菜单中的 `项目 -> 工具 -> 打开卡牌表格`。首次使用时会先显示操作顺序；确认后插件自动生成工作簿（如有需要），再用系统默认的 Excel、WPS 或 LibreOffice 打开它。
+3. 修改表格后，**保存并关闭** `card_tables.xlsx`。
+4. 回到 Godot，点击 `项目 -> 工具 -> 安全同步卡牌表格`。
+5. 阅读确认框的同步方向与覆盖提示后确认。插件会先校验表格、备份将改写的资源，再按修改时间自动选择导入或导出。
+6. 等待编辑器弹出“完成”“无需同步”或“失败”结果；失败时不会改写资源，也不会显示成功提示。
+
+### 两种正确操作顺序
+
+| 你要修改的位置 | 必须执行的顺序 |
+|---|---|
+| 表格 | 打开表格 → 修改 → 保存并关闭 Excel/WPS → 安全同步卡牌表格 → 在 Godot 检查结果 |
+| Godot Inspector | 选择卡牌资源 → 修改 → 保存资源 → 安全同步卡牌表格 → 打开表格检查结果 |
+
+同步依据修改时间决定方向：表格较新时导入到 Godot；Godot 资源较新时导出到表格。因此，同一张卡牌同时在两边改动时可能覆盖较旧的一边，应先手动确认正确版本后再同步。
 
 如果只想批量文本处理，也可以直接编辑：
 
@@ -39,14 +51,15 @@ Godot 编辑器会通过 `Card CSV Sync` 插件调用本目录中的同步脚本
 
 ## 手动同步规则
 
-插件不会自动导入、导出或轮询 XLSX/CSV 变化，只会在你点击菜单项时运行。
+插件不会轮询 XLSX/CSV 变化，只会在你点击菜单项时运行。
 
-手动菜单的大致用途是：
+日常只需要两个菜单：
 
-1. `导出卡牌 CSV`：从 Godot `.tres` 资源导出 CSV/XLSX 表格。
-2. `应用卡牌 CSV`：把 XLSX/CSV 表格导入回 `.tres` 资源。
-3. `同步卡牌 CSV`：先导入表格，再重新导出最新表格。
-4. 如果 `card_tables.xlsx` 正在被 Excel/WPS 打开，脚本会把 Godot 资源变更写入 `card_tables.pending.xlsx`；关闭主 XLSX 后，需要再次手动同步才能替换正式的 `card_tables.xlsx`。
+1. `打开卡牌表格`：如果工作簿不存在则生成一次，再在系统表格程序中打开；已有工作簿不会被覆盖。
+2. `安全同步卡牌表格`：确认后先预检，再根据修改时间自动选择“表格导入资源”或“资源导出表格”。同步前会备份受影响的 `.tres`，成功时才重新扫描 Godot 资源。
+3. 如果 `card_tables.xlsx` 正在被 Excel/WPS 打开，资源导出会写入 `card_tables.pending.xlsx`；关闭主 XLSX 后再次执行安全同步，pending 文件会按原有规则应用为正式工作簿。
+
+同步会拒绝缺列、重复路径或名称、非法枚举/数值、未知技能或怪物关联，以及越出受管目录的 `resource_path`。修正表格后重新同步即可；校验失败不会改写任何 `.tres` 资源。
 
 ## XLSX 打开时的注意事项
 
@@ -56,14 +69,14 @@ Windows 下 Excel/WPS 会锁定打开中的 `.xlsx` 文件。
 
 - 当 `card_tables.xlsx` 打开时，Godot 无法直接覆盖它。
 - 脚本会改为生成 `card_tables.pending.xlsx`。
-- 关闭 `card_tables.xlsx` 后，手动点击同步会把 `card_tables.pending.xlsx` 替换为正式的 `card_tables.xlsx`。
+- 关闭 `card_tables.xlsx` 后，点击 `安全同步卡牌表格` 会把 `card_tables.pending.xlsx` 替换为正式的 `card_tables.xlsx`。
 - 如果你同时修改了主 XLSX 和 pending XLSX，脚本会优先保护较新的主 XLSX，避免覆盖你的手动编辑。
 
 建议工作流：
 
 1. 编辑 XLSX 时，先保存并关闭 XLSX。
 2. 再回到 Godot 同步。
-3. 如果要在 Godot Inspector 里改资源，最好先关闭 XLSX；如果生成了 `card_tables.pending.xlsx`，关闭 XLSX 后手动点击同步。
+3. 如果要在 Godot Inspector 里改资源，最好先关闭 XLSX；如果生成了 `card_tables.pending.xlsx`，关闭 XLSX 后点击 `安全同步卡牌表格`。
 
 ## 冲突处理原则
 
@@ -215,9 +228,11 @@ CSV 使用 UTF-8-BOM 写出，方便 Excel/WPS 正常显示中文。
 以下文件属于本地状态或生成文件，不应提交：
 
 - `card_table/.sync_state.json`
+- `card_table/.card_csv_sync_result.json`
 - `card_table/card_tables.xlsx`
 - `card_table/card_tables.pending.xlsx`
 - `card_table/~$*.xlsx`
+- `card_table/.sync_backups/`
 - `card_table/__pycache__/`
 
 CSV、README、同步脚本和 `.gdignore` 应该提交。
@@ -229,7 +244,10 @@ CSV、README、同步脚本和 `.gdignore` 应该提交。
 - 导出表格：`python card_table/export_current_cards.py --export`
 - 导入表格：`python card_table/export_current_cards.py --import`
 - 双向同步：`python card_table/export_current_cards.py --sync`
-- 自动判断（命令行手动运行）：`python card_table/export_current_cards.py --auto`
+- 自动判断（推荐的命令行方式）：`python card_table/export_current_cards.py --auto`
+- 仅在 XLSX 缺失时创建工作簿：`python card_table/export_current_cards.py --ensure-workbook`
+
+命令执行结束会输出一行 `CARD_CSV_SYNC_RESULT=...` 的机器可读结果。退出码为 `0` 表示整个操作成功；表格校验、资源备份、文件写入或 Python 执行失败都会返回非零退出码。
 
 ## 常见问题
 
@@ -245,7 +263,7 @@ CSV、README、同步脚本和 `.gdignore` 应该提交。
 
 如果打印的是 `正在读取 CSV 表格。`，说明脚本判断 CSV 更新，或 XLSX 没有保存成功。
 
-建议保存并关闭 XLSX 后，再手动点击 `同步卡牌 CSV`。
+建议保存并关闭 XLSX 后，再点击 `安全同步卡牌表格`。
 
 ### 为什么 Godot 里改了资源，XLSX 没变？
 
@@ -253,7 +271,7 @@ CSV、README、同步脚本和 `.gdignore` 应该提交。
 
 `card_table/card_tables.pending.xlsx`
 
-关闭 XLSX 后手动点击同步，pending 文件会替换正式 XLSX。
+关闭 XLSX 后点击 `安全同步卡牌表格`，pending 文件会替换正式 XLSX。
 
 ### `.sync_state.json` 能不能删？
 

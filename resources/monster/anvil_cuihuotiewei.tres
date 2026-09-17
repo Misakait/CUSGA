@@ -19,7 +19,7 @@
 
 [sub_resource type="Resource" id="CSV_StartingStats"]
 script = ExtResource("csv_stats_script")
-BasePhysAtk = 190.0
+BasePhysAtk = 190
 BasePhysDef = 320.0
 BaseMagPower = 120.0
 BaseMagResist = 240.0

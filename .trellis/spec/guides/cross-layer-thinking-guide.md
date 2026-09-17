@@ -248,6 +248,20 @@ Create detailed flow docs when:
 - Data format is complex
 - Feature has caused bugs before
 
+## 外部进程结果输出检查清单
+
+当 Godot、C# 或其他调用层需要解析外部进程的最终 JSON 摘要时：
+
+- [ ] 稳定前缀是否由生产者和消费者共用同一个常量？
+- [ ] 机器状态是否使用显式 UTF-8 结果文件或等价结构化通道，而不是依赖控制台文本？
+- [ ] 每次调用是否携带唯一请求标识，消费者是否拒绝旧文件或并发调用的结果？
+- [ ] Windows 的 BOM、Python Launcher 启动文本、stdout/stderr 合并后，主结果通道是否仍不受影响？
+- [ ] 退出码、JSON 的 `success` 字段和资源扫描条件是否仍分别校验？
+- [ ] 结果缺失、损坏或标识不匹配时是否明确失败，而不是自行构造成功？
+- [ ] 是否分别测试成功、无变更、失败和旧结果拒绝场景？
+
+详细实现契约见 `frontend/quality-guidelines.md` 的“编辑器插件调用外部内容工具”。
+
 ---
 
 ## Event Log / Projection Boundary

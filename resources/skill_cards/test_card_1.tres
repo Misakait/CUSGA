@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://dejj5ququif3b"]
 
 [ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_7sme0"]
-[ext_resource type="Resource" uid="uid://bsdh1i48rj756" path="res://resources/combat_skills/test_card_1.tres" id="combat_skill"]
 [ext_resource type="Texture2D" uid="uid://dwl4y02inrubl" path="res://res/skillcard/wood_skill_card.png" id="icon_skillcard"]
 
+[ext_resource type="Resource" path="res://resources/combat_skills/test_card_1.tres" id="combat_skill"]
 [resource]
 script = ExtResource("1_7sme0")
 Skill = ExtResource("combat_skill")
@@ -13,3 +13,4 @@ CardName = "测试卡1"
 CardIcon = ExtResource("icon_skillcard")
 Description = "对单体敌人造成10点木属性物理伤害，并使自身提高100点速度。"
 metadata/_custom_type_script = "uid://bejho62d28qir"
+cost = 10

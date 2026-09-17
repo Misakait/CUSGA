@@ -39,9 +39,9 @@
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="test_card_3"]
 [ext_resource type="Resource" uid="uid://dpvgpsxnxw8rg" path="res://resources/skill_cards/test_card_4.tres" id="test_card_4"]
-[ext_resource type="Resource" path="res://resources/skill_cards/test_card_5.tres" id="test_card_5"]
-[ext_resource type="Resource" path="res://resources/skill_cards/test_card_6.tres" id="test_card_6"]
-[ext_resource type="Resource" path="res://resources/skill_cards/test_card_7.tres" id="test_card_7"]
+[ext_resource type="Resource" uid="uid://bl0ireg07djwx" path="res://resources/skill_cards/test_card_5.tres" id="test_card_5"]
+[ext_resource type="Resource" uid="uid://b7uavwufn1v6c" path="res://resources/skill_cards/test_card_6.tres" id="test_card_6"]
+[ext_resource type="Resource" uid="uid://bb2usyhro8ls2" path="res://resources/skill_cards/test_card_7.tres" id="test_card_7"]
 [ext_resource type="Script" uid="uid://b74g378xtw11y" path="res://scripts/ui_scripts/action_timeline.gd" id="timeline_script"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="tooltip_panel_scene"]
 
