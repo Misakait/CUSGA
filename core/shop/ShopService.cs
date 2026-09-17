@@ -58,12 +58,35 @@ public sealed class ShopService
     /// <param name="item">要购买的商品。</param>
     /// <param name="quantity">购买数量，默认为 1。</param>
     /// <returns>余额与仓库空间都满足时为 <see langword="true"/>。</returns>
+    /// <remarks>单价取物品自身配置的买价。目录里配了兜底价时请用显式单价重载。</remarks>
     public bool CanBuy(IPlayerWallet wallet, IShopInventory inventory, ItemData item, int quantity = 1)
+        => CanBuy(wallet, inventory, item, item?.BuyPrice ?? 0, quantity);
+
+    /// <summary>
+    /// 判断能否按指定单价完成一次购买，不产生任何副作用。
+    /// </summary>
+    /// <param name="wallet">玩家钱包，不能为 <see langword="null"/>。</param>
+    /// <param name="inventory">接收商品的仓库，不能为 <see langword="null"/>。</param>
+    /// <param name="item">要购买的商品。</param>
+    /// <param name="unitPrice">单件买价，由调用方（商店目录）决定。</param>
+    /// <param name="quantity">购买数量。</param>
+    /// <returns>余额与仓库空间都满足时为 <see langword="true"/>。</returns>
+    /// <remarks>
+    /// 价格由调用方传入而不是在这里读 <see cref="ItemData.BuyPrice"/>，是为了让「未自行定价但被目录显式上架」
+    /// 的物品也能用目录的兜底价成交。判断规则的唯一实现仍在 <see cref="ValidateBuy"/> 里。
+    /// </remarks>
+    public bool CanBuy(
+        IPlayerWallet wallet,
+        IShopInventory inventory,
+        ItemData item,
+        int unitPrice,
+        int quantity
+    )
     {
         ArgumentNullException.ThrowIfNull(wallet);
         ArgumentNullException.ThrowIfNull(inventory);
 
-        return ValidateBuy(wallet, inventory, item, quantity, out _, out _);
+        return ValidateBuy(wallet, inventory, item, unitPrice, quantity, out _, out _);
     }
 
     /// <summary>
@@ -73,11 +96,23 @@ public sealed class ShopService
     /// <param name="item">要出售的物品。</param>
     /// <param name="quantity">出售数量，默认为 1。</param>
     /// <returns>仓库持有量足够且物品可定价时为 <see langword="true"/>。</returns>
+    /// <remarks>单价取物品自身配置（缺失时按买价折半）。目录里有兜底价时请用显式单价重载。</remarks>
     public bool CanSell(IShopInventory inventory, ItemData item, int quantity = 1)
+        => CanSell(inventory, item, ResolveSellPrice(item), quantity);
+
+    /// <summary>
+    /// 判断能否按指定单价完成一次出售，不产生任何副作用。
+    /// </summary>
+    /// <param name="inventory">提供物品的仓库，不能为 <see langword="null"/>。</param>
+    /// <param name="item">要出售的物品。</param>
+    /// <param name="unitPrice">单件卖价，由调用方决定。</param>
+    /// <param name="quantity">出售数量。</param>
+    /// <returns>持有量足够且单价为正数时为 <see langword="true"/>。</returns>
+    public bool CanSell(IShopInventory inventory, ItemData item, int unitPrice, int quantity)
     {
         ArgumentNullException.ThrowIfNull(inventory);
 
-        return ValidateSell(inventory, item, quantity, out _, out _);
+        return ValidateSell(inventory, item, unitPrice, quantity, out _, out _);
     }
 
     /// <summary>
@@ -89,10 +124,30 @@ public sealed class ShopService
     /// <param name="quantity">购买数量。</param>
     /// <param name="failureReason">失败原因；成功时为 <see cref="ShopFailureReason.None"/>。</param>
     /// <returns>交易完成时为 <see langword="true"/>；否则为 <see langword="false"/> 且金币与仓库都不变。</returns>
+    /// <remarks>单价取物品自身配置的买价。目录里配了兜底价时请用显式单价重载。</remarks>
     public bool TryBuy(
         IPlayerWallet wallet,
         IShopInventory inventory,
         ItemData item,
+        int quantity,
+        out ShopFailureReason failureReason
+    ) => TryBuy(wallet, inventory, item, item?.BuyPrice ?? 0, quantity, out failureReason);
+
+    /// <summary>
+    /// 尝试按指定单价购买商品：扣除金币并把商品放入仓库。
+    /// </summary>
+    /// <param name="wallet">玩家钱包，不能为 <see langword="null"/>。</param>
+    /// <param name="inventory">接收商品的仓库，不能为 <see langword="null"/>。</param>
+    /// <param name="item">要购买的商品。</param>
+    /// <param name="unitPrice">单件买价，由调用方（商店目录）决定。</param>
+    /// <param name="quantity">购买数量。</param>
+    /// <param name="failureReason">失败原因；成功时为 <see cref="ShopFailureReason.None"/>。</param>
+    /// <returns>交易完成时为 <see langword="true"/>；否则为 <see langword="false"/> 且金币与仓库都不变。</returns>
+    public bool TryBuy(
+        IPlayerWallet wallet,
+        IShopInventory inventory,
+        ItemData item,
+        int unitPrice,
         int quantity,
         out ShopFailureReason failureReason
     )
@@ -101,7 +156,7 @@ public sealed class ShopService
         ArgumentNullException.ThrowIfNull(wallet);
         ArgumentNullException.ThrowIfNull(inventory);
 
-        if (!ValidateBuy(wallet, inventory, item, quantity, out int totalPrice, out failureReason))
+        if (!ValidateBuy(wallet, inventory, item, unitPrice, quantity, out int totalPrice, out failureReason))
         {
             return false;
         }
@@ -146,6 +201,7 @@ public sealed class ShopService
     /// <returns>交易完成时为 <see langword="true"/>；否则为 <see langword="false"/> 且金币与仓库都不变。</returns>
     /// <remarks>
     /// 本方法不做部分出售：持有量不足时整笔失败，避免玩家在只想卖 3 个却只剩 2 个时被静默卖掉 2 个。
+    /// 单价取物品自身配置（缺失时按买价折半）；目录里有兜底价时请用显式单价重载。
     /// </remarks>
     public bool TrySell(
         IPlayerWallet wallet,
@@ -153,12 +209,32 @@ public sealed class ShopService
         ItemData item,
         int quantity,
         out ShopFailureReason failureReason
+    ) => TrySell(wallet, inventory, item, ResolveSellPrice(item), quantity, out failureReason);
+
+    /// <summary>
+    /// 尝试按指定单价出售物品：从仓库移除物品并增加金币。
+    /// </summary>
+    /// <param name="wallet">玩家钱包，不能为 <see langword="null"/>。</param>
+    /// <param name="inventory">提供物品的仓库，不能为 <see langword="null"/>。</param>
+    /// <param name="item">要出售的物品。</param>
+    /// <param name="unitPrice">单件卖价，由调用方决定。</param>
+    /// <param name="quantity">出售数量。</param>
+    /// <param name="failureReason">失败原因；成功时为 <see cref="ShopFailureReason.None"/>。</param>
+    /// <returns>交易完成时为 <see langword="true"/>；否则为 <see langword="false"/> 且金币与仓库都不变。</returns>
+    /// <remarks>本方法不做部分出售：持有量不足时整笔失败。</remarks>
+    public bool TrySell(
+        IPlayerWallet wallet,
+        IShopInventory inventory,
+        ItemData item,
+        int unitPrice,
+        int quantity,
+        out ShopFailureReason failureReason
     )
     {
         ArgumentNullException.ThrowIfNull(wallet);
         ArgumentNullException.ThrowIfNull(inventory);
 
-        if (!ValidateSell(inventory, item, quantity, out int totalGold, out failureReason))
+        if (!ValidateSell(inventory, item, unitPrice, quantity, out int totalGold, out failureReason))
         {
             return false;
         }
@@ -176,71 +252,26 @@ public sealed class ShopService
     }
 
     /// <summary>
-    /// 购买并直接返回失败原因码，供 GDScript 跨语言调用。
-    /// </summary>
-    /// <param name="wallet">玩家钱包。</param>
-    /// <param name="inventory">接收商品的仓库。</param>
-    /// <param name="item">要购买的商品。</param>
-    /// <param name="quantity">购买数量。</param>
-    /// <returns><see cref="ShopFailureReason"/> 的数值；0 表示成功。</returns>
-    /// <remarks>
-    /// GDScript 无法接收 C# 的 <c>out</c> 参数，所以这里提供返回原因码的等价入口。
-    /// 本入口刻意不抛异常：跨语言调用一旦抛异常，GDScript 只会看到一次引擎报错而拿不到可映射的提示，
-    /// 商店界面会在没有可见反馈的情况下卡住。装配缺陷改用 <see cref="ShopFailureReason.NotConfigured"/> 表达。
-    /// </remarks>
-    public int TryBuyWithReason(IPlayerWallet wallet, IShopInventory inventory, ItemData item, int quantity)
-    {
-        if (wallet == null || inventory == null)
-        {
-            GD.PushError("ShopService: 跨语言调用缺少钱包或仓库，无法执行购买。");
-            return (int)ShopFailureReason.NotConfigured;
-        }
-
-        return TryBuy(wallet, inventory, item, quantity, out ShopFailureReason failureReason)
-            ? (int)ShopFailureReason.None
-            : (int)failureReason;
-    }
-
-    /// <summary>
-    /// 出售并直接返回失败原因码，供 GDScript 跨语言调用。
-    /// </summary>
-    /// <param name="wallet">玩家钱包。</param>
-    /// <param name="inventory">提供物品的仓库。</param>
-    /// <param name="item">要出售的物品。</param>
-    /// <param name="quantity">出售数量。</param>
-    /// <returns><see cref="ShopFailureReason"/> 的数值；0 表示成功。</returns>
-    /// <remarks>返回原因码而非抛异常的理由与 <see cref="TryBuyWithReason"/> 相同。</remarks>
-    public int TrySellWithReason(IPlayerWallet wallet, IShopInventory inventory, ItemData item, int quantity)
-    {
-        if (wallet == null || inventory == null)
-        {
-            GD.PushError("ShopService: 跨语言调用缺少钱包或仓库，无法执行出售。");
-            return (int)ShopFailureReason.NotConfigured;
-        }
-
-        return TrySell(wallet, inventory, item, quantity, out ShopFailureReason failureReason)
-            ? (int)ShopFailureReason.None
-            : (int)failureReason;
-    }
-
-    /// <summary>
     /// 校验一次购买的全部前置条件，并算出总价。
     /// </summary>
     /// <param name="wallet">玩家钱包。</param>
     /// <param name="inventory">接收商品的仓库。</param>
     /// <param name="item">要购买的商品。</param>
+    /// <param name="unitPrice">单件买价，由调用方决定。</param>
     /// <param name="quantity">购买数量。</param>
     /// <param name="totalPrice">校验通过时的应付总价；失败时为 0。</param>
     /// <param name="failureReason">校验失败的原因；通过时为 <see cref="ShopFailureReason.None"/>。</param>
     /// <returns>全部前置条件满足时为 <see langword="true"/>。</returns>
     /// <remarks>
-    /// 购买与容量校验集中在这里，保证 <see cref="CanBuy"/> 与 <see cref="TryBuy"/> 对「能不能买」的判断永远一致，
-    /// 不会出现界面显示可买、实际点击却失败的分裂。
+    /// 购买的价格与容量校验集中在这里，保证 <see cref="CanBuy"/> 与 <see cref="TryBuy"/> 对「能不能买」的判断
+    /// 永远一致，不会出现界面显示可买、实际点击却失败的分裂。单价由调用方传入，
+    /// 因此这里只检查它是否为正数，不再去看物品自身的买价。
     /// </remarks>
     private static bool ValidateBuy(
         IPlayerWallet wallet,
         IShopInventory inventory,
         ItemData item,
+        int unitPrice,
         int quantity,
         out int totalPrice,
         out ShopFailureReason failureReason
@@ -249,7 +280,7 @@ public sealed class ShopService
         totalPrice = 0;
         failureReason = ShopFailureReason.None;
 
-        if (!IsPurchasable(item))
+        if (item == null || unitPrice <= 0)
         {
             failureReason = ShopFailureReason.InvalidItem;
             return false;
@@ -262,7 +293,7 @@ public sealed class ShopService
         }
 
         // 用 long 计算总价：单件价格与数量都可能很大，先按 64 位判断再收窄，避免整数溢出算出负数总价。
-        long total = (long)item.BuyPrice * quantity;
+        long total = (long)unitPrice * quantity;
         if (total > int.MaxValue)
         {
             failureReason = ShopFailureReason.InvalidQuantity;
@@ -290,6 +321,7 @@ public sealed class ShopService
     /// </summary>
     /// <param name="inventory">提供物品的仓库。</param>
     /// <param name="item">要出售的物品。</param>
+    /// <param name="unitPrice">单件卖价，由调用方决定。</param>
     /// <param name="quantity">出售数量。</param>
     /// <param name="totalGold">校验通过时的应得总收益；失败时为 0。</param>
     /// <param name="failureReason">校验失败的原因；通过时为 <see cref="ShopFailureReason.None"/>。</param>
@@ -297,6 +329,7 @@ public sealed class ShopService
     private static bool ValidateSell(
         IShopInventory inventory,
         ItemData item,
+        int unitPrice,
         int quantity,
         out int totalGold,
         out ShopFailureReason failureReason
@@ -305,8 +338,7 @@ public sealed class ShopService
         totalGold = 0;
         failureReason = ShopFailureReason.None;
 
-        int unitPrice = ResolveSellPrice(item);
-        if (unitPrice <= 0)
+        if (item == null || unitPrice <= 0)
         {
             failureReason = ShopFailureReason.InvalidItem;
             return false;

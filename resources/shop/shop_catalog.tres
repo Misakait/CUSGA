@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ShopCatalog" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://cb7r4f3r326hj" path="res://core/shop/ShopCatalog.cs" id="1_catalog"]
+
+[resource]
+script = ExtResource("1_catalog")
+AlsoIncludeEveryPricedItem = true
+DefaultBuyPrice = 100
