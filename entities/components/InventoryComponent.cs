@@ -105,6 +105,25 @@ public partial class InventoryComponent : Node, ICraftingInventory, IShopInvento
     }
 
     /// <summary>
+    /// 把背包容量提升到至少指定的槽位数。
+    /// </summary>
+    /// <param name="capacity">需要的最小槽位数量。小于当前容量时不做任何事。</param>
+    /// <remarks>
+    /// 供升级系统把新增的槽位下发到全局仓库。只增不减：缩减容量会让已有物品失去落脚点，
+    /// 因此这里刻意不实现缩容。调用方必须在组件完成 <c>_Ready</c>（内部槽位数组建好）之后再调用。
+    /// </remarks>
+    public void SetCapacity(int capacity)
+    {
+        if (_slots == null)
+        {
+            GD.PushError("InventoryComponent: 组件尚未初始化，容量设置被忽略。");
+            return;
+        }
+
+        EnsureCapacityAtLeast(capacity);
+    }
+
+    /// <summary>
     /// 确保内部槽位数量至少达到指定容量。
     /// </summary>
     /// <param name="minimumCapacity">调用方需要的最小槽位数量。</param>
