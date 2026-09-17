@@ -5,7 +5,23 @@ const main_menu_scene = preload("res://scenes/main_menu_scenes/main_menu.tscn")
 @export var inventory_grid: Node2D
 @export var inventory_control: Control
 
+## 进入仓库时由 SceneManager 调用。
+## @remarks
+## 判据必须是 is_node_ready() 而不是 is_inside_tree()：SceneManager 会对**初始场景**在它就绪之前
+## 就调用 init()（见 core/autoloads/SceneManager.gd）。实测那一刻场景其实**已经进树**
+## （is_inside_tree() 为 true），但 _ready 还没传播，子树中 InventoryControl 的 InventoryComponent
+## 引用尚未建立，因此直接同步执行必然访问到 null——把 Warehouse.tscn 当初始场景直接运行即可复现。
+## 未就绪时推迟到本帧空闲再执行；那时整棵子树已经就绪，效果与「场景切换进入」完全一致。
 func init():
+	if not is_node_ready():
+		_apply_init.call_deferred()
+		return
+
+	_apply_init()
+
+
+## 执行真正的仓库初始化。只有子树就绪后才会被调用。
+func _apply_init():
 	if inventory_control:
 		if GlobalWarehouse:
 			inventory_control.inventory.CopySlotsFrom(GlobalWarehouse)
@@ -64,3 +80,9 @@ func sort_by_card_name():
 
 func _on_exit_button_button_down() -> void:
 	GlobalEventBus.scene_requested.emit("main_menu")
+
+# 局外商店入口。
+# 走 SceneManager 的场景切换，因此本场景的 exit() 会先把界面上的库存副本写回 GlobalWarehouse，
+# 商店再从这个权威库存读取，两边的数据不会错位。
+func _on_shop_button_button_down() -> void:
+	GlobalEventBus.scene_requested.emit("shop")

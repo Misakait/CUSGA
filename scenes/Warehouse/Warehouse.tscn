@@ -680,6 +680,12 @@ offset_right = 58.0
 offset_bottom = 119.0
 theme_override_constants/separation = 16
 
+[node name="ShopButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1904283571]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 23
+text = "进入商店"
+
 [node name="ExitButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1418447391]
 layout_mode = 2
 size_flags_vertical = 3
@@ -702,5 +708,6 @@ text = "整理背包"
 [connection signal="button_down" from="InventoryControl/LeftButton" to="InventoryControl" method="_on_left_button_button_down"]
 [connection signal="button_down" from="InventoryControl/RightButton" to="InventoryControl" method="_on_right_button_button_down"]
 [connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/ExitButton" to="." method="_on_exit_button_button_down"]
+[connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/ShopButton" to="." method="_on_shop_button_button_down"]
 [connection signal="pressed" from="InventoryControl/Panel/ButtonControl/VBoxContainer/FishButton" to="InventoryControl" method="_on_button_pressed"]
 [connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/RefreshButton" to="InventoryControl" method="_on_refresh_button_button_down"]
