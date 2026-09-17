@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "决定 core/shop/ 的落位与命名：纯规则放 core/<system>/，C# 命名空间镜像目录。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "ShopService 必须用 Try*/Can* + 失败枚举表达可恢复失败，并遵守「先校验后变更、失败不留部分变更」。"}
+{"file": ".trellis/spec/backend/resource-data-guidelines.md", "reason": "ItemData 新增 [Export] 字段的默认值、可空性与 display fallback 约定。"}
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "C# 控制台测试运行器如何注册与编写用例，假对象放哪里。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "C# 风格、中文注释、XML 文档、impact 检查与验证命令。"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "scenes/ 与 scripts/ 的落位规则；新增 autoload 前必须先检查既有 autoload 是否已持有该状态。"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "GDScript 场景脚本与 UI 组件的写法约定。"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "autoload/信号/SettingsManager 持久化的契约；connect-before-trigger 与领域校验回退默认值。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "GDScript 跨 C# 边界的读取约定：Object.get() 取 Variant、动态边界守卫，避免类型推断陷阱。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "GDScript/scene 的 headless 验证命令与阻塞项判定。"}
+{"file": ".trellis/spec/guides/minimal-feature-start.md", "reason": "本任务的切片识别、最小实现形状与最小验证命令集。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "决定 IShopInventory 复用 InventoryComponent 既有方法签名而不是新写一套库存操作。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "C# 规则层 → GDScript 表现层 → Godot 资源 三层数据流与失败原因码的跨层传递。"}

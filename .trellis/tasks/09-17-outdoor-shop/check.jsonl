@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "检查 TryBuy/TrySell 的每条失败分支是否都做到了「校验先于变更、失败零副作用」。"}
+{"file": ".trellis/spec/backend/resource-data-guidelines.md", "reason": "检查 ItemData 新字段是否纯增量、既有 .tres 是否无需迁移即可加载。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "检查 C# 中文注释、XML 文档与 CI=true 构建命令是否合规。"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "检查 PlayerWallet 的持久化键、领域校验回退、信号只在变化时发射，以及 SettingsManager 是否被唯一持有。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "检查 shop_control.gd 的跨语言读取是否全部经 Object.get()/call() 并显式声明 Variant，没有裸属性推断。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "检查每个新增 .gd 是否都跑了 --check-only，场景 headless 冒烟是否无 SCRIPT ERROR。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核对 ShopFailureReason 枚举值在 C# 与 GDScript 常量镜像之间是否一致。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复核没有与 CraftingService/SettingsManager/ItemsControl 重复造轮子。"}
