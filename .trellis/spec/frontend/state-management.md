@@ -395,3 +395,91 @@ var mode := str(SettingsManager.get_setting("battle", "operation_mode", "click")
 if mode != "click" and mode != "drag":
 	mode = "click"
 ```
+## SceneManager 的 init() 会在初始场景进树之前被调用
+
+### 1. Scope / Trigger
+
+当场景控制器把 `init()` / `exit()` 作为 SceneManager 的生命周期入口（`warehouse_control.gd`、`shop_control.gd`），并且需要在 `init()` 里访问自己场景的子节点时，必须遵守本节契约。触发原因是 `SceneManager._ready()` 会对**初始场景**调用 `init()`，而那一刻该场景**还没有进入场景树**。
+
+### 2. Signatures
+
+```gdscript
+# core/autoloads/SceneManager.gd
+func _ready() -> void:
+	var initial_scene: Node = get_tree().current_scene
+	if initial_scene:
+		_cache["main_menu"] = initial_scene
+		_current_id = "main_menu"
+	GlobalEventBus.scene_requested.connect(_on_scene_requested)
+	if initial_scene and initial_scene.has_method("init"):
+		initial_scene.init()          # ← 此时 initial_scene 尚未 add_child
+
+func _switch_to(target_id: String, target_path: String) -> void:
+	...
+	get_tree().root.add_child(target)  # ← 切换场景时才是先入树
+	get_tree().current_scene = target
+	...
+	if target.has_method("init"):
+		target.init()
+```
+
+### 3. Contracts
+
+- 场景控制器**不得**用 `@onready` 保存自己场景内的节点引用并在 `init()` 里使用：`@onready` 只在进入树时求值，初始场景路径下它全是 `null`。
+- 需要子节点引用时，在 `init()` 里用 `get_node_or_null("路径")` 解析。子节点在 `instantiate()` 之后就存在，与是否入树无关。
+- `@export var x: Node2D` / `@export var x: Control` 形式的 NodePath 导出**可以**安全使用：它们在实例化时求值，不受入树时机影响。`warehouse_control.gd` 与 `inventory_control.gd` 用的是这一种。
+- 同一个场景控制器还要能在被 `_switch_to` 切换进入时正确工作，因此节点解析要么每次 `init()` 都重做，要么做成幂等且不依赖入树状态。
+- 若控制器想让「直接用 `--scene res://场景.tscn` 运行」也能看到完整界面，可以在自己的 `_ready()` 里再调一次 `init()`；前提是 `init()` 幂等（不重复创建子节点、不重复连接信号）。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 症状 | 结果 |
+|---|---|---|
+| 控制器用 `@onready` 存子节点，且该场景被当作初始场景运行 | `Cannot call method 'X' on a null value`、`Invalid assignment ... on a base object of type 'Nil'` | 整屏引用集体失效 |
+| 控制器用 `@onready` 存子节点，走 SceneManager 正常切换进入 | 无异常 | `add_child` 先于 `init()`，`@onready` 已求值 |
+| 子节点自己（例如格子的脚本）也用 `@onready` | 即使父节点已入树，若父节点**未**入树则 `add_child` 不会触发子节点的 `_ready`，其 `@onready` 仍为 `null` | 格子绑定物品时报 null |
+| 找不到节点 | 后续操作在 `null` 上逐条报错 | 应在解析处 `push_error` 一次性给出明确指向 |
+| 解析失败但已把「已构建」标志置位 | 之后再也不重试 | 只有解析成功才置位，让下一次 `init()` 有机会重试 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`shop_control.gd` 在 `init()` 开头调 `_resolve_nodes()`，用 `get_node_or_null` 解析全部 UI 引用；`_ready()` 也调一次 `init()`，因此直接运行 `Shop.tscn` 与经 SceneManager 切换进入都能正常显示。
+- Base：`warehouse_control.gd` 用 `@export var inventory_grid: Node2D` / `@export var inventory_control: Control`，导出路径在实例化时解析，绕开了这个时机问题。
+- Bad：在场景控制器里写 `@onready var _status_label: Label = $UILayer/Root/StatusLabel`，然后在 `init()` 里 `_status_label.text = ...`。直接运行该 `.tscn` 时 `_status_label` 为 `null`，界面一片空白且报一堆 `Nil` 错误。
+
+### 6. Tests Required
+
+- 行 `godot --headless --path . --scene res://<场景>.tscn --quit-after 10` 直接运行场景，断言输出中没有 `SCRIPT ERROR`、`Cannot call method ... on a null value`、`Invalid assignment ... 'Nil'`。这条命令走的正是「初始场景」路径，是唯一能廉价覆盖该时机的检查。
+- 断言场景的 `init()` 连续调用两次不产生重复子节点、不产生重复信号连接。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# @onready 在初始场景路径下尚未求值，init() 里访问全是 null。
+@onready var _status_label: Label = $UILayer/Root/StatusLabel
+
+func init() -> void:
+	_status_label.text = ""     # Cannot assign to null
+```
+
+#### Correct
+
+```gdscript
+# 子节点在 instantiate() 之后就存在，与是否入树无关，因此在 init() 里解析。
+var _status_label: Label = null
+
+func init() -> void:
+	_resolve_nodes()
+	_status_label.text = ""
+
+func _resolve_nodes() -> void:
+	_status_label = get_node_or_null("UILayer/Root/StatusLabel")
+	if _status_label == null:
+		push_error("场景节点结构与脚本预期不符，请检查 UILayer/Root 下的子节点名称。")
+```
+
+### 已知的既有缺陷（未修复）
+
+`warehouse_control.gd` 的 `init()` 会访问 `inventory_control.inventory`，而 `inventory` 是 `inventory_control.gd` 的 `@onready` 变量。把 `Warehouse.tscn` 当作初始场景直接运行时必然报 `Invalid call. Nonexistent function 'CopySlotsFrom' in base 'Nil'`。走 `main_menu` 启动再经 SceneManager 切换进入仓库不会触发。新增场景控制器时不要复制这个写法。

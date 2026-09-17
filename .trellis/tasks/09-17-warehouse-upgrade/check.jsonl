@@ -1,1 +1,7 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "检查 TryUpgrade 的每条失败分支是否都做到「校验先于变更、失败零副作用」。"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "检查仓库控制器是否用 is_node_ready() 判断就绪、init() 是否幂等、信号连接是否防重复。"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "检查未解锁栏位的视觉区分、Button focus 样式是否置空、空格子是否禁用。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "检查跨语言调用是否显式声明 Variant、Array[ItemData] 是否经 assign 转换。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "检查每个场景是否都跑了 headless 冒烟、删除脚本后是否有残留引用。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核对升级费用只在 C# 一处定义，界面不得硬编码；兜底价不得外溢到未列出的物品。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复核没有与既有 InventoryComponent / ShopService / SettingsManager 重复造轮子。"}

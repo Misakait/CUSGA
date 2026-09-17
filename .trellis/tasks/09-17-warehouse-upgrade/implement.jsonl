@@ -1,1 +1,13 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "决定 core/progression/ 的落位与命名：纯规则放 core/<system>/，C# 命名空间镜像目录。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "TryUpgrade 必须用 Try* + 布尔表达可恢复失败，并遵守「先校验后变更、失败零副作用」。"}
+{"file": ".trellis/spec/backend/resource-data-guidelines.md", "reason": "ShopCatalog 作为 [GlobalClass] Resource 的字段默认值、导出集合类型与可空性约定。"}
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "Godot runner 与 C# 控制台 runner 的分工，以及本机实际能用哪一种。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "C# 中文 XML 文档、注释讲为什么、CI=true 构建命令。"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "scenes/ 与 scripts/ 的落位规则；新增 autoload 前先确认既有 autoload 是否已持有该状态。"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "共享格子场景的 Button 悬停/选中映射，以及 GDScript 场景脚本的写法约定。"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "SceneManager 在场景就绪前调用 init() 的时序契约：必须用 is_node_ready() 判断并延迟初始化。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "本机验证工具链的实际边界：--check-only 对 autoload 脚本无效、--script 模式没有 C# autoload。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "GDScript 与 C# 边界：Object.get 读属性、显式声明 Variant、Array[T] 跨语言传递要显式转换。"}
+{"file": ".trellis/spec/guides/minimal-feature-start.md", "reason": "本任务的切片识别与最小验证命令集。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "决定复用 InventoryComponent 既有方法与共享格子场景，而不是各写一套。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "升级数值、价格解析、带入栏数量三层数据在 C# 规则与 GDScript 表现之间的传递。"}

@@ -2,6 +2,8 @@
 .godot/
 /android/
 .idea/
+# Godot 重写 CUSGA.csproj 前留下的备份（机器生成的副本，每次重写都会轮换出一个新的）
+CUSGA.csproj.old*
 addons/*
 !addons/skill_targeting_type_codegen/
 !addons/skill_targeting_type_codegen/**

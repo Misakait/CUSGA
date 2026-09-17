@@ -3,7 +3,7 @@
   "name": "warehouse-upgrade",
   "title": "仓库改造与容量升级系统",
   "description": "重做局外仓库 UI（对齐商店风格、去掉拖拽改为点选+按钮），新增商店商品目录资源，并实现可用金币升级的仓库容量与带入栏数量。",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,
