@@ -12,7 +12,7 @@ metadata/_custom_type_script = "uid://b2df0ritlplj8"
 
 [resource]
 script = ExtResource("3_jusv1")
-Element = 3
+Element = 1
 TargetingType = 0
 Effects = Array[ExtResource("1_46jgr")]([SubResource("Resource_46jgr")])
 CardId = null

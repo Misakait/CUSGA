@@ -13,12 +13,19 @@ from __future__ import annotations
 import argparse
 import ast
 import csv
+import datetime
 import html
 import json
+import math
+import os
 import re
+import shutil
+import sys
+import tempfile
 import zipfile
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import cast
+from typing import cast, Iterable
 from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +38,22 @@ MONSTER_CSV = OUT_DIR / "monster_cards.csv"
 XLSX_FILE = OUT_DIR / "card_tables.xlsx"
 PENDING_XLSX_FILE = OUT_DIR / "card_tables.pending.xlsx"
 STATE_FILE = OUT_DIR / ".sync_state.json"
+BACKUP_DIR = OUT_DIR / ".sync_backups"
+BACKUP_RETENTION_COUNT = 10
+RESULT_PREFIX = "CARD_CSV_SYNC_RESULT="
+
+
+def configure_console_encoding() -> None:
+    """强制脚本结果使用 UTF-8，避免 Windows 管道输出损坏插件要解析的中文 JSON。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            # 某些嵌入式解释器没有可重配的标准流，保留其默认行为而不阻断同步。
+            continue
+
+
+configure_console_encoding()
 
 SKILL_CARD_SCRIPT = "res://resources/item/card/SkillCardData.cs"
 COMBAT_SKILL_SCRIPT = "res://core/combat/skills/CombatSkillData.cs"
@@ -173,6 +196,44 @@ PERCENT_STAT_KEYS = frozenset(
 PERCENT_SCALE = 100.0
 
 
+class CardTableSyncError(Exception):
+    """表示可预期的同步失败，并由命令行入口转换为清晰的错误结果。"""
+
+
+class CardTableValidationError(CardTableSyncError):
+    """表示表格预检失败；抛出后不得进入任何资源写入流程。"""
+
+
+@dataclass
+class SyncResult:
+    """记录一次同步操作的最终状态，供 Godot 插件与命令行统一消费。"""
+
+    action: str
+    changed_files: list[Path] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    def to_payload(
+        self, success: bool, error: str = "", request_id: str = ""
+    ) -> dict[str, object]:
+        """转换为编辑器可解析的稳定 JSON 结果。
+
+        参数:
+            success: 整次操作是否完整成功。
+            error: 失败时展示给用户的错误原因。
+            request_id: Godot 为本次调用生成的唯一标识，用于拒绝旧结果文件。
+        返回:
+            可同时写入 UTF-8 结果文件与控制台的 JSON 字典。
+        """
+        return {
+            "success": success,
+            "action": self.action,
+            "changed_files": [to_res_path(path) for path in self.changed_files],
+            "warnings": self.warnings,
+            "error": error,
+            "request_id": request_id,
+        }
+
+
 def _format_stat_number(value: float) -> str:
     """把属性数值格式化为稳定的表格/资源字面量，避免浮点误差污染同步结果。
 
@@ -266,6 +327,87 @@ def to_disk_path(res_path: str) -> Path:
     )
 
 
+def write_text_atomically(path: Path, content: str, encoding: str = "utf-8") -> None:
+    """以同目录临时文件加替换的方式写入文本，避免中断时截断原文件。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    file_descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(file_descriptor, "w", encoding=encoding, newline="") as file:
+            file.write(content)
+        os.replace(temporary_path, path)
+    except OSError as error:
+        raise CardTableSyncError(f"无法原子写入 {path.relative_to(ROOT)}：{error}") from error
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+
+def create_resource_backup(paths: Iterable[Path]) -> Path | None:
+    """备份本次将覆盖的已有资源，供同步后的人工回滚使用。"""
+    existing_paths = sorted({path for path in paths if path.exists()})
+    if not existing_paths:
+        return None
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    backup_root = BACKUP_DIR / timestamp
+    try:
+        for source_path in existing_paths:
+            target_path = backup_root / source_path.relative_to(ROOT)
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, target_path)
+    except OSError as error:
+        raise CardTableSyncError(f"创建同步备份失败：{error}") from error
+    _trim_old_backups()
+    return backup_root
+
+
+def _trim_old_backups() -> None:
+    """限制自动备份数量，避免长期使用表格工具无限占用项目磁盘空间。"""
+    if not BACKUP_DIR.exists():
+        return
+    backup_directories = sorted(
+        (path for path in BACKUP_DIR.iterdir() if path.is_dir()),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    for expired_directory in backup_directories[BACKUP_RETENTION_COUNT:]:
+        try:
+            shutil.rmtree(expired_directory)
+        except OSError as error:
+            print(f"[警告] 无法清理过期同步备份 {expired_directory.name}：{error}")
+
+
+def write_resource_batch_atomically(updates: dict[Path, str]) -> tuple[list[Path], Path | None]:
+    """备份并逐文件原子提交资源更新；单个写入失败时恢复已提交的资源。"""
+    if not updates:
+        return [], None
+    previous_existing_paths = {path for path in updates if path.exists()}
+    backup_root = create_resource_backup(previous_existing_paths)
+    applied_paths: list[Path] = []
+    try:
+        for path, content in updates.items():
+            write_text_atomically(path, content)
+            applied_paths.append(path)
+    except CardTableSyncError as error:
+        rollback_errors: list[str] = []
+        for path in reversed(applied_paths):
+            try:
+                if path in previous_existing_paths and backup_root is not None:
+                    backup_path = backup_root / path.relative_to(ROOT)
+                    write_text_atomically(path, backup_path.read_text(encoding="utf-8"))
+                elif path.exists():
+                    path.unlink()
+            except OSError as rollback_error:
+                rollback_errors.append(f"{path.relative_to(ROOT)}：{rollback_error}")
+        rollback_suffix = (
+            "；回滚失败：" + "；".join(rollback_errors) if rollback_errors else ""
+        )
+        raise CardTableSyncError(f"资源写入失败，已尝试回滚：{error}{rollback_suffix}") from error
+    return list(updates), backup_root
+
+
 def godot_string(value: str) -> str:
     """生成 Godot `.tres` 可读的字符串字面量，保留中文并转义特殊字符。"""
     return json.dumps(value or "", ensure_ascii=False)
@@ -345,8 +487,9 @@ def read_sync_state() -> dict[str, float]:
 def write_sync_state() -> None:
     """写入当前 CSV/XLSX 修改时间，避免插件把自己刚导出的表格误判为外部改动。"""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    STATE_FILE.write_text(
-        json.dumps(get_csv_signature(), ensure_ascii=False, indent=2), encoding="utf-8"
+    write_text_atomically(
+        STATE_FILE,
+        json.dumps(get_csv_signature(), ensure_ascii=False, indent=2),
     )
 
 
@@ -379,27 +522,44 @@ def read_text_with_csv_encoding(path: Path) -> str:
     return data.decode("utf-8", errors="replace")
 
 
-def read_csv_rows(path: Path) -> list[dict[str, str]]:
-    """读取 CSV，兼容 UTF-8、UTF-8-BOM、GBK/GB18030。"""
+def read_csv_table(path: Path) -> tuple[list[str], list[dict[str, str]]]:
+    """读取 CSV 的表头和行数据，兼容 UTF-8、UTF-8-BOM、GBK/GB18030。"""
     if not path.exists():
-        return []
+        return [], []
     import io
 
     content = read_text_with_csv_encoding(path)
-    return [dict(row) for row in csv.DictReader(io.StringIO(content))]
+    reader = csv.DictReader(io.StringIO(content))
+    return list(reader.fieldnames or []), [dict(row) for row in reader]
 
 
-def write_csv_rows(path: Path, headers: list[str], rows: list[dict[str, str]]) -> bool:
-    """写入 UTF-8-BOM CSV；文件被 Excel/WPS 锁定时跳过导出但不阻断资源导入。"""
+def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    """读取 CSV 行数据，供只需要数据而不校验表头的兼容调用方使用。"""
+    _headers, rows = read_csv_table(path)
+    return rows
+
+
+def write_csv_rows(path: Path, headers: list[str], rows: list[dict[str, str]]) -> Path:
+    """原子写入 UTF-8-BOM CSV；被占用或无法替换时终止本次同步。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    file_descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    temporary_path = Path(temporary_name)
     try:
-        with path.open("w", encoding="utf-8-sig", newline="") as file:
+        with os.fdopen(
+            file_descriptor, "w", encoding="utf-8-sig", newline=""
+        ) as file:
             writer = csv.DictWriter(file, fieldnames=headers)
             writer.writeheader()
             writer.writerows(rows)
-        return True
-    except PermissionError:
-        print(f"CSV 文件正在被外部程序占用，已跳过导出：{path}")
-        return False
+        os.replace(temporary_path, path)
+        return path
+    except OSError as error:
+        raise CardTableSyncError(f"无法写入 CSV 文件 {path.relative_to(ROOT)}：{error}") from error
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
 
 
 def element_to_label(value: str) -> str:
@@ -580,8 +740,9 @@ def build_options_rows() -> list[dict[str, str]]:
 def write_xlsx_workbook(
     skill_rows: list[dict[str, str]],
     monster_rows: list[dict[str, str]],
-) -> bool:
-    """导出带下拉框的 XLSX；CSV 继续作为自动同步底层格式，XLSX 负责更友好的人工编辑。"""
+) -> Path:
+    """原子导出带下拉框的 XLSX，并在主工作簿锁定时写入 pending 文件。"""
+    temporary_path: Path | None = None
     try:
         promote_pending_xlsx()
         option_rows = build_options_rows()
@@ -590,7 +751,12 @@ def write_xlsx_workbook(
             print(
                 f"XLSX 文件正在被外部程序占用，本次导出写入待应用文件：{PENDING_XLSX_FILE.relative_to(ROOT)}"
             )
-        with zipfile.ZipFile(target_file, "w", zipfile.ZIP_DEFLATED) as archive:
+        file_descriptor, temporary_name = tempfile.mkstemp(
+            dir=target_file.parent, prefix=f".{target_file.name}.", suffix=".tmp"
+        )
+        os.close(file_descriptor)
+        temporary_path = Path(temporary_name)
+        with zipfile.ZipFile(temporary_path, "w", zipfile.ZIP_DEFLATED) as archive:
             archive.writestr(
                 "[Content_Types].xml",
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -672,10 +838,15 @@ def write_xlsx_workbook(
                     ],
                 ),
             )
-        return target_file == XLSX_FILE
-    except PermissionError:
-        print(f"XLSX 文件正在被外部程序占用，已跳过导出：{XLSX_FILE}")
-        return False
+        os.replace(temporary_path, target_file)
+        return target_file
+    except (OSError, zipfile.BadZipFile) as error:
+        raise CardTableSyncError(
+            f"无法写入 XLSX 文件 {XLSX_FILE.relative_to(ROOT)}：{error}"
+        ) from error
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
 
 
 def get_xlsx_shared_strings(archive: zipfile.ZipFile) -> list[str]:
@@ -713,10 +884,10 @@ def get_xlsx_cell_text(
     return value.text if value is not None and value.text is not None else ""
 
 
-def read_xlsx_sheet(sheet_path: str) -> list[dict[str, str]]:
-    """读取本工具生成的 XLSX 工作表，供使用下拉框编辑后的文件重新导入。"""
+def read_xlsx_sheet_table(sheet_path: str) -> tuple[list[str], list[dict[str, str]]]:
+    """读取 XLSX 工作表的表头和行数据，供预检与导入共同使用。"""
     if not XLSX_FILE.exists():
-        return []
+        return [], []
     namespace = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
     with zipfile.ZipFile(XLSX_FILE) as archive:
         shared_strings = get_xlsx_shared_strings(archive)
@@ -735,7 +906,7 @@ def read_xlsx_sheet(sheet_path: str) -> list[dict[str, str]]:
             max_column = max(max_column, column_index)
         rows.append([values.get(index, "") for index in range(1, max_column + 1)])
     if not rows:
-        return []
+        return [], []
     headers = rows[0]
     result: list[dict[str, str]] = []
     for values in rows[1:]:
@@ -748,11 +919,13 @@ def read_xlsx_sheet(sheet_path: str) -> list[dict[str, str]]:
                 if header
             }
         )
-    return result
+    return headers, result
 
 
-def read_card_tables() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
-    """优先读取被用户改过的 XLSX；没有改动工作簿时回退到 CSV。"""
+def read_card_tables() -> tuple[
+    list[str], list[dict[str, str]], list[str], list[dict[str, str]], str
+]:
+    """优先读取被用户改过的 XLSX；返回表头、行数据与实际使用的来源。"""
     previous = read_sync_state()
     xlsx_time = XLSX_FILE.stat().st_mtime if XLSX_FILE.exists() else 0.0
     csv_time = max(
@@ -764,12 +937,19 @@ def read_card_tables() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
         xlsx_time > previous.get("xlsx_file", 0.0) or xlsx_time >= csv_time
     ):
         print(f"正在读取 XLSX 表格：{XLSX_FILE.relative_to(ROOT)}")
+        skill_headers, skill_rows = read_xlsx_sheet_table("xl/worksheets/sheet1.xml")
+        monster_headers, monster_rows = read_xlsx_sheet_table("xl/worksheets/sheet2.xml")
         return (
-            read_xlsx_sheet("xl/worksheets/sheet1.xml"),
-            read_xlsx_sheet("xl/worksheets/sheet2.xml"),
+            skill_headers,
+            skill_rows,
+            monster_headers,
+            monster_rows,
+            "XLSX",
         )
     print("正在读取 CSV 表格。")
-    return read_csv_rows(SKILL_CSV), read_csv_rows(MONSTER_CSV)
+    skill_headers, skill_rows = read_csv_table(SKILL_CSV)
+    monster_headers, monster_rows = read_csv_table(MONSTER_CSV)
+    return skill_headers, skill_rows, monster_headers, monster_rows, "CSV"
 
 
 def parse_resource_paths(text: str) -> dict[str, str]:
@@ -782,8 +962,16 @@ def parse_resource_paths(text: str) -> dict[str, str]:
     return resources
 
 
-def parse_scalar(text: str, key: str, default: str = "") -> str:
-    """读取 `.tres` 资源段里的简单标量字段。"""
+def get_resource_block(text: str) -> tuple[str, str]:
+    """拆分 `.tres` 头部与唯一的 `[resource]` 块，避免把子资源字段误当作根资源字段。"""
+    resource_match = re.search(r"^\[resource\]\s*$", text, flags=re.MULTILINE)
+    if resource_match is None:
+        raise CardTableSyncError("资源文件缺少 [resource] 块，已拒绝修改以保护原始数据。")
+    return text[: resource_match.end()], text[resource_match.end() :]
+
+
+def parse_scalar_in_block(text: str, key: str, default: str = "") -> str:
+    """读取指定资源块中的简单标量字段。"""
     match = re.search(rf"^{re.escape(key)}\s*=\s*(.+)$", text, flags=re.MULTILINE)
     if not match:
         return default
@@ -800,6 +988,12 @@ def parse_scalar(text: str, key: str, default: str = "") -> str:
     return value
 
 
+def parse_scalar(text: str, key: str, default: str = "") -> str:
+    """读取 `.tres` 根资源段里的简单标量字段。"""
+    _header, resource_block = get_resource_block(text)
+    return parse_scalar_in_block(resource_block, key, default)
+
+
 def parse_scalar_in_subresource(
     text: str, sub_id: str, key: str, default: str = ""
 ) -> str:
@@ -812,14 +1006,15 @@ def parse_scalar_in_subresource(
     block_match = re.search(block_pattern, text)
     if not block_match:
         return default
-    return parse_scalar(block_match.group(0), key, default)
+    return parse_scalar_in_block(block_match.group(0), key, default)
 
 
 def parse_ext_assignment(text: str, key: str, resources: dict[str, str]) -> str:
     """读取 `Skill = ExtResource("...")` 这类资源引用字段。"""
+    _header, resource_block = get_resource_block(text)
     match = re.search(
         rf"^{re.escape(key)}\s*=\s*ExtResource\(\"([^\"]+)\"\)",
-        text,
+        resource_block,
         flags=re.MULTILINE,
     )
     if not match:
@@ -829,9 +1024,10 @@ def parse_ext_assignment(text: str, key: str, resources: dict[str, str]) -> str:
 
 def parse_array_strings(text: str, key: str) -> str:
     """读取 `Array[String](["a", "b"])` 并用分号输出，适配 CSV 中的多值字段。"""
+    _header, resource_block = get_resource_block(text)
     match = re.search(
         rf"^{re.escape(key)}\s*=\s*Array\[String\]\(\[(.*)\]\)",
-        text,
+        resource_block,
         flags=re.MULTILINE,
     )
     if not match:
@@ -858,9 +1054,13 @@ def replace_or_add_resource_property(text: str, key: str, value_literal: str) ->
     """替换 `[resource]` 段中的属性；不存在时追加到资源段末尾。"""
     pattern = rf"^{re.escape(key)}\s*=\s*.*$"
     replacement = f"{key} = {value_literal}"
-    if re.search(pattern, text, flags=re.MULTILINE):
-        return re.sub(pattern, replacement, text, count=1, flags=re.MULTILINE)
-    return text.rstrip() + "\n" + replacement + "\n"
+    header, resource_block = get_resource_block(text)
+    if re.search(pattern, resource_block, flags=re.MULTILINE):
+        updated_block = re.sub(
+            pattern, replacement, resource_block, count=1, flags=re.MULTILINE
+        )
+        return header + updated_block
+    return header + resource_block.rstrip() + "\n" + replacement + "\n"
 
 
 def replace_or_add_line(text: str, key: str, value_literal: str) -> str:
@@ -1012,6 +1212,241 @@ def derive_id_slug_from_path(res_path: str, fallback: str = "") -> str:
     if res_path:
         return Path(res_path).stem
     return safe_slug(fallback)
+
+
+def validate_managed_resource_path(
+    res_path: str, managed_directory: Path, field_name: str, errors: list[str]
+) -> Path | None:
+    """校验表格资源路径只能落在指定目录，阻断路径穿越与误写项目其它文件。"""
+    normalized_path = (res_path or "").strip()
+    if not normalized_path.startswith("res://"):
+        errors.append(f"{field_name} 必须使用 res:// 路径：{normalized_path or '<空>'}")
+        return None
+    path_parts = Path(normalized_path.removeprefix("res://")).parts
+    if ".." in path_parts:
+        errors.append(f"{field_name} 不允许包含路径穿越段：{normalized_path}")
+        return None
+    if "\\" in normalized_path or not normalized_path.endswith(".tres"):
+        errors.append(f"{field_name} 必须是受管目录内的 .tres 文件：{normalized_path}")
+        return None
+    candidate_path = (ROOT / normalized_path.removeprefix("res://")).resolve()
+    allowed_root = managed_directory.resolve()
+    try:
+        candidate_path.relative_to(allowed_root)
+    except ValueError:
+        errors.append(f"{field_name} 越出受管目录，已拒绝写入：{normalized_path}")
+        return None
+    return candidate_path
+
+
+def validate_optional_resource_reference(
+    res_path: str, field_name: str, errors: list[str]
+) -> None:
+    """校验可选的场景、图标等引用路径，避免把无效引用写进 `.tres`。"""
+    normalized_path = (res_path or "").strip()
+    if not normalized_path:
+        return
+    path_parts = Path(normalized_path.removeprefix("res://")).parts
+    if ".." in path_parts:
+        errors.append(f"{field_name} 不允许包含路径穿越段：{normalized_path}")
+        return
+    if not normalized_path.startswith("res://") or "\\" in normalized_path:
+        errors.append(f"{field_name} 必须使用 res:// 路径：{normalized_path}")
+        return
+    candidate_path = (ROOT / normalized_path.removeprefix("res://")).resolve()
+    try:
+        candidate_path.relative_to(ROOT.resolve())
+    except ValueError:
+        errors.append(f"{field_name} 越出项目目录，已拒绝引用：{normalized_path}")
+        return
+    if not candidate_path.exists():
+        errors.append(f"{field_name} 指向的文件不存在：{normalized_path}")
+
+
+def validate_number(
+    text: str,
+    field_name: str,
+    errors: list[str],
+    minimum: float | None = None,
+    integer_only: bool = False,
+) -> None:
+    """校验表格数值的有限性、范围和整数要求，避免生成 Godot 无法解析的字面量。"""
+    normalized_text = (text or "").strip()
+    if not normalized_text:
+        return
+    value = _parse_stat_number(normalized_text)
+    if value is None or not math.isfinite(value):
+        errors.append(f"{field_name} 必须是有限数值，当前为：{normalized_text}")
+        return
+    if integer_only and not value.is_integer():
+        errors.append(f"{field_name} 必须是整数，当前为：{normalized_text}")
+    if minimum is not None and value < minimum:
+        errors.append(f"{field_name} 不能小于 {minimum:g}，当前为：{normalized_text}")
+
+
+def validate_id_slug(text: str, field_name: str, errors: list[str]) -> None:
+    """校验新增资源使用稳定文件名标识，避免导入时静默改名或创建异常路径。"""
+    normalized_text = (text or "").strip()
+    if not normalized_text:
+        errors.append(f"{field_name} 不能为空。")
+        return
+    if safe_slug(normalized_text) != normalized_text:
+        errors.append(f"{field_name} 只能包含中英文、数字、下划线或连字符：{normalized_text}")
+
+
+def build_future_skill_key_map(rows: list[dict[str, str]]) -> dict[str, str]:
+    """把本次新增或改名的技能加入索引，供同批怪物引用在预检阶段解析。"""
+    key_map = build_skill_key_map()
+    for row in rows:
+        skill_card_path = resolve_skill_card_path(row)
+        combat_path = resolve_combat_skill_path(row, skill_card_path)
+        for key in [
+            skill_card_path,
+            Path(skill_card_path).stem if skill_card_path else "",
+            row.get("id_slug", ""),
+            row.get("card_name", ""),
+            combat_path,
+            Path(combat_path).stem if combat_path else "",
+        ]:
+            if key:
+                key_map[key] = combat_path
+    return key_map
+
+
+def validate_table_headers(
+    headers: list[str], expected_headers: list[str], table_name: str, errors: list[str]
+) -> None:
+    """校验表格保留全部受支持列，防止误删列后以空值覆盖现有资源。"""
+    missing_headers = [header for header in expected_headers if header not in headers]
+    if missing_headers:
+        errors.append(f"{table_name} 缺少列：{', '.join(missing_headers)}")
+    duplicated_headers = sorted(
+        {header for header in headers if header and headers.count(header) > 1}
+    )
+    if duplicated_headers:
+        errors.append(f"{table_name} 存在重复列：{', '.join(duplicated_headers)}")
+
+
+def validate_import_rows(
+    skill_headers: list[str],
+    skill_rows_raw: list[dict[str, str]],
+    monster_headers: list[str],
+    monster_rows_raw: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """完整预检两张表；发现任意错误时抛出异常，保证后续不会改写资源。"""
+    skill_rows = [normalize_skill_row_for_import(row) for row in skill_rows_raw]
+    monster_rows = [normalize_monster_row_for_import(row) for row in monster_rows_raw]
+    errors: list[str] = []
+    skill_paths: set[Path] = set()
+    combat_paths: set[Path] = set()
+    skill_names: set[str] = set()
+    monster_paths: set[Path] = set()
+    monster_names: set[str] = set()
+
+    validate_table_headers(skill_headers, SKILL_HEADERS, "技能表", errors)
+    validate_table_headers(monster_headers, MONSTER_HEADERS, "怪物表", errors)
+
+    for row_index, row in enumerate(skill_rows, start=2):
+        row_label = f"技能表第 {row_index} 行"
+        resource_path = (row.get("resource_path") or "").strip()
+        id_slug = (row.get("id_slug") or "").strip()
+        if not resource_path:
+            validate_id_slug(id_slug, f"{row_label} id_slug", errors)
+        if not (row.get("card_name") or "").strip():
+            errors.append(f"{row_label} card_name 不能为空。")
+        skill_card_path = resolve_skill_card_path(row)
+        combat_skill_path = resolve_combat_skill_path(row, skill_card_path)
+        validated_skill_path = validate_managed_resource_path(
+            skill_card_path, SKILL_CARD_DIR, f"{row_label} resource_path", errors
+        )
+        validated_combat_path = validate_managed_resource_path(
+            combat_skill_path, COMBAT_SKILL_DIR, f"{row_label} combat_skill_path", errors
+        )
+        if validated_skill_path is not None:
+            if validated_skill_path in skill_paths:
+                errors.append(f"{row_label} resource_path 与其它技能重复：{skill_card_path}")
+            skill_paths.add(validated_skill_path)
+        if validated_combat_path is not None:
+            if validated_combat_path in combat_paths:
+                errors.append(
+                    f"{row_label} combat_skill_path 与其它技能重复：{combat_skill_path}"
+                )
+            combat_paths.add(validated_combat_path)
+        card_name = (row.get("card_name") or "").strip()
+        if card_name:
+            if card_name in skill_names:
+                errors.append(f"{row_label} card_name 与其它技能重复：{card_name}")
+            skill_names.add(card_name)
+        if (row.get("element") or "") and (row.get("element") or "") not in ELEMENT_VALUE_TO_LABEL:
+            errors.append(f"{row_label} element 不是支持的五行值。")
+        if (row.get("targeting_type") or "") and (
+            row.get("targeting_type") or ""
+        ) not in TARGETING_VALUE_TO_LABEL:
+            errors.append(f"{row_label} targeting_type 不是支持的目标类型。")
+        validate_number(row.get("cost") or "", f"{row_label} cost", errors, 0, True)
+        validate_optional_resource_reference(row.get("icon_path") or "", f"{row_label} icon_path", errors)
+
+    for row_index, row in enumerate(monster_rows, start=2):
+        row_label = f"怪物表第 {row_index} 行"
+        resource_path = (row.get("resource_path") or "").strip()
+        id_slug = (row.get("id_slug") or "").strip()
+        if not resource_path:
+            validate_id_slug(id_slug, f"{row_label} id_slug", errors)
+        monster_name = (row.get("monster_name") or "").strip()
+        if not monster_name:
+            errors.append(f"{row_label} monster_name 不能为空。")
+        monster_path = resolve_monster_path(row)
+        validated_monster_path = validate_managed_resource_path(
+            monster_path, MONSTER_DIR, f"{row_label} resource_path", errors
+        )
+        if validated_monster_path is not None:
+            if validated_monster_path in monster_paths:
+                errors.append(f"{row_label} resource_path 与其它怪物重复：{monster_path}")
+            monster_paths.add(validated_monster_path)
+        if monster_name:
+            if monster_name in monster_names:
+                errors.append(f"{row_label} monster_name 与其它怪物重复：{monster_name}")
+            monster_names.add(monster_name)
+        if (row.get("element") or "") and (row.get("element") or "") not in ELEMENT_VALUE_TO_LABEL:
+            errors.append(f"{row_label} element 不是支持的五行值。")
+        validate_number(row.get("faction") or "", f"{row_label} faction", errors, 0, True)
+        faction_value = _parse_stat_number(row.get("faction") or "")
+        if faction_value is not None and faction_value not in {0.0, 1.0, 2.0}:
+            errors.append(f"{row_label} faction 只能是 0、1 或 2。")
+        validate_optional_resource_reference(
+            row.get("model_scene_path") or "", f"{row_label} model_scene_path", errors
+        )
+        validate_optional_resource_reference(
+            row.get("behavior_tree_scene_path") or "",
+            f"{row_label} behavior_tree_scene_path",
+            errors,
+        )
+        for csv_key, _gd_key, _default_value in BASE_STAT_FIELDS:
+            validate_number(row.get(csv_key) or "", f"{row_label} {csv_key}", errors)
+            if csv_key in PERCENT_STAT_KEYS:
+                percent_value = _parse_stat_number(row.get(csv_key) or "")
+                if percent_value is not None and not 0.0 <= percent_value <= PERCENT_SCALE:
+                    errors.append(
+                        f"{row_label} {csv_key} 必须在 0~{PERCENT_SCALE:g} 之间。"
+                    )
+
+    skill_key_map = build_future_skill_key_map(skill_rows)
+    monster_key_map = build_monster_key_map(monster_rows)
+    for row_index, row in enumerate(skill_rows, start=2):
+        for owner in split_semicolon_values(row.get("monster_owners") or ""):
+            if owner not in monster_key_map:
+                errors.append(f"技能表第 {row_index} 行 monster_owners 包含未知怪物：{owner}")
+    for row_index, row in enumerate(monster_rows, start=2):
+        for skill_name in split_semicolon_values(row.get("skill_names") or ""):
+            if skill_name not in skill_key_map:
+                errors.append(f"怪物表第 {row_index} 行 skill_names 包含未知技能：{skill_name}")
+
+    if errors:
+        preview = "\n".join(f"- {error}" for error in errors[:20])
+        remaining = len(errors) - 20
+        suffix = f"\n- 另有 {remaining} 项错误。" if remaining > 0 else ""
+        raise CardTableValidationError(f"表格预检失败，共 {len(errors)} 项：\n{preview}{suffix}")
+    return skill_rows, monster_rows
 
 
 def resolve_skill_paths(text: str, key_map: dict[str, str]) -> list[str]:
@@ -1253,8 +1688,8 @@ def create_monster_resource(row: dict[str, str], skill_paths: list[str]) -> str:
 
 def upsert_existing_skill_card(
     path: Path, row: dict[str, str], combat_path: str
-) -> None:
-    """更新已有 SkillCardData 的基础字段，保留复杂资源引用与已有子资源。"""
+) -> str:
+    """生成已有 SkillCardData 的更新文本，保留复杂资源引用与已有子资源。"""
     text = path.read_text(encoding="utf-8")
     text = replace_or_add_resource_property(
         text, "CardId", string_or_null(row.get("card_id", ""))
@@ -1275,11 +1710,11 @@ def upsert_existing_skill_card(
     if skill_match:
         resource_id = skill_match.group(1)
         text = ensure_ext_resource(text, "Resource", combat_path, resource_id)
-    path.write_text(text, encoding="utf-8")
+    return text
 
 
-def upsert_existing_combat_skill(path: Path, row: dict[str, str]) -> None:
-    """更新已有 CombatSkillData 的基础字段，保留 Effects 子资源。"""
+def upsert_existing_combat_skill(path: Path, row: dict[str, str]) -> str:
+    """生成已有 CombatSkillData 的更新文本，保留 Effects 子资源。"""
     text = path.read_text(encoding="utf-8")
     text = replace_or_add_resource_property(text, "Element", row.get("element") or "0")
     text = replace_or_add_resource_property(
@@ -1294,11 +1729,12 @@ def upsert_existing_combat_skill(path: Path, row: dict[str, str]) -> None:
     text = replace_or_add_resource_property(
         text, "Description", godot_string(row.get("description", ""))
     )
-    path.write_text(text, encoding="utf-8")
+    return text
 
 
-def apply_skill_rows(rows: list[dict[str, str]]) -> dict[str, str]:
-    """导入技能卡表，返回技能索引供怪物技能分配使用。"""
+def plan_skill_updates(rows: list[dict[str, str]]) -> tuple[dict[Path, str], dict[str, str]]:
+    """根据技能表生成待写入文本，但在预检完成前不触碰磁盘中的资源。"""
+    updates: dict[Path, str] = {}
     for row in rows:
         skill_card_path = resolve_skill_card_path(row)
         if not skill_card_path:
@@ -1308,19 +1744,22 @@ def apply_skill_rows(rows: list[dict[str, str]]) -> dict[str, str]:
             continue
         skill_card_file = to_disk_path(skill_card_path)
         combat_file = to_disk_path(combat_path)
-        skill_card_file.parent.mkdir(parents=True, exist_ok=True)
-        combat_file.parent.mkdir(parents=True, exist_ok=True)
         if combat_file.exists():
-            upsert_existing_combat_skill(combat_file, row)
+            combat_content = upsert_existing_combat_skill(combat_file, row)
         else:
-            combat_file.write_text(create_combat_skill_resource(row), encoding="utf-8")
+            combat_content = create_combat_skill_resource(row)
+        if not combat_file.exists() or combat_content != combat_file.read_text(encoding="utf-8"):
+            updates[combat_file] = combat_content
         if skill_card_file.exists():
-            upsert_existing_skill_card(skill_card_file, row, combat_path)
+            skill_card_content = upsert_existing_skill_card(skill_card_file, row, combat_path)
         else:
-            skill_card_file.write_text(
-                create_skill_card_resource(row, combat_path), encoding="utf-8"
-            )
-    return build_skill_key_map()
+            skill_card_content = create_skill_card_resource(row, combat_path)
+        if (
+            not skill_card_file.exists()
+            or skill_card_content != skill_card_file.read_text(encoding="utf-8")
+        ):
+            updates[skill_card_file] = skill_card_content
+    return updates, build_future_skill_key_map(rows)
 
 
 def update_monster_skillset(text: str, skill_paths: list[str]) -> str:
@@ -1402,12 +1841,13 @@ def update_monster_stats(text: str, row: dict[str, str]) -> str:
     )
 
 
-def apply_monster_rows(
+def plan_monster_updates(
     monster_rows: list[dict[str, str]],
     skill_rows: list[dict[str, str]],
     skill_key_map: dict[str, str],
-) -> None:
-    """导入怪物表，并合并技能表 monster_owners 反向分配。"""
+) -> dict[Path, str]:
+    """生成怪物资源更新，并合并技能表 monster_owners 的反向分配。"""
+    updates: dict[Path, str] = {}
     monster_key_map = build_monster_key_map(monster_rows)
     owner_assignments: dict[str, list[str]] = {}
     managed_skill_paths: set[str] = set()
@@ -1447,11 +1887,8 @@ def apply_monster_rows(
             if assigned_path not in skill_paths:
                 skill_paths.append(assigned_path)
         monster_file = to_disk_path(monster_path)
-        monster_file.parent.mkdir(parents=True, exist_ok=True)
         if not monster_file.exists():
-            monster_file.write_text(
-                create_monster_resource(row, skill_paths), encoding="utf-8"
-            )
+            updates[monster_file] = create_monster_resource(row, skill_paths)
             continue
         text = monster_file.read_text(encoding="utf-8")
         text = replace_or_add_resource_property(
@@ -1467,45 +1904,138 @@ def apply_monster_rows(
         # 避免 stats 刚创建的 CSV_StartingStats 被 skillset 误删
         text = update_monster_skillset(text, skill_paths)
         text = update_monster_stats(text, row)
-        monster_file.write_text(text, encoding="utf-8")
+        if text != monster_file.read_text(encoding="utf-8"):
+            updates[monster_file] = text
+    return updates
 
 
-def export_all() -> None:
-    """从资源导出两张 CSV。"""
+def export_all() -> SyncResult:
+    """从资源安全导出两张 CSV 与 XLSX 工作簿，并返回真实写入目标。"""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     owners, monster_skills, monster_names = collect_monster_skill_map()
     skill_rows = export_skill_csv(owners, monster_names)
     monster_rows = export_monster_csv(monster_skills)
-    write_xlsx_workbook(skill_rows, monster_rows)
+    xlsx_target = write_xlsx_workbook(skill_rows, monster_rows)
     write_sync_state()
     print(f"已导出：{SKILL_CSV.relative_to(ROOT)}")
     print(f"已导出：{MONSTER_CSV.relative_to(ROOT)}")
-    print(f"已导出：{XLSX_FILE.relative_to(ROOT)}")
+    print(f"已导出：{xlsx_target.relative_to(ROOT)}")
+    warnings = (
+        [f"主 XLSX 正被占用，已写入待应用文件：{xlsx_target.relative_to(ROOT)}"]
+        if xlsx_target == PENDING_XLSX_FILE
+        else []
+    )
+    return SyncResult("已导出卡牌表格", [SKILL_CSV, MONSTER_CSV, xlsx_target], warnings)
 
 
-def import_all() -> None:
-    """从两张 CSV 回写 `.tres` 资源。"""
-    skill_rows_raw, monster_rows_raw = read_card_tables()
-    print(f"读取到技能行 {len(skill_rows_raw)} 条，怪物行 {len(monster_rows_raw)} 条。")
-    skill_rows = [normalize_skill_row_for_import(row) for row in skill_rows_raw]
-    monster_rows = [normalize_monster_row_for_import(row) for row in monster_rows_raw]
-    skill_key_map = apply_skill_rows(skill_rows)
-    apply_monster_rows(monster_rows, skill_rows, skill_key_map)
-    print("已导入 CSV 到 Godot 资源。")
+def import_all() -> SyncResult:
+    """预检两张表后批量原子回写 `.tres` 资源，失败时不进入写入阶段。"""
+    (
+        skill_headers,
+        skill_rows_raw,
+        monster_headers,
+        monster_rows_raw,
+        source_name,
+    ) = read_card_tables()
+    print(
+        f"正在预检 {source_name}：技能行 {len(skill_rows_raw)} 条，怪物行 {len(monster_rows_raw)} 条。"
+    )
+    skill_rows, monster_rows = validate_import_rows(
+        skill_headers, skill_rows_raw, monster_headers, monster_rows_raw
+    )
+    skill_updates, skill_key_map = plan_skill_updates(skill_rows)
+    monster_updates = plan_monster_updates(monster_rows, skill_rows, skill_key_map)
+    duplicated_paths = set(skill_updates).intersection(monster_updates)
+    if duplicated_paths:
+        duplicated_text = ", ".join(str(path.relative_to(ROOT)) for path in duplicated_paths)
+        raise CardTableSyncError(f"待写入资源路径重复，已拒绝同步：{duplicated_text}")
+    updates = {**skill_updates, **monster_updates}
+    changed_files, backup_root = write_resource_batch_atomically(updates)
+    if backup_root is not None:
+        print(f"已创建同步备份：{backup_root.relative_to(ROOT)}")
+    if changed_files:
+        print(f"已原子更新 {len(changed_files)} 个 Godot 资源。")
+    else:
+        print("表格校验通过，资源内容无需更新。")
+    write_sync_state()
+    return SyncResult("已导入卡牌表格", changed_files)
 
 
-def auto_sync() -> None:
-    """自动同步入口：CSV/XLSX 外部修改时先导入再导出，否则仅在资源较新时导出。"""
-    promote_pending_xlsx()
+def auto_sync() -> SyncResult:
+    """推荐同步入口：按变更方向安全导入或导出，未变化时明确返回空结果。"""
+    promoted_pending = promote_pending_xlsx()
     latest_resource_time = get_latest_resource_time()
     latest_csv_time = max(get_csv_signature().values())
     if csv_changed_since_last_sync():
-        import_all()
-        export_all()
+        import_result = import_all()
+        export_result = export_all()
+        return SyncResult(
+            "已安全同步卡牌表格",
+            import_result.changed_files + export_result.changed_files,
+            import_result.warnings + export_result.warnings,
+        )
     elif latest_resource_time > latest_csv_time:
-        export_all()
+        return export_all()
     else:
         write_sync_state()
+        changed_files = [XLSX_FILE] if promoted_pending else []
+        return SyncResult("无需同步，表格与资源已是最新状态", changed_files)
+
+
+def ensure_workbook() -> SyncResult:
+    """仅在 XLSX 缺失时补建工作簿，优先保留用户已维护的 CSV 内容。"""
+    if XLSX_FILE.exists():
+        return SyncResult("卡牌表格已存在，无需重新生成")
+    if SKILL_CSV.exists() and MONSTER_CSV.exists():
+        skill_rows = read_csv_rows(SKILL_CSV)
+        monster_rows = read_csv_rows(MONSTER_CSV)
+        xlsx_target = write_xlsx_workbook(skill_rows, monster_rows)
+        return SyncResult("已根据现有 CSV 创建卡牌表格", [xlsx_target])
+    if SKILL_CSV.exists() or MONSTER_CSV.exists():
+        raise CardTableSyncError("CSV 表格不完整，已拒绝生成可能遗漏数据的 XLSX 工作簿。")
+    return export_all()
+
+
+def print_result(
+    result: SyncResult,
+    success: bool,
+    error: str = "",
+    result_file: Path | None = None,
+    request_id: str = "",
+) -> bool:
+    """以 UTF-8 结果文件和单行控制台摘要报告最终状态。
+
+    参数:
+        result: 本次操作的动作说明、改动文件和警告。
+        success: 整次操作是否完整成功。
+        error: 失败时展示给用户的错误原因。
+        result_file: Godot 指定的结果文件；为空时仅输出控制台摘要。
+        request_id: Godot 为本次调用生成的唯一标识，用于拒绝旧结果文件。
+    返回:
+        结果文件写入成功或未要求写入时返回 True；写入失败时返回 False。
+    """
+    # 同一份载荷同时用于结果文件和控制台，避免两个输出通道的状态发生分歧。
+    payload = result.to_payload(success, error, request_id)
+    # JSON 保留中文，文件与控制台均统一使用 UTF-8。
+    payload_text = json.dumps(payload, ensure_ascii=False)
+    if result_file is not None:
+        try:
+            # 结果文件明确使用 UTF-8，避免 Windows 控制台编码影响机器协议。
+            write_text_atomically(result_file, payload_text, encoding="utf-8")
+        except CardTableSyncError as write_error:
+            # 写入机器结果失败本身属于整次操作失败，不能继续向 Godot 报告成功。
+            result_file_error = f"写入同步结果文件失败：{write_error}"
+            # 控制台仍输出带请求标识的失败摘要，作为结果文件不可用时的最后诊断通道。
+            fallback_payload = SyncResult("同步失败").to_payload(
+                False, result_file_error, request_id
+            )
+            print(
+                RESULT_PREFIX
+                + json.dumps(fallback_payload, ensure_ascii=False)
+            )
+            return False
+    print(RESULT_PREFIX + payload_text)
+    return True
 
 
 def main() -> None:
@@ -1532,20 +2062,68 @@ def main() -> None:
         action="store_true",
         help="按修改时间自动判断导入或导出。",
     )
+    parser.add_argument(
+        "--ensure-workbook",
+        dest="ensure_workbook",
+        action="store_true",
+        help="仅在 XLSX 缺失时创建工作簿，优先保留现有 CSV。",
+    )
+    parser.add_argument(
+        "--result-file",
+        dest="result_file",
+        default="",
+        help="把最终 JSON 以 UTF-8 写入指定文件，供 Godot 编辑器可靠读取。",
+    )
+    parser.add_argument(
+        "--request-id",
+        dest="request_id",
+        default="",
+        help="写入最终 JSON 的本次调用标识，避免读取旧结果。",
+    )
     args = parser.parse_args()
     do_auto = cast(bool, args.do_auto)
     do_sync = cast(bool, args.do_sync)
     do_import = cast(bool, args.do_import)
-    if do_auto:
-        auto_sync()
-    elif do_sync:
-        import_all()
-        export_all()
-    elif do_import:
-        import_all()
-        write_sync_state()
-    else:
-        export_all()
+    do_ensure_workbook = cast(bool, args.ensure_workbook)
+    # 空路径表示手工命令行模式，保持只输出控制台摘要的兼容行为。
+    result_file_text = cast(str, args.result_file).strip()
+    # Godot 传入绝对路径，解析后交给原子写入函数保存 UTF-8 JSON。
+    result_file = Path(result_file_text).resolve() if result_file_text else None
+    # 请求标识原样回传，调用方据此拒绝旧结果文件。
+    request_id = cast(str, args.request_id).strip()
+    try:
+        if do_ensure_workbook:
+            result = ensure_workbook()
+        elif do_auto:
+            result = auto_sync()
+        elif do_sync:
+            import_result = import_all()
+            export_result = export_all()
+            result = SyncResult(
+                "已同步卡牌表格",
+                import_result.changed_files + export_result.changed_files,
+                import_result.warnings + export_result.warnings,
+            )
+        elif do_import:
+            result = import_all()
+        else:
+            result = export_all()
+    except CardTableSyncError as error:
+        message = str(error)
+        print(f"[错误] {message}")
+        print_result(
+            SyncResult("同步失败"), False, message, result_file, request_id
+        )
+        raise SystemExit(1) from error
+    except Exception as error:
+        message = f"发生未预期异常：{error}"
+        print(f"[错误] {message}")
+        print_result(
+            SyncResult("同步失败"), False, message, result_file, request_id
+        )
+        raise SystemExit(1) from error
+    if not print_result(result, True, "", result_file, request_id):
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
