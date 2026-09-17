@@ -1,14 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://cx6keqhpetvgv"]
 
-[ext_resource type="Script" path="res://scripts/ui_scripts/item_slot.gd" id="1_slot"]
-[ext_resource type="Texture2D" path="res://res/UI/背包格子-未选中-选中的样子.png" id="2_grid"]
+[ext_resource type="Script" uid="uid://dbkcqo600geae" path="res://scripts/ui_scripts/item_slot.gd" id="1_slot"]
+[ext_resource type="Texture2D" uid="uid://idiqh7rbuf6o" path="res://res/UI/背包格子-未选中-选中的样子.png" id="2_grid"]
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="3_pdajm"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_idle"]
-texture = ExtResource("2_grid")
-region_rect = Rect2(0, 0, 32, 32)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hover"]
-modulate_color = Color(1.12, 1.12, 1.12, 1)
 texture = ExtResource("2_grid")
 region_rect = Rect2(0, 0, 32, 32)
 
@@ -16,19 +12,25 @@ region_rect = Rect2(0, 0, 32, 32)
 texture = ExtResource("2_grid")
 region_rect = Rect2(0, 32, 32, 32)
 
-[node name="ItemSlot" type="Button"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hover"]
+texture = ExtResource("2_grid")
+region_rect = Rect2(0, 0, 32, 32)
+modulate_color = Color(1.12, 1.12, 1.12, 1)
+
+[node name="ItemSlot" type="Button" unique_id=532484080]
 custom_minimum_size = Vector2(96, 104)
 offset_right = 96.0
 offset_bottom = 104.0
 focus_mode = 0
-theme_override_styles/disabled = SubResource("StyleBoxTexture_idle")
-theme_override_styles/focus = SubResource("StyleBoxTexture_idle")
-theme_override_styles/hover = SubResource("StyleBoxTexture_hover")
 theme_override_styles/normal = SubResource("StyleBoxTexture_idle")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_selected")
+theme_override_styles/hover = SubResource("StyleBoxTexture_hover")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_idle")
+theme_override_styles/focus = SubResource("StyleBoxTexture_idle")
 script = ExtResource("1_slot")
 
-[node name="Icon" type="TextureRect" parent="."]
+[node name="Icon" type="TextureRect" parent="." unique_id=607494006]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 2.0
 offset_right = 80.0
@@ -37,39 +39,42 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CountLabel" type="Label" parent="."]
+[node name="CountLabel" type="Label" parent="." unique_id=628635167]
+layout_mode = 0
 offset_left = 50.0
 offset_top = 1.0
 offset_right = 92.0
 offset_bottom = 21.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
 theme_override_colors/font_outline_color = Color(0.08, 0.07, 0.12, 1)
 theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_pdajm")
 theme_override_font_sizes/font_size = 13
 text = "x0"
 horizontal_alignment = 2
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="NameLabel" type="Label" parent="." unique_id=551363293]
+layout_mode = 0
 offset_left = 1.0
 offset_top = 66.0
 offset_right = 95.0
 offset_bottom = 85.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.94, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_fonts/font = ExtResource("3_pdajm")
+theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="PriceLabel" type="Label" parent="."]
+[node name="PriceLabel" type="Label" parent="." unique_id=649549595]
+layout_mode = 0
 offset_left = 1.0
 offset_top = 84.0
 offset_right = 95.0
 offset_bottom = 102.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.87, 0.45, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_fonts/font = ExtResource("3_pdajm")
+theme_override_font_sizes/font_size = 16
 text = "买 0"
 horizontal_alignment = 1
 vertical_alignment = 1
