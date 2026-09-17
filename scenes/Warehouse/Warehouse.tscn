@@ -1,713 +1,370 @@
-[gd_scene format=3 uid="uid://dvu0wpxmytvk7"]
+[gd_scene load_steps=14 format=3 uid="uid://dvu0wpxmytvk7"]
 
-[ext_resource type="Script" uid="uid://r4v1cixqpj1o" path="res://resources/draggable/snapper_binder.gd" id="1_cf8n2"]
-[ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_h115g"]
-[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="2_112t3"]
-[ext_resource type="Script" uid="uid://bynkigeqbxcpj" path="res://resources/draggable/snapper.gd" id="2_brt88"]
-[ext_resource type="Texture2D" uid="uid://ci0hxdk3t7nh0" path="res://icon.svg" id="2_hh660"]
-[ext_resource type="Script" uid="uid://b2l5uhlqf6ffj" path="res://resources/draggable/draggable.gd" id="4_brt88"]
-[ext_resource type="PackedScene" uid="uid://cwtu13o7ivvl4" path="res://scenes/main_menu_scenes/menu_card.tscn" id="5_3jafb"]
-[ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_brt88"]
-[ext_resource type="Script" uid="uid://bpnde7bm8ueu8" path="res://scripts/warehouse/inventory_grid.gd" id="8_wqctc"]
-[ext_resource type="Script" uid="uid://cipxx54emufku" path="res://scripts/warehouse/inventory_control.gd" id="9_3jafb"]
-[ext_resource type="Texture2D" uid="uid://dr8ibnwnis3sp" path="res://res/image/技能卡模板（废弃）.png" id="9_nwke5"]
-[ext_resource type="Script" uid="uid://5wtui6vmqah3" path="res://scripts/warehouse/inventory_card_slot.gd" id="12_ejbtm"]
-[ext_resource type="Script" uid="uid://dh406btb4xi6r" path="res://scripts/warehouse/inventory_user_card_slot.gd" id="13_ybp5e"]
-[ext_resource type="Texture2D" uid="uid://csu6s8whsx6qq" path="res://res/UI/左-f666.png" id="15_cvm3i"]
-[ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="15_jlw2o"]
-[ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_jlw2o"]
+[ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_control"]
+[ext_resource type="Texture2D" path="res://res/UI/按钮-未选中-选中-按下的样子.png" id="2_button"]
 
-[sub_resource type="Resource" id="Resource_nwke5"]
-script = ExtResource("2_brt88")
-metadata/_custom_type_script = "uid://bynkigeqbxcpj"
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
 
-[sub_resource type="Resource" id="Resource_3jafb"]
-script = ExtResource("2_brt88")
-allow_multiple = true
-metadata/_custom_type_script = "uid://bynkigeqbxcpj"
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.16, 0.17, 0.24, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.33, 0.3, 0.45, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
-[sub_resource type="Resource" id="Resource_wqctc"]
-script = ExtResource("4_brt88")
-metadata/_custom_type_script = "uid://b2l5uhlqf6ffj"
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yellow_normal"]
+texture = ExtResource("2_button")
+region_rect = Rect2(0, 0, 64, 32)
 
-[node name="Warehouse" type="Node2D" unique_id=2011409827 node_paths=PackedStringArray("inventory_grid", "inventory_control")]
-script = ExtResource("1_h115g")
-inventory_grid = NodePath("InventoryGrid")
-inventory_control = NodePath("InventoryControl")
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yellow_hover"]
+texture = ExtResource("2_button")
+region_rect = Rect2(0, 32, 64, 32)
 
-[node name="UserBackpack" type="Node2D" parent="." unique_id=755537978]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yellow_pressed"]
+texture = ExtResource("2_button")
+region_rect = Rect2(0, 64, 64, 32)
 
-[node name="Label" type="Label" parent="UserBackpack" unique_id=1703488242]
-offset_left = 64.0
-offset_top = 24.0
-offset_right = 394.0
-offset_bottom = 66.0
-theme_override_font_sizes/font_size = 30
-text = "将这五样东西放入带入游戏："
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cyan_normal"]
+texture = ExtResource("2_button")
+region_rect = Rect2(64, 0, 64, 32)
 
-[node name="Backpack" type="Node2D" parent="." unique_id=740345446]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cyan_hover"]
+texture = ExtResource("2_button")
+region_rect = Rect2(64, 32, 64, 32)
 
-[node name="Label" type="Label" parent="Backpack" unique_id=173964698]
-offset_left = 64.0
-offset_top = 216.0
-offset_right = 184.0
-offset_bottom = 258.0
-theme_override_font_sizes/font_size = 30
-text = "你的仓库："
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cyan_pressed"]
+texture = ExtResource("2_button")
+region_rect = Rect2(64, 64, 64, 32)
 
-[node name="技能卡模板2" type="Sprite2D" parent="Backpack" unique_id=891559400]
-show_behind_parent = true
-position = Vector2(640, 495.99997)
-scale = Vector2(9.599998, 4.48)
-texture = ExtResource("2_112t3")
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_red_normal"]
+texture = ExtResource("2_button")
+region_rect = Rect2(128, 0, 64, 32)
 
-[node name="SnapperBinder" type="Node2D" parent="." unique_id=351214287 node_paths=PackedStringArray("snap_nodes")]
-script = ExtResource("1_cf8n2")
-target_snapper = SubResource("Resource_nwke5")
-snap_nodes = [null]
-metadata/_custom_type_script = "uid://r4v1cixqpj1o"
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_red_hover"]
+texture = ExtResource("2_button")
+region_rect = Rect2(128, 32, 64, 32)
 
-[node name="InventorySnapperBinder" type="Node2D" parent="." unique_id=1209280253 node_paths=PackedStringArray("snap_nodes")]
-script = ExtResource("1_cf8n2")
-target_snapper = SubResource("Resource_3jafb")
-snap_nodes = [NodePath("../InventoryControl/SnapPointContainer/Button/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button2/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button3/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button4/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button5/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button6/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button7/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button8/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button9/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button10/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button11/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button12/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button13/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button14/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button15/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button16/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button17/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button18/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button19/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button20/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button21/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button22/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button23/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button24/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button25/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button26/SnapPoint1"), NodePath("../InventoryControl/SnapPointContainer/Button27/SnapPoint1"), NodePath("../InventoryControl/UserSnapPointContainer/Button/SnapPoint1"), NodePath("../InventoryControl/UserSnapPointContainer/Button2/SnapPoint1"), NodePath("../InventoryControl/UserSnapPointContainer/Button3/SnapPoint1"), NodePath("../InventoryControl/UserSnapPointContainer/Button4/SnapPoint1"), NodePath("../InventoryControl/UserSnapPointContainer/Button5/SnapPoint1")]
-metadata/_custom_type_script = "uid://r4v1cixqpj1o"
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_red_pressed"]
+texture = ExtResource("2_button")
+region_rect = Rect2(128, 64, 64, 32)
 
-[node name="InventoryComponent" type="Node2D" parent="." unique_id=911228938]
-script = ExtResource("8_brt88")
+[node name="Warehouse" type="Node2D"]
+script = ExtResource("1_control")
 
-[node name="InventoryGrid" type="Node2D" parent="." unique_id=1500144558 node_paths=PackedStringArray("snap_point_container", "user_snap_point_container", "binder")]
-script = ExtResource("8_wqctc")
-inventory_grid_scene = ExtResource("5_3jafb")
-snap_point_container = NodePath("../InventoryControl/SnapPointContainer")
-user_snap_point_container = NodePath("../InventoryControl/UserSnapPointContainer")
-draggable = SubResource("Resource_wqctc")
-binder = NodePath("../InventorySnapperBinder")
-texture = ExtResource("9_nwke5")
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.15, 1)
 
-[node name="InventoryControl" type="Control" parent="." unique_id=810572882 node_paths=PackedStringArray("inventory_grid", "page_label")]
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="Root" type="Control" parent="UILayer"]
 layout_mode = 3
-anchors_preset = 0
-script = ExtResource("9_3jafb")
-inventory_grid = NodePath("../InventoryGrid")
-null_texture = ExtResource("9_nwke5")
-page_label = NodePath("Page")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="SnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1304380547]
+[node name="TitleLabel" type="Label" parent="UILayer/Root"]
+offset_left = 40.0
+offset_top = 14.0
+offset_right = 400.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.93, 0.72, 1)
+theme_override_font_sizes/font_size = 38
+text = "仓  库"
+vertical_alignment = 1
 
-[node name="Button" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=895036999]
-clip_contents = true
-offset_left = 146.0
-offset_top = 373.0
-offset_right = 154.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-button_mask = 7
+[node name="InfoLabel" type="Label" parent="UILayer/Root"]
+offset_left = 420.0
+offset_top = 22.0
+offset_right = 900.0
+offset_bottom = 58.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 20
+text = "仓库 0/27　带入 0/10"
+horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button" unique_id=1713489127 node_paths=PackedStringArray("inventory_grid", "inventory_component", "inventory_control")]
-script = ExtResource("12_ejbtm")
-inventory_grid = NodePath("../../../../InventoryGrid")
-inventory_component = NodePath("../../../../InventoryComponent")
-inventory_control = NodePath("../../..")
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button/SnapPoint1" unique_id=2003054068]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button2" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1332396713]
-clip_contents = true
-offset_left = 275.0
-offset_top = 373.0
-offset_right = 283.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button2" unique_id=837580588]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button2/SnapPoint1" unique_id=269650113]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button3" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1098448129]
-clip_contents = true
-offset_left = 404.0
-offset_top = 373.0
-offset_right = 412.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button3" unique_id=1953280308]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button3/SnapPoint1" unique_id=1678406742]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button4" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=853339831]
-clip_contents = true
-offset_left = 533.0
-offset_top = 373.0
-offset_right = 541.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button4" unique_id=1219015566]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button4/SnapPoint1" unique_id=1507514490]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button5" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=983477099]
-clip_contents = true
-offset_left = 662.0
-offset_top = 373.0
-offset_right = 670.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button5" unique_id=1444792495]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button5/SnapPoint1" unique_id=278131614]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button6" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=117096839]
-clip_contents = true
-offset_left = 791.0
-offset_top = 373.0
-offset_right = 799.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button6" unique_id=1258449352]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button6/SnapPoint1" unique_id=391304313]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button7" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=10240821]
-clip_contents = true
+[node name="GoldLabel" type="Label" parent="UILayer/Root"]
 offset_left = 920.0
-offset_top = 373.0
-offset_right = 928.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button7" unique_id=211221616]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button7/SnapPoint1" unique_id=1297639233]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button8" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=2028640035]
-clip_contents = true
-offset_left = 1049.0
-offset_top = 373.0
-offset_right = 1057.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button8" unique_id=1639254744]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button8/SnapPoint1" unique_id=19451586]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button9" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1485248082]
-clip_contents = true
-offset_left = 1178.0
-offset_top = 373.0
-offset_right = 1186.0
-offset_bottom = 381.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button9" unique_id=2124006050]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button9/SnapPoint1" unique_id=88235834]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button10" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1410136030]
-clip_contents = true
-offset_left = 146.0
-offset_top = 504.0
-offset_right = 154.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button10" unique_id=1866772826]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button10/SnapPoint1" unique_id=1945373863]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button11" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=805597999]
-clip_contents = true
-offset_left = 275.0
-offset_top = 504.0
-offset_right = 283.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button11" unique_id=1915225000]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button11/SnapPoint1" unique_id=746433119]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button12" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=885295800]
-clip_contents = true
-offset_left = 404.0
-offset_top = 504.0
-offset_right = 412.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button12" unique_id=2035917423]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button12/SnapPoint1" unique_id=1669728431]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button13" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1304722007]
-clip_contents = true
-offset_left = 533.0
-offset_top = 504.0
-offset_right = 541.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button13" unique_id=388519026]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button13/SnapPoint1" unique_id=433568334]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button14" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1613672326]
-clip_contents = true
-offset_left = 662.0
-offset_top = 504.0
-offset_right = 670.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button14" unique_id=810039335]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button14/SnapPoint1" unique_id=1372269327]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button15" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1532870164]
-clip_contents = true
-offset_left = 791.0
-offset_top = 504.0
-offset_right = 799.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button15" unique_id=1184235653]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button15/SnapPoint1" unique_id=1906217798]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button16" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=510635707]
-clip_contents = true
-offset_left = 920.0
-offset_top = 504.0
-offset_right = 928.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button16" unique_id=1462768819]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button16/SnapPoint1" unique_id=528104079]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button17" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1086689531]
-clip_contents = true
-offset_left = 1049.0
-offset_top = 504.0
-offset_right = 1057.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button17" unique_id=311039576]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button17/SnapPoint1" unique_id=942944755]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button18" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1778823526]
-clip_contents = true
-offset_left = 1178.0
-offset_top = 504.0
-offset_right = 1186.0
-offset_bottom = 512.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button18" unique_id=1861328002]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button18/SnapPoint1" unique_id=378143855]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button19" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1598526422]
-clip_contents = true
-offset_left = 146.0
-offset_top = 634.0
-offset_right = 154.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button19" unique_id=89573102]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button19/SnapPoint1" unique_id=995574040]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button20" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=321492641]
-clip_contents = true
-offset_left = 275.0
-offset_top = 634.0
-offset_right = 283.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button20" unique_id=1725244922]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button20/SnapPoint1" unique_id=160869473]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button21" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1163700945]
-clip_contents = true
-offset_left = 404.0
-offset_top = 634.0
-offset_right = 412.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button21" unique_id=364952405]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button21/SnapPoint1" unique_id=2030773525]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button22" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1654483977]
-clip_contents = true
-offset_left = 533.0
-offset_top = 634.0
-offset_right = 541.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button22" unique_id=1303700799]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button22/SnapPoint1" unique_id=1015824711]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button23" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1245899580]
-clip_contents = true
-offset_left = 662.0
-offset_top = 634.0
-offset_right = 670.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button23" unique_id=1551332063]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button23/SnapPoint1" unique_id=596162443]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button24" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1748834861]
-clip_contents = true
-offset_left = 791.0
-offset_top = 634.0
-offset_right = 799.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button24" unique_id=138931538]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button24/SnapPoint1" unique_id=1709349233]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button25" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1104046489]
-clip_contents = true
-offset_left = 920.0
-offset_top = 634.0
-offset_right = 928.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button25" unique_id=311469483]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button25/SnapPoint1" unique_id=1330748068]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button26" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=1878012475]
-clip_contents = true
-offset_left = 1049.0
-offset_top = 634.0
-offset_right = 1057.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button26" unique_id=823299985]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button26/SnapPoint1" unique_id=1291160381]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="Button27" type="Button" parent="InventoryControl/SnapPointContainer" unique_id=161413597]
-clip_contents = true
-offset_left = 1178.0
-offset_top = 634.0
-offset_right = 1186.0
-offset_bottom = 642.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/SnapPointContainer/Button27" unique_id=943368476]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/SnapPointContainer/Button27/SnapPoint1" unique_id=573602377]
-scale = Vector2(0.6875, 0.6875)
-texture = ExtResource("2_hh660")
-
-[node name="UserSnapPointContainer" type="Node2D" parent="InventoryControl" unique_id=1693080624]
-
-[node name="Button" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1071966649]
-offset_left = 128.0
-offset_top = 129.0
-offset_right = 136.0
-offset_bottom = 137.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-button_mask = 7
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button" unique_id=592996461]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button/SnapPoint1" unique_id=693108967]
-position = Vector2(6.437497, -4.3125057)
-scale = Vector2(0.77946424, 0.77375007)
-
-[node name="Button2" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1993838325]
-clip_contents = true
-offset_left = 256.0
-offset_top = 129.0
-offset_right = 264.0
-offset_bottom = 137.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-button_mask = 7
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button2" unique_id=785025908]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button2/SnapPoint1" unique_id=1429205577]
-scale = Vector2(0.6875, 0.6875)
-
-[node name="Button3" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1231413564]
-clip_contents = true
-offset_left = 384.0
-offset_top = 129.0
-offset_right = 392.0
-offset_bottom = 137.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-button_mask = 7
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button3" unique_id=676136960]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button3/SnapPoint1" unique_id=1653497249]
-scale = Vector2(0.6875, 0.6875)
-
-[node name="Button4" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=1432439624]
-clip_contents = true
-offset_left = 514.0
-offset_top = 128.0
-offset_right = 522.0
-offset_bottom = 136.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-button_mask = 7
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button4" unique_id=842528811]
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button4/SnapPoint1" unique_id=468378647]
-scale = Vector2(0.6875, 0.6875)
-
-[node name="Button5" type="Button" parent="InventoryControl/UserSnapPointContainer" unique_id=759552614]
-clip_contents = true
-offset_left = 643.0
-offset_top = 129.0
-offset_right = 651.0
-offset_bottom = 137.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-size_flags_stretch_ratio = 0.0
-button_mask = 7
-
-[node name="SnapPoint1" type="Node2D" parent="InventoryControl/UserSnapPointContainer/Button5" unique_id=1803032839 node_paths=PackedStringArray("inventory_grid", "inventory_component", "inventory_control")]
-script = ExtResource("13_ybp5e")
-inventory_grid = NodePath("../../../../InventoryGrid")
-inventory_component = NodePath("../../../../InventoryComponent")
-inventory_control = NodePath("../../..")
-
-[node name="Sprite2D" type="Sprite2D" parent="InventoryControl/UserSnapPointContainer/Button5/SnapPoint1" unique_id=154071194]
-scale = Vector2(0.6875, 0.6875)
-
-[node name="LeftButton" type="Button" parent="InventoryControl" unique_id=1189218979]
-layout_mode = 0
-offset_left = 1024.0
-offset_top = 208.0
-offset_right = 1080.0
-offset_bottom = 258.0
-icon = ExtResource("15_cvm3i")
-
-[node name="物品框F82c" type="Sprite2D" parent="InventoryControl/LeftButton" unique_id=175879452]
-position = Vector2(28.50001, 26.49999)
-scale = Vector2(0.39285728, 0.53000015)
-texture = ExtResource("15_jlw2o")
-
-[node name="RightButton" type="Button" parent="InventoryControl" unique_id=380072651]
-layout_mode = 0
-offset_left = 1151.0
-offset_top = 208.0
-offset_right = 1206.0
-offset_bottom = 258.0
-icon = ExtResource("16_jlw2o")
-
-[node name="物品框F82c" type="Sprite2D" parent="InventoryControl/RightButton" unique_id=779572255]
-position = Vector2(28.000017, 26.49999)
-scale = Vector2(0.4, 0.53000015)
-texture = ExtResource("15_jlw2o")
-
-[node name="Page" type="Label" parent="InventoryControl" unique_id=1829247889]
-layout_mode = 0
-offset_left = 633.0
-offset_top = 681.0
-offset_right = 698.0
-offset_bottom = 704.0
-text = "0 / 0"
-
-[node name="Panel" type="Node2D" parent="InventoryControl" unique_id=1606179904]
-position = Vector2(888, 144)
-scale = Vector2(0.8, 0.8)
-
-[node name="Background" type="Sprite2D" parent="InventoryControl/Panel" unique_id=904486948]
-scale = Vector2(1.5, 3)
-texture = ExtResource("9_nwke5")
-
-[node name="ButtonControl" type="Node2D" parent="InventoryControl/Panel" unique_id=636643101]
-
-[node name="Label" type="Label" parent="InventoryControl/Panel/ButtonControl" unique_id=1218215246]
-offset_left = -70.0
-offset_top = -129.0
-offset_right = 62.0
-offset_bottom = -83.0
-theme_override_font_sizes/font_size = 33
-text = "控制面板"
+offset_top = 14.0
+offset_right = 1240.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.87, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "金币：0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WarehousePanelBg" type="Panel" parent="UILayer/Root"]
+offset_left = 16.0
+offset_top = 72.0
+offset_right = 672.0
+offset_bottom = 606.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="WarehouseHeader" type="Label" parent="UILayer/Root"]
+offset_left = 36.0
+offset_top = 80.0
+offset_right = 652.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "我的仓库"
+vertical_alignment = 1
+
+[node name="WarehouseGrid" type="GridContainer" parent="UILayer/Root"]
+offset_left = 36.0
+offset_top = 118.0
+offset_right = 652.0
+offset_bottom = 558.0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 6
+
+[node name="WarehousePrev" type="Button" parent="UILayer/Root"]
+offset_left = 162.0
+offset_top = 566.0
+offset_right = 226.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "◀"
+
+[node name="WarehousePage" type="Label" parent="UILayer/Root"]
+offset_left = 234.0
+offset_top = 566.0
+offset_right = 454.0
+offset_bottom = 598.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 19
+text = "1 / 1"
 horizontal_alignment = 1
-autowrap_trim_flags = 128
-justification_flags = 0
+vertical_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="InventoryControl/Panel/ButtonControl" unique_id=1789601259]
-offset_left = -61.0
-offset_top = -64.0
-offset_right = 58.0
-offset_bottom = 119.0
-theme_override_constants/separation = 16
+[node name="WarehouseNext" type="Button" parent="UILayer/Root"]
+offset_left = 462.0
+offset_top = 566.0
+offset_right = 526.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "▶"
 
-[node name="ShopButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1904283571]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 23
-text = "进入商店"
+[node name="CarryPanelBg" type="Panel" parent="UILayer/Root"]
+offset_left = 688.0
+offset_top = 72.0
+offset_right = 1264.0
+offset_bottom = 606.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="ExitButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=1418447391]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 23
-text = "返回主菜单"
+[node name="CarryHeader" type="Label" parent="UILayer/Root"]
+offset_left = 708.0
+offset_top = 80.0
+offset_right = 1244.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "带入游戏"
+vertical_alignment = 1
 
-[node name="FishButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=2078876008]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 23
-text = "免费给你鱼"
+[node name="CarryGrid" type="GridContainer" parent="UILayer/Root"]
+offset_left = 720.0
+offset_top = 118.0
+offset_right = 1232.0
+offset_bottom = 334.0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 5
 
-[node name="RefreshButton" type="Button" parent="InventoryControl/Panel/ButtonControl/VBoxContainer" unique_id=614834854]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 23
+[node name="SelectedLabel" type="Label" parent="UILayer/Root"]
+offset_left = 708.0
+offset_top = 346.0
+offset_right = 1244.0
+offset_bottom = 384.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+text = "先点选左侧仓库物品或右侧带入栏"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HintLabel" type="Label" parent="UILayer/Root"]
+offset_left = 708.0
+offset_top = 386.0
+offset_right = 1244.0
+offset_bottom = 418.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.9, 1)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="PutInButton" type="Button" parent="UILayer/Root"]
+offset_left = 812.0
+offset_top = 430.0
+offset_right = 972.0
+offset_bottom = 500.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/disabled = SubResource("StyleBoxTexture_yellow_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_yellow_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_yellow_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_yellow_pressed")
+text = "放 入"
+
+[node name="TakeOutButton" type="Button" parent="UILayer/Root"]
+offset_left = 980.0
+offset_top = 430.0
+offset_right = 1140.0
+offset_bottom = 500.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "取 出"
+
+[node name="UpgradeWarehouseButton" type="Button" parent="UILayer/Root"]
+offset_left = 712.0
+offset_top = 516.0
+offset_right = 972.0
+offset_bottom = 576.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "仓库扩容"
+
+[node name="UpgradeCarryButton" type="Button" parent="UILayer/Root"]
+offset_left = 980.0
+offset_top = 516.0
+offset_right = 1240.0
+offset_bottom = 576.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.34, 0.42, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/disabled = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
+text = "带入栏 +1"
+
+[node name="SortButton" type="Button" parent="UILayer/Root"]
+offset_left = 384.0
+offset_top = 616.0
+offset_right = 544.0
+offset_bottom = 686.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_cyan_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_cyan_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_cyan_pressed")
 text = "整理背包"
 
-[connection signal="card_be_snapper" from="InventoryGrid" to="InventoryControl/SnapPointContainer/Button/SnapPoint1" method="_on_inventory_grid_card_be_snapper"]
-[connection signal="button_down" from="InventoryControl/LeftButton" to="InventoryControl" method="_on_left_button_button_down"]
-[connection signal="button_down" from="InventoryControl/RightButton" to="InventoryControl" method="_on_right_button_button_down"]
-[connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/ExitButton" to="." method="_on_exit_button_button_down"]
-[connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/ShopButton" to="." method="_on_shop_button_button_down"]
-[connection signal="pressed" from="InventoryControl/Panel/ButtonControl/VBoxContainer/FishButton" to="InventoryControl" method="_on_button_pressed"]
-[connection signal="button_down" from="InventoryControl/Panel/ButtonControl/VBoxContainer/RefreshButton" to="InventoryControl" method="_on_refresh_button_button_down"]
+[node name="ShopButton" type="Button" parent="UILayer/Root"]
+offset_left = 560.0
+offset_top = 616.0
+offset_right = 720.0
+offset_bottom = 686.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_yellow_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_yellow_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_yellow_pressed")
+text = "进入商店"
+
+[node name="ExitButton" type="Button" parent="UILayer/Root"]
+offset_left = 736.0
+offset_top = 616.0
+offset_right = 896.0
+offset_bottom = 686.0
+theme_override_colors/font_color = Color(0.13, 0.11, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.04, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.2, 0.18, 0.26, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxTexture_red_hover")
+theme_override_styles/normal = SubResource("StyleBoxTexture_red_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_red_pressed")
+text = "返回主菜单"
+
+[node name="StatusLabel" type="Label" parent="UILayer/Root"]
+offset_left = 920.0
+offset_top = 616.0
+offset_right = 1264.0
+offset_bottom = 696.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 19
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[connection signal="pressed" from="UILayer/Root/WarehousePrev" to="." method="_on_warehouse_prev_pressed"]
+[connection signal="pressed" from="UILayer/Root/WarehouseNext" to="." method="_on_warehouse_next_pressed"]
+[connection signal="pressed" from="UILayer/Root/PutInButton" to="." method="_on_put_in_pressed"]
+[connection signal="pressed" from="UILayer/Root/TakeOutButton" to="." method="_on_take_out_pressed"]
+[connection signal="pressed" from="UILayer/Root/UpgradeWarehouseButton" to="." method="_on_upgrade_warehouse_pressed"]
+[connection signal="pressed" from="UILayer/Root/UpgradeCarryButton" to="." method="_on_upgrade_carry_pressed"]
+[connection signal="pressed" from="UILayer/Root/SortButton" to="." method="_on_sort_pressed"]
+[connection signal="pressed" from="UILayer/Root/ShopButton" to="." method="_on_shop_pressed"]
+[connection signal="pressed" from="UILayer/Root/ExitButton" to="." method="_on_exit_pressed"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/shop/shop_slot.gd" id="1_slot"]
+[ext_resource type="Script" path="res://scripts/ui_scripts/item_slot.gd" id="1_slot"]
 [ext_resource type="Texture2D" path="res://res/UI/背包格子-未选中-选中的样子.png" id="2_grid"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_idle"]
@@ -16,7 +16,7 @@ region_rect = Rect2(0, 0, 32, 32)
 texture = ExtResource("2_grid")
 region_rect = Rect2(0, 32, 32, 32)
 
-[node name="ShopSlot" type="Button"]
+[node name="ItemSlot" type="Button"]
 custom_minimum_size = Vector2(96, 104)
 offset_right = 96.0
 offset_bottom = 104.0

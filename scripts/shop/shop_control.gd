@@ -15,7 +15,7 @@ extends Node2D
 const PAGE_SIZE := 16
 
 ## 单个格子场景。
-const SHOP_SLOT_SCENE := preload("res://scenes/Shop/shop_slot.tscn")
+const ITEM_SLOT_SCENE := preload("res://scenes/ui/item_slot.tscn")
 
 # ── ShopFailureReason 的具名镜像 ────────────────────────────────────────────
 # 数值必须与 core/shop/ShopFailureReason.cs 完全一致。C# 侧有一条测试
@@ -63,8 +63,8 @@ var _warehouse = null
 var _shop_catalog: Array[ItemData] = []
 
 ## 两侧的格子视图，索引即页内序号。
-var _warehouse_slots: Array[ShopSlot] = []
-var _shop_slots: Array[ShopSlot] = []
+var _warehouse_slots: Array[ItemSlot] = []
+var _shop_slots: Array[ItemSlot] = []
 
 ## 当前选中项。空字典表示未选中。
 ## 形状：{"side": StringName, "index": int}，index 是 catalog / 仓库槽位的绝对序号。
@@ -168,11 +168,11 @@ func _build_slot_views() -> void:
 ## 在指定网格下创建一整页格子。
 ## @param grid 承载格子的网格容器。
 ## @param side 这一侧的身份，会随点击事件一起回传。
-## @return Array[ShopSlot] 创建出的格子列表，索引即页内序号。
-func _create_slots(grid: GridContainer, side: StringName) -> Array[ShopSlot]:
-	var slots: Array[ShopSlot] = []
+## @return Array[ItemSlot] 创建出的格子列表，索引即页内序号。
+func _create_slots(grid: GridContainer, side: StringName) -> Array[ItemSlot]:
+	var slots: Array[ItemSlot] = []
 	for i in PAGE_SIZE:
-		var slot: ShopSlot = SHOP_SLOT_SCENE.instantiate()
+		var slot: ItemSlot = ITEM_SLOT_SCENE.instantiate()
 		grid.add_child(slot)
 		slot.slot_clicked.connect(_on_slot_clicked.bind(side))
 		slots.append(slot)
@@ -345,8 +345,8 @@ func _refresh_action_area() -> void:
 ## 格子被点击。
 ## @param slot 被点击的格子。
 ## @param side 该格子所属的一侧。
-func _on_slot_clicked(slot: ShopSlot, side: StringName) -> void:
-	var page_slots: Array[ShopSlot] = _shop_slots if side == SIDE_SHOP else _warehouse_slots
+func _on_slot_clicked(slot: ItemSlot, side: StringName) -> void:
+	var page_slots: Array[ItemSlot] = _shop_slots if side == SIDE_SHOP else _warehouse_slots
 	var page: int = _shop_page if side == SIDE_SHOP else _warehouse_page
 
 	var position_in_page := page_slots.find(slot)
