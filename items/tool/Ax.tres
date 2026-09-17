@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_myhp7")
+BuyPrice = 90
+SellPrice = 45
 MaxStackSize = 1
 ItemTags = Array[StringName]([&"Ax"])
 ValidSlots = Array[int]([5])

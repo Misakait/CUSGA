@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CUSGA.resources.item;
 using CUSGA.core.inventory;
 using CUSGA.core.crafting;
+using CUSGA.core.shop;
 using System.Linq;
 using CUSGA.core.constants;
 
@@ -12,7 +13,12 @@ namespace CUSGA.entities.components;
 /// <summary>
 /// 表示基于固定槽位存放 <see cref="ItemStack"/> 的通用背包组件。
 /// </summary>
-public partial class InventoryComponent : Node, ICraftingInventory
+/// <remarks>
+/// 同时实现 <see cref="ICraftingInventory"/> 与 <see cref="IShopInventory"/>：后者所需的
+/// <c>CanAddItem</c> / <c>AddItem</c> / <c>TryRemoveItem</c> / <c>ItemCnt</c> 四个成员本类已经全部具备且签名一致，
+/// 因此实现商店接口不需要新增或修改任何成员。
+/// </remarks>
+public partial class InventoryComponent : Node, ICraftingInventory, IShopInventory
 {
     [Export] public int Capacity { get; private set; } = 27; // 背包格子数
     [Signal] public delegate void InventoryChangedEventHandler();

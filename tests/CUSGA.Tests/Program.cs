@@ -9,6 +9,7 @@ using CUSGA.core.constants;
 using CUSGA.core.crafting;
 using CUSGA.core.inventory;
 using CUSGA.core.map;
+using CUSGA.core.shop;
 using CUSGA.core.autoloads;
 using CUSGA.entities.components;
 using CUSGA.resources.encounters;
@@ -36,6 +37,20 @@ tests.MonsterSkillComponentRandomSkillComesFromConfiguredSkillSet();
 tests.CraftingSimulationAllowsOutputWhenConsumedMaterialsFreeSlot();
 tests.CraftingSimulationRejectsOutputWhenFreedSlotsStillCannotHoldResult();
 tests.CraftingFailureDoesNotConsumeMaterialsWhenOutputWouldNotFit();
+tests.ShopBuyOneDeductsGoldAndStoresItem();
+tests.ShopBuyMultipleChargesUnitPricePerItem();
+tests.ShopBuyWithoutEnoughGoldLeavesEverythingUnchanged();
+tests.ShopBuyWithoutEnoughSpaceLeavesEverythingUnchanged();
+tests.ShopBuyRejectsItemWithoutBuyPrice();
+tests.ShopBuyRejectsNonPositiveQuantity();
+tests.ShopBuyRejectsQuantityThatOverflowsTotalPrice();
+tests.ShopSellOneRemovesItemAndAddsGold();
+tests.ShopSellMoreThanOwnedLeavesEverythingUnchanged();
+tests.ShopSellRejectsQuantityThatOverflowsTotalGold();
+tests.ShopResolveSellPriceFallsBackToHalfBuyPrice();
+tests.ShopSellRejectsItemWithoutAnyPrice();
+tests.ShopFailureReasonValuesAreStable();
+tests.PlayerWalletRejectsNonPositiveAmounts();
 tests.BattleDeckExpandsWhenAddingBeyondInitialCapacity();
 tests.RegularInventoryKeepsFixedCapacityWhenFull();
 tests.QuickTransferMovesSkillCardBetweenInventoryAndBattleDeck();
@@ -285,6 +300,265 @@ internal sealed partial class TerrainRandomizationTests
         Assert.Equal(5, inventory.CountWhere(item => item == material));
         Assert.Equal(1, inventory.CountWhere(item => item == filler));
         Assert.Equal(0, inventory.CountWhere(item => item == output));
+    }
+
+    /// <summary>
+    /// 验证买一件商品会同时扣掉买价并把商品放进仓库。
+    /// </summary>
+    public void ShopBuyOneDeductsGoldAndStoresItem()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 120);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(500);
+        var service = new ShopService();
+
+        bool bought = service.TryBuy(wallet, inventory, item, 1, out ShopFailureReason failureReason);
+
+        Assert.True(bought);
+        Assert.Equal(ShopFailureReason.None, failureReason);
+        Assert.Equal(380, wallet.Gold);
+        Assert.Equal(1, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证一次买多件时总价按单价乘以数量计算，而不是只收一件的钱。
+    /// </summary>
+    public void ShopBuyMultipleChargesUnitPricePerItem()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 90);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(500);
+        var service = new ShopService();
+
+        bool bought = service.TryBuy(wallet, inventory, item, 3, out ShopFailureReason failureReason);
+
+        Assert.True(bought);
+        Assert.Equal(ShopFailureReason.None, failureReason);
+        Assert.Equal(500 - (90 * 3), wallet.Gold);
+        Assert.Equal(3, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证金币不足时整笔购买失败，并且金币与仓库都没有任何变化。
+    /// </summary>
+    public void ShopBuyWithoutEnoughGoldLeavesEverythingUnchanged()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 120);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(119);
+        var service = new ShopService();
+
+        bool bought = service.TryBuy(wallet, inventory, item, 1, out ShopFailureReason failureReason);
+
+        Assert.False(bought);
+        Assert.Equal(ShopFailureReason.NotEnoughGold, failureReason);
+        Assert.Equal(119, wallet.Gold);
+        Assert.Equal(0, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证仓库放不下时购买失败，且金币不会被扣走。
+    /// </summary>
+    public void ShopBuyWithoutEnoughSpaceLeavesEverythingUnchanged()
+    {
+        // 单件上限为 1，且只有一个空槽，因此买 2 件必然放不下。
+        var item = CreatePricedItemDataStub(buyPrice: 50, maxStackSize: 1);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(500);
+        var service = new ShopService();
+
+        bool bought = service.TryBuy(wallet, inventory, item, 2, out ShopFailureReason failureReason);
+
+        Assert.False(bought);
+        Assert.Equal(ShopFailureReason.NotEnoughSpace, failureReason);
+        Assert.Equal(500, wallet.Gold);
+        Assert.Equal(0, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证没有配置买价的物品不能被购买，避免地形物之类的非商品被误当作商品结算。
+    /// </summary>
+    public void ShopBuyRejectsItemWithoutBuyPrice()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 0);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(500);
+        var service = new ShopService();
+
+        Assert.False(ShopService.IsPurchasable(item));
+        Assert.False(service.CanBuy(wallet, inventory, item));
+
+        bool bought = service.TryBuy(wallet, inventory, item, 1, out ShopFailureReason failureReason);
+
+        Assert.False(bought);
+        Assert.Equal(ShopFailureReason.InvalidItem, failureReason);
+        Assert.Equal(500, wallet.Gold);
+        Assert.Equal(0, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证非正数数量被拒绝，且不会产生任何变更。
+    /// </summary>
+    public void ShopBuyRejectsNonPositiveQuantity()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 30);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(500);
+        var service = new ShopService();
+
+        foreach (int quantity in new[] { 0, -3 })
+        {
+            bool bought = service.TryBuy(wallet, inventory, item, quantity, out ShopFailureReason failureReason);
+
+            Assert.False(bought);
+            Assert.Equal(ShopFailureReason.InvalidQuantity, failureReason);
+        }
+
+        Assert.Equal(500, wallet.Gold);
+        Assert.Equal(0, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证总价溢出整数范围时被拒绝，而不是回绕成负数造成凭空得钱。
+    /// </summary>
+    public void ShopBuyRejectsQuantityThatOverflowsTotalPrice()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: int.MaxValue);
+        var inventory = new TestShopInventory(new ItemStack());
+        var wallet = new TestWallet(int.MaxValue);
+        var service = new ShopService();
+
+        bool bought = service.TryBuy(wallet, inventory, item, 2, out ShopFailureReason failureReason);
+
+        Assert.False(bought);
+        Assert.Equal(ShopFailureReason.InvalidQuantity, failureReason);
+        Assert.Equal(int.MaxValue, wallet.Gold);
+        Assert.Equal(0, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证卖出一件物品会从仓库移除并给玩家加上卖价。
+    /// </summary>
+    public void ShopSellOneRemovesItemAndAddsGold()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 120, sellPrice: 60, maxStackSize: 99);
+        var inventory = new TestShopInventory(Stack(item, 3));
+        var wallet = new TestWallet(100);
+        var service = new ShopService();
+
+        bool sold = service.TrySell(wallet, inventory, item, 1, out ShopFailureReason failureReason);
+
+        Assert.True(sold);
+        Assert.Equal(ShopFailureReason.None, failureReason);
+        Assert.Equal(160, wallet.Gold);
+        Assert.Equal(2, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证卖出数量超过持有量时整笔失败，不会按可用量部分出售，也不会给钱。
+    /// </summary>
+    public void ShopSellMoreThanOwnedLeavesEverythingUnchanged()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 120, sellPrice: 60, maxStackSize: 99);
+        var inventory = new TestShopInventory(Stack(item, 2));
+        var wallet = new TestWallet(100);
+        var service = new ShopService();
+
+        bool sold = service.TrySell(wallet, inventory, item, 3, out ShopFailureReason failureReason);
+
+        Assert.False(sold);
+        Assert.Equal(ShopFailureReason.MissingItem, failureReason);
+        Assert.Equal(100, wallet.Gold);
+        Assert.Equal(2, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证卖价溢出整数范围时被拒绝，避免收益回绕成负数。
+    /// </summary>
+    public void ShopSellRejectsQuantityThatOverflowsTotalGold()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 0, sellPrice: int.MaxValue, maxStackSize: 99);
+        var inventory = new TestShopInventory(Stack(item, 2));
+        var wallet = new TestWallet(0);
+        var service = new ShopService();
+
+        bool sold = service.TrySell(wallet, inventory, item, 2, out ShopFailureReason failureReason);
+
+        Assert.False(sold);
+        Assert.Equal(ShopFailureReason.InvalidQuantity, failureReason);
+        Assert.Equal(0, wallet.Gold);
+        Assert.Equal(2, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证只配了买价的物品仍可按买价折半卖出，让「只配一份价格表」的意图成立。
+    /// </summary>
+    public void ShopResolveSellPriceFallsBackToHalfBuyPrice()
+    {
+        var onlyBuyPrice = CreatePricedItemDataStub(buyPrice: 121, sellPrice: 0);
+        var explicitPrice = CreatePricedItemDataStub(buyPrice: 121, sellPrice: 99);
+        var noPrice = CreatePricedItemDataStub(buyPrice: 0, sellPrice: 0);
+
+        // 121 折半向下取整，确认取整方向不会多给钱。
+        Assert.Equal(60, ShopService.ResolveSellPrice(onlyBuyPrice));
+        Assert.Equal(99, ShopService.ResolveSellPrice(explicitPrice));
+        Assert.Equal(0, ShopService.ResolveSellPrice(noPrice));
+        Assert.Equal(0, ShopService.ResolveSellPrice(null));
+    }
+
+    /// <summary>
+    /// 验证买价与卖价都为 0 的物品既不能买也不能卖。
+    /// </summary>
+    public void ShopSellRejectsItemWithoutAnyPrice()
+    {
+        var item = CreatePricedItemDataStub(buyPrice: 0, sellPrice: 0);
+        var inventory = new TestShopInventory(Stack(item, 5));
+        var wallet = new TestWallet(100);
+        var service = new ShopService();
+
+        bool sold = service.TrySell(wallet, inventory, item, 1, out ShopFailureReason failureReason);
+
+        Assert.False(sold);
+        Assert.Equal(ShopFailureReason.InvalidItem, failureReason);
+        Assert.Equal(100, wallet.Gold);
+        Assert.Equal(5, inventory.ItemCnt(item));
+    }
+
+    /// <summary>
+    /// 验证失败原因的数值稳定，因为 GDScript 侧以具名常量镜像这些数值。
+    /// </summary>
+    public void ShopFailureReasonValuesAreStable()
+    {
+        Assert.Equal(0, (int)ShopFailureReason.None);
+        Assert.Equal(1, (int)ShopFailureReason.InvalidItem);
+        Assert.Equal(2, (int)ShopFailureReason.InvalidQuantity);
+        Assert.Equal(3, (int)ShopFailureReason.NotEnoughGold);
+        Assert.Equal(4, (int)ShopFailureReason.NotEnoughSpace);
+        Assert.Equal(5, (int)ShopFailureReason.MissingItem);
+        Assert.Equal(6, (int)ShopFailureReason.NotConfigured);
+    }
+
+    /// <summary>
+    /// 验证钱包拒绝非正数金额，且 <c>Add</c> 不能被当作扣款入口。
+    /// </summary>
+    /// <remarks>
+    /// 这里刻意不调用 <c>_Ready</c>：钱包在没有 SettingsManager 的场景下应当退化为纯内存模式，
+    /// 而不是崩溃，因此失败分支与退化为零的进账都必须可安全调用。
+    /// </remarks>
+    public void PlayerWalletRejectsNonPositiveAmounts()
+    {
+        var wallet = new PlayerWallet();
+        int initial = wallet.Gold;
+
+        Assert.Equal(PlayerWallet.DefaultGold, initial);
+        Assert.False(wallet.TrySpend(0));
+        Assert.False(wallet.TrySpend(-5));
+        Assert.False(wallet.TrySpend(initial + 1));
+        Assert.Equal(initial, wallet.Gold);
+
+        wallet.Add(0);
+        wallet.Add(-100);
+        Assert.Equal(initial, wallet.Gold);
     }
 
     /// <summary>
@@ -1843,6 +2117,29 @@ internal sealed partial class TerrainRandomizationTests
         return item;
     }
 
+    /// <summary>
+    /// 创建带商店价格的物品桩数据。
+    /// </summary>
+    /// <param name="buyPrice">买入价；0 表示不作为商品出售。</param>
+    /// <param name="sellPrice">卖出价；0 表示由 <c>ShopService</c> 按买价折半推导。</param>
+    /// <param name="maxStackSize">单格堆叠上限。</param>
+    /// <returns>只用于商店规则测试的物品资源。</returns>
+    /// <remarks>
+    /// <see cref="RuntimeHelpers.GetUninitializedObject"/> 会跳过字段初始化器，
+    /// 因此价格必须显式写入，不能依赖 <c>ItemData</c> 的默认值。
+    /// </remarks>
+    private static ItemData CreatePricedItemDataStub(
+        int buyPrice,
+        int sellPrice = 0,
+        int maxStackSize = 99
+    )
+    {
+        var item = CreateItemDataStub(maxStackSize);
+        item.BuyPrice = buyPrice;
+        item.SellPrice = sellPrice;
+        return item;
+    }
+
     private static ItemData CreateTaggedItemDataStub(string cardId, params string[] tags)
     {
         var item = CreateItemDataStub(maxStackSize: 99);
@@ -2076,6 +2373,176 @@ internal sealed class TestCraftingInventory : ICraftingInventory
             slot.SetItem(slot.Item, slot.Amount - removed);
             remainingToRemove -= removed;
         }
+    }
+}
+
+/// <summary>
+/// 商店规则测试用的假仓库。
+/// </summary>
+/// <remarks>
+/// 刻意镜像 <c>InventoryComponent</c> 的槽位语义（先填已有堆叠、再占空槽、按物品计数），
+/// 但完全脱离场景树，因此 <c>ShopService</c> 的规则可以在控制台运行器里验证。
+/// </remarks>
+internal sealed class TestShopInventory : IShopInventory
+{
+    private readonly ItemStack[] _slots;
+
+    public TestShopInventory(params ItemStack[] slots)
+    {
+        _slots = slots;
+    }
+
+    public bool CanAddItem(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0 || item.ActualMaxStackSize <= 0)
+        {
+            return false;
+        }
+
+        return RemainingAfterAvailableSlots(item, amount) <= 0;
+    }
+
+    public int AddItem(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0 || item.ActualMaxStackSize <= 0)
+        {
+            return amount;
+        }
+
+        int remaining = amount;
+
+        // 先塞进已有的未满堆叠，再占用空槽，顺序与 InventoryComponent.AddItem 保持一致。
+        foreach (ItemStack slot in _slots)
+        {
+            if (slot.IsEmpty || slot.Item != item || slot.IsFull)
+            {
+                continue;
+            }
+
+            remaining = slot.Add(remaining);
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+        }
+
+        foreach (ItemStack slot in _slots)
+        {
+            if (!slot.IsEmpty)
+            {
+                continue;
+            }
+
+            int amountToAdd = Math.Min(remaining, item.ActualMaxStackSize);
+            slot.SetItem(item, amountToAdd);
+            remaining -= amountToAdd;
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+        }
+
+        return remaining;
+    }
+
+    public bool TryRemoveItem(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0 || ItemCnt(item) < amount)
+        {
+            return false;
+        }
+
+        int remainingToRemove = amount;
+        for (int i = _slots.Length - 1; i >= 0 && remainingToRemove > 0; i--)
+        {
+            ItemStack slot = _slots[i];
+            if (slot.IsEmpty || slot.Item != item)
+            {
+                continue;
+            }
+
+            int removed = Math.Min(slot.Amount, remainingToRemove);
+            slot.SetItem(slot.Item, slot.Amount - removed);
+            remainingToRemove -= removed;
+        }
+
+        return true;
+    }
+
+    public int ItemCnt(ItemData item)
+    {
+        if (item == null)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        foreach (ItemStack slot in _slots)
+        {
+            if (!slot.IsEmpty && slot.Item == item)
+            {
+                total += slot.Amount;
+            }
+        }
+
+        return total;
+    }
+
+    private int RemainingAfterAvailableSlots(ItemData item, int amount)
+    {
+        int remaining = amount;
+        foreach (ItemStack slot in _slots)
+        {
+            if (slot.IsEmpty)
+            {
+                remaining -= item.ActualMaxStackSize;
+            }
+            else if (slot.Item == item && !slot.IsFull)
+            {
+                remaining -= slot.AvailableSpace;
+            }
+
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+        }
+
+        return remaining;
+    }
+}
+
+/// <summary>
+/// 商店规则测试用的假钱包，只做余额记账，不涉及持久化。
+/// </summary>
+internal sealed class TestWallet : IPlayerWallet
+{
+    public TestWallet(int gold)
+    {
+        Gold = gold;
+    }
+
+    public int Gold { get; private set; }
+
+    public bool TrySpend(int amount)
+    {
+        if (amount <= 0 || amount > Gold)
+        {
+            return false;
+        }
+
+        Gold -= amount;
+        return true;
+    }
+
+    public void Add(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        Gold += amount;
     }
 }
 

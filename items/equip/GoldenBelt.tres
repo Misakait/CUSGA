@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_wvwv2")
+BuyPrice = 630
+SellPrice = 315
 MaxStackSize = 1
 ItemTags = Array[StringName]([&"GoldenBelt"])
 CardId = &"GoldenBelt"

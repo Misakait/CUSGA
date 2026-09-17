@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_7lhfe")
+BuyPrice = 300
+SellPrice = 150
 MaxStackSize = 12
 ItemTags = Array[StringName]([&"lifepotion", &"MagicItem"])
 CardId = &"lifepotion"

@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_weosu")
+BuyPrice = 20
+SellPrice = 10
 MaxStackSize = 12
 ItemTags = Array[StringName]([&"bug"])
 CardId = &"bug"

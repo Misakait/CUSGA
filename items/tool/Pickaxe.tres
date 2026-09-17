@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_41t7r")
+BuyPrice = 90
+SellPrice = 45
 MaxStackSize = 1
 ItemTags = Array[StringName]([&"Pickaxe"])
 ValidSlots = Array[int]([6])
