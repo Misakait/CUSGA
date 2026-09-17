@@ -107,8 +107,36 @@
 | `tests/godot/battle_deck_capacity_tests.gd`（既有）| 通过 |
 | 删除旧脚本后重跑上述全部 | 全部仍通过 |
 
+---
+
+## 阶段 6 — 验收后按用户反馈追加的两项改动
+
+### 6.1 目录即唯一真相
+
+- [x] `ShopCatalog.AlsoIncludeEveryPricedItem` 默认值 `true` → **`false`**，并改写文档说明。
+- [x] 用一次性脚本把当时的 88 件商品固化进 `shop_catalog.tres` 的 `Goods`，顺序按 `CardId` 升序（与迁移前一致）。
+- [x] 脚本用完即删：它会**覆盖**目录，留着当日常工具重跑就是陷阱。
+
+**踩坑**：`ResourceSaver` 又一次丢掉了全部 `uid` 属性（与阶段 2 的价格写入同一个坑）。纯路径引用不会报警告，但物品资源一旦移动/改名引用就会断。用一个一次性 Python 脚本按项目惯例补回了 90 条 `ext_resource` 的 UID。
+
+**验证（运行中的游戏）**：`include_all = false`、`goods_count = 88`、`stock_count = 88`、商店页码 `1 / 6`、前五件仍是「斧头 / 钓鱼竿 / 金头盔 / 金斧 / 金腰带」——界面与迁移前无可见差异。
+
+### 6.2 每次启动重置
+
+- [x] 新增 `core/progression/PlayerDataPolicy.cs`，`PersistAcrossRuns = false`。
+- [x] `PlayerWallet` 与 `PlayerProgression` 的读、写两处都受该开关控制。
+- [x] `SettingsManager.gd` 补 `erase_setting()`，启动时清除遗留的玩家键。
+
+**验证（两次真实启动）**：
+| 检查 | 结果 |
+|---|---|
+| 启动后升级（仓库 27→36、带入栏 5→6、金币 3200→2700）| 内存变化正确 |
+| 升级后查 `settings.cfg` | `[player]` 段**完全不存在**，只剩 `[battle] operation_mode="drag"` 未受影响 |
+| 重启后 | 金币 2700 → **1200**、容量 36 → **27**、带入栏 6 → **5**、等级 0/0 |
+
 ### 交付后仍需注意
 
 1. `tests/godot/shop_trade_tests.gd` 按用户要求**保留在本地、不提交**。注意仓库里其它 Godot runner 都是提交进版本控制的，这一条是例外。
 2. 运行中的 Godot 编辑器会把 `.cs` 缩进从空格改成 Tab（违反 `.editorconfig` 的 `indent_style = space`）。用户已确认不再处理，照常提交即可。
 3. `.trellis/spec/frontend/` 下三份规范（SceneManager 时序、Button 悬停/选中陷阱、本机验证工具链边界）已更新，属于本任务沉淀的经验。
+4. **正式发布前记得把 `PlayerDataPolicy.PersistAcrossRuns` 改成 `true`**，否则玩家的金币与升级不会保存。

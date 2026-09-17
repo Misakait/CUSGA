@@ -1,3 +1,4 @@
+using CUSGA.core.progression;
 using CUSGA.core.shop;
 using Godot;
 
@@ -47,6 +48,12 @@ public partial class PlayerWallet : Node, IPlayerWallet
         {
             // 缺设置服务只应降级为「本次运行内有效」，而不是让游戏起不来。
             GD.PushError("PlayerWallet: 未找到 SettingsManager，金币将只在本次运行内有效。");
+        }
+
+        if (!PlayerDataPolicy.PersistAcrossRuns)
+        {
+            // 开发期不持久化：清掉上次运行遗留的金币，保证每次都从初始值开始。
+            ClearStoredValue();
         }
 
         Gold = ReadStoredGold();
@@ -99,10 +106,13 @@ public partial class PlayerWallet : Node, IPlayerWallet
     /// <remarks>
     /// 存档是玩家本机文件，可能被手工改成字符串或负数。调用方负责校验领域值并回退默认值，
     /// 这是 <c>SettingsManager</c> 的既定契约——它只负责读写，不理解金币的合法范围。
+    /// <para>
+    /// <see cref="PlayerDataPolicy.PersistAcrossRuns"/> 关闭时直接返回初始金币，不读存档。
+    /// </para>
     /// </remarks>
     private int ReadStoredGold()
     {
-        if (_settingsManager == null)
+        if (!PlayerDataPolicy.PersistAcrossRuns || _settingsManager == null)
         {
             return DefaultGold;
         }
@@ -132,10 +142,13 @@ public partial class PlayerWallet : Node, IPlayerWallet
     /// <remarks>
     /// 写盘失败只记录警告：内存中的余额仍然有效，当前会话继续使用新值，
     /// 但不能对外声称金币已经跨重启保存成功。
+    /// <para>
+    /// <see cref="PlayerDataPolicy.PersistAcrossRuns"/> 关闭时直接跳过，不写盘。
+    /// </para>
     /// </remarks>
     private void PersistGold()
     {
-        if (_settingsManager == null)
+        if (!PlayerDataPolicy.PersistAcrossRuns || _settingsManager == null)
         {
             return;
         }
@@ -147,5 +160,22 @@ public partial class PlayerWallet : Node, IPlayerWallet
         {
             GD.PushWarning("PlayerWallet: 金币未能写入本地设置文件，本次运行内仍然有效。");
         }
+    }
+
+    /// <summary>
+    /// 清除本地设置文件里遗留的金币键。
+    /// </summary>
+    /// <remarks>
+    /// 只在开发期（不持久化）时调用。目的是让「将来把开关打开」这件事不会把开发期随手改出来的
+    /// 余额当成正式存档读回来。
+    /// </remarks>
+    private void ClearStoredValue()
+    {
+        if (_settingsManager == null)
+        {
+            return;
+        }
+
+        _settingsManager.Call("erase_setting", SettingsSection, SettingsKey);
     }
 }

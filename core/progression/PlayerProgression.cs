@@ -63,6 +63,12 @@ public partial class PlayerProgression : Node
             GD.PushError("PlayerProgression: 未找到 GlobalWarehouse，仓库容量升级不会生效。");
         }
 
+        if (!PlayerDataPolicy.PersistAcrossRuns)
+        {
+            // 开发期不持久化：清掉上次运行遗留的等级，保证每次都从初始容量开始。
+            ClearStoredLevels();
+        }
+
         _levels[(int)UpgradeKind.WarehouseCapacity] = ReadLevel(UpgradeKind.WarehouseCapacity, WarehouseLevelKey);
         _levels[(int)UpgradeKind.CarrySlots] = ReadLevel(UpgradeKind.CarrySlots, CarryLevelKey);
 
@@ -198,9 +204,12 @@ public partial class PlayerProgression : Node
     /// <param name="kind">升级项，用于收窄合法范围。</param>
     /// <param name="key">存储键。</param>
     /// <returns>通过校验的等级；缺失或非法时返回 0。</returns>
+    /// <remarks>
+    /// <see cref="PlayerDataPolicy.PersistAcrossRuns"/> 关闭时直接返回 0 级，不读存档。
+    /// </remarks>
     private int ReadLevel(UpgradeKind kind, string key)
     {
-        if (_settingsManager == null)
+        if (!PlayerDataPolicy.PersistAcrossRuns || _settingsManager == null)
         {
             return 0;
         }
@@ -231,9 +240,12 @@ public partial class PlayerProgression : Node
     /// </summary>
     /// <param name="kind">升级项。</param>
     /// <param name="level">要保存的等级。</param>
+    /// <remarks>
+    /// <see cref="PlayerDataPolicy.PersistAcrossRuns"/> 关闭时直接跳过，不写盘。
+    /// </remarks>
     private void SaveLevel(UpgradeKind kind, int level)
     {
-        if (_settingsManager == null)
+        if (!PlayerDataPolicy.PersistAcrossRuns || _settingsManager == null)
         {
             return;
         }
@@ -243,6 +255,24 @@ public partial class PlayerProgression : Node
         {
             GD.PushWarning($"PlayerProgression: {LevelKey(kind)} 未能写入本地设置文件，本次运行内仍然有效。");
         }
+    }
+
+    /// <summary>
+    /// 清除本地设置文件里遗留的升级等级键。
+    /// </summary>
+    /// <remarks>
+    /// 只在开发期（不持久化）时调用。目的是让「将来把开关打开」这件事不会把开发期随手升出来的
+    /// 等级当成正式存档读回来。
+    /// </remarks>
+    private void ClearStoredLevels()
+    {
+        if (_settingsManager == null)
+        {
+            return;
+        }
+
+        _settingsManager.Call("erase_setting", SettingsSection, WarehouseLevelKey);
+        _settingsManager.Call("erase_setting", SettingsSection, CarryLevelKey);
     }
 
     /// <summary>

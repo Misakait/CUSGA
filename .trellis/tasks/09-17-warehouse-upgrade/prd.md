@@ -85,6 +85,12 @@
 - [x] AC16：Godot 4.7.1 headless 冒烟 `Warehouse` / `Shop` / `Main` / `main_menu` 四个场景均无 `SCRIPT ERROR`。
 - [x] AC17：删除 4 个旧仓库脚本后全部场景与规则测试仍通过。
 
+### 验收后追加（用户反馈驱动）
+
+- [x] AC18：**目录即唯一真相** —— `AlsoIncludeEveryPricedItem` 默认 `false`；`Goods` 显式列出 88 件商品；商店展示内容与顺序与迁移前完全一致。
+- [x] AC19：**每次启动重置** —— 金币与升级等级不再持久化，重启后回到初始值（金币 1200 / 仓库 27 / 带入栏 5）；存档里的遗留玩家键被清除，战斗操作模式等其它偏好不受影响。
+- [x] AC20：目录文件中 90 条 `ext_resource` 全部带 UID，物品资源移动/改名不会断引用。
+
 ## Constraints
 
 - 不改 `ItemsControl.warehouse_to_player` / `player_to_warehouse` 这两个契约，`map_control.gd` 不做任何改动。

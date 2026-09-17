@@ -39,6 +39,23 @@ func set_setting(section: String, key: String, value: Variant) -> bool:
 		return false
 	return true
 
+## 删除一个已保存的设置值并立即保存。
+## 用于让调用方在「不再需要某个键」时把配置清干净，避免它在下次打开相关开关时被当成有效存档读回来。
+## @param section 设置所属的功能分组。
+## @param key 分组内的设置键名。
+## @return bool 写入磁盘是否成功；键本来就不存在时视为成功。
+func erase_setting(section: String, key: String) -> bool:
+	if not _settings_config.has_section_key(section, key):
+		return true
+
+	_settings_config.erase_section_key(section, key)
+	# 本次将内存配置落盘的错误码；OK 表示删除已成功跨重启生效。
+	var save_error: Error = _settings_config.save(SETTINGS_FILE_PATH)
+	if save_error != OK:
+		push_error("无法保存本地设置：%s（错误码：%s）" % [SETTINGS_FILE_PATH, save_error])
+		return false
+	return true
+
 ## 从本地文件加载所有设置。
 ## 文件尚未创建是首次运行的正常情况；其他加载失败均丢弃可能不完整的数据，以确保调用方得到明确默认值。
 ## @return void 无返回值。

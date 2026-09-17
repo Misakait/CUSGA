@@ -86,6 +86,26 @@ public bool TryUpgradeCarrySlots();
 | 找不到 `GlobalWarehouse` | `PushError` | 等级仍可升，但容量不下发 |
 | 写盘失败 | `PushWarning` | 内存值保留，本次运行内有效 |
 
+### 3.3 持久化策略：`PlayerDataPolicy`
+
+```csharp
+public static class PlayerDataPolicy
+{
+    public const bool PersistAcrossRuns = false;   // 发布时改为 true
+}
+```
+
+金币在 `PlayerWallet`、等级在 `PlayerProgression`，分属两个类。开关集中一处是为了避免发布时只改一边，出现「金币存了、等级没存」的错位。
+
+关闭时（开发期）：
+- `ReadStoredGold` / `ReadLevel` 直接返回初始值，**不读存档**。
+- `PersistGold` / `SaveLevel` 直接返回，**不写存档**。
+- `_Ready()` 顺带调用 `erase_setting` 清掉遗留的玩家键，避免将来打开开关时把开发期随手改出来的数值当成正式存档读回来。战斗操作模式等其它偏好不受影响。
+
+**为什么不是直接删掉持久化代码**：发布时需要它。留一个常量开关，恢复只需改一行，两边读写代码都不用动。
+
+**副作用**：`SettingsManager.gd` 原本只有 get/set，为清键补了 `erase_setting(section, key)`（键不存在时视为成功）。它本身就是 get/set 的自然补充，不只为本次服务。
+
 ## 4. `InventoryComponent.SetCapacity`
 
 ```csharp
@@ -100,17 +120,21 @@ public void SetCapacity(int capacity);   // 只增不减；_slots 未建立时 P
 [GlobalClass] public partial class ShopCatalog : Resource
 {
     [Export] public Godot.Collections.Array<ItemData> Goods { get; set; } = [];
-    [Export] public bool AlsoIncludeEveryPricedItem { get; set; } = true;
+    [Export] public bool AlsoIncludeEveryPricedItem { get; set; } = false;
     [Export(PropertyHint.Range, "0,999999,1,or_greater")] public int DefaultBuyPrice { get; set; } = 100;
     public bool ContainsExplicitly(ItemData item);
 }
 ```
 
+**目录即唯一真相**：`AlsoIncludeEveryPricedItem` 默认 **false**。开着它会让「物品自己配了买价」也变成上架条件，于是上架有两个入口、下架还得回头改物品资源。默认关闭后，商店卖什么完全由 `Goods` 决定。
+
+> **实现期修正**：初版默认值是 `true`（用开关达到「88 件照旧上架」的效果，从而让提交目录不改变既有行为）。用户随后指出「目录里什么都没配，商店却有东西」这件事难以理解——这个困惑本身就说明双入口的设计不合理。于是改为默认 `false`，并用一次性脚本把当时的 88 件商品固化进 `Goods`，随后删掉该脚本（它会覆盖手工编辑，留着重跑是陷阱）。迁移后 `Goods` 顺序按 `CardId` 升序，与迁移前完全一致，界面无可见变化。
+
 **为什么做成独立 `Resource`**：直接挂在场景节点上更省事，但商店数据就绑死在某个场景里，将来做第二个商人要复制整个场景。做成资源后可复用同一套上架逻辑。
 
 **清单构建**（`ShopTradeBridge.BuildStockList`）：
 1. 先按 `Goods` 的**数组顺序**加入（拖拽顺序即货架顺序，去重）。
-2. 若 `Catalog == null` 或 `AlsoIncludeEveryPricedItem`，把其余 `BuyPrice > 0` 的物品按 `CardId` 升序追加。
+2. 仅当 `Catalog == null` 或 `AlsoIncludeEveryPricedItem` 为真时，才把其余 `BuyPrice > 0` 的物品按 `CardId` 升序追加。
 
 自动补入必须显式排序——`ItemsControl` 用 `DirAccess` 递归装入字典，顺序不是稳定契约。
 

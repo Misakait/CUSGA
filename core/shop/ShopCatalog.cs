@@ -28,11 +28,12 @@ public partial class ShopCatalog : Resource
     /// 是否在 <see cref="Goods"/> 之外，额外自动上架所有自身配置了正数买价的物品。
     /// </summary>
     /// <remarks>
-    /// 默认开启以保持既有行为：88 个在 <c>.tres</c> 里配好买价的商品会照旧全部上架。
-    /// 想做成「只卖我手动指定的那些」就把它关掉。
+    /// 默认关闭：**本目录就是「商店卖什么」的唯一真相**。开着它会让「物品自己配了买价」也变成上架条件，
+    /// 于是上架有两个入口、下架还得回头去改物品资源，心智负担明显更高。
+    /// 只有在确实想要「所有定价物品都卖」这种批量行为时才临时打开。
     /// </remarks>
     [Export]
-    public bool AlsoIncludeEveryPricedItem { get; set; } = true;
+    public bool AlsoIncludeEveryPricedItem { get; set; } = false;
 
     /// <summary>
     /// 未自行定价的商品的兜底买价。
