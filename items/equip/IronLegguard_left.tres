@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_s42u5")
+BuyPrice = 288
+SellPrice = 144
 MaxStackSize = 1
 ItemTags = Array[StringName]([&"IronLegguard_left"])
 CardId = &"IronLegguard_left"
