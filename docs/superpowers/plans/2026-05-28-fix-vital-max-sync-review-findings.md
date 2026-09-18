@@ -6,7 +6,12 @@
 
 **Architecture:** `VitalComponentBase` 拆分“首次初始化到满值”和“后续仅同步上限”的语义。`AttributeComponent` 在 `AttributeChangeReason.Initialization` 时仍调用初始化路径，其他重算路径只更新上限并保留当前值，避免 UI 读取、状态变化、装备变化等属性重算产生隐式治疗。
 
-**Tech Stack:** Godot 4.6 Mono, C#, `env CI=true dotnet build`, `godot-mono --headless`, GitNexus impact/detect changes.
+**Tech Stack:** Godot 4.7.1 Mono, C#, `env CI=true dotnet build`, 编辑器 MCP（见下方警示）, GitNexus impact/detect changes.
+
+> ⚠️ **历史文档——其中的验证命令已作废，不要照着执行。**
+> 本文写于 2026-05-28，当时项目用的是 Godot 4.6 命令行。现在本机 CLI 是 4.6.3，而项目与 `addons/godot_ai` 要求 **4.7.1**，因此文中所有 `godot-mono --headless …` 命令（`--build-solutions` / `--scene` / `--script`）**都无法再运行**。
+> 等价做法：编译仍用 `env CI=true dotnet build CUSGA.sln --no-restore`；运行期验证走编辑器 MCP（`test_run` / `project_run` + `logs_read(source="game")`）。详见 `AGENTS.md` 第 1 节与 `.trellis/spec/frontend/quality-guidelines.md`。
+> 文中的任务步骤与当时的验证结论保留原样，仅作历史记录。
 
 ---
 

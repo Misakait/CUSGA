@@ -16,7 +16,7 @@ Identify the feature slice:
 - Godot UI/GDScript/scene flow: read frontend directory, component, state, type safety, and quality specs.
 - Cross-language combat or enum work: read both backend gameplay specs and frontend type-safety specs.
 
-Use CodeGraph for C# symbols. Use native search/read for `.gd`, `.tscn`, `.tres`, and generated GDScript because CodeGraph currently indexes C# only.
+Use GitNexus for C# symbols (CodeGraph is configured in `AGENTS.md` but has no index built and no registered MCP tools — do not rely on it). Use native search/read for `.gd`, `.tscn`, `.tres`, and generated GDScript because neither tool indexes GDScript.
 
 If GitNexus reports stale data, run:
 
@@ -28,7 +28,7 @@ npx gitnexus analyze
 
 Before changing any C# symbol, run GitNexus impact analysis for the target symbol and report risk if it is HIGH or CRITICAL.
 
-Before changing GDScript or scenes, find the script's scene/runtime callers with `rg` and pick the smallest Godot headless check that exercises that path.
+Before changing GDScript or scenes, find the script's scene/runtime callers with `rg` and pick the smallest editor-MCP check that exercises that path (`test_run` for a matching runner, otherwise a `project_run` smoke test).
 Do not use GitNexus or CodeGraph to look up symbols in GDScript, as neither tool supports the GDScript language.
 
 Keep collaborator-owned GDScript changes narrow. If the task is mainly diagnosis or the user says not to change friend-authored `.gd` code, report findings instead of editing those files.
@@ -58,7 +58,7 @@ Add focused validation based on changed files:
 
 - C# runner build: `env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj --no-restore`
 - C# runner execution when GodotSharp resolves: `env CI=true dotnet run --no-restore --project tests/CUSGA.Tests/CUSGA.Tests.csproj`
-- GDScript or scene runtime: `godot-mono --headless --path . --build-solutions --quit`
-- Passage/map flow: `godot-mono --headless --path . --script res://tests/godot/passage_guard_tests.gd`
-- Combat multi-hit/status bridge: `godot-mono --headless --path . --script res://tests/godot/multi_hit_damage_tests.gd`
-- Skill targeting enum bridge: `godot-mono --headless --path . --script res://tests/godot/skill_targeting_type_codegen_tests.gd`
+- GDScript or scene runtime: the Godot **editor MCP**, not the command line (`test_run` for `tests/godot/` runners; `project_run` + `logs_read(source="game")` for a scene smoke test, then `project_manage(op="stop")`). The editor must be open.
+- Passage/map flow: `test_run(suite="passage_guard")`
+- Combat multi-hit/status bridge: `test_run(suite="multi_hit_damage")`
+- Skill targeting enum bridge: `test_run(suite="skill_targeting_type_codegen")`

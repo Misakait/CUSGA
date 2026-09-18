@@ -24,31 +24,36 @@ When adding or changing scene scripts:
 
 ## Generated Files
 
-Do not hand-edit generated files under `scripts/generated/`. Change the source C# enum or generator, then run:
+Do not hand-edit generated files under `scripts/generated/`. Change the source C# enum or generator, then run the codegen test through the editor MCP:
 
-```bash
-godot-mono --headless --path . --script res://tests/godot/skill_targeting_type_codegen_tests.gd
+```text
+test_run(suite="skill_targeting_type_codegen")
 ```
+
+The CLI form (`godot-mono --headless --script res://tests/godot/skill_targeting_type_codegen_tests.gd`) is obsolete — see "本机验证工具链的实际边界" below.
 
 ## Runtime Validation
 
-For GDScript, scenes, resources, C# `[GlobalClass]` changes, autoload access, or scene/runtime integration, use Godot headless validation:
+For GDScript, scenes, resources, C# `[GlobalClass]` changes, autoload access, or scene/runtime integration, validate through the **Godot editor MCP**. The editor must be open with this project loaded.
 
-```bash
-godot-mono --headless --path . --build-solutions --quit
-godot-mono --headless --path . --check-only --script res://path/to/changed_script.gd
-godot-mono --headless --path . --script res://tests/godot/passage_guard_tests.gd
-godot-mono --headless --path . --scene res://scenes/Main.tscn --quit-after 5
-```
+| Need | Editor MCP |
+|---|---|
+| Focused runtime runner under `tests/godot/` | `test_run(suite=..., test_name=...)` |
+| Scene smoke test | `project_run(mode="custom", scene="res://scenes/X.tscn")` + `logs_read(source="game")`, then `project_manage(op="stop")` |
+| Assert state inside the live game | `game_eval(code=...)` |
+| Visual check of a UI change | `editor_screenshot(source="game")` |
+| Refresh global class cache after adding a `class_name` | `filesystem_manage(op="scan")` |
 
-Run only the focused Godot tests that match the changed area, plus build-solutions when C# resources/global classes changed.
+Run only the focused checks that match the changed area. Do not substitute the removed CLI flags for any of these — see the boundary notes below.
 
 ## Do Not Generalize Beyond Current Examples
 
 Do not add web accessibility, React hook, CSS, browser routing, or server-state requirements. The current UI is Godot UI and card/scene interaction. If a future feature introduces a new UI framework, create a new spec from actual code at that time.
 ## 本机验证工具链的实际边界
 
-本节记录在本机（Windows + Godot 4.6.3 CLI / 4.7.1 编辑器）实测出的验证手段边界。这些结论决定了「哪些检查能作为门禁、哪些不能」，照抄命令前务必先看这里。
+本节记录在本机（Windows + Godot **4.7.1**：一律走编辑器 MCP，不再使用命令行）实测出的验证手段边界。这些结论决定了「哪些检查能作为门禁、哪些不能」，照抄命令前务必先看这里。
+
+> 本节在 2026-09-19 做过一次方向性修正。此前本节把 Godot 4.6.3 命令行（`godot-mono --headless`）当作主力验证手段；实际本机 CLI 是 4.6.3，而项目与 `addons/godot_ai` 都要求 4.7.1，**旧命令行整体不可用**。如果你的记忆或旧文档里还有 `--build-solutions` / `--check-only` / `--scene` / `--script` 这类开关，全部作废。
 
 ### 1. Scope / Trigger
 
@@ -56,60 +61,92 @@ Do not add web accessibility, React hook, CSS, browser routing, or server-state 
 
 ### 2. Signatures
 
-```powershell
-# 可用的 Godot 命令行（不在 PATH，需要绝对路径）
-$godot = "C:\Users\huhu9\Desktop\Alldocument\Godot_v4.6.3-stable_mono_win64\Godot_v4.6.3-stable_mono_win64_console.exe"
+```text
+# 前提：Godot 编辑器已打开本项目。先确认会话存在：
+editor_state
+session_manage(op="list")
 
-& $godot --headless --path . --scene res://scenes/X.tscn --quit-after 10     # 场景冒烟（推荐主力）
-& $godot --headless --path . --script res://tests/godot/x_tests.gd           # 脚本型 runner
+test_run(suite=..., test_name=...)                      # 跑 tests/godot/ 下的运行期 runner
+
+project_run(mode="custom", scene="res://scenes/X.tscn") # 场景冒烟（真实游戏进程）
+logs_read(source="game")                                # 读 SCRIPT ERROR / push_error
+project_manage(op="stop")                               # 结束游戏
+
+game_eval(code=...)                                     # 在运行中的游戏里断言取值
+editor_screenshot(source="game")                        # UI 改动的目视确认
+filesystem_manage(op="scan")                            # 刷新全局类缓存
+```
+
+编译仍然走命令行，与 MCP 无关：
+
+```powershell
+$env:CI='true'; dotnet build CUSGA.sln --no-restore
 ```
 
 ### 3. Contracts
 
-- **`--scene` 会加载 autoload，`--script` 不会。** C# 写的 autoload（`PlayerWallet` 等）在 `--script` 模式下 `get_node_or_null("/root/X")` 返回 `null`。因此脚本型 runner **不能**测试依赖 C# autoload 的场景；这类场景要用 `--scene` 跑真实游戏进程来验证。
-- **`--check-only --script res://x.gd` 对引用了 autoload 的脚本无效。** 它只做解析不做编译，会报 `Compile Error: Identifier not found: <AutoloadName>`。项目既有的 `warehouse_control.gd` 同样如此。不要把它的失败当成回归。
-- **不要用 `--build-solutions`。** 本机装了 `addons/godot_ai`，它要求 Godot ≥ 4.7，在 4.6.3 CLI 下会 push_error 并让 build callback 失败，命令整体 abort。C# 编译请直接用 `dotnet build`；Godot 会加载 `.godot/mono/temp/bin/Debug/CUSGA.dll`，无需该开关。
+- **必须走编辑器 MCP，不要退回命令行。** 本机 `godot-mono` 是 4.6.3，`addons/godot_ai` 要求 ≥ 4.7，`--build-solutions` 会直接 abort。编辑器未打开时应请用户打开 Godot，而不是改用命令行。
+- **`project_run` 会加载 autoload，旧的 `--script` 模式不会。** C# 写的 autoload（`PlayerWallet`、`PlayerProgression` 等）只有在真实游戏进程里才存在。因此 `test_run` 只能覆盖自带夹具的纯规则 / 跨语言桥接；依赖 C# autoload 的场景必须用 `project_run` 跑真实游戏进程验证。
+- **语法检查不作为门禁。** 旧的 `--check-only --script` 只做解析不做编译，任何引用 autoload 的脚本都会报 `Compile Error: Identifier not found: <AutoloadName>`，项目既有的 `warehouse_control.gd` 同样如此。不要把它的失败当成回归——该开关本身已不可用，也不要寻找替代品。
+- **不要用 `--build-solutions`。** 原因同上；C# 编译请直接用 `dotnet build`，Godot 会加载 `.godot/mono/temp/bin/Debug/CUSGA.dll`，无需该开关。
 - **运行 Godot 编辑器会改写受版本控制的文件。** 实测两种副作用：把 `.cs` 文件从空格**重排成 Tab**（违反本仓库 `.editorconfig` 的 `indent_style = space`），以及把 `CUSGA.csproj` 的 `Godot.NET.Sdk` 版本改成当前引擎版本。跑完编辑器后必须 `git status` 复查并 `git checkout` 还原非预期改动。
-- **新增 `class_name` 后必须先让编辑器扫描一次**，否则 headless 加载会报 `Parse Error: Could not find type "X" in the current scope`。执行 `& $godot --headless --editor --quit`，确认 `.godot/global_script_class_cache.cfg` 里出现该名字即可（该文件在 `.godot/` 下，不入版本控制）。
+- **新增 `class_name` 后必须先让编辑器扫描一次**，否则加载会报 `Parse Error: Could not find type "X" in the current scope`。执行 `filesystem_manage(op="scan")`，确认 `.godot/global_script_class_cache.cfg` 里出现该名字即可（该文件在 `.godot/` 下，不入版本控制）。
 - **`dotnet run --project tests/CUSGA.Tests` 在本机跑不起来。** 它在 Godot 运行时之外解析不了 GodotSharp，会以 `AccessViolationException` 崩在**项目原有的**用例上。C# 规则层要真正执行，需改写成 Godot runner（见 `tests/godot/shop_trade_tests.gd` 的做法：`load("res://xxx.cs").new()` 实例化 C# 节点）。
-- 沙箱若限制写 `user://`（`%APPDATA%\Godot\app_userdata\CUSGA`），Godot headless 会在日志初始化处段错误崩溃，且**项目原有的 runner 也一样崩**。这是环境权限问题，不是项目问题。
+- 沙箱若限制写 `user://`（`%APPDATA%\Godot\app_userdata\CUSGA`），Godot 会在日志初始化处段错误崩溃，且**项目原有的 runner 也一样崩**。这是环境权限问题，不是项目问题。
 
 ### 4. Validation & Error Matrix
 
 | 手段 | 能覆盖 | 不能覆盖 |
 |---|---|---|
 | `env CI=true dotnet build CUSGA.sln --no-restore` | C# 编译 | 运行期行为 |
-| `--scene ... --quit-after N` | 场景能否加载、脚本能否编译、节点路径、autoload 装配 | 交互逻辑 |
-| `--script res://tests/godot/x.gd` | 纯规则、跨语言桥接（自带夹具） | 依赖 autoload 的场景 |
-| `--check-only --script` | 不引用 autoload 的脚本语法 | 引用 autoload 的脚本 |
-| `--headless --editor --quit` | 刷新全局类缓存 | 不能作为门禁（会改文件） |
+| `project_run` + `logs_read(source="game")` | 场景能否加载、脚本能否编译、节点路径、autoload 装配 | 交互逻辑（需配合 `game_eval`） |
+| `test_run(suite=...)` | 纯规则、跨语言桥接（自带夹具） | 依赖 C# autoload 的场景 |
+| `game_eval` | 运行中的真实状态断言 | 启动期的加载错误 |
+| `editor_screenshot(source="game")` | UI 实际渲染效果 | 逻辑正确性 |
+| `filesystem_manage(op="scan")` | 刷新全局类缓存 | 不能作为门禁（会改文件） |
+| 旧的 `--check-only --script` | **无**（已作废） | 不引用 autoload 的脚本语法 |
 
 ### 5. Good / Base / Bad Cases
 
-- Good：改完场景后跑 `--scene` 冒烟确认无 `SCRIPT ERROR`，再起真实游戏进程做交互断言，最后用 `git status` 确认没有非预期文件被改。
-- Base：只跑 `dotnet build` + `--scene` 冒烟，能挡住绝大多数低级错误。
-- Bad：把 `--check-only` 的 `Identifier not found` 当成自己引入的回归去修；或跑完 `--editor` 不看 `git status`，把 C# 缩进重排一起提交。
+- Good：改完场景后用 `project_run` 冒烟确认 `logs_read(source="game")` 无 `SCRIPT ERROR`，再用 `game_eval` 做交互断言，最后用 `git status` 确认没有非预期文件被改。
+- Base：只跑 `dotnet build` + `project_run` 冒烟，能挡住绝大多数低级错误。
+- Bad：试图用旧命令行做验证（`--build-solutions` 直接 abort）；把语法检查的 `Identifier not found` 当成自己引入的回归去修；或跑完编辑器不看 `git status`，把 C# 缩进重排一起提交。
 
 ### 6. Tests Required
 
 - 每次改动后：`git status --porcelain` 与改动前对比，确认没有多出非本任务的修改。
-- 新增 `class_name` 后：先 `--editor --quit` 刷新缓存，再跑 `--scene` 冒烟。
+- 新增 `class_name` 后：先 `filesystem_manage(op="scan")` 刷新缓存，再跑 `project_run` 冒烟。
+- 改动 `tests/godot/` 下的 runner 后：用 `test_run` 跑到该 suite 通过。
 
 ### 7. Wrong vs Correct
 
 #### Wrong
 
 ```powershell
-# 既会因 godot_ai 插件要求 4.7 而失败，又可能改掉 csproj / C# 缩进
-& $godot --headless --path . --build-solutions --quit
+# 会直接 abort：本机 CLI 是 4.6.3，godot_ai 插件要求 4.7
+godot-mono --headless --path . --build-solutions --quit
+
+# 不作门禁：引用 autoload 的脚本必然报 Identifier not found
+godot-mono --headless --path . --check-only --script res://scripts/x.gd
 ```
 
 #### Correct
 
 ```powershell
+# 1. 编译（命令行，与 MCP 无关）
 $env:CI='true'; dotnet build CUSGA.sln --no-restore
-& $godot --headless --path . --scene res://scenes/X.tscn --quit-after 10
-git status --porcelain   # 确认没有非预期改动
+```
+
+```text
+# 2. 运行期验证（编辑器 MCP，编辑器必须已打开）
+project_run(mode="custom", scene="res://scenes/X.tscn")
+logs_read(source="game")     # 确认无 SCRIPT ERROR
+project_manage(op="stop")
+```
+
+```powershell
+# 3. 确认没有非预期改动
+git status --porcelain
 ```
 
 ## 编辑器插件调用外部内容工具

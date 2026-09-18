@@ -6,7 +6,12 @@
 
 **Architecture:** Keep stat ownership in `AttributeComponent`, pure arithmetic in `DamageFormula`, and Godot node lookup/RNG in `DamageReceiverComponent`. `StartingStats` becomes the base data source for max health and max energy; vitals expose actual value changes so lifesteal can use final actual damage.
 
-**Tech Stack:** Godot 4.6 Mono, C# net8.0, existing console test harness in `tests/CUSGA.Tests/Program.cs`, `.tscn` scene resources.
+**Tech Stack:** Godot 4.7.1 Mono, C# net8.0, existing console test harness in `tests/CUSGA.Tests/Program.cs`, `.tscn` scene resources.
+
+> ⚠️ **历史文档——其中的验证命令已作废，不要照着执行。**
+> 本文写于 2026-05-27，当时项目用的是 Godot 4.6 命令行。现在本机 CLI 是 4.6.3，而项目与 `addons/godot_ai` 要求 **4.7.1**，因此文中所有 `godot-mono --headless …` 命令（`--build-solutions` / `--scene` / `--script`）**都无法再运行**。
+> 等价做法：编译仍用 `env CI=true dotnet build CUSGA.sln --no-restore`；运行期验证走编辑器 MCP（`test_run` / `project_run` + `logs_read(source="game")`）。详见 `AGENTS.md` 第 1 节与 `.trellis/spec/frontend/quality-guidelines.md`。
+> 文中的任务步骤与当时的验证结论保留原样，仅作历史记录。
 
 ---
 

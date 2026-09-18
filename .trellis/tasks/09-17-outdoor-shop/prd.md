@@ -67,8 +67,8 @@
 
 - 按项目规定用 `env CI=true dotnet build ...` 编译，禁止裸 `dotnet build` / `dotnet test`（沙箱里 Husky 钩子会致命崩溃，且**绝不允许触碰 `.git/config`**）。
 - C# 规则层要有控制台测试覆盖：余额不足、容量不足不产生部分变更、卖出不足量、买价/卖价换算。
-- GDScript 逐个 `--check-only` 解析检查；headless 冒烟商店场景与主场景。
-- 给用户截图看 UI 实际效果。
+- 运行期验证走**编辑器 MCP**（`project_run` + `logs_read(source="game")` + `test_run`），不用旧的 Godot 命令行（本机 CLI 是 4.6.3，项目与 `addons/godot_ai` 要求 4.7.1）。语法检查不作为门禁：本任务实测确认它对引用 autoload 的脚本必然报 `Identifier not found`，项目既有的 `warehouse_control.gd` 同样如此。
+- 给用户截图看 UI 实际效果（`editor_screenshot`）。
 
 ## Acceptance Criteria
 
@@ -84,8 +84,8 @@
 - [x] AC10：选中仓库物品后点「出售」，`GlobalWarehouse` 减少对应物品、金币按卖价增加。
 - [x] AC11：出售数量/归属不合法时不产生任何变化，并给出可见的失败提示。
 - [x] AC12：从商店返回仓库后，仓库侧显示的是买卖后的最新库存（没有被旧副本覆盖）。
-- [x] AC13：`CUSGA.Tests` 控制台套件覆盖买/卖的成功与全部失败分支，并断言失败路径无部分变更。
-- [x] AC14：所有新增/修改的 GDScript 通过 `--check-only`；headless 冒烟 `Shop.tscn` 与 `Main.tscn` 无 `SCRIPT ERROR` / Parse Error / 加载失败。
+- [x] AC13：`CUSGA.Tests` 控制台套件覆盖买/卖的成功与全部失败分支，并断言失败路径无部分变更。（⚠️ 该套件**本机只编译通过、跑不起来**——GodotSharp 在 Godot 运行时之外不可解析，见下方验收证据表 AC13 行；实际运行覆盖由 `tests/godot/shop_trade_tests.gd` 承担。）
+- [x] AC14：`Shop.tscn` 与 `Main.tscn` 的冒烟检查无 `SCRIPT ERROR` / Parse Error / 加载失败。（⚠️ 本条原文写的是「所有新增/修改的 GDScript 通过 `--check-only`」，实现期已证伪——该开关对引用 autoload 的脚本必然失败、且不是有效门禁，故改为以编辑器 MCP 的场景冒烟为实际判据。详见下方验收证据表 AC14 行。）
 
 ## Constraints
 
@@ -94,7 +94,7 @@
 - 不破坏既有物品/装备/合成/战斗数据：`ItemData` 的改动必须是纯增量，不改现有字段名、默认值与序列化格式。
 - 不在 `scripts/generated/` 下手工改文件（本任务预期不涉及）。
 - 不为「功能局部状态」新增全局单例；`PlayerWallet` 只承载真正跨场景的玩家货币，且必须在 `design.md` 说明为什么既有 autoload 无法承载。
-- GDScript 不能用 GitNexus / CodeGraph 查询，只能用文本检索 + headless 验证。
+- GDScript 不能用 GitNexus / CodeGraph 查询，只能用文本检索 + 编辑器 MCP 的运行期验证。
 - 不修改协作者所有的 `core/map/RoomTerrainProfile.cs`（工作区里已有的未提交改动）与未跟踪的 `main.tscn`、`res/test/`。
 
 ## Out Of Scope
@@ -125,7 +125,7 @@
 | AC11 出售不合法 | ✅ | Godot runner 断言返回 `MissingItem` 且不部分出售、不给钱 |
 | AC12 返回仓库显示最新库存 | ✅ | 商店购买 → 点「离开商店」→ 仓库场景与权威 `GlobalWarehouse` 均出现「斧头」 |
 | AC13 测试覆盖 | ⚠️ | 控制台套件（14 用例）**只编译通过、本机跑不起来**（GodotSharp 在 Godot 运行时之外不可解析，崩在项目原有用例上）；改由 `tests/godot/shop_trade_tests.gd` 覆盖同样的成功与全部失败分支，9/9 通过 |
-| AC14 GDScript 与场景验证 | ⚠️ | `--check-only` 对引用 autoload 的脚本本就无效（既有 `warehouse_control.gd` 同样报错），不能作为门禁；改以 `--scene` headless 冒烟为准：`Shop.tscn` / `Main.tscn` / `main_menu.tscn` 均无 `SCRIPT ERROR` |
+| AC14 GDScript 与场景验证 | ⚠️ | 原文要求的 `--check-only` 对引用 autoload 的脚本本就无效（既有 `warehouse_control.gd` 同样报错），不能作为门禁；实际做法是跑起场景读日志——当时走的是 `--scene` headless，**该方法现已作废**，等价做法是编辑器 MCP 的 `project_run` + `logs_read(source="game")`。结论不变：`Shop.tscn` / `Main.tscn` / `main_menu.tscn` 均无 `SCRIPT ERROR` |
 
 ### 实现期对计划的修正
 

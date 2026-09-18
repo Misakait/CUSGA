@@ -6,7 +6,12 @@
 
 **Architecture:** Keep passage guard rules in testable C# core services, keep Godot scene/script integration in thin map adapters, and route battle entry through the existing world combat presenter. The guarded passage table stores occupied undirected edges only; per-room monster arrays are resolved from `map_attribute` encounter pools when buttons render.
 
-**Tech Stack:** Godot 4.6 C#, GDScript map scripts, `env CI=true dotnet build` for compile validation, and `godot-mono --headless` runners for behavior that touches Godot runtime types. Do not treat plain `dotnet test` as behavior evidence in this project.
+> ⚠️ **历史文档——其中的验证命令已作废，不要照着执行。**
+> 本文写于 2026-05-24，当时项目用的是 Godot 4.6 命令行。现在本机 CLI 是 4.6.3，而项目与 `addons/godot_ai` 要求 **4.7.1**，因此文中所有 `godot-mono --headless …` 命令（`--build-solutions` / `--scene` / `--script`）**都无法再运行**。
+> 等价做法：编译仍用 `env CI=true dotnet build CUSGA.sln --no-restore`；运行期验证走编辑器 MCP（`test_run` / `project_run` + `logs_read(source="game")`）。详见 `AGENTS.md` 第 1 节与 `.trellis/spec/frontend/quality-guidelines.md`。
+> 文中的任务步骤与当时的验证结论保留原样，仅作历史记录。
+
+**Tech Stack:** Godot 4.7.1 C#, GDScript map scripts, `env CI=true dotnet build` for compile validation, and the Godot editor MCP for behavior that touches Godot runtime types. Do not treat plain `dotnet test` as behavior evidence in this project.
 
 ---
 
