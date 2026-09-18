@@ -1,0 +1,22 @@
+# gdlint 配置（GDScript 静态检查）
+#
+# 这个文件的作用：让 gdlint 只报告"值得改"的问题，避免在已有代码上刷出大量
+# 纯风格噪音，导致检查结果没人看。
+#
+# 检查方式：提交前只检查本次暂存的 .gd 文件，见 .husky/task-runner.json。
+#
+# 重要背景（2026-09-19 首次接入时的实测数据）：
+#   项目里 94 个 .gd（不含 addons/），其中 63 个有 gdlint 报错，共 500 条。
+#   分布：max-line-length 241、class-definitions-order 167、trailing-whitespace 45、
+#         unused-argument 12，其余为命名规范等零星问题。
+#   因此**没有**把 gdlint 做成"报错就拦提交"的硬门禁——那会让仓库立刻无法提交。
+#   当前是"只提示、不拦截"。等存量问题清理到可接受程度后，再由项目所有者决定是否收紧。
+
+disable:
+  # 尾随空格属于格式化问题，应由自动格式化处理，不该作为代码质量项报出。
+  # 存量 45 处。
+  - trailing-whitespace
+
+# 行宽上限。Godot 官方 GDScript 风格指南建议 100 字符，此处保持一致。
+# 存量 241 处超长，属于历史遗留；新代码请按 100 字符书写。
+max-line-length: 100

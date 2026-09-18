@@ -20,3 +20,7 @@
 #echo 'Husky.Net is awesome!'
 
 dotnet tool run husky run --group pre-commit
+
+## GDScript 静态检查（gdlint，只查本次暂存的 .gd）。
+## 单独一个 group 是为了排在 C# 格式化之后，且不把它混进 pre-commit 组。
+dotnet tool run husky run --group pre-commit-gdscript

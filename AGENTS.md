@@ -56,9 +56,24 @@ Older project docs — including parts of `.trellis/spec/frontend/quality-guidel
 ## CodeGraph
 
 > **STATUS: CONFIGURED BUT NOT OPERATIONAL — DO NOT RELY ON IT.**
-> `.codegraph/` contains only `config.json` and `.gitignore`. No index has ever been built, the `codegraph` CLI is not on `PATH`, and **no `codegraph_*` MCP tools are registered in this session**. Every call would fail with "not initialized".
-> **Use GitNexus instead** (it is genuinely indexed — see the section below) plus native `rg` / read tools. For GDScript, neither tool works, so native search is the only option.
+> `.codegraph/` contains only `config.json` and `.gitignore`. No index has ever been built, the CLI is not reachable (the npm package name `codegraph` has no runnable executable; `npx codegraph` fails with "could not determine executable to run"), and **no `codegraph_*` MCP tools are registered in this session**. Every call would fail with "not initialized".
+> **Use GitNexus instead** (it is the tool actually installed here — see the section below) plus native `rg` / read tools.
 > The guidance below is kept so the section is ready if the owner decides to build the index. Until then, treat it as inactive.
+
+### GDScript is not covered, and cannot be (verified 2026-09-19)
+
+This is **not** a missing-index problem — it is a language-support limit, so building the index would not fix it:
+
+- `.codegraph/config.json` has an explicit `include` list of file extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.go`, `.rs`, `.java`, `.c`, `.h`, `.cpp`, `.hpp`, `.cc`, `.cxx`, `.cs`, `.php`, `.rb`, `.swift`, `.kt`, `.kts`, `.dart`, `.svelte`, `.liquid`, `.pas`, `.dpr`, `.dpk`, `.lpr`, `.dfm`, `.fmx`). **`.gd` is absent.** The tool walks the files it is configured for, so adding GDScript is not a config toggle.
+- GitNexus does not cover GDScript either, and it is the same class of tool (parser-based symbol graph).
+
+**Consequence — this is the agreed workflow, not a gap to fill:**
+
+- C# symbols, callers, callees, and impact analysis → **GitNexus**.
+- GDScript symbols, scene scripts, and Godot runtime behaviour → **native `rg` / read tools, then runtime validation through the editor MCP** (`test_run` / `project_run` + `logs_read(source="game")`), as described in section 1.
+- Never hand-edit or hand-extend `.codegraph/config.json` to try to add `.gd`; that would produce a silently incomplete graph, which is worse than having no graph.
+
+This item was previously listed as an open improvement ("make CodeGraph / GitNexus cover `.gd`"). It is now **closed as not achievable**; do not re-raise it.
 
 This project has a CodeGraph MCP server (`codegraph_*` tools) configured. CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file. Reads are sub-millisecond and return structural information grep cannot.
 
@@ -78,7 +93,7 @@ Use codegraph for **structural** questions — what calls what, what would break
 | "What files exist under path/"                | `codegraph_files`   |
 | "Is the index healthy?"                       | `codegraph_status`  |
 
-### Rules of thumb (apply only once the index exists)
+### Rules of thumb (hypothetical — CodeGraph cannot actually be enabled here; see the STATUS note)
 
 - **Trust codegraph results.** They come from a full AST parse. Do NOT re-verify them with grep — that's slower, less accurate, and wastes context.
 - **GDScript caveat:** CodeGraph and GitNexus do not index `.gd` files in this project. For GDScript symbols, scene scripts, and Godot runtime behavior, use native search/read tools such as `rg` and validate through the editor MCP (`test_run` / `project_run` + `logs_read(source="game")`) as described in section 1.
@@ -91,7 +106,7 @@ Use codegraph for **structural** questions — what calls what, what would break
 
 `.codegraph/` **does** exist here, but it holds only `config.json` and `.gitignore` — there is no index, so the MCP server answers "not initialized." That is the current expected state; see the STATUS note at the top of this section.
 
-Do **not** silently run `codegraph init -i`. Building the index is a project-owner decision (it writes a database into the repo and the CLI is not currently installed), so ask first and treat a decline as final.
+Do **not** silently run `codegraph init -i`. The CLI is not obtainable on this machine (the npm package `codegraph` has no runnable executable), and building an index would still not give GDScript coverage — see the note above. Treat CodeGraph as unavailable and use GitNexus plus native search.
 
 <!-- CODEGRAPH_END -->
 
