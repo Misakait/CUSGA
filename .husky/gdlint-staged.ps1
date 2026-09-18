@@ -32,7 +32,7 @@ $ErrorActionPreference = 'Continue'
 # 先确认 gdlint 真的能跑。若 gdtoolkit 缺失或安装损坏，给出可操作的提示，而不是让提交失败。
 if (-not (Get-Command gdlint -ErrorAction SilentlyContinue)) {
     Write-Host '[gdlint] SKIPPED - gdlint not found on PATH.'
-    Write-Host '[gdlint] Install or repair it with: uv tool install gdtoolkit --force'
+    Write-Host '[gdlint] Install or repair it with: uv tool install gdtoolkit==4.5.0 --force'
     exit 0
 }
 
