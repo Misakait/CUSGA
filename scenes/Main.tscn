@@ -25,6 +25,11 @@
 [ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/Warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
 [ext_resource type="Script" uid="uid://dggoia15cpbun" path="res://core/gameflow/world_hold_interaction_controller.gd" id="19_world_hold"]
 [ext_resource type="Script" uid="uid://btikxiw5fhx4d" path="res://core/ui/hud/world_hold_progress_indicator.gd" id="20_hold_indicator"]
+[ext_resource type="Script" uid="uid://bjqryvynmmecp" path="res://core/ui/inventory_ui.gd" id="22_gsxep"]
+[ext_resource type="PackedScene" uid="uid://rukl64pxxdie" path="res://scenes/inventory/SlotUI.tscn" id="23_v0vrg"]
+[ext_resource type="PackedScene" uid="uid://cx6d0836hkgj0" path="res://scenes/inventory/EquipmentSlotUI.tscn" id="24_dg70y"]
+[ext_resource type="Script" uid="uid://vsnuxjq0vnej" path="res://core/ui/crafting/crafting_ui.gd" id="26_pnhog"]
+[ext_resource type="Script" uid="uid://vi5jdr3nuixj" path="res://core/ui/warehouse/warehouse_ui.gd" id="28_2c4at"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -212,16 +217,25 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="InventoryUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+[node name="InventoryUI" type="Control" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+custom_minimum_size = Vector2(960, 360)
 layout_mode = 2
+script = ExtResource("22_gsxep")
+SlotPrefab = ExtResource("23_v0vrg")
+EquipmentSlotPrefab = ExtResource("24_dg70y")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
-[node name="CraftingUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
+[node name="CraftingUI" type="Control" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
+custom_minimum_size = Vector2(820, 460)
 layout_mode = 2
+script = ExtResource("26_pnhog")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
-[node name="WarehouseUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1206096657 instance=ExtResource("18_warehouse_ui")]
+[node name="WarehouseUI" type="Control" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1206096657 instance=ExtResource("18_warehouse_ui")]
+custom_minimum_size = Vector2(800, 430)
 layout_mode = 2
+script = ExtResource("28_2c4at")
+SlotPrefab = ExtResource("23_v0vrg")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
 [node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
