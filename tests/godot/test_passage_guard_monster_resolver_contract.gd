@@ -4,6 +4,9 @@ extends McpTestSuite
 ## 驻守怪物解析器 GDScript 生产边界契约。
 
 const RESOLVER_SCRIPT: GDScript = preload("res://core/map/passage_guard_monster_resolver.gd")
+## 迁移后的怪物数据与驻守遭遇数据 GDScript 载体（C# 全局类已随物理退役删除）。
+const MONSTER_DATA_SCRIPT: GDScript = preload("res://resources/monster/monster_data.gd")
+const ENCOUNTER_DATA_SCRIPT: GDScript = preload("res://resources/map/passage_guard_encounter_data.gd")
 
 
 func suite_name() -> String:
@@ -22,10 +25,10 @@ func test_production_resolver_contract() -> void:
 		"生产驻守控制器不得继续直接实例化 C# 解析器。"
 	)
 
-	var monster := MonsterData.new()
-	monster.MonsterName = "测试木精"
-	var encounter := PassageGuardEncounterData.new()
-	encounter.Monsters.append(monster)
+	var monster: Resource = MONSTER_DATA_SCRIPT.new()
+	monster.set("MonsterName", "测试木精")
+	var encounter: Resource = ENCOUNTER_DATA_SCRIPT.new()
+	encounter.get("Monsters").append(monster)
 	var pool: Array = [encounter]
 	var resolver: RefCounted = RESOLVER_SCRIPT.new()
 	var first: Array = resolver.call("Resolve", Vector2i(3, 4), Vector2i(3, 3), pool)

@@ -9,8 +9,9 @@ const DRAGGABLE_DATA_SCRIPT: GDScript = preload("res://core/ui/draggable/draggab
 const ITEM_DATA_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
 const ITEM_TOOLTIP_PRESENTER_SCRIPT: GDScript = preload("res://core/ui/item_tooltip_presenter.gd")
 
-const LEGACY_DRAGGABLE_DATA_PATH: String = "res://core/ui/draggable/DraggableData.cs"
-const GD_DRAGGABLE_DATA_PATH: String = "res://core/ui/draggable/draggable_data.gd"
+## 拖拽载荷协议字段：载荷必须暴露 StringName 类型的来源系统标签。
+## 用字段协议而不是脚本路径判定，使 GDScript 生产载荷与旧 C# DraggableData 垫片都能通过。
+const DRAG_PAYLOAD_SOURCE_FIELD: StringName = &"SourceSystem"
 
 ## 快捷点击类型；整数值保持 C# SlotShortcutKind 的 0、1 协议。
 enum SlotShortcutKind {
@@ -262,13 +263,18 @@ func _disconnect_stack_signal() -> void:
 
 
 ## 判断对象是否为新旧 DraggableData，避免读取其他系统的任意拖拽对象。
+##
+## 判定只看字段协议：载荷暴露 StringName 类型的 SourceSystem。C# DraggableData 的
+## 属性不出现在 get_property_list() 里，但按名 get() 依然可用，因此这里必须用
+## 取值类型探测而不是属性表扫描；缺失字段的普通对象取值为 null。
+##
+## @param value 待判断的对象。
+## @return 属于拖拽载荷协议时返回 true。
 func _is_draggable_data(value: Variant) -> bool:
 	if not (value is Object):
 		return false
-	var script: Script = (value as Object).get_script() as Script
-	if script == null:
-		return false
-	return script.resource_path == GD_DRAGGABLE_DATA_PATH or script.resource_path == LEGACY_DRAGGABLE_DATA_PATH
+
+	return typeof((value as Object).get(DRAG_PAYLOAD_SOURCE_FIELD)) == TYPE_STRING_NAME
 
 
 ## 判断 ItemStack 当前是否为空。

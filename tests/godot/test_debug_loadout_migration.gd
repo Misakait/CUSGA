@@ -24,11 +24,20 @@ const PRODUCTION_EQUIPMENT_DATA_PATH: String = "res://resources/item/equipment/e
 ## 动态工具条目现在创建的生产 GDScript ToolData 路径。
 const PRODUCTION_TOOL_DATA_PATH: String = "res://resources/item/tool/tool_data.gd"
 
-## 编辑器聚焦测试直接实例化的 C# ItemData 脚本。
-const LEGACY_ITEM_DATA_SCRIPT: Script = preload("res://resources/item/ItemData.cs")
+## 旧 C# ItemData 路径：迁移期作为等价输入，C# 退役后自动退回生产 GDScript ItemData。
+const LEGACY_ITEM_DATA_CS_PATH: String = "res://resources/item/ItemData.cs"
 
-## 编辑器聚焦测试直接实例化的 C# SkillCardData 脚本。
-const LEGACY_SKILL_CARD_DATA_SCRIPT: Script = preload("res://resources/item/card/SkillCardData.cs")
+## 旧 C# SkillCardData 路径：同上，C# 退役后退回生产 GDScript 技能卡。
+const LEGACY_SKILL_CARD_DATA_CS_PATH: String = "res://resources/item/card/SkillCardData.cs"
+
+## 迁移后的生产 GDScript ItemData 路径，作为旧 C# ItemData 的等价替代输入。
+const PRODUCTION_ITEM_DATA_PATH: String = "res://resources/item/item_data.gd"
+
+## 迁移后的生产 GDScript 技能卡路径，作为旧 C# SkillCardData 的等价替代输入。
+const PRODUCTION_SKILL_CARD_PATH: String = "res://resources/item/card/skill_card_data.gd"
+
+## C# 可选助手：C# 缺席时在运行期安全替代，绝不因 `preload` 触发解析期错误。
+const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
 
 ## 已切换到 GDScript 的默认 Debug 配置资源路径。
 const DEFAULT_LOADOUT_PATH: String = "res://resources/debug/default_inventory_loadout.tres"
@@ -45,8 +54,20 @@ const LEGACY_SKILL_CARD_PATH: String = "res://resources/skill_cards/test_card_1.
 
 ## 提供 Seeder 所需固定槽位协议的最小库存组件。
 class FakeInventoryComponent extends Node:
-	## 创建空槽时使用的生产兼容 C# 堆叠脚本。
-	const STACK_SCRIPT: Script = preload("res://core/inventory/ItemStack.cs")
+	## C# 可选助手：迁移期沿用旧 C# 堆叠，C# 退役后自动退回生产 GDScript 堆叠。
+	const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
+
+	## C# 退役后使用的生产 GDScript 堆叠脚本。
+	const PRODUCTION_STACK_SCRIPT: Script = preload("res://resources/item/item_stack.gd")
+
+	## 旧 C# 兼容堆叠脚本路径。
+	const LEGACY_STACK_CS_PATH: String = "res://core/inventory/ItemStack.cs"
+
+	## 解析当前应使用的堆叠脚本（迁移期优先 C# 垫片，C# 退役后退回生产 GDScript）。
+	## 返回值：可实例化出堆叠对象的脚本资源。
+	static func stack_script() -> Script:
+		var legacy: Script = CS_OPTIONAL.script(LEGACY_STACK_CS_PATH)
+		return legacy if legacy != null else PRODUCTION_STACK_SCRIPT
 
 	## 当前库存容量。
 	var Capacity: int = 0
@@ -64,7 +85,7 @@ class FakeInventoryComponent extends Node:
 		Capacity = capacity
 		slots.clear()
 		for _index: int in range(Capacity):
-			slots.append(STACK_SCRIPT.new() as RefCounted)
+			slots.append(stack_script().new() as RefCounted)
 
 	## 读取指定槽位的堆叠。
 	## 参数 index：目标槽位下标。
@@ -90,7 +111,7 @@ class FakeInventoryComponent extends Node:
 		if index < 0 or index >= Capacity:
 			return false
 		clear_call_count += 1
-		slots[index] = STACK_SCRIPT.new() as RefCounted
+		slots[index] = stack_script().new() as RefCounted
 		return true
 
 
@@ -194,8 +215,9 @@ func test_default_resource_and_main_references_use_gdscript() -> void:
 ## 验证固定物品条目生成生产 GDScript 库存使用的 ItemStack。
 ## 返回值：无。
 func test_item_stack_entry_preserves_item_amount_and_compatibility_type() -> void:
-	## 直接实例化的 C# ItemData 用于避免编辑器工具态把 .tres 降为基础 Resource。
-	var item := LEGACY_ITEM_DATA_SCRIPT.new() as Resource
+	## 直接实例化的 ItemData 用于避免编辑器工具态把 .tres 降为基础 Resource；
+	## 迁移期优先用旧 C# 垫片，C# 退役后自动换成等价的生产 GDScript ItemData。
+	var item := CS_OPTIONAL.script_or(LEGACY_ITEM_DATA_CS_PATH, PRODUCTION_ITEM_DATA_PATH).new() as Resource
 	item.set("CardId", &"debug_stack_contract")
 	item.set("CardName", "固定堆叠契约物品")
 	## 待验证的固定堆叠条目。
@@ -287,12 +309,12 @@ func test_seeder_preserves_apply_order_and_apply_once_contract() -> void:
 	attributes.name = "AttributeComponent"
 	components.add_child(attributes)
 
-	## 夹具直接实例化的旧 C# 普通物品，确保 C# ItemStack 参数保持真实管理类型。
-	var item := LEGACY_ITEM_DATA_SCRIPT.new() as Resource
+	## 夹具直接实例化的普通物品（迁移期优先旧 C# 垫片，C# 退役后换等价 GDScript 实现）。
+	var item := CS_OPTIONAL.script_or(LEGACY_ITEM_DATA_CS_PATH, PRODUCTION_ITEM_DATA_PATH).new() as Resource
 	item.set("CardId", &"debug_seeder_item")
 	item.set("CardName", "Seeder 契约物品")
-	## 夹具直接实例化的旧 C# 技能卡，确保卡组输入保持真实管理类型。
-	var skill_card := LEGACY_SKILL_CARD_DATA_SCRIPT.new() as Resource
+	## 夹具直接实例化的技能卡（迁移期优先旧 C# 垫片，C# 退役后换等价 GDScript 实现）。
+	var skill_card := CS_OPTIONAL.script_or(LEGACY_SKILL_CARD_DATA_CS_PATH, PRODUCTION_SKILL_CARD_PATH).new() as Resource
 	skill_card.set("CardId", &"debug_seeder_skill")
 	skill_card.set("CardName", "Seeder 契约技能卡")
 	## 玩家背包固定条目。

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://bhxtpdpff5e8i"]
+[gd_resource type="Resource" format=3 uid="uid://bhxtpdpff5e8i"]
 
-[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
+[ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="2_monster"]
 [ext_resource type="Script" path="res://resources/stats/starting_stats.gd" id="3_stats"]
 [ext_resource type="Resource" uid="uid://7tyhdfqftigv" path="res://resources/skill_cards/metal_magic_liuguangzhou.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://ciuiocurbf42p" path="res://resources/skill_cards/metal_magic_ruimang.tres" id="5_skill_2"]
@@ -925,6 +925,6 @@ InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 2
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
+metadata/_custom_type_script = "uid://buhigatdeqss6"
 Faction = 0
 MaxHealth = 100

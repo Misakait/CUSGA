@@ -6,8 +6,8 @@ extends McpTestSuite
 const PORT_SCRIPT: GDScript = preload("res://core/application/gameplay_port.gd")
 ## 生产 GDScript SkillCardData，用于验证动态技能卡边界与旧 C# 兼容输入。
 const SKILL_CARD_DATA_SCRIPT: GDScript = preload("res://resources/item/card/skill_card_data.gd")
-## 保留的 C# SkillCardData 脚本，用于验证生产切换后仍接受旧兼容输入。
-const LEGACY_SKILL_CARD_DATA_SCRIPT: Script = preload("res://resources/item/card/SkillCardData.cs")
+## C# 可选助手：迁移期按旧 C# 垫片构造兼容输入，C# 退役后自动换等价 GDScript 输入。
+const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
 ## 第一张用于验证卡组顺序与 Resource 身份的生产 GDScript SkillCardData。
 const SKILL_CARD_A: Resource = preload("res://resources/skill_cards/test_card_1.tres")
 ## 第二张用于验证卡组过滤不会改变合法元素相对顺序的生产 GDScript SkillCardData。
@@ -20,10 +20,18 @@ const PRODUCTION_SKILL_CARD_COUNT: int = 69
 const PRODUCTION_SKILL_CARD_SCRIPT_PATH: String = "res://resources/item/card/skill_card_data.gd"
 ## 旧 C# 技能卡脚本路径，仅允许兼容源码和对照测试继续引用。
 const LEGACY_SKILL_CARD_SCRIPT_PATH: String = "res://resources/item/card/SkillCardData.cs"
-## 第一只用于验证怪物数组过滤和倍率调用输入的 C# MonsterData。
+## 生产怪物数据脚本路径，用于与生产协议一致的跨语言判定。
+const MONSTER_DATA_SCRIPT_PATH: String = "res://resources/monster/monster_data.gd"
+## 第一只用于验证怪物数组过滤和倍率调用输入的怪物数据资源。
 const MONSTER_A: Resource = preload("res://resources/monster/tree_kumujing.tres")
-## 第二只用于验证倍率调用输出顺序与 Resource 身份的 C# MonsterData。
+## 第二只用于验证倍率调用输出顺序与 Resource 身份的怪物数据资源。
 const MONSTER_B: Resource = preload("res://resources/monster/anvil_cuihuotiewei.tres")
+
+
+## 套件标识：报告里以 gameplay_port_contract 呈现，避免统计面板出现 unnamed。
+## @return 套件名字符串。
+func suite_name() -> String:
+	return "gameplay_port_contract"
 
 
 ## 提供玩家组件树和最小方法协议的测试玩家。
@@ -60,22 +68,34 @@ class FakeWorldInteractionCoordinator extends Node:
 	## 最近一次倍率调用收到的地形引用。
 	var last_terrain: Variant = null
 	## 最近一次倍率调用收到的已过滤怪物数组。
-	var last_monsters: Array[MonsterData] = []
+	## 怪物数据已迁移到 GDScript，生产协调器改用通用 Resource 数组，这里保持一致边界。
+	var last_monsters: Array[Resource] = []
 
 	## 记录倍率调用并反转返回顺序，让测试能区分输入与缩放输出。
 	## @param terrain 当前地形实例。
-	## @param monsters GameplayPort 已过滤的强类型怪物数组。
-	## @return 保持 Resource 身份但反转顺序的强类型数组。
-	func ScaleEncounterMonsters(terrain: Variant, monsters: Array) -> Array[MonsterData]:
+	## @param monsters GameplayPort 已过滤的跨语言怪物数组。
+	## @return 保持 Resource 身份但反转顺序的怪物数组。
+	func ScaleEncounterMonsters(terrain: Variant, monsters: Array) -> Array[Resource]:
 		scale_call_count += 1
 		last_terrain = terrain
 		last_monsters.clear()
 		for raw_monster: Variant in monsters:
-			if raw_monster is MonsterData:
-				last_monsters.append(raw_monster)
-		var scaled: Array[MonsterData] = last_monsters.duplicate()
+			if _is_monster_data(raw_monster):
+				last_monsters.append(raw_monster as Resource)
+		var scaled: Array[Resource] = last_monsters.duplicate()
 		scaled.reverse()
 		return scaled
+
+	## 与生产 GDScript 怪物数据一致的跨语言怪物判定。
+	## C# 的 MonsterData 全局类已随物理退役删除，因此这里按脚本路径判定，
+	## 与生产 gameplay_port.gd 的字段/路径协议保持同一语义。
+	## @param value 待判断的动态值。
+	## @return 属于生产 GDScript 怪物数据时返回 true。
+	func _is_monster_data(value: Variant) -> bool:
+		if not (value is Resource):
+			return false
+		var resource_script: Script = (value as Resource).get_script() as Script
+		return resource_script != null and resource_script.resource_path == MONSTER_DATA_SCRIPT_PATH
 
 
 ## 构造带玩家组件树、同级 EncounterManager、仓库和 GameplayPort 的最小场景。
@@ -93,8 +113,9 @@ func _build_fixture() -> Dictionary:
 		components.add_child(component)
 	var battle_deck := FakeBattleDeck.new()
 	battle_deck.name = "BattleDeckComponent"
-	var legacy_skill_card := LEGACY_SKILL_CARD_DATA_SCRIPT.new() as Resource
-	legacy_skill_card.set("CardName", "C# 兼容技能卡")
+	## 兼容输入技能卡：迁移期是旧 C# 垫片实例，C# 退役后是等价的生产 GDScript 实例。
+	var legacy_skill_card := CS_OPTIONAL.script_or(LEGACY_SKILL_CARD_SCRIPT_PATH, PRODUCTION_SKILL_CARD_SCRIPT_PATH).new() as Resource
+	legacy_skill_card.set("CardName", "兼容技能卡")
 	var gdscript_skill_card := SKILL_CARD_DATA_SCRIPT.new() as Resource
 	gdscript_skill_card.set("CardName", "GDScript 技能卡")
 	battle_deck.cards = [SKILL_CARD_A, legacy_skill_card, RefCounted.new(), gdscript_skill_card, SKILL_CARD_B]
@@ -195,7 +216,7 @@ func test_gameplay_port_encounter_conversion_and_scaling_contract() -> void:
 	port.call("RequestEncounter", terrain_probe, [MONSTER_A, RefCounted.new(), MONSTER_B], "遭遇")
 	assert_eq(encounter_scaler.scale_call_count, 1, "每次遭遇必须调用同级倍率桥。")
 	assert_true(encounter_scaler.last_terrain == terrain_probe, "倍率桥必须收到原地形引用。")
-	assert_eq(encounter_scaler.last_monsters.size(), 2, "倍率桥必须过滤非 MonsterData 元素。")
+	assert_eq(encounter_scaler.last_monsters.size(), 2, "倍率桥必须过滤非怪物数据元素。")
 	if encounter_scaler.last_monsters.size() == 2:
 		assert_true(encounter_scaler.last_monsters[0] == MONSTER_A, "倍率输入必须保持第一只怪物的 Resource 身份。")
 		assert_true(encounter_scaler.last_monsters[1] == MONSTER_B, "倍率输入必须保持第二只怪物的 Resource 身份。")
@@ -212,7 +233,7 @@ func test_gameplay_port_encounter_conversion_and_scaling_contract() -> void:
 		assert_eq(encounter_events[0][3], "遭遇", "遭遇提示文本必须保持原值。")
 	port.call("RequestEncounter", terrain_probe, MONSTER_A, "单怪物")
 	assert_eq(encounter_scaler.scale_call_count, 2, "单怪物入口也必须经过倍率桥处理。")
-	assert_eq(encounter_scaler.last_monsters.size(), 1, "单个 MonsterData 必须转换为单元素数组。")
+	assert_eq(encounter_scaler.last_monsters.size(), 1, "单个怪物数据必须转换为单元素数组。")
 	root.free()
 
 
@@ -294,21 +315,24 @@ func test_gameplay_port_production_switch_contract() -> void:
 			assert_true(port.has_signal("EncounterRequested"), "生产 GameplayPort 必须保留 EncounterRequested 信号。")
 			assert_true(port.has_method("GetPlayerSkillCards"), "生产 GameplayPort 必须提供稳定卡组方法。")
 		main.free()
-	var coordinator_source := FileAccess.get_file_as_string("res://core/gameflow/WorldInteractionCoordinator.cs")
-	var presenter_source := FileAccess.get_file_as_string("res://core/gameflow/WorldCombatScenePresenter.cs")
-	var executor_source := FileAccess.get_file_as_string("res://core/gameflow/TerrainInteractionExecutor.cs")
+	var coordinator_source := FileAccess.get_file_as_string("res://core/gameflow/world_interaction_coordinator.gd")
+	## C# 源文对照：C# 退役后 read() 返回空串，相关断言按条件收起而不是假通过。
+	var presenter_source := CS_OPTIONAL.read("res://core/gameflow/WorldCombatScenePresenter.cs")
+	var executor_source := CS_OPTIONAL.read("res://core/gameflow/TerrainInteractionExecutor.cs")
 	var battle_source := FileAccess.get_file_as_string("res://scripts/battle_scripts/battle_manager.gd")
 	var deck_source := FileAccess.get_file_as_string("res://scripts/card_scripts/deck_manager.gd")
 	var card_source := FileAccess.get_file_as_string("res://scripts/card_scripts/skill_card.gd")
-	assert_true(coordinator_source.contains("private Node _gameplayPort"), "局外协调器必须以 Node 持有 GameplayPort。")
-	assert_true(coordinator_source.contains("Array<Resource> cards = battleDeck.VariantType"), "遭遇信号卡组必须进入通用 Resource 数组。")
-	assert_true(coordinator_source.contains("is Resource card") and coordinator_source.contains('card.HasMethod("ApplyEffect")'), "局外协调器必须按稳定方法过滤跨语言技能卡。")
-	assert_true(presenter_source.contains("Array<Resource> battleDeck"), "战斗场景 Presenter 必须接收通用技能卡 Resource 数组。")
+	assert_true(coordinator_source.contains("var _gameplay_port: Node = null"), "局外协调器必须以 Node 持有 GameplayPort。")
+	assert_true(coordinator_source.contains("var cards: Array[Resource] = []") and coordinator_source.contains("if battle_deck is Array:"), "遭遇信号卡组必须进入通用 Resource 数组。")
+	assert_true(coordinator_source.contains('(value as Resource).has_method("ApplyEffect")'), "局外协调器必须按稳定方法过滤跨语言技能卡。")
+	if not presenter_source.is_empty():
+		assert_true(presenter_source.contains("Array<Resource> battleDeck"), "战斗场景 Presenter 必须接收通用技能卡 Resource 数组。")
 	assert_true(battle_source.contains("starting_deck_data: Array[Resource]"), "BattleManager 必须接收通用技能卡 Resource 数组。")
 	assert_true(deck_source.contains("draw_pile_data: Array[Resource]"), "DeckManager 抽牌堆必须保存通用技能卡 Resource。")
 	assert_true(card_source.contains("var data: Resource"), "SkillCard 展示节点必须保存通用技能卡 Resource。")
-	assert_true(coordinator_source.contains("ConvertMonsters(monsters.AsGodotArray())"), "遭遇信号怪物必须显式过滤为 Array<MonsterData>。")
-	assert_true(coordinator_source.contains('_encounterManager.Call("ScaleEncounterMonsters", terrain, filteredMonsters)'), "倍率桥必须把过滤结果交给兼容 EncounterManager 协议。")
-	assert_true(executor_source.contains("Node gameplayPort"), "地形执行器必须通过 Node 接受 GameplayPort。")
-	assert_true(executor_source.contains("gameplayPort.Call(\"RequestEncounter\""), "地形执行器必须调用稳定 PascalCase 遭遇方法。")
-	assert_false(coordinator_source.contains("GetNode<GameplayPort>"), "局外协调器不得继续强制解析 C# GameplayPort。")
+	assert_true(coordinator_source.contains("_convert_monsters(monsters)"), "遭遇信号怪物必须显式过滤为资源怪物数组。")
+	assert_true(coordinator_source.contains('_encounter_manager.call("ScaleEncounterMonsters", terrain, filtered_monsters)'), "倍率桥必须把过滤结果交给兼容 EncounterManager 协议。")
+	if not executor_source.is_empty():
+		assert_true(executor_source.contains("Node gameplayPort"), "地形执行器必须通过 Node 接受 GameplayPort。")
+		assert_true(executor_source.contains("gameplayPort.Call(\"RequestEncounter\""), "地形执行器必须调用稳定 PascalCase 遭遇方法。")
+	assert_false(coordinator_source.contains("as GameplayPort"), "局外协调器不得继续强制解析 C# GameplayPort。")

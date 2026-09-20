@@ -1,38 +1,36 @@
-[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://cygjacjot10mm"]
+[gd_resource type="Resource" format=3 uid="uid://cygjacjot10mm"]
 
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_rt7uw"]
-[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_3i3k0"]
-[ext_resource type="Script" uid="uid://r1cfj2qxeuh7" path="res://core/combat/buffs/ShieldStatusData.cs" id="3_puyf7"]
-[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_uxcp8"]
-[ext_resource type="Script" uid="uid://bhuvu8mbbinyo" path="res://core/combat/effects/ApplyShieldCardEffect.cs" id="4_ysswq"]
+[ext_resource type="Script" uid="uid://0nubbe6tiwxp" path="res://core/combat/effects/damage_effect.gd" id="2_3i3k0"]
+[ext_resource type="Script" uid="uid://cmi3qh7h7ny3i" path="res://core/combat/buffs/shield_status_data.gd" id="3_puyf7"]
+[ext_resource type="Script" uid="uid://sxc1b8jrnrys" path="res://core/combat/skills/combat_skill_data.gd" id="3_uxcp8"]
+[ext_resource type="Script" uid="uid://c15himckpty3d" path="res://core/combat/effects/apply_shield_card_effect.gd" id="4_ysswq"]
 
 [sub_resource type="Resource" id="Resource_7wn03"]
 script = ExtResource("2_3i3k0")
 BaseDamage = 20
 Type = 1
 Element = 5
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
+metadata/_custom_type_script = "uid://0nubbe6tiwxp"
 
 [sub_resource type="Resource" id="Resource_lmghr"]
 script = ExtResource("3_puyf7")
 DefaultShieldAmount = 20.0
-Id = null
 DisplayName = "护盾"
 Description = "对随机敌人造成20点火属性法术伤害，然后自身获得20点护盾。"
-metadata/_custom_type_script = "uid://r1cfj2qxeuh7"
+metadata/_custom_type_script = "uid://cmi3qh7h7ny3i"
 
 [sub_resource type="Resource" id="Resource_vg0ut"]
 script = ExtResource("4_ysswq")
 ShieldStatus = SubResource("Resource_lmghr")
 TargetScope = 0
-metadata/_custom_type_script = "uid://bhuvu8mbbinyo"
+metadata/_custom_type_script = "uid://c15himckpty3d"
 
 [resource]
 script = ExtResource("3_uxcp8")
 Element = 5
 TargetingType = 5
-Effects = Array[ExtResource("1_rt7uw")]([SubResource("Resource_7wn03"), SubResource("Resource_vg0ut")])
+Effects = Array[Resource]([SubResource("Resource_7wn03"), SubResource("Resource_vg0ut")])
 CardId = null
 CardName = "测试卡2"
 Description = "对随机敌人造成20点火属性法术伤害，然后自身获得20点护盾。"
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+metadata/_custom_type_script = "uid://sxc1b8jrnrys"

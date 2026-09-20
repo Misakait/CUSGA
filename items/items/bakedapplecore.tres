@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://bkg1reu3xt18w"]
 
-[ext_resource type="Texture2D" uid="uid://dtm27hx1uw16v" path="res://res/items/bakedapplecore.png" id="1_4vxe2"]
+[ext_resource type="Texture2D" uid="uid://w2kjdfa3enh5" path="res://res/items/bakedapplecore.png" id="1_4vxe2"]
 [ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_t0isr"]
 
 [resource]

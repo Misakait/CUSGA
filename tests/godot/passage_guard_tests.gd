@@ -7,6 +7,10 @@ const PassageGuardProbabilityModifierScript: GDScript = preload("res://resources
 const PassageGuardStateScript: GDScript = preload("res://core/map/passage_guard_state.gd")
 const PassageGuardProbabilityProviderScript: GDScript = preload("res://core/map/passage_guard_probability_provider.gd")
 const PassageGuardMonsterResolverScript: GDScript = preload("res://core/map/passage_guard_monster_resolver.gd")
+## 迁移后的怪物数据与驻守遭遇数据 GDScript 载体（C# 全局类已随物理退役删除）。
+const MonsterDataScript: GDScript = preload("res://resources/monster/monster_data.gd")
+const PassageGuardEncounterDataScript: GDScript = preload("res://resources/map/passage_guard_encounter_data.gd")
+const PassageGuardSettingsScript: GDScript = preload("res://resources/map/passage_guard_settings.gd")
 const TagComponentScript: GDScript = preload("res://entities/components/tag_component.gd")
 const CurrentMapBackgroundResolverScript: GDScript = preload("res://core/gameflow/current_map_background_resolver.gd")
 
@@ -359,11 +363,11 @@ func _test_passage_guard_state_treats_edges_as_undirected() -> void:
 
 
 func _test_passage_guard_probability_applies_modifiers() -> void:
-	var settings := PassageGuardSettings.new()
-	settings.BaseGuardChance = 0.3
-	settings.ProbabilityModifiers.append(_create_modifier(&"quiet_night", 0.1, 1.0))
-	settings.ProbabilityModifiers.append(_create_modifier(&"guard_discount", 0.0, 0.5))
-	settings.ProbabilityModifiers.append(_create_modifier(&"inactive", 0.6, 10.0))
+	var settings: Resource = PassageGuardSettingsScript.new()
+	settings.set("BaseGuardChance", 0.3)
+	settings.get("ProbabilityModifiers").append(_create_modifier(&"quiet_night", 0.1, 1.0))
+	settings.get("ProbabilityModifiers").append(_create_modifier(&"guard_discount", 0.0, 0.5))
+	settings.get("ProbabilityModifiers").append(_create_modifier(&"inactive", 0.6, 10.0))
 	var tags: Node = TagComponentScript.new()
 	tags.AddTag(&"quiet_night")
 	tags.AddTag(&"guard_discount")
@@ -376,13 +380,13 @@ func _test_passage_guard_probability_applies_modifiers() -> void:
 
 
 func _test_passage_guard_probability_accepts_gdscript_modifier() -> void:
-	var settings := PassageGuardSettings.new()
-	settings.BaseGuardChance = 0.4
+	var settings: Resource = PassageGuardSettingsScript.new()
+	settings.set("BaseGuardChance", 0.4)
 	var modifier: Resource = PassageGuardProbabilityModifierScript.new()
 	modifier.set("RequiredTag", &"quiet_night")
 	modifier.set("AdditiveChance", 0.2)
 	modifier.set("Multiplier", 0.5)
-	settings.ProbabilityModifiers.append(modifier)
+	settings.get("ProbabilityModifiers").append(modifier)
 	var tags: Node = TagComponentScript.new()
 	tags.AddTag(&"quiet_night")
 	var provider: RefCounted = PassageGuardProbabilityProviderScript.new()
@@ -420,9 +424,9 @@ func _test_torch_multiplier_keeps_default_guard_rolls() -> void:
 
 
 func _test_passage_guard_monster_resolver_keeps_visible_room_encounter_stable() -> void:
-	var monster := MonsterData.new()
-	monster.MonsterName = "木精"
-	var pool: Array[PassageGuardEncounterData] = [_create_encounter(monster)]
+	var monster: Resource = MonsterDataScript.new()
+	monster.set("MonsterName", "木精")
+	var pool: Array = [_create_encounter(monster)]
 	var resolver: RefCounted = PassageGuardMonsterResolverScript.new()
 	var from := Vector2i(3, 3)
 	var to := Vector2i(3, 4)
@@ -444,8 +448,8 @@ func _create_guard_battle_harness(is_victory: bool) -> Dictionary:
 	map_position_create.name = "MapPositionCreate"
 	root.add_child(map_position_create)
 
-	var monster := MonsterData.new()
-	monster.MonsterName = "驻守测试怪"
+	var monster: Resource = MonsterDataScript.new()
+	monster.set("MonsterName", "驻守测试怪")
 	var map_attr := map_attribute.new()
 	map_attr.scene_name = "forest"
 	map_attr.guard_encounter_pool.append(_create_encounter(monster))
@@ -510,7 +514,7 @@ func _create_guard_roll_harness(encounter_multiplier: float) -> Dictionary:
 
 	var controller: Node = PassageGuardControllerScript.new()
 	controller.name = "PassageGuardController"
-	controller.settings = PassageGuardSettings.new()
+	controller.settings = PassageGuardSettingsScript.new()
 	controller.settings.BaseGuardChance = 1.0
 	controller.map_position_create_path = ^"../MapPositionCreate"
 	controller.map_types_path = ^"../MapTypes"
@@ -522,17 +526,17 @@ func _create_guard_roll_harness(encounter_multiplier: float) -> Dictionary:
 	}
 
 
-func _create_modifier(required_tag: StringName, additive_chance: float, multiplier: float) -> PassageGuardProbabilityModifier:
-	var modifier := PassageGuardProbabilityModifier.new()
-	modifier.RequiredTag = required_tag
-	modifier.AdditiveChance = additive_chance
-	modifier.Multiplier = multiplier
+func _create_modifier(required_tag: StringName, additive_chance: float, multiplier: float) -> Resource:
+	var modifier: Resource = PassageGuardProbabilityModifierScript.new()
+	modifier.set("RequiredTag", required_tag)
+	modifier.set("AdditiveChance", additive_chance)
+	modifier.set("Multiplier", multiplier)
 	return modifier
 
 
-func _create_encounter(monster: MonsterData) -> PassageGuardEncounterData:
-	var encounter := PassageGuardEncounterData.new()
-	encounter.Monsters.append(monster)
+func _create_encounter(monster: Resource) -> Resource:
+	var encounter: Resource = PassageGuardEncounterDataScript.new()
+	encounter.get("Monsters").append(monster)
 	return encounter
 
 

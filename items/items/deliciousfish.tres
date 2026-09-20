@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dgqid772iklbl"]
 
-[ext_resource type="Texture2D" uid="uid://cibix62j5i2b" path="res://res/items/deliciousfish.png" id="1_063dx"]
+[ext_resource type="Texture2D" uid="uid://bphxvp7wtppsv" path="res://res/items/deliciousfish.png" id="1_063dx"]
 [ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="2_l3583"]
 
 [resource]

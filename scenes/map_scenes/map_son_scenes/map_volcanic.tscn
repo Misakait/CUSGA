@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b22mlxgtsdm06"]
 
-[ext_resource type="Script" uid="uid://k4sqlory2k80" path="res://scripts/map_scripts/map_son_scripts/map_volcanic.gd" id="1_pe143"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_son_scripts/map_volcanic.gd" id="1_pe143"]
 [ext_resource type="Texture2D" uid="uid://d3sfyr5m8abmv" path="res://res/background/火山-b1ed(1).png" id="2_pe143"]
 [ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="2_profile"]
 [ext_resource type="Script" path="res://resources/interaction/vault_interaction.gd" id="4_3yw2j"]

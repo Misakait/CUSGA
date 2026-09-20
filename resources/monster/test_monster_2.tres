@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://d1k7qaisrtngg"]
+[gd_resource type="Resource" format=3 uid="uid://d1k7qaisrtngg"]
 
-[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="1_ckrcu"]
+[ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="1_ckrcu"]
 [ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="csv_set_script"]
 [ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="csv_stats_script"]
 
@@ -16,4 +16,4 @@ MonsterName = "怪物2"
 InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 1
 SkillSet = SubResource("CSV_MonsterSkillSet")
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
+metadata/_custom_type_script = "uid://buhigatdeqss6"

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://b1fjoj322xor2"]
 
-[ext_resource type="Texture2D" uid="uid://cb2sr4gle6cmo" path="res://res/items/cookedmeat.png" id="1_6fuap"]
+[ext_resource type="Texture2D" uid="uid://bu5r2memnkf45" path="res://res/items/cookedmeat.png" id="1_6fuap"]
 [ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_btjkd"]
 
 [resource]

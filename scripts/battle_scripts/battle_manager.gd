@@ -16,7 +16,7 @@ signal battle_ended(is_victory: bool)
 #region exprot
 @export_group("初始化参数")
 @export var starting_deck_data: Array[Resource] ##初始携带的卡组 Resource，兼容 C# 与 GDScript SkillCardData。
-@export var starting_monster_data: Array[MonsterData] ##初始怪物的卡牌数据。
+@export var starting_monster_data: Array[Resource] ##初始怪物的卡牌数据，兼容旧 C# MonsterData 与 GDScript monster_data.gd。
 @export var card_scene: PackedScene
 
 @export_group("视觉缩放参数")
@@ -30,8 +30,8 @@ signal battle_ended(is_victory: bool)
 #endregion
 
 #region 其他参数
-const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
-const DAMAGE_PAYLOAD_SCRIPT_PATH : String = "res://core/combat/DamagePayload.cs"
+const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/skill_execution_context.gd"
+const DAMAGE_PAYLOAD_SCRIPT_PATH : String = "res://core/combat/damage_payload.gd"
 const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 const SKILL_CARD_DIR_PATH : String = "res://resources/skill_cards" ## 技能卡资源目录，用于反查怪物技能的显示名
 

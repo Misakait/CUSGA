@@ -29,6 +29,11 @@ func _process(delta: float) -> void:
 
 
 func _regenerate_if_source_changed(force: bool) -> void:
+	## C# 枚举源已随物理退役删除，而生成物 scripts/generated/SkillTargetingType.gd 已是
+	## 受版本控制的生产脚本。源缺失时静默跳过，避免插件每 5 秒刷一条 push_error。
+	if not FileAccess.file_exists(Codegen.SOURCE_PATH):
+		return
+
 	var modified_time := FileAccess.get_modified_time(Codegen.SOURCE_PATH)
 	if not Codegen.should_generate(Codegen.SOURCE_PATH, Codegen.OUTPUT_PATH, _last_source_modified_time, force):
 		return

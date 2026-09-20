@@ -1,21 +1,19 @@
-[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://bxk8iyjs31aho"]
+[gd_resource type="Resource" format=3 uid="uid://bxk8iyjs31aho"]
 
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_skflr"]
-[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_78w7t"]
-[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_78w7t"]
+[ext_resource type="Script" uid="uid://0nubbe6tiwxp" path="res://core/combat/effects/damage_effect.gd" id="2_78w7t"]
+[ext_resource type="Script" uid="uid://sxc1b8jrnrys" path="res://core/combat/skills/combat_skill_data.gd" id="3_78w7t"]
 
 [sub_resource type="Resource" id="Resource_874ny"]
 script = ExtResource("2_78w7t")
 BaseDamage = 80
 Element = 3
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
+metadata/_custom_type_script = "uid://0nubbe6tiwxp"
 
 [resource]
 script = ExtResource("3_78w7t")
 Element = 3
 TargetingType = 2
-Effects = Array[ExtResource("1_skflr")]([SubResource("Resource_874ny")])
-CardId = null
+Effects = Array[Resource]([SubResource("Resource_874ny")])
 CardName = "测试卡3"
 Description = "对所有敌人造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。造成80点水属性物理伤害。"
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+metadata/_custom_type_script = "uid://sxc1b8jrnrys"

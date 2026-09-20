@@ -476,3 +476,724 @@
 - 新增 `core/board/board_card_state.gd` 作为 `BoardCardState` 的等价临时状态对象，保留 terrain/loot 类型、TerrainInstance/TerrainData、ItemStack/Item/Amount/IsEmpty 身份与数量显示判断。
 - `BoardController` 只通过脚本方法协议创建和消费状态，继续拥有卡牌集合、网格去重、视图实例化和信号生命周期；旧 `BoardCardState.cs`、`LootBoardCardState`、`TerrainBoardCardState` 保留为兼容垫片和回滚输入。
 - 状态脚本不声明全局 class，避免与 C# 类型表冲突；若脚本缺失或协议返回无效，BoardController 立即抛出原等价初始化异常，不生成空卡牌。
+
+## EncounterManager 生产切换边界
+
+- `scenes/Main.tscn` 的 `Gameplay/EncounterManager` 只把 ext_resource 换成 `core/application/encounter_manager.gd`；节点名、路径、`unique_id`、`GatheringRules` 三条 SubResource、`BaseGatheringSpawnChance=0.05`、`NightChanceMultiplier=6.0` 与每日成长倍率保持原值。
+- 管理器稳定协议为 `ResolveGatheringEncounter(resourceTag, nightEncounterChanceMultiplier) -> RefCounted` 与 `ScaleEncounterMonsters(terrain, monsters) -> Array`；结果对象以 `Triggered` / `MonsterToSpawn` / `SpawnMessage` 字段表达，等价旧 `GatheringEncounterResult`，不改变战斗请求顺序和提示文案。
+- 地形方差只通过 `TerrainInstance.GetEncounterVarianceSnapshot() -> Dictionary` 跨越语言边界；GDScript 侧缺失协议或字段类型不符时回退中性倍率 1，不复制也不会读写普通 C# `MonsterStatMultiplier`。地形实例仍由 `RoomTerrainStore` 持有并写入同一份内存状态。
+- C# 消费者 `WorldInteractionCoordinator`、`TerrainInteractionExecutor` 继续持有 `Node`，调用后把动态数组过滤为 `Array<MonsterData>` 并按字段重建旧结果类型；旧 `EncounterManager.cs`、`EncounterMonsterScaler.cs`、`GatheringEncounterResult.cs`、`MonsterStatMultiplier.cs` 与 C# `GameplayPort.cs` 保留为兼容垫片。
+- 回滚点为恢复 `scenes/Main.tscn` 的旧 C# ext_resource（uid `uid://d0aq30etvrhiu`），无需回退资源、存档、地图或战斗资产。本批不迁移 `RoomTerrainStore`、`MonsterData`、`Monster`、`Player`、组件层与战斗效果，也不处理 StartingStats、物品链、Crafting 与 Autoload 收尾。
+
+## RoomTerrainStore 与 RoomTerrainLayoutGenerator 生产切换边界
+
+- `scenes/Main.tscn` 的 `RuntimeState/RoomTerrainStore` 只把 ext_resource 换成 `core/map/room_terrain_store.gd`（uid `uid://cvc18jht88wtv`）；节点名、节点路径、`unique_id=229807555`、`TerrainStorePath = NodePath("../../RuntimeState/RoomTerrainStore")` 与房间缓存嵌套结构保持原样。
+- 仓库稳定协议为 `HasRoom`、`CreateRoomLayout(roomPos, placements) -> bool`、`GetRoomTerrainsOrEmpty(roomPos) -> Dictionary`、`GetOrCreate`、`TryGetTerrain`（GDScript 无 `out` 参数，等价旧 `TryGet`）；布局生成协议为 `Generate(profile) -> Array`，每项含 `TerrainData`、`LocalGridPos`、`BoardPosition`、`Variance`。重复格子沿用旧错误文案并以 `push_error` + `false` 表达，其余格子保持已写入状态。
+- `RoomBoardPresenter.cs` 不再编译期引用具体仓库或生成器类型：仓库以 `Node` 持有并按方法协议调用，生成器从固定脚本路径加载 GDScript 后以 `RefCounted` 持有；Godot 字典保持插入顺序，因此地形卡生成顺序与旧 C# `Dictionary.Values` 遍历一致。动态协议对 C# 与 GDScript 两种实现同时成立。
+- 地形实例仍由旧 C# `TerrainInstance` 提供，仓库顶部只有一处脚本常量指向它，便于后续整体替换；跨语言倍率通过 `GetEncounterVarianceSnapshot()` 读、`ApplyEncounterVarianceSnapshot(Variant)` 写，字段缺失或类型不符一律回退中性值 1，普通 C# 类 `MonsterStatMultiplier` 不跨越语言边界。
+- 唯一有意的行为差异是随机数源：旧实现用 `System.Random`，新实现用 `RandomNumberGenerator`，同一种子不再产生相同序列；权重抽样、总权重为零的退化分支、Fisher-Yates 方向、min/max 反序、数量夹紧与格子中心插值逐条等价，并已在两个脚本的中文注释中记录。
+- 回滚点是恢复 `scenes/Main.tscn` 的旧 C# ext_resource（uid `uid://dysm4qdwufagp`），`RoomBoardPresenter` 的动态调用无需回退即可同时支持两种实现。旧 `RoomTerrainStore.cs`、`RoomTerrainLayoutGenerator.cs`、`TerrainSpawnPlacement` 与 C# 对照测试保留为兼容垫片；本批不迁移 `TerrainInstance`、`MonsterData`、`Monster`、`Player`、组件层与战斗效果，也不处理 StartingStats、物品链、Crafting 与 Autoload 收尾。
+
+## VitalComponentBase / HealthComponent / EnergyComponent / SatietyComponent 生产切换边界
+
+- `scenes/player_scenes/player.tscn` 只切换 `EnergyComponent` / `HealthComponent` / `SatietyComponent` 三条 ext_resource 与 `metadata/_custom_type_script`，`scenes/monster_scenes/monster.tscn` 只切换 `Components/HealthComponent` 一条；节点名、节点路径、`unique_id`、`unique_name_in_owner`、组件挂载顺序与序列化 `MaxValue`（玩家 1000、怪物 100）保持原值。
+- 数值组件稳定协议为属性 `CurrentValue` / `MaxValue`、方法 `InitializeMax`、`SetMaxValuePreservingCurrent`、`Add`、`Subtract`、`TakeDamage(amount, element_type) -> int`，信号 `ValueChanged(current_value, max_value)`、`Depleted()`、`DamageTaken(amount, element_type)`。信号顺序固定：扣减到 0 时先 `ValueChanged` 后 `Depleted`；`Add` / `Subtract` 返回真实增减量，非正数参数为无操作；上限最低钳制为 1。
+- 事件订阅属于边界：C# 消费者不再用 `+=` 绑定组件事件，改为 `Connect("Depleted"/"ValueChanged", 缓存 Callable)` 并在 `_ExitTree` 用 `IsConnected` 守卫；组件节点一律以 `Node` 持有，通过 `Get` / `Call` 读取属性与方法，因此同一套 C# 代码可同时驱动 C# 垫片与 GDScript 生产实现。
+- `HealthComponent` 的 `TakeDamage` 仅在真实伤害大于 0 时发出 `DamageTaken`，归零后继续受击返回 0 且不再发信号；`ElementType.None == 0`，`Player.OnSatietyDepleted` 保持 `Call("TakeDamage", 5, 0)` 的旧数值与旧调用时机。
+- `AttributeComponent.SynchronizeVitalMaximum` 只按属性类型查找同名子节点（`HealthComponent`、`EnergyComponent`），能量组件缺失时按旧行为静默跳过；`DamageReceiverComponent` 只新增 `ReadVitalCurrentValue(Node)`，`HealthBarUI` 只新增 `ReadInt(propertyName)`，其余伤害公式、护盾、吸血与上限状态实例逻辑不变。
+- 回滚点是恢复两个场景的旧 C# ext_resource（玩家 uid `uid://coyiavqkkmsgv`、`uid://d4gp22cg5vjro`、`uid://vhrfbyuub4pr`，怪物 uid `uid://d4gp22cg5vjro`）并回退 8 个 C# 消费者。旧 `VitalComponentBase.cs`、`HealthComponent.cs`、`EnergyComponent.cs`、`SatietyComponent.cs` 与 `tests/CUSGA.Tests/Program.cs` 对照用例继续保留；本批不迁移 `AttributeComponent`、`StatusComponent`、`DamageReceiverComponent`、`TerrainInstance`、`MonsterData`、`Monster`、`Player` 与战斗效果，也不处理 StartingStats、物品链、Crafting、Autoload 收尾与 `AttributeModifierData`。
+
+## TerrainInstance 生产切换边界
+
+- 新增 `resources/interaction/terrain_instance.gd` 作为旧 `resources/interaction/TerrainInstance.cs` 的等价实现，**故意不声明 `class_name`**，避免与 C# 类型表产生同名全局类冲突；字段名与旧 C# 属性逐字一致（`LocalGridPos`、`BoardPosition`、`TerrainData`、`IsOccupied`、`IsHarvested`、`GrowthStage`、`RemainingGatheringCount`、`RefreshReadyTotalTime`、`EncounterVarianceMultiplier`），方法与默认值保持不变（`RemainingGatheringCount = -1`、`RefreshReadyTotalTime = 0`、`GrowthStage = 0`、两个布尔默认 `false`）。
+- 稳定协议为“字段名一致的 `Get`/`Set` 通道”＋`GetEncounterVarianceSnapshot()` / `ApplyEncounterVarianceSnapshot(Variant)` 字典协议；倍率字典固定六字段 `MaxHealth`、`PhysAtk`、`PhysDef`、`MagPower`、`MagResist`、`Speed`，整体非字典时忽略、单字段缺失或类型不符时回退中性值 1。
+- `resources/interaction/TerrainInstanceProtocol.cs`（`internal static`）是 C# 侧唯一读写边界，提供 `TryReadBool`、`SetBool`、`TryReadInt`、`SetInt`、`TryReadBoardPosition`、`TryReadLocalGridPos`、`ReadTerrainData`。每个入口先判断 `terrain is TerrainInstance legacy` 走旧强类型属性，否则走字段协议，因此同一份 C# 代码同时支持旧垫片与新生产实现，回滚只需切换创建点常量。
+- 创建点唯一：`core/map/room_terrain_store.gd` 顶部 `TERRAIN_INSTANCE_SCRIPT` 常量。消费者降级只改跨语言那一处：`WorldInteractionContext`、`TerrainInteractionBuildContext` 的 `Terrain` 与 `WorldInteractionPorts` 的 `terrain` 形参改为 `required RefCounted`；`FarmingInteraction`、`GatheringInteraction`、`ReusableGatheringInteraction`、`MarkHarvestedOp` 改用协议读写；`TerrainInteractionExecutor`、`WorldInteractionCoordinator`（14 处形参）、`RoomBoardPresenter`、`BoardController` 改为 `RefCounted` + 协议。棋盘卡集合、视图、存档、战斗与玩法规则仍由原拥有者负责。
+- `GameplayPort.cs` 同步移除最后一个 `EncounterManager.Instance` 静态单例读取，改为 `[Export] EncounterManagerPath` + `_Ready` 缓存 `Node` + `ScaleEncounterMonsters` 方法协议并重新过滤返回值；C# 消费者不再编译期依赖任何已迁移类型的静态单例。
+- 本批未改 `scenes/Main.tscn`（该场景的 `GameplayPort` 已是 GDScript，通过 `_get_encounter_scaler()` 自行解析缩放器，导出字段对它无意义）。回滚点是恢复 `room_terrain_store.gd` 的常量并回退上述 C# 消费者的类型与读取方式。旧 `TerrainInstance.cs`、`BoardCardState.cs`、`BoardCardView.cs`、`EncounterManager.cs` 与 C# 对照测试继续保留为兼容垫片；本批不迁移 `AttributeComponent`、`StatusComponent`、`DamageReceiverComponent`、`MonsterData`、`Monster`、`Player` 与战斗效果，也不处理 StartingStats、物品链、Crafting、Autoload 收尾与 `AttributeModifierData`。
+
+## AttributeModifierData 生产切换边界
+
+- 新增 `core/combat/status/attribute_modifier_data.gd`（uid `uid://3uivcq44l7gy`）作为旧 `AttributeModifierData.cs` 的等价实现，字段与旧 C# 属性逐字同名（`Type`、`Mode`、`ValuePerStack`），默认值与旧实现一致（`PhysAtk` / `FlatAdd` / `0.0`）；脚本刻意不声明 `class_name`，避免与 C# 类型表冲突。
+- 关键边界是数组类型而不是脚本本身：旧 `AttributeModifierStatusData.Modifiers` 声明为强类型 `Array<AttributeModifierData>`，Godot 会在反序列化阶段拒绝 GDScript 条目。本批把它降级为通用 `Godot.Collections.Array`，资产侧同步写 `Modifiers = Array[Resource]([...])`；这也是上一次撤回尝试的真正阻塞点。
+- 新增 `core/combat/status/AttributeModifierDataProtocol.cs`（`internal static`）作为唯一读取入口，返回可空结构 `AttributeModifierFields?`：条目是旧 C# 垫片时走强类型属性，否则走 `Get("Type")` / `Get("Mode")` / `Get("ValuePerStack")` 同名字段协议。返回值而非 `out` 参数，是因为 `GetAttributeModifiers()` 是迭代器方法，迭代器内不能用 `out` 局部变量。
+- `AttributeModifierStatusInstance.GetAttributeModifiers()` 只换成协议读取，仍然产出旧的 C# `AttributeModifier` record struct；`AttributeComponent.CalculateUnclampedEffectiveValue` 的 `(base + flatAdd) * (1 + percentAdd) * percentMul` 公式、`AttributeModifierMode` 三分支与警告分支完全未变，因此数值语义不变。
+- 资产切换只有两处：`resources/effects/strength.tres` 与 `resources/combat_skills/test_card_1.tres` 的修正条目 ext_resource 换成 GDScript 脚本并把数组类型改成 `Array[Resource]`，其余字段（`ValuePerStack=10.0` / `Type=4`、`ValuePerStack=100.0`、`Id=&"strength_up"`、`MaxStacks=999`、`Policy=2`）逐字保留。
+- 验证分工是本边界的一部分：编辑器里的 C# Resource 是占位实例，非 `[Tool]` 脚本在 `test_run` 中调用方法会失败，因此 `test_run` 套件只锁定数据形状与源码协议，属性重算的端到端验证必须在运行中的游戏经 `game_eval` 完成。回滚点是恢复两个资产的旧 C# ext_resource（uid `uid://ilmgwp6hkfi`）与 `Array<AttributeModifierData>` 声明。旧 `AttributeModifierData.cs` 继续保留为兼容垫片；本批不迁移 `AttributeModifierStatusData`、`StatusEffectData`、`AttributeComponent`、`StatusComponent` 与其余战斗效果。
+
+## MonsterData 生产切换边界
+
+- 新增 `resources/monster/monster_data.gd`（uid `uid://buhigatdeqss6`）作为旧 `resources/monster/MonsterData.cs` 的等价实现，直接 `extends Resource`，字段与旧 C# 属性逐字同名：`MonsterName`（默认 `"未知怪物"`）、`InitialAttributes: Resource`、`ElementalProperty: int = 0`、`ModelScene: PackedScene`、`LootTable: Resource`、`BehaviorTreeScene: PackedScene`、`Faction: int = 0`、`SkillSet: Resource`。脚本不声明 `class_name`，与 `terrain_instance.gd`、`attribute_modifier_data.gd` 保持同一约定，避免与 C# 类型表产生同名全局类冲突。
+- 本批确立的前置结论：**GDScript 无法继承 C# 脚本**。`extends "res://resources/monster/MonsterData.cs"` 与 `extends MonsterData`（全局类名）两种写法都会报 `Parser Error: Could not resolve super class inheritance`。因此凡是要继承 C# 基类的类型（`StatusEffectData` 及其 9 个子类、`CardEffect` 及其 4 个子类、`TerrainInteraction`、`TerrainOp`、`VitalComponentBase`、`InventoryComponent`、`ItemData` 等）都必须连基类成批迁移；`MonsterData` 因直接继承 `Resource` 才成为安全切入点。
+- 稳定协议：字段名逐字一致的 `Get`/`Set` 通道 ＋ `resources/monster/MonsterDataProtocol.cs`（`internal static`）。`IsMonsterData(GodotObject)` 先走旧 C# `is MonsterData`，否则比对 `GetScript().As<Script>()?.ResourcePath == "res://resources/monster/monster_data.gd"`；另有 `FilterMonsters(Godot.Collections.Array)`、`ReadMonsterName`、`ReadElementalProperty`、`ReadFaction`、`ReadResourceField`。同一份 C# 代码因此同时支持旧垫片与新生产实现，回滚只需把资产 ext_resource 切回 C#。
+- 数组边界沿用上一批的根因：强类型 `Array<MonsterData>` 会在反序列化阶段拒绝 GDScript 条目，所以跨语言容器一律降级为通用 `Array` / `Array[Resource]`——`GatheringEncounterRule.MonsterToSpawn`、`GatheringEncounterResult.MonsterToSpawn`、`GameplayPort.EncounterRequested` 第 3 参与两个 `RequestEncounter` 重载、`IInteractionGameplayPort.RequestEncounter`、`PassageGuardMonsterResolver.MonsterArray`、`battle_manager.gd` 的 `starting_monster_data`。
+- 资产切换 54 处：53 个 `resources/monster/*.tres` 的 ext_resource 换成新 uid、移除头部 `script_class="MonsterData"`、`metadata/_custom_type_script` 指向新 uid，其余序列化字段（含技能子资源与掉落子资源）逐字节未动；`scenes/monster_scenes/monster.tscn` 同样只改两行。`scenes/battle_scenes/battle.tscn` 删除 `MonsterData.cs` 的 ext_resource 并把 `starting_monster_data` 从 `Array[ExtResource("6_ajc51")]` 降为 `Array[Resource]`。
+- 创建点语义唯一收敛在 `core/application/encounter_manager.gd` 的 `_new_monster_like()`：运行期优先 `source.get_script().new()`；编辑器内非 `@tool` 脚本不允许实例化（`can_instantiate()` 为 false），此时退化为 `source.duplicate(false)` 浅拷贝——脚本与子资源引用保持一致，且随后所有字段都被 `_scale_monster` 显式覆写，因此编辑器套件与运行时得到同一可观察结果，无需给数据脚本加 `@tool`。
+- 消费者降级只改跨语言那一处：`entities/Monster.cs` 的 `BaseData` / `Initialize` / `UpdateCardUi` 改 `Resource`，名称、阵营、初始属性、SkillSet 与鼠标提示名称走协议；`DamageReceiverComponent` 的元素倍率走 `MonsterDataProtocol.ReadElementalProperty`；`MonsterSpawnOp`、`BossInteraction`、`WorldInteractionCoordinator`、`WorldCombatScenePresenter`、`TerrainInteractionExecutor`、`PassageGuardMonsterResolver` 与 GDScript 的 `gameplay_port.gd`、`gathering_encounter_result.gd` 同步；`EncounterManager.cs` 的 `ResolveGatheringEncounter` 发生一次显式 `Array<MonsterData>` → `Array<Resource>` 转换以保证编译。
+- 回滚点是恢复 53 个资产的 ext_resource（`uid://dh28trwcjvre6` / `res://resources/monster/MonsterData.cs`）与上述 C# 消费者的类型及 `Array` 声明。旧 `MonsterData.cs` 未删除、未改语义；本批不迁移 `MonsterSkillEntryData`、`MonsterSkillSetData`、`MonsterSkillPreview`、`Monster.cs` 之外的实体行为、`core/combat`、`entities/components` 与 Autoload 收尾。
+
+## CombatSkillData / CardEffect 家族生产切换边界
+
+- 新增 6 个 GDScript 生产实现：`core/combat/effects/card_effect.gd`（uid `uid://bu272src84v8y`）、`damage_effect.gd`（uid `uid://0nubbe6tiwxp`）、`modify_attribute_effect.gd`（uid `uid://byc53p0d2p6y8`）、`apply_shield_card_effect.gd`（uid `uid://c15himckpty3d`）、`apply_status_card_effect.gd`（uid `uid://dgau6uej1oyct`）、`core/combat/skills/combat_skill_data.gd`（uid `uid://sxc1b8jrnrys`）。字段名与默认值与旧 C# 属性逐字一致（`BaseDamage=10`、`HitCount=1`、`HitTargetMode=0`、`Type=0`、`Element=0`、`TargetScope=2`、`Primary/SecondaryDamageMultiplier=1.0`、`TargetingType=1`），枚举继续用整数取值（`CardEffectTargetScope` 的 `Source=0/AllTargets=1/PrimaryOnly=2/SecondaryOnly=3`、`SkillTargetRole` 的 `Primary=0/Secondary=1`、`SkillTargetingType` 的 0~6），脚本不声明 `class_name`。
+- 继承边界沿用 MonsterData 批的结论：GDScript 不能继承 C# 脚本，因此 `CardEffect` 基类与 4 个子类、`CombatSkillData` 与其 `BaseCardData` 字段**成批迁移**，而不是逐个效果切入。`combat_skill_data.gd` 直接 `extends "res://resources/item/base_card_data.gd"` 并重新声明 `Element` / `TargetingType` / `Effects`。
+- 稳定协议：`core/combat/effects/CardEffectProtocol.cs`（uid `uid://ba18ajys7jegc`）与 `core/combat/skills/CombatSkillDataProtocol.cs`（uid `uid://bnqifvua7jr5t`）。识别逻辑统一为“先 `is` 旧 C# 垫片，否则比对 `GetScript().As<Script>()?.ResourcePath`”，读取走 `Get("字段名")`，执行走 `Execute` 方法协议。C# 侧因此同时支持旧垫片与新生产实现，回滚只需把资产 ext_resource 切回 C#。
+- 数组边界（沿用 `AttributeModifierData` / `MonsterData` 批同一根因）：强类型 `Array<CardEffect>` 会在反序列化阶段拒绝 GDScript 效果条目，所以 `CombatSkillData.Effects` 与 `AttributeChangeTriggerStatusData.Effects` 必须是通用 `Array`，资产侧统一写 `Array[Resource]`；技能容器（`Monster.GetCombatSkills()` / `MonsterSkillComponent`）同样降级为 `Array<Resource>` / `Resource`。
+- 本批新边界（纯 C# DTO → RefCounted）：`DamagePayload`、`SkillExecutionModifierContext`、`DamageEffectHitCountContext`、`DamageEffectSegmentContext` 原本是不继承 `GodotObject` 的纯 C# 类。GDScript 侧 `load("res://….cs").new(...)` 会报 `Invalid call. Nonexistent function 'new' in base 'CSharpScript'`（实测停在 `combat_skill_data.gd:73 @ Execute`），并且纯 C# 对象无法作为 Variant 传给 GDScript。因此这四类显式降级为 `public [sealed] partial class … : RefCounted`：字段、构造参数、执行语义逐字不变，C# 消费者（`StatusComponent`、`DamageReceiverComponent`、`DamageResolutionResult`）无需改动。源生成器接受 `IReadOnlyCollection<StringName>`、`DamageResolutionTrace` 这类不可 marshal 的属性（只是不会被绑定）。
+- 编辑器与运行时的判据分工：`Script.can_instantiate()` 对没有默认构造函数的 C# 脚本返回 `false`，不能作为“GDScript 能否构造它”的判据。契约套件只断言 `get_instance_base_type() == "RefCounted"` 与字段形状；“真的能从 GDScript 构造出来并打出伤害”只能在运行中的游戏经 `game_eval` 验证。
+- 执行顺序与惰性构造：`combat_skill_data.gd` 保持“开启技能作用域 → 顺序执行效果 → 统一收尾状态”；`SkillExecutionModifierContext` 只在施放者存在 `StatusComponent` 时构造，两次 Hook 仍传同一对象。`damage_effect.gd` 保持“段数修正 → 逐段选目标 → 单段修正 → 构造 `DamagePayload` → `ReceiveDamage`”，最终数值仍由 C# 伤害公式决定。
+- 资产切换 87 个文件：69 个 `resources/combat_skills/*.tres`、14 个 `resources/skill_cards/*.tres`、`bmob.tres`、`senketsu.tres`、`resources/effects/strength.tres`、`resources/buffs/draw_when_physAtk_decreased.tres`、`scenes/battle_scenes/battle.tscn`、`scenes/monster_scenes/monster.tscn`。生成脚本 `card_table/export_current_cards.py` 同步改脚本常量、去掉新建资源的 `script_class`、技能数组写 `Array[Resource]`，并在 upsert 时清理旧 `script_class`。
+- 回滚点：恢复 87 个资产的旧 ext_resource（`uid://deqpvvm5duhfp` / `uid://b2df0ritlplj8` / `uid://dq1ts5ykp8ai6` 等）与 `script_class="CombatSkillData"`、`Array[ExtResource(...)]`，并把 4 个 DTO 恢复为纯 C# 类、回退两个协议文件。旧 C# 垫片全部保留，未删除任何 `.csproj`、`.sln` 或 C# Autoload；本批不迁移 `core/combat/status` 与 `core/combat/buffs` 其余状态、`entities/components`、`Player.cs`、StartingStats、物品链、Crafting 与 Autoload 收尾。
+
+## StatusEffectData 状态数据族生产切换边界（2026-09-20 20:05）
+
+- 对象与范围：`StatusEffectData`（C# 抽象基类，12 个导出字段：`Id` / `DisplayName` / `Description` / `Icon` / `MaxStacks` / `Policy` / `ExpirePolicy` / `DurationTickTiming` / `DefaultHookPriority` / `InitOwnerTurnDuration` / `InitGlobalTurnDuration` / `InitRoundDuration`）与其 4 个有资产引用的数据子类 `AttributeModifierStatusData` / `ShieldStatusData` / `BurnStatusData` / `AttributeChangeTriggerStatusData`；涉及资产 `resources/effects/strength.tres`、`resources/combat_skills/test_card_1.tres`、`test_card_2.tres`、`bmob.tres`、`resources/buffs/draw_when_physAtk_decreased.tres`。
+- 关键判断：把“数据”和“行为”拆开评估。状态数据本身是纯数据载体，`CreateInstance(source, owner)` 是它唯一的动态职责；只要实例类（`AttributeModifierStatusInstance` / `ShieldStatusInstance` / `BurnStatusInstance` / `AttributeChangeTriggerStatusInstance`）仍留在 C#，GDScript 端就只需继承自己写的 GDScript 基类，抽象方法的跨语言硬约束不会触发。这修正了上一批把“状态数据族必须连实例一起搬”的排期结论。
+- 生产实现：`core/combat/status/status_effect_data.gd` 直接 `extends Resource` 并重新声明全部 12 个字段（默认值与旧 C# 逐字一致，枚举全部保持 0 基整数：`StackPolicy.ResetDuration=0`、`DurationExpirePolicy.FirstExpired=0`、`DurationTickTiming.Start=0`、`AttributeChangeDirection.Any=0`）；4 个子类 `extends "res://core/combat/status/status_effect_data.gd"`，各带 `const INSTANCE_SCRIPT_PATH`（指向保留的 C# 实例类）与 `CreateInstance`。所有脚本都不声明 `class_name`，避免与 C# 类型表里的同名全局类冲突。
+- 唯一协议：`core/combat/status/StatusEffectDataProtocol.cs`。识别分两支：旧垫片走 `value is StatusEffectData`；GDScript 实现走 `IsGdStatusEffectData`——它**沿 `Script.GetBaseScript()` 链逐级向上**比对 `status_effect_data.gd` 的路径，因为子类脚本的 `resource_path` 指向子类自身而不是基类。读取入口 `ReadId` / `ReadText` / `ReadInt` / `ReadFloat` / `ReadTexture` / `ReadArray` / `HasFiniteDuration` / `ReadStackPolicy` / `ReadExpirePolicy` / `ReadTickTiming` 都按字段名同名取值；枚举读取失败时回退到旧 C# 默认值。
+- C# 消费者降级：`StatusEffectInstance` 的 `Data` 由 `StatusEffectData` 改为 `Resource`，其 `Id` / `MaxStacks` / `Policy` / `ExpirePolicy` / `TickTiming` / `InitOwnerTurnDuration` / `InitGlobalTurnDuration` / `InitRoundDuration` / `GetHookPriority` / `DisplayDescription` / `IsExpired` 全部改走协议；4 个实例类的构造参数与 `_data` 字段同样降级（`Modifiers` / `Effects` 等数组先读成 `Godot.Collections.Array` 再遍历），实例类自身的状态语义、叠层与计时逻辑一行未改。
+- 重载等价：旧 C# `ShieldStatusData` 有两个 `CreateInstance` 重载（带 / 不带 `shield_amount`）。GDScript 侧用 `CreateInstance(source, owner, shield_amount: Variant = null)` 的默认参数等价实现，显式传入与按字段推导两条路径都保留。
+- 新增根因（写入排期检查项）：**Godot 解析 C# 脚本时要求“文件名 == 类名”**。`BurnStatusDataInstance.cs` 中声明的类是 `BurnStatusInstance`，C# 编译无警告，但 Godot 侧 `get_instance_base_type()` 返回空字符串（同族其余脚本返回 `RefCounted`），导致 GDScript `load(...).new()` 报 `Invalid call. Nonexistent function 'new' in base 'CSharpScript'`；重命名文件与 `.uid` 旁车后即恢复。同时确认 `Script.can_instantiate()` 对无默认构造函数的 C# 脚本**一律为 false**、`has_method("new")` 也不可靠，只有 `get_instance_base_type()` 是否为空可用于诊断。
+- 验证：聚焦套件 `status_effect_data_contract` 8/8（132 断言）；全量 21 个套件 173/173；C# `dotnet build --no-restore --no-incremental` 0 警告 0 错误；运行时 run 21 经真实 `SkillExecutionContext` 验证 `strength.tres`（状态数 0→1、`PhysAtk` 100→110）与 `bmob.tres`（状态数 1→2、HP 1000→995、`status_ids=["strength_up","bomb_burn"]`），游戏日志无脚本/解析/加载/信号/类型错误。
+- 回滚点：把 5 个资产的 ext_resource 改回 `AttributeModifierStatusData.cs` / `ShieldStatusData.cs` / `BurnStatusData.cs` / `AttributeChangeTriggerStatusData.cs` 并恢复 `script_class`，同时回退 `StatusEffectInstance.cs` 与 4 个实例类的 `Resource` 降级以及 `StatusEffectDataProtocol.cs`。旧 C# 垫片全部保留，未删除任何 `.csproj`、`.sln` 或 C# Autoload；本批不迁移 `core/combat/status` + `buffs` 其余 5 组状态数据/实例、`entities/components`（`AttributeComponent` / `DamageReceiverComponent` / `StatusComponent`）、场景根脚本、StartingStats、物品链、Crafting 与 Autoload 收尾。
+
+## StatusComponent 生产切换边界（2026-09-20 21:10）
+
+- 对象与范围：`entities/components/StatusComponent.cs`（C# `Node` 子类）改为 `entities/components/status_component.gd`（uid `uid://teq3xtey3ker`，`extends Node`，不声明 `class_name`）。方法面逐字保留 20 个公开入口：`GetActiveStatusesSnapshot` / `HasStatus` / `GetStatusOrNull` / `AddStatus` / `RemoveStatus` / `ClearAllStatuses` / `OnTurnStarted` / `OnTurnEnded` / `OnRoundStarted` / `OnRoundEnded` / `ProcessBeforeAttributeChange` / `ProcessAfterAttributeChanged` / `ProcessBeforeSkillExecution` / `ProcessAfterSkillExecution` / `ApplyDamageHitCountModifiers` / `ApplyDamageEffectSegmentDamageModifiers` / `ApplyModifyOutgoingDamage` / `ApplyModifyIncomingDamageBeforeMitigation` / `ApplyModifyIncomingDamageAfterMitigation` / `ApplyBeforeHealthDamage`。`PHASE_*`（16）/`REASON_*`（0~5）/`POLICY_*`（0~2）/`TIMING_*`（0~1）四组常量与旧枚举整数逐项一致。
+- 四条跨语言边界规则（本批确立，后续组件批次直接复用）：
+  1. **`ref` 参数不可跨语言** → 在 C# 侧补返回值的非 ref 包装。`StatusEffectInstance` 新增 `ApplyModifyDamageHitCount` / `ApplyModifyDamageEffectSegmentDamage` / `ApplyModifyOutgoingDamage` / `ApplyModifyIncomingDamageBeforeMitigation` / `ApplyModifyIncomingDamageAfterMitigation` / `ApplyBeforeHealthDamage`；`StatusComponent.cs` 垫片补齐 4 个聚合包装。
+  2. **C# `event` 不可被 GDScript 订阅** → 改为 Godot 信号。`StatusChanged(change_event)` 取代 `StatusChangedDetailed`；载荷 `StatusChangeContext` 降级 `RefCounted` 后由消费方 `Call("GetFeedbackNode", ...)` 读取。
+  3. **跨语言 DTO 必须 `RefCounted`**。`StatusChangeContext.cs`、`AttributeChangeContext.cs` 由纯 C# 类降级。
+  4. **接口集合属性必须补快照方法**。`SkillExecutionModifierContext.GetStatusIdsMarkedForConsumptionSnapshot()` 返回 `Godot.Collections.Array<StringName>` 取代 `IReadOnlyCollection<StringName>` 属性。
+- C# 消费者改写：`ComponentLookup.GetStatusComponentOrNull` 返回 `Node`；`AttributeComponent` 的 `_statusComponent` 降级并用 `Connect("StatusChanged", Callable.From<RefCounted>(HandleStatusChangedSignal))` 订阅（含 `_statusSubscribed` 防重复连接与 `_ExitTree` 断开）；`DamageReceiverComponent` 新增 `ApplyStatusDamageModifier` 统一 4 处非 ref 包装调用；`Player`/`Monster` 的 `Status` 与 `GetNode` 降级为 `Node`；`CombatSkillData` / `ApplyShieldCardEffect` / `ApplyStatusCardEffect` / `DamageEffect` / `ShieldStatusInstance` 五个垫片动态化。`StatusEffectInstance.AppliedSequence` 由 `internal set` 改为可写。
+- 语义保真点：`_tick_turn_durations` 保留旧 C# `|=` 的非短路求值语义（避免同日多状态到期的处理顺序变化）；`_notify_status_changed` 在迁移期通过 `load("res://core/combat/status/StatusChangeContext.cs")` 构造旧 C# 载荷，让旧 C# 订阅方仍可工作，属过渡兼容输入。
+- 资产/场景切换 2 处：`scenes/player_scenes/player.tscn`、`scenes/monster_scenes/monster.tscn` 的组件 ext_resource 由 `StatusComponent.cs`（uid `uid://gek5smi6lrcs`）切到 `status_component.gd`（uid `uid://teq3xtey3ker`）。
+- 验证：聚焦套件 `status_component_contract` 9/9（140 断言）；全量 22 套件 182/182；C# `dotnet build --no-restore --no-incremental` 0 警告 0 错误；运行时 run 23 端到端验证状态加成（`0→1`、`PhysAtk 100→110`）、承伤修正（`bmob.tres` 使 HP `1000→995`）与灼烧计时（`OwnerTurnDuration 5→4`、HP `995→993`）；run 24 验证两个场景脚本切换；游戏日志无脚本/解析/加载/信号/类型错误。
+- 回滚点：把两个场景的 ext_resource 与 uid 切回 `StatusComponent.cs`，并回退 `AttributeComponent` / `DamageReceiverComponent` / `Player` / `Monster` / `ComponentLookup` 的 `Node` 降级、`StatusEffectInstance` 的包装与 `internal set` 修改、两个 DTO 的 `RefCounted` 降级、`SkillExecutionModifierContext` 的快照方法。旧 C# 垫片全部保留，未删除任何 `.csproj`、`.sln` 或 C# Autoload。
+- 本批不迁移：`AttributeComponent` / `DamageReceiverComponent`（下一批）、`entities/Monster.cs` / `entities/Player.cs` / `core/board/BoardController.cs` / `core/gameflow/WorldInteractionCoordinator.cs` / `core/map/RoomBoardPresenter.cs`（场景根脚本批次）、`core/combat/status` + `buffs` 剩余 5 组状态数据/实例、StartingStats、物品链、Crafting、Autoload 收尾。
+
+## DamageReceiverComponent 生产切换边界（2026-09-20 22:40）
+
+- 对象与范围：`entities/components/DamageReceiverComponent.cs`（C# `Node` 子类）改为 `entities/components/damage_receiver_component.gd`（uid `uid://dwdggwaghdncs`，`extends Node`，不声明 `class_name`）；连同**只被它使用**的两个纯计算类 `core/combat/DamageFormula.cs`、`core/combat/ElementalSystem.cs` 一起迁移为 `core/combat/damage_formula.gd`（uid `uid://cs2jb4l4ia5pe`）、`core/combat/elemental_system.gd`（uid `uid://cxavd0ykhd2ox`）。选点依据是消费者计数：`rg -c 'DamageFormula\.|ElementalSystem\.'` 在迁移前只命中 `DamageReceiverComponent.cs`，因此这四件事构成一个封闭边界。
+- 对外协议面：信号 `DamageResolved(result)`（载荷仍是保留的 C# `DamageResolutionResult`，经 `load(...).new(payload, preGuard, actual, evaded, critical, lethal)` 构造）；方法 `ReceiveDamage(payload)`；导出属性 `RandomVarianceMin = 0.95` / `RandomVarianceMax = 1.05`。诊断文本（`DamageReceiverComponent received null damage payload.` / `has no parent defender.`）与旧 C# 逐字一致。
+- 数据读取边界（本批的核心设计）：三类外部数据都走“节点名 + 字段/方法协议”，不使用任何 C# 类型——① 属性值 `component.get("PhysAtk")` / `PhysDef` / `PhysPenetrationRate` / `FixedPhysPenetration` / `MagPower` / `MagResist` / `MagicPenetrationRate` / `FixedMagicPenetration` / `CritRate`（缺省 1.0 的 `CritDamage`）/ `EvasionRate` / `LifestealRate`，属性名与旧 C# `[Export]` 属性逐字同名，因此 C# 与未来 GDScript 属性组件都能被同一份代码读取；② 生命 `health.call("TakeDamage", finalDamage, element)` 与 `health.get("CurrentValue")`；③ 状态修正 4 个非 ref 包装 `ApplyModifyOutgoingDamage` / `ApplyModifyIncomingDamageBeforeMitigation` / `ApplyModifyIncomingDamageAfterMitigation` / `ApplyBeforeHealthDamage`（沿用上一批建立的包装边界）。怪物五行属性读 `defender.get("BaseData").get("ElementalProperty")`，与 `action_timeline.gd` 的既有跨语言读法一致。
+- 公式脚本：`damage_formula.gd` 与 `elemental_system.gd` 均 `extends RefCounted`、只提供与旧 C# 同名的静态函数（`CalculatePhysicalBaseDamage` / `CalculateMagicBaseDamage` / `CalculateEffectiveResistance` / `ShouldEvade` / `ShouldCrit` / `CalculateCriticalModifier` / `CalculateRandomVariance` / `CalculateActualDamage` / `CalculateLifestealAmount`、`CalculateMultiplier`），调用方 `preload` 后按脚本常量访问。伤害公式常数取自旧 `CombatConstants.DamageFormulaConstant = 100f`；五行矩阵为绕开“元组键不能做常量”改用 `攻击 * 10 + 防御` 整数键，五个相克 1.5、五个被克制 0.5 与旧 C# 元组字典逐项对应；天气修正通过 `Engine.get_main_loop()` → `root.get_node_or_null("WeatherManager")` → `CurrentWeather.ElementModifiers[元素整数]` 读取，兼容 GDScript 与 C# 天气管理器。
+- 日志文本保真：旧 C# 用枚举插值打印 `Element: None` / `Type: Physical` / `Critical: False`，GDScript 只能读到整数，因此新增 `ELEMENT_NAMES`（`None/Wood/Metal/Water/Earth/Fire`）与 `DAMAGE_TYPE_NAMES`（`Physical/Magic/Real`）名称表与 `_bool_text()`；契约套件从 `ElementType.cs` / `DamagePayload.cs` 反向读取枚举成员名与顺序逐项比对，运行时实测日志为 `[Damage] Target: Monster | Source: Player | Damage: 100 | Critical: False | Element: None | Type: Physical`，与旧 C# 完全一致。
+- C# 消费者改写 2 处：`core/combat/effects/DamageEffect.cs` 的 `GetNodeOrNull<DamageReceiverComponent>` → `GetNodeOrNull<Node>(...)` 并把 `receiver.ReceiveDamage(payload)` → `receiver.Call("ReceiveDamage", payload)`；`core/combat/buffs/BurnStatusInstance.cs` 同样降级为 `Node` 并改走 `Call("ReceiveDamage", payload)`。`scripts/battle_scripts/combat_feedback_director.gd` 早已是 `has_signal("DamageResolved")` + `GetFeedbackInt/GetFeedbackBool/GetFeedbackNode` 的动态读法，无需改动。
+- 资产/场景切换 2 处：`scenes/player_scenes/player.tscn`、`scenes/monster_scenes/monster.tscn` 的组件 ext_resource 由 `DamageReceiverComponent.cs`（uid `uid://delpo10ufxcco`）切到 `damage_receiver_component.gd`（uid `uid://dwdggwaghdncs`），`metadata/_custom_type_script` 同步。
+- 验证：聚焦套件 `damage_receiver_contract` 9/9（137 断言：脚本基类型与文档顺序、方法/导出属性面、公式逐项等价、五行十个属性对与旧 C# 元组字符串互证、枚举名称与修饰位同步、场景切换、C# 消费者协议化、垫片未被掏空、结算顺序 12 个标记位序）；全量 23 套件 191/191；`dotnet build --no-restore --no-incremental` 0 警告 0 错误；运行时三条链路（物理伤害 100/100 → 100、强度状态后 atk 110 → 105、灼烧经 C# `BurnStatusInstance` 打到 GDScript 组件 10 点真实伤害）全部符合预期，游戏日志无脚本/解析/加载/信号/类型错误，编辑器日志零新增。
+- 回滚点：把两个场景的 ext_resource 与 `metadata/_custom_type_script` 切回 `DamageReceiverComponent.cs`（uid `uid://delpo10ufxcco`），并回退 `DamageEffect.cs` / `BurnStatusInstance.cs` 的 `Node` 降级与两个 `.Call("ReceiveDamage", ...)`；三个新 `.gd` 与 uid 旁车可整体删除。旧 `DamageReceiverComponent.cs` / `DamageFormula.cs` / `ElementalSystem.cs` 全部保留为兼容垫片与对照实现，未删除任何 `.csproj`、`.sln` 或 C# Autoload。
+- 已知重复成本：`DamageFormula.cs` / `ElementalSystem.cs` 与新 GDScript 实现并存（迁移期刻意如此，C# 侧仅剩垫片使用），数值等价性由契约套件的公式与矩阵断言锁定；全量迁移收尾时可删 C# 侧。本批不迁移：`AttributeComponent`（需先决定 `Attribute` / `RecalculateRequest` / `AttributeChangeReason` 的跨语言承载）、`entities/Monster.cs` / `entities/Player.cs` / `core/board/BoardController.cs` / `core/gameflow/WorldInteractionCoordinator.cs` / `core/map/RoomBoardPresenter.cs`（场景根脚本批次）、`core/combat/status` + `buffs` 剩余 5 组状态数据/实例、StartingStats、物品链、Crafting、Autoload 收尾。
+
+## Player 生产切换边界（2026-09-20 20:32）
+
+### 范围
+
+- 新增 `entities/player.gd`（uid `uid://chi5xxdxm0amm`）作为玩家根节点的生产实现；`entities/Player.cs` 保留为兼容垫片，一行未删。
+- `scenes/player_scenes/player.tscn` 根节点脚本由 `entities/Player.cs`（uid `uid://dke2t2x325k63`）切到 `entities/player.gd`，复用原 `ext_resource id="1_d8qmr"`，节点结构与 `unique_name_in_owner` 标记完全不变。
+
+### C# / GDScript 兼容边界
+
+- 玩家根节点只是“组件定位 + 信号转发 + 稳定方法协议”的壳：`Energy` / `Attributes` / `BattleDeck` / `Equipment` / `Status` / `TagComponent` 六个公开属性与 `_health` / `_satiety` / `_inventory` 三个私有引用全部降级为 `Node`，组件本身可以来自任一语言。
+- 行为入口全部按方法协议调用：饥饿归零 `_health.call("TakeDamage", 5, 0)`、死亡 `_global_event_bus.emit_signal("player_died")`、天赋 `Apply` 走 `has_method("Apply")` 过滤、库存写入走 `_inventory.call("AddItem", item, amount)` 并沿用“返回未放入数量 == 0 才算成功”的旧语义。
+- 跨语言物品堆叠读取等价旧 C# `ItemStackProtocol.TryRead`：只依赖 `SetItem` / `Clear` / `Item` / `Amount` / `IsEmpty` 五个稳定成员，空堆叠、非 Resource 物品与 `amount <= 0` 一律拒绝。
+- 路径常量必须是 `NodePath`（`^"..."`），信号名才用 `StringName`（`&"..."`）。运行时会因 `get_node(StringName)` 抛 `Parser Error: Cannot pass a value of type "StringName" as "NodePath"`，本批已踩并被契约套件反向锁定。
+- 回滚点：把 `player.tscn` 的 ext_resource 切回 `uid://dke2t2x325k63` / `res://entities/Player.cs`，再回退 11 个 C# 消费者的 `Node` 降级与调用的稳定协议；`entities/player.gd` 与 uid 旁车可整体删除。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+### C# 消费者改写（11 处）
+
+- `core/application/GameplayPort.cs`：`private Player _player` → `private Node _player`，`GetNode<Player>` → `GetNode<Node>`，`public Player Player` → `public Node Player`，`TryAddItemToInventory` 改走 `_player.Call("TryAddItemToInventory", stack).AsBool()`。
+- `core/gameflow/TerrainInteractionExecutor.cs`：新增 `GetPlayerEquipment` 助手（显式空值判断，避免 `?.` 作用在返回 `Variant` 的 `Get()` 上），`GetPlayer` 返回类型改 `Node`。
+- `core/gameflow/WorldInteractionCoordinator.cs`：同构改写，新增 `GetGameplayEquipment`，长按耗时入口改读动态装备节点。
+- `resources/interaction/GatheringInteraction.cs` / `ReusableGatheringInteraction.cs`：`context.Player.Equipment` → `context.Player.Get("Equipment").AsGodotObject() as Node`，保留 `GetGatheringYieldBonus` / `GetGatheringTimeReduction` 方法协议。
+- `core/ui/InventoryUI.cs`：属性节点改按 `Get("Attributes")` 取，装备节点按 `Get("Equipment")` 取后再降级为旧 `EquipmentComponent`。
+- `core/debug/DebugLoadoutSeeder.cs`：`GetNodeOrNull<Player>` → `GetNodeOrNull<Node>`。
+- `resources/interaction/TerrainInteractionBuildContext.cs`：`required Player Player` → `required Node Player`。
+- `resources/talents/TalentEffect.cs` / `AttributeTalentEffect.cs` / `TagTalentEffect.cs`：`Apply(Player)` → `Apply(Node)`；`AttributeTalentEffect` 继续使用旧代码的相对路径 `"AttributeComponent"`（刻意不修正以免行为漂移）；`TagTalentEffect` 改从 `Get("TagComponent")` 取节点后 `Call("AddTag", ...)`。
+
+### 验证
+
+- 聚焦套件 `player_contract` 9/9（146 断言：脚本基类型与文档顺序、公开字段/方法/节点路径与旧 C# 互证、信号名与伤害数值与三条日志文本、堆叠协议、场景切换与节点结构、11 个 C# 边界片段、全项目生产 C# 无 `Player` 强类型残留、垫片未被掏空、天赋签名与旧路径）。
+- 全量回归 24 套件 200/200；`dotnet build CUSGA.csproj --no-restore --no-incremental` 0 警告 0 错误。
+- 运行时：实例化 `player.tscn` → 根脚本为 `res://entities/player.gd`、`Status` 为 `status_component.gd`、`Attributes` 为 C# `AttributeComponent` 且 `PhysAtk=100`、`Equipment` / `TagComponent` / `BattleDeck` / `Energy` 全部解析成功；调用 `OnSatietyDepleted()` 后 HP `1000 → 995`；空物品堆叠经 `TryAddItemToInventory` 正确返回 `false`。再实例化 `Main.tscn`：GDScript `gameplay_port.gd` 的 `Player` 属性拿到正是场景里那个 GDScript 玩家节点，`PlayerBattleDeck` / `PlayerHealth` / `PlayerInventory` / `PlayerCraftingNode` 全部非空，地图生成链路完整跑通。游戏与编辑器日志无 `SCRIPT ERROR`、Parse Error、Failed to load script、资源加载失败、信号或类型错误。
+
+### 本批不迁移
+
+- `entities/components/AttributeComponent.cs`（玩家场景与怪物场景仍引用，需先决定 `Attribute` / `IReadOnlyAttribute` / `AttributeRecalculateRequest` / `AttributeChangeReason` 的跨语言承载）。
+- `entities/Monster.cs`、`core/board/BoardController.cs`、`core/gameflow/WorldInteractionCoordinator.cs`、`core/map/RoomBoardPresenter.cs` 四个场景根脚本。
+- `core/combat/status` + `buffs` 剩余 5 组状态数据/实例、StartingStats、物品链、Crafting、Autoload 收尾。
+
+## AttributeComponent 生产切换边界（2026-09-20 20:45）
+
+### 属性域承载：三个纯数据 RefCounted
+
+`AttributeComponent.cs` 的依赖里既有枚举（`AttributeType`/`AttributeChangeReason`/`AttributeRecalculateScope`）又有值类型（`Attribute`/`AttributeChangeContext`/`AttributeChangedEvent`），都属于“数据而非行为”，因此不引入新协议层，直接按同名同字段的 GDScript 纯数据脚本承载：
+
+- `core/attributes/attribute_value.gd`：等价 `Attributes.cs` 的 `Attribute`，`Type`/`DisplayName`/`BaseValue`/`BonusValue`/`AllocatedPoints`/`GrowthPerPoint` + 计算属性 `RawValue`，方法 `Initialize/AddPoint/AddBonus/RemoveBonus/SetBaseValue`。
+- `core/attributes/attribute_change_context.gd`：等价 `AttributeChangeContext.cs`，字段面（`Owner`/`Source`/`Type`/`Reason`/`TypeId`/`ReasonId`/`OldValue`/`OriginalNewValue`/`NewValue`/`IsCancelled`/`Delta`/`IsIncrease`/`IsDecrease`）与方法 `Initialize/Cancel/MatchesDirection`，常量 `DIRECTION_ANY/INCREASE/DECREASE = 0/1/2`。
+- `core/attributes/attribute_changed_event.gd`：等价 `AttributeChangedEvent.cs`，`Initialize(context)` 用 `context.get(...)` 读字段，因此 C# 与 GDScript 两种上下文都能转成同一事件载荷。
+- 三个脚本一律 `extends RefCounted`、不声明 `class_name`：同名 C# 全局类仍在类型表里，声明 `class_name` 会直接冲突。
+
+### 生产实现与 C# 边界
+
+- `entities/components/attribute_component.gd`（uid `uid://ba4f811xp0el`，`extends Node`、无 `class_name`）逐行等价迁移旧 C#：三段状态组件回退查找（`"StatusComponent"` → `"Components/StatusComponent"` → `"%StatusComponent"`）、15 条默认值与展示名、`(base + flatAdd) * (1 + percentAdd) * percentMul` 公式、Before/After 拦截链路、`MaxRecalculateRequestsPerFlush = 64`、`HealthComponent`/`EnergyComponent` 相对宿主路径 + `InitializeMax`/`SetMaxValuePreservingCurrent` 方法协议、`_round_to_int` 复刻 `Mathf.RoundToInt` 的银行家舍入。
+- 属性修饰跨语言出口（**API 增补**，与批次 17 给 ref Hook 加非 ref 包装同理）：C# `StatusEffectInstance` 新增 `public virtual Godot.Collections.Array GetAttributeModifiersData()`，由 `AttributeModifierDataProtocol.ToDictionary` 统一写出 `Type/Mode/ValuePerStack/Stacks/SourceId`；`AttributeModifierStatusInstance` 无需覆盖（基类已迭代其 `GetAttributeModifiers()`）。GDScript 侧 `_read_attribute_modifiers` 只认这一个出口，避免语言切换后静默漏算加成。
+- C# 属性变化钩子签名放宽：`StatusEffectInstance.OnBeforeAttributeChange` / `OnAfterAttributeChanged` 由 `AttributeChangeContext` 改为 `Variant`；`AttributeChangeGuardStatusInstance` 与 `AttributeChangeTriggerStatusInstance` 改按 `Get("Type")` / `Call("MatchesDirection", ...)` / `Get("OldValue")`+`Get("Delta")` / `Set("NewValue", ...)` / `Call("Cancel")` 读写。`AttributeChangeTriggerStatusInstance` 是 GDScript 状态数据 `CreateInstance` 指向的运行时实例（`resources/buffs/draw_when_physAtk_decreased.tres`），属真实路径而非死代码。
+- C# 消费者降级：`entities/Monster.cs`、`entities/Player.cs` 的 `Attributes` 由 `AttributeComponent` 改为 `Node`，初始化改走 `Call("InitializeWithData", ...)`。其余仍持有 C# 强类型的调用方（`AttributeSummaryUI.cs`、`EquipmentComponent.cs`、`DamageReceiverComponent.cs`、`ModifyAttributeEffect.cs`、`AttributeTalentEffect.cs`、`DebugLoadoutSeeder.cs`）都是未挂场景的垫片，生产脚本分别为 `attribute_summary_ui.gd` / `equipment_component.gd` / `damage_receiver_component.gd` / `modify_attribute_effect.gd` / `attribute_talent_effect.gd` / `debug_loadout_seeder.gd`。
+- 旧批次遗漏修正：`scenes/Main.tscn` 的 `Player` 节点此前用 `script = ExtResource("14_v0vrg")` 覆盖 player.tscn 的 GDScript 根脚本，导致主场景玩家实际仍跑 `entities/Player.cs`（上一批的“资产侧 C# 引用 11 → 10”因此少算一处）；本批删除该覆盖与对应 `ext_resource`，主场景玩家才真正运行 `player.gd`。
+- 资产切换 2 处：`player.tscn`（id `5_k3sny`）、`monster.tscn`（id `2_twjs6` 且 `metadata/_custom_type_script` 同步）。
+- 回滚点：两个场景 ext_resource 切回 `uid://ckflk2am2hx30` / `res://entities/components/AttributeComponent.cs`，回退 3 个 C# 边界（状态基类钩子、两个状态实例、Monster/Player）与 Main.tscn 的脚本覆盖；四个新 `.gd` 与 uid 旁车可整体删除。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+### 遗留边界
+
+- 本项目把 GDScript 的 `inference_on_variant` 当作错误：`var x := SCRIPT.new()` 会让游戏启动即停在 `Parser Error: The variable type is being inferred from a Variant value`。脚本构造一律写 `SCRIPT.new() as RefCounted` 或用显式类型，已写成回归断言。
+- 状态实例仍是 C#（`AttributeModifierStatusInstance` 等由 GDScript 状态数据 `CreateInstance` 构造）：编辑器侧会报“无参数构造函数”警告，运行时实测构造与读取均正常，属已知噪声。
+
+## Monster 生产切换边界（2026-09-20 20:53）
+
+- 生产根脚本：`entities/monster.gd`（`extends Node2D`，不声明 `class_name`），逐行等价旧 `entities/Monster.cs`；旧 C# 文件完整保留为兼容垫片。
+- 公开面逐字保持：`signal DeathPresentationRequested`、`@export var BaseData: Resource`、`Health` / `Attributes` / `Faction` / `Status` / `SkillComponent` / `Loot`（全部 `Node`）、`Initialize(Resource)`、`TryClaimDeathPresentation()`、`FinalizeCombatDeathPresentation()`、`FinalizeUnclaimedDeath()`、`ApplyTargetSelectionVisual(...)`、`StartTargetSelectionPulse(...)`、`StopTargetSelectionPulse()`、`ResetTargetSelectionVisual(...)`、`TweenVisualScale(...)`、`ResetVisualScale(...)`、`GetCombatSkills()`、`GetRandomCombatSkill()`。调用方 `card_manager.gd` / `battle_manager.gd` / `combat_feedback_director.gd` / `monster_manager.gd` 全部走 `has_method` / `call` / `BaseData` 赋值，无需改动。
+- 组件边界：`Components/AttributeComponent`、`Components/FactionComponent`、`Components/HealthComponent`、`%StatusComponent` 用 `get_node` 硬取（保持旧 `GetNode` 的失败语义）；`Components/LootComponent`、`Components/SkillComponent` 用 `get_node_or_null`（保持旧 `GetNodeOrNull` 的可选语义）。生命 `Depleted` / `ValueChanged` 仍连缓存 Callable，`_exit_tree` 精确断开，鼠标 `mouse_entered` / `mouse_exited` 同样成对断开。
+- 数据协议：怪物数据字段（`MonsterName` / `ElementalProperty` / `Faction` / `InitialAttributes` / `SkillSet`）按字段名读取，兼容旧 C# `MonsterData` 与 `monster_data.gd`；初始属性缺失时回退 `starting_stats.gd` 新实例（等价旧 `new StartingStats()`）。技能过滤按脚本路径同时接受 `combat_skill_data.gd` 与 `CombatSkillData.cs`，对应 C# 侧仍保留的 `CombatSkillDataProtocol`。
+- C# 消费者降级：`entities/components/DamageReceiverComponent.cs` 的属性克制由 `defender is Monster` 改为 `defender.Get("BaseData").AsGodotObject() as Resource` + `MonsterDataProtocol.ReadElementalProperty(...)`。生产侧 `damage_receiver_component.gd` 本来就是同一条字段协议，两侧一致；此前该分支会让 GDScript 怪物静默失去五行克制。
+- 视觉协议：`visualNodePaths = ["Sprite2D","CardName","Element","MonsterAttribute","StatusEffectBar","TargetSelectionOutline"]`（故意不含 `HealthBar`，避免高亮时血条跟着放大）；`Node2D` 取 `scale` / `position`，`Control` 取 `scale` / `position`，`CanvasItem` 存调制基色；`Sprite2D` 用绝对目标缩放、其余内部节点按基准倍率；静态 Tween 与呼吸 Tween 互斥。
+- 已知诊断差异：旧 C# 在缺 `HealthBar` 时抛 `NullReferenceException`，GDScript 侧以 `push_error("HealthBar node is missing on Monster!")` + 提前返回表达同一硬失败语义，文本保持不变。
+- 回滚点：`scenes/monster_scenes/monster.tscn` 的 ext_resource（id `1_1wyrm`）切回 `uid://wl3ajed8xmqo` / `res://entities/Monster.cs`，回退 `DamageReceiverComponent.cs` 一处与 `test_attribute_component_contract.gd` 的状态断言；`entities/monster.gd` 与 uid 旁车可整体删除。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+## BoardController 生产切换边界（2026-09-20 21:04）
+
+这一批与前面“数据 Resource 批量迁移”的区别：`BoardController` 是**场景根脚本 + 跨语言信号源**，它的类型从 C# 消失会连锁影响三个 C# 消费方，所以边界必须一次性设计完整。
+
+### 兼容边界
+
+- 生产脚本：`core/board/board_controller.gd`（uid `uid://b8oardc7t2mqk`，`extends Node2D`、不声明 `class_name`），逐行等价旧 `core/board/BoardController.cs`；旧 C# 文件完整保留为兼容垫片。
+- 公开面逐字保持：7 个信号（`CardSpawned` / `CardRemoved` / `CardClicked` / `CardPressed` / `CardReleased` / `CardHoverStarted` / `CardHoverEnded`，参数均 `Node2D card`）、4 个导出（`CardViewScene: PackedScene`、`CardsRootPath: NodePath`、`ScatterRadiusMin = 40.0`、`ScatterRadiusMax = 90.0`）、9 个公开方法 `SpawnTerrainCard` / `SpawnLootCard` / `SpawnLootCards` / `RemoveCard` / `ClearAllCards` / `TryGetTerrainCardByLocalGrid` / `GetTerrainCardByLocalGridOrNull` / `HasTerrainCardAtLocalGrid` / `GetActiveCardsSnapshot`。
+- 唯一的签名差异（GDScript 无 `out`）：旧 `bool TryGetTerrainCardByLocalGrid(Vector2I gridPos, out Node2D card)` 在 GDScript 侧等价为 `func TryGetTerrainCardByLocalGrid(grid_pos: Vector2i) -> Node2D`，与 `GetTerrainCardByLocalGridOrNull` 同路径；C# 垫片保留原 `out` 签名，两侧公开方法名集合由契约套件归一化后逐名核对（必须完全相等）。
+- 卡状态：`preload("res://core/board/board_card_state.gd")` 后 `.new()`，两侧共用同一份状态脚本；`IsTerrain` / `IsLoot` 判定与 `InitializeTerrain` / `InitializeLoot` 调用顺序不变。
+- 跨语言数据读取：局部网格坐标经字段协议 `terrain.get("LocalGridPos")`（等价旧 `TerrainInstanceProtocol.TryReadLocalGridPos`），物品堆叠按 `Item` + `Amount` + `IsEmpty`（等价旧 `ItemStackProtocol.TryRead`）。
+- 失败语义：旧 C# 抛 `InvalidOperationException` / `ArgumentException` 的三处（`CardViewScene` 未设置、网格重复、状态未知、`TerrainData` 为空、堆叠协议不完整）改为同文本 `push_error` + 返回 `null`；日志文本 `[BoardController] Spawn terrain card at ...` / `Removing card: ...` / `Removed card: ...` / `Card clicked: ...` 逐字一致。
+
+### C# 消费者降级（三处）
+
+- `core/map/RoomBoardPresenter.cs`：`_boardController` 由 `BoardController` 降为 `Node`，`GetNode<BoardController>` → `GetNode<Node>`，调用改为 `Call("ClearAllCards")` / `Call("SpawnTerrainCard", terrain, boardPosition)`。房间进入顺序、`HasRoom` / `CreateInitialRoomLayout` / 地形字典遍历顺序都不变。
+- `core/gameflow/TerrainInteractionExecutor.cs`：主构造函数与 `BoardInteractionPort` 的棋盘参数降为 `Node`，`Call("SpawnLootCards", drops, spawnOrigin)` / `Call("RemoveCard", sourceCard)`。
+- `core/gameflow/WorldInteractionCoordinator.cs`：`_boardController` 降为 `Node`，四个 `+=`/`-=` 事件改按稳定信号名 `Connect` / `Disconnect`（新增 `DisconnectBoardSignal(...)` 助手，`IsConnected` 守卫 + 同一个 `Callable` 实例）；`RemoveCard` 与时间刷新使用的 `GetActiveCardsSnapshot()` 改走 `Call`（快照按 `AsGodotArray()` 遍历并显式 `as Node2D`）。
+- 回滚点：`scenes/Main.tscn` 的 ext_resource（id `2_0bbpv`）切回 `uid://bv1xoc07ydxw7` / `res://core/board/BoardController.cs`，回退上述三个 C# 文件与三个测试文件；`core/board/board_controller.gd` 与 uid 旁车可整体删除。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+### 遗留边界
+
+- 本批新暴露的阻塞类型：Godot 4 的整型向量类型是 `Vector2i`，写成 `Vector2I` 时编辑器扫描与契约套件都不报错，只在**游戏启动**时以 `Parser Error: Could not find type "Vector2I" in the current scope.` 卡在 debugger break。已写入回归断言，规则同前一批的 `NodePath` 常量。
+- 运行时探针里 `SpawnLootCards` / `CardClicked` 这类跨语言调用只覆盖“协议可用”，真实玩法路径（房间进入 → 地形卡 → 点击 → 交互执行）由 `Main.tscn` 冒烟覆盖；`GameplayPort` / `Enemy` 等尚未迁移的 C# 仍可能按类型判断棋盘卡，需在最终清理审计中复查。
+
+## RoomBoardPresenter 生产切换边界（2026-09-20 21:06）
+
+这一批是“无跨语言调用方的场景根脚本”：全项目没有任何 C# 按类型引用 `RoomBoardPresenter`，因此边界只在**资产侧**（Main.tscn 的 ext_resource）与**协议侧**（它调用的仓库/生成器/棋盘）。
+
+### 兼容边界
+
+- 生产脚本：`core/map/room_board_presenter.gd`（uid `uid://b1rmprsnt7kq4`，`extends Node`、不声明 `class_name`），逐行等价旧 `core/map/RoomBoardPresenter.cs`（194 行）；旧 C# 文件完整保留为兼容垫片。
+- 序列化面逐字保持：`@export var MapSystemPath: NodePath`、`BoardControllerPath: NodePath`、`TerrainStorePath: NodePath`、`HideHarvestedTerrain: bool = true`。主场景节点类型仍是 `Node`、三个 `NodePath(...)` 值与节点层级零改动，只替换 ext_resource（id `1_elqb8`）。
+- 失败语义：三处缺路径的 `InvalidOperationException` 与“MapSystem 缺少信号”“缺少地形布局生成器脚本”改为同文本 `push_error` + `return`。顺序必须与旧 C# 的 `throw` 一致（先校验三个路径，再取节点，再建生成器，最后查信号），否则会多出一条 `get_node("")` 报错。
+- 跨语言读取：地形配置 `terrain.get("TerrainData")`、采集状态 `terrain.get("IsHarvested")`、显示位置 `terrain.get("BoardPosition")`，等价旧 `TerrainInstanceProtocol.ReadTerrainData` / `TryReadBool` / `TryReadBoardPosition` 的零值回退。
+- 跨语言调用：地形仓库 `call("HasRoom")` / `call("GetRoomTerrainsOrEmpty")` / `call("CreateRoomLayout")`；棋盘控制器 `call("ClearAllCards")` / `call("SpawnTerrainCard", terrain, boardPosition)`；布局生成器 `load("res://core/map/room_terrain_layout_generator.gd")` + `call("Generate", profile)`；可重复采集刷新按“先旧 C# `RefreshIfReady`、后生产 `refresh_if_ready`”的顺序分支。
+- 时间系统：继续按 Autoload 路径 `/root/TimeSystem` + `get("TotalTimePassed")` 读取，不依赖 C# 静态单例。
+- 回滚点：`scenes/Main.tscn` 的 ext_resource 切回 `uid://dp2kl6obtjoh` / `res://core/map/RoomBoardPresenter.cs`，回退四个测试文件的断言；`core/map/room_board_presenter.gd` 与 uid 旁车可整体删除。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+### 遗留边界
+
+- 房间地形数量由 `room_terrain_layout_generator.gd` 的随机抽样决定（迁移说明已记录与旧 `System.Random` 的序列差异），因此同房间两次运行可能得到不同地形卡数量；这属于既有随机行为，不是本批引入的偏差，验证时应比对“规则一致”而不是“数量相同”。
+- `HideHarvestedTerrain` 过滤发生在刷新之后，与旧 C# 顺序一致（先把已就绪的可重复采集复位，再决定是否隐藏），不能把两步调换。
+
+## WorldInteractionCoordinator 生产切换边界（2026-09-20 21:17）
+
+这一批的性质是「主场景最后一个 C# 场景脚本 + 四个仅本脚本可见的纯 C# 普通类」。盘点结论决定边界形态：`WorldCombatScenePresenter` / `ScreenTransitionAdapter` / `WorldViewVisibilityController` / `TerrainInteractionExecutor` 都不继承 `GodotObject`，GDScript 无法 `load()`、`new()` 或按类型引用它们，因此本批只能「同名协议内联复刻」，而不是「复用 + 降级」。
+
+### 兼容边界
+
+- 生产脚本：`core/gameflow/world_interaction_coordinator.gd`（uid `uid://b1wldintrct9k`，`extends Node`、不声明 `class_name`），逐行等价旧 `core/gameflow/WorldInteractionCoordinator.cs`（551 行）；旧 C# 文件与四个辅助类全部完整保留为兼容垫片。
+- 序列化面逐字保持：9 个 `@export`（`BoardControllerPath` / `GameplayPortPath` / `BackpackFlyTargetPath` / `EncounterManagerPath` / `HoldInteractionControllerPath = "WorldHoldInteractionController"` / `WorldRootPath = "../.."` / `MapSystemPath = "../../MapSystem"` / `MapCanvasLayerPath = "../../MapSystem/CanvasLayer"` / `HudLayerPath = "../../UI/HUDLayer"`）。`ScreenTransitionsPath` 在旧 C# 里本来就不是 `[Export]`，GDScript 侧保持普通 `var`（`^"/root/ScreenTransitions"`），序列化面零变化。
+- 信号面逐字保持：`PassageGuardEncounterFinished(is_victory: bool)`、`WorldHoldCompleted(owner: Node)`；稳定信号名常量保留 `EncounterRequested` / `TimeChanged` / `CardClicked` / `CardPressed` / `CardReleased` / `CardSpawned`，另加战斗侧 `battle_ended`。
+- 公开协议方法名逐字保持（GDScript 侧 PascalCase）：`RequestPassageGuardEncounter(monsters: Array)`、`ScaleEncounterMonsters(terrain: Variant, monsters: Array) -> Array`、`BeginWorldHoldForMap(owner, action_point_cost, progress_target)`、`CancelWorldHoldFor(...)`。参数类型必须放宽为非泛型 `Array`：GDScript 调用方（`passage_guard_controller.gd`）传的就是非泛型数组，声明成 `Array[Resource]` 会直接运行时报错。
+- 内联复刻一：战斗场景过场（等价 `WorldCombatScenePresenter`）。`[WorldCombatScenePresenter] Entering Combat!` → `fade_out` → 实例化 `res://scenes/battle_scenes/battle.tscn` → 按需写入 `starting_deck_data` / `starting_monster_data` → 用 `current_map_background_resolver.gd::DuplicateCurrentBackground` 复制背景 → 连接 `battle_ended` → 挂到 `WorldRootPath` → 隐藏世界视图 → `fade_in`。`_is_transitioning` 语义与旧 `try/finally` 等价（唯一前置守卫放在函数开头，协程内不再中途 return）。
+- 内联复刻二：战斗结果等待。旧 `TaskCompletionSource<bool>` 用 `_battle_result_ready` / `_battle_result` + `await get_tree().process_frame` 轮询表达；进入战斗前必须清空标记，避免上一次 fire-and-forget 战斗的结果被本场消费。过渡中拒绝新战斗时 `RequestPassageGuardEncounter` **同步**发出 `false`，保持旧 C# 的同步语义（`passage_guard_controller.gd` 依赖这一点）。
+- 内联复刻三：过场适配（等价 `ScreenTransitionAdapter`）。`await node.signal` 对静态类型 `Node` 不可用，改为「先 `connect(&"fade_complete", on_completed, CONNECT_ONE_SHOT)`，再 `call("fade_out")`，最后轮询 `process_frame`」；连接必须先于发起，否则同帧完成的动画会永久挂起。
+- 内联复刻四：世界视图显隐（等价 `WorldViewVisibilityController`）。四个路径（棋盘 `CanvasItem`、地图 `CanvasItem`、地图 `CanvasLayer`、HUD `CanvasLayer`）同时切换 `visible`；路径缺失时用 `get_node(path) as T` 的零值跳过，保持「不抛异常但日志可见」的迁移期行为。
+- 内联复刻五：地形交互执行（等价 `TerrainInteractionExecutor` + 9 个 `TerrainOp`）。GDScript 侧只走 `build_ops` 协议（生产地形交互资源全部是 GDScript），把 9 种操作描述映射为运行时端口调用：`pass_time` / `spawn_loot` / `mark_harvested` / `check_gathering_encounter` / `record_reusable_gathering` / `enter_vault` / `open_farming_panel` / `spawn_monster` / `remove_source_card`。日志前缀逐字保持（`[TerrainInteractionExecutor] Click terrain:`、`Build GDScript ops from`、`GDScript ops count =`、`[PassTimeOp] Pass time`、`Checking gathering encounter for tag:`）。
+- 跨语言数据边界：`terrain.get("TerrainData")`、`terrain_data.get("InteractionBehavior")`、`terrain_data.get("CardName")`、`interaction.get("TimeCost")`、`_gameplay_port.get("Player")`、`player.get("Equipment")`、`_time_system.get("TotalTimePassed")`；掉落数组按 `Item` / `Amount` / `IsEmpty` 过滤，等价旧 `ItemStackProtocol.TryRead`。
+- 可重复采集双语言分支：`interaction is ReusableGatheringInteraction` → `call("GetEffectiveTimeCost" | "CanHarvest")`；生产 GDScript → `call("get_effective_time_cost" | "can_harvest")`；判定入口同时接受 `has_method("get_effective_time_cost")`。
+- 回滚点：`scenes/Main.tscn` 的 ext_resource（id `7_nxtc6`）切回 `uid://bvmf7jb6rrxk7` / `res://core/gameflow/WorldInteractionCoordinator.cs`，回退 7 个测试文件的断言；`core/gameflow/world_interaction_coordinator.gd` 与 uid 旁车可整体删除。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+### 遗留边界
+
+- 旧 C# `TerrainInteraction.BuildOps`（C# 强类型操作序列）在 GDScript 侧无法表达：需要 C# 构建上下文与 `TerrainOp` 实例。生产地形交互资源已全部是 GDScript（`res/terrain/*.tres`、`resources/map/terrain/*.tres` 均引用 `gathering_interaction.gd` / `reusable_gathering_interaction.gd`），因此该路径由保留的 C# 执行器独占；GDScript 侧只保留同文本的硬失败提示作为明确边界。
+- 旧 C# `TerrainInstance` 的公开属性不是 Godot 属性，GDScript 只能写「字段存在的地形实例」。生产地形实例是 `terrain_instance.gd`（由 `room_terrain_store.gd` 创建），所以 `mark_harvested` 在生产路径等价；但若将来有 C# 生产者创建地形实例，`IsHarvested` 的写入会退化为跳过，需在最终清理审计中复查。
+- 战斗背景复制依赖 `MapInstantiator.current_scene` 或首个带 `Background` 的子节点；未进入任何房间时返回 null（与旧 C# 一致，本批冒烟即为此情形）。
+- `_fade_out` / `_fade_in` 若过场 Autoload 不发出完成信号会永久挂起（与旧 C# `await ToSignal` 一致），这是既有契约而不是本批引入的风险；`ScreenTransitions.gd` 的 `fade_out` / `fade_in` 均已确认会发出对应信号。
+
+## 状态数据族收口边界（2026-09-20 21:24）
+
+### 兼容边界
+
+- 生产脚本：`core/combat/status/attribute_change_guard_status_data.gd`、`core/combat/buffs/boss_damage_cap_status_data.gd`、`core/combat/buffs/hit_count_modifier_status_data.gd`、`core/combat/buffs/next_attack_damage_bonus_status_data.gd`、`core/combat/buffs/vulnerable_status_data.gd`；均 `extends "res://core/combat/status/status_effect_data.gd"`、不声明 `class_name`，各带 `const INSTANCE_SCRIPT_PATH` 与 `func CreateInstance(source: Node, owner: Node) -> RefCounted`。至此 10 个状态数据子类全部有 GDScript 生产实现。
+- 序列化面逐字保持：`TargetAttribute` / `Direction` / `CancelChange` / `DeltaMultiplier` / `EnableMinValue` / `MinValue` / `EnableMaxValue` / `MaxValue`（拦截）、`MaxHealthDamageRatio`（Boss 上限，默认 0.10）、`FlatHitCountBonusPerStack` / `AttackSkillUses`（段数修正，默认 0 / 0）、`FlatSegmentDamageBonusPerStack` / `AttackSkillUses`（每段伤害修正，默认 0 / 1）、`TargetDamageType` / `DamageMultiplier`（脆弱，默认 0 / 1.5）。枚举一律以旧 C# 的整数取值导出（`AttributeChangeDirection.Any = 0`、`DamageType.Physical = 0`、`AttributeType.PhysAtk = 0`），与既有 `attribute_change_trigger_status_data.gd` 的处理一致。
+- 实例侧仍是 C#：`AttributeChangeGuardStatusInstance` / `BossDamageCapStatusInstance` / `HitCountModifierStatusInstance` / `NextAttackDamageBonusStatusInstance` / `VulnerableStatusInstance` 的构造参数与 `_data` 字段由强类型降级为通用 `Resource`，字段读取统一走 `StatusEffectDataProtocol`。这是「数据在 GDScript、实例在 C#」这一族形态的必然结果——GDScript 无法继承 C# 的 `StatusEffectInstance`，因此实例族要到单独一批才能整体迁移。
+- 协议面：`StatusEffectDataProtocol` 新增 `ReadBool(Resource, string)`（数据为空或字段缺失返回 false），加上既有 `ReadId` / `ReadText` / `ReadInt` / `ReadFloat` / `ReadTexture` / `ReadArray` / `HasFiniteDuration` / `ReadStackPolicy` / `ReadExpirePolicy` / `ReadTickTiming`，已覆盖全部 10 个数据子类的字段类型。
+- 读取时机保持「实时」：`AttackSkillUses` / `FlatHitCountBonusPerStack` / `FlatSegmentDamageBonusPerStack` 在 C# 侧实现为只读属性，每次访问都经由协议读取资源，等价旧 C# 直接访问 `_data.X` 的行为；仅构造时的初始剩余次数在字段初始化器里用主构造参数 `data` 读取一次（C# 字段初始化器不能引用其它实例字段）。
+- 回滚点：删除 5 个新 `.gd`（与 uid 旁车），把 5 个 C# 实例的构造参数与 `_data` 还原为强类型数据类、字段读取还原为直接属性访问，并回退本批测试断言。5 组数据类当前无 `.tres` 引用，因此没有资产回滚项。旧 `.csproj`、`.sln`、C# Autoload 全部保留。
+
+### 遗留边界
+
+- 这 5 组状态数据当前没有任何资产引用（全项目 `.tres`/`.tscn` 扫描为 0），本批只把数据侧生产实现补齐、把实例侧降到字段协议；等对应内容资产出现时可直接引用 `.gd` 数据脚本，无需再改动实例。
+- `VulnerableStatusInstance` 的 `_data` 在旧 C# 中即未被读取（增伤硬编码物理 ×1.5，`TargetDamageType` / `DamageMultiplier` 两个导出字段不参与运行），本批逐字保持该现状，不做行为修正。
+- `tests/godot/multi_hit_damage_tests.gd` 仍 `load()` 旧 C# 数据类作为对照基线，属允许保留的旧语言测试引用。
+- 编辑器在 C# 程序集重载后仍会对只有带参构造的状态实例报 `MissingMemberException: does not define a parameterless constructor`（`AttributeModifierStatusInstance` / `ShieldStatusInstance` / `BurnStatusInstance` / `AttributeChangeTriggerStatusInstance`，共 4 个类）；这是 `_update_exports` 的编辑器侧噪声，游戏运行时与 `test_run` 计数均不受影响。
+
+## 状态实例族生产切换边界（2026-09-20 21:45）
+
+### 兼容边界
+
+- 生产脚本 12 个，全部不声明 `class_name`、无 BOM、LF：基类 `core/combat/status/status_effect_instance.gd`（`extends RefCounted`，60 函数，逐字对照旧 `StatusEffectInstance.cs` 374 行）＋ 9 个实例子类（`attribute_modifier` / `burn` / `shield` / `boss_damage_cap` / `hit_count_modifier` / `next_attack_damage_bonus` / `vulnerable` / `attribute_change_guard` / `attribute_change_trigger`）＋ 2 个跨语言 DTO 载体（`status_change_context.gd` / `status_changed_event.gd`）。
+- Hook 形态必须换手：旧 C# `void OnX(DamagePayload payload, ref float damage)` 的 `ref` 在 GDScript 不存在，本批统一改成 `func OnX(payload, damage) -> float` 的返回值语义，并在基类提供非 ref 包装 `ApplyX(payload, damage)`；状态组件一律调用 `ApplyX`，因此 C# 垫片实例与 GDScript 生产实例在同一套调用协议下行为一致。
+- 数据 → 实例路由切换：9 个数据 `.gd` 的 `INSTANCE_SCRIPT_PATH` 全部指向新 `.gd` 实例；旧 C# 数据垫片的 `CreateInstance` 仍创建 C# 实例，作为回滚路径与 C# 测试工程基线保留。
+- 载荷表现记录协议：`DamagePayload.cs` 新增 `RecordShieldAbsorption(float, bool)` 与 `RecordDamageCap(float)`。原因是 `DamageResolutionTrace` 是纯 CLR 类（非 `GodotObject`），GDScript 既不能读也不能写；把这两条写入收敛到载荷自身的方法协议后，护盾吸收与单次扣血上限的表现数据才能跨语言落到同一追踪对象上。
+- 消费方协议：`attribute_component.gd` 走 `GetAttributeModifiersData()`；C# `AttributeComponent.cs` 保留「C# 强类型快路径 + GDScript 字段协议回退」；C# `StatusComponent.cs` / `StatusChangeContext.cs` 保持强类型不变，因为本工作区没有任何场景挂载这个 C# 组件（`player.tscn` / `monster.tscn` 都指向 `status_component.gd`），它只服务 C# 测试工程与回滚路径；跨语言入口始终是 `status_component.gd` + 字段/方法协议。
+- 序列化面零变化：本批不改任何 `.tres` / `.tscn` 的字段值，只把 9 个数据 `.gd` 的实例脚本路径常量改指向 `.gd`。
+- 回滚点：把 9 个数据 `.gd` 的 `INSTANCE_SCRIPT_PATH` 切回 `.cs`、`status_component.gd` 的 `STATUS_CHANGE_CONTEXT_SCRIPT_PATH` / `STATUS_CHANGED_EVENT_SCRIPT_PATH` 切回 `.cs`、删除 12 个新 `.gd`（含 uid 旁车），再回退本批测试断言与 `DamagePayload` 的 `Record*` 方法。
+
+### 遗留边界
+
+- C# 实例族（基类 + 10 个实例类）全部保留完整实现，仍是 C# 测试工程与回滚路径的实现；未删除任何 `.cs` / `.csproj` / `.sln` / C# Autoload。
+- GDScript 实例不声明 `class_name`，跨语言判定只能靠脚本路径或字段/方法协议，不能按类型引用。
+- 叠加策略整数逐字沿用旧 C#（`ResetDuration=0` / `AddDuration=1` / `AddStackOnly=2`）：`MaxStacks=1` 的状态重复施加仍只刷新持续时间、不涨层。
+- 编辑器在 C# 程序集重载后仍会对带参构造的状态实例报 `MissingMemberException: does not define a parameterless constructor`（`_update_exports` 噪声，本批未新增，运行时与 `test_run` 计数不受影响）。
+
+## 伤害结算结果族生产切换边界（2026-09-20 22:05）
+
+### 兼容边界
+
+- 生产脚本 `core/combat/damage_resolution_result.gd`（`extends RefCounted`、不声明 `class_name`），逐字等价 `DamageResolutionResult.cs`：同样的 6 个构造参数（`payload, preGuardDamage, actualDamage, isEvaded, isCritical, isLethal`）、同样的 16 个字段名、同样的 `GetFeedbackInt` / `GetFeedbackBool` / `GetFeedbackNode` 协议，以及同样的钳制与兜底（`PreGuardDamage` / `ActualDamage` 取 `max(0)`、`HitIndex` 取 `max(0)`、`HitCount` 取 `max(1)`、空载荷时 `DamageType.Physical=0` / `ElementType.None=0`）。
+- 追踪对象不可跨语言：`DamageResolutionTrace` 是纯 CLR 类，`DamagePayload.ResolutionTrace` 是 C# 属性，GDScript 既读不到也写不到。因此在 C# `DamagePayload` 上补 3 个只读转发属性 `ShieldAbsorbedDamage` / `ShieldWasBroken` / `CappedDamage`，GDScript 结算结果按字段协议读取；追踪对象仍是唯一权威来源，写入路径（`RecordShieldAbsorption` / `RecordDamageCap`）不变。
+- 消费方：`entities/components/damage_receiver_component.gd` 的 `RESULT_SCRIPT_PATH` 切到 `.gd`，构造参数顺序保持；表现层 `combat_feedback_director.gd` 本就优先走 `GetFeedback*` 方法协议，因此零改动即可同时读两种实现。
+- 旧 `DamageResolutionResult.cs` 完整保留：C# 测试工程（`tests/CUSGA.Tests/Program.cs`）与 C# 垫片继续按旧类型消费；本批不改任何 `.tres` / `.tscn`。
+- 回滚点：`damage_receiver_component.gd` 的 `RESULT_SCRIPT_PATH` 切回 `.cs`，删除新 `.gd` 与 uid 旁车，回退 `DamagePayload` 的 3 个转发属性与 `test_damage_receiver_contract.gd` 的断言。
+
+### 遗留边界
+
+- `DamagePayload` 仍在 C#：它的消费方（`StatusEffectInstance` 家族钩子、`DamageEffect.cs`）签名是强类型 `DamagePayload`，因此载荷本体要与技能执行上下文一起作为后续批次处理，不能单独切。
+- 改完 C# 必须 `dotnet build` 再跑 GodotAI：本批第一次聚焦测试 `ShieldAbsorbedDamage` 读回 0，就是编辑器仍用旧程序集；`dotnet build` 之后同一用例通过。程序集刷新是 GodotAI 侧验证的前置条件。
+
+## 技能执行上下文族生产切换边界（2026-09-20 21:55）
+
+## 伤害载荷本体生产切换边界（2026-09-20 22:20）
+
+## 技能目标选择族生产切换边界（2026-09-20 22:35）
+
+### 兼容边界
+
+- 生产脚本：`core/combat/effects/skill_effect_target_selection.gd`（`Unit` / `Role` / `IsSource` + getter 形式 `IsPrimary` / `IsSecondary` + 静态 `FromSource` / `FromTarget`）、`core/combat/effects/skill_effect_target_scope_utility.gd`（静态 `SelectTargets` / `SelectNodes` + `SCOPE_*` + `_scope_matches`）、三个枚举载体（`skill_effect_target_scope.gd` / `damage_hit_target_mode.gd` / `core/combat/skills/skill_target_role.gd`）。
+- 枚举载体遵循既有约定：`extends RefCounted` + `enum`、不声明 `class_name`、取值顺序与 C# 枚举逐字一致（顺序即序列化契约）。
+- 惰性枚举 → 数组：旧 C# 工具类返回 `IEnumerable`，GDScript 返回一次性数组；本项目调用方都是立即遍历，语义等价。若将来出现「只取前 N 个」的 C# 调用方，必须重新核对。
+- 单一规则源：`card_effect.gd` 的 `_select_scope_targets` 委托 GDScript 工具类，私有 `_scope_matches` 已删除；对外仍是 `Array[Dictionary]`（`Unit` / `Role` / `IsSource` / `IsPrimary` / `IsSecondary`），`damage_effect.gd` 等消费方零改动。
+- 旧 C# 五个类型（工具类、选择结构体、三个枚举）完整保留：C# 效果实现（`ApplyShieldCardEffect.cs` / `ApplyStatusCardEffect.cs` / `ModifyAttributeEffect.cs` / `DamageEffect.cs`）与 C# 测试工程继续按旧类型消费。
+- 回滚点：删除 5 个新 `.gd` 与 uid 旁车、恢复 `card_effect.gd` 自带的 `_scope_matches`、回退 `test_combat_skill_contract.gd` 的新增用例。
+
+### 遗留边界
+
+- 跨语言的目标条目有两个形态：C# `SkillTarget`（`Unit` / `Role` / `IsPrimary` / `IsSecondary`）与 GDScript `skill_target.gd`；工具类与效果脚本都只用字段协议判定，因此两种条目可以混用，但任何新判定都必须写进工具类，不得在效果脚本里复制。
+- 枚举整数值散落在 `.tres` 的反序列化路径上：最终审计需要逐项核对资源里的枚举整数与两个语言的枚举定义一致。
+
+### 兼容边界
+
+- 生产脚本 `core/combat/damage_payload.gd`（`extends RefCounted`、不声明 `class_name`）：字段 `Source` / `Target` / `Type` / `Damage` / `Element` / `DamageModifiers` / `IsExtraDamage` / `HitIndex` / `HitCount` / `TargetRoleId` 与旧 C# 逐字一致，默认值同样为 `DEFAULT_COMBAT=15` / `1` / `0`；位标记与枚举常量（`MODIFIER_*` / `DAMAGE_TYPE_*` / `ELEMENT_*`）同名同值。
+- 纯 CLR 内部对象降级为载荷字段：旧 C# 把护盾吸收与扣血上限记在 `DamageResolutionTrace`（非 Godot 类型，GDScript 读写不到），GDScript 版直接存在载荷自身字段上，对外仍只暴露方法协议 `RecordShieldAbsorption` / `RecordDamageCap` 与只读属性 `ShieldAbsorbedDamage` / `ShieldWasBroken` / `CappedDamage`。
+- 记录语义逐字等价：四舍五入 + 非负钳制；吸收量规整后 ≤ 0 时整条记录被忽略（不累加、也不更新击破标记）；击破标记只做或运算；上限削减量无条件累加。
+- 消费方切换（3 个 GDScript 构造点）：`core/combat/effects/damage_effect.gd`、`core/combat/buffs/burn_status_instance.gd` 的 `PAYLOAD_SCRIPT_PATH`，`scripts/battle_scripts/battle_manager.gd` 的 `DAMAGE_PAYLOAD_SCRIPT_PATH`。
+- 旧 `DamagePayload.cs`（含 `DamageResolutionTrace` / `DamageModifierFlags` / `DamageType`）完整保留：C# 测试工程（`tests/CUSGA.Tests/Program.cs`）与 C# 状态 Hook（`StatusComponent.cs` 的 `ApplyModify*`、`ShieldStatusInstance.cs`、`BossDamageCapStatusInstance.cs`）继续按强类型消费。
+- 回滚点：三个路径常量切回 `.cs`，删除 `core/combat/damage_payload.gd` 与 uid 旁车，回退 `tests/godot/test_damage_receiver_contract.gd` 的新增用例。
+
+### 遗留边界
+
+- `GetFeedbackInt` / `GetFeedbackBool` 的支持名单是硬契约（与旧 C# 逐字一致，不含 `CappedDamage`）：新消费方不得顺手扩展名单，否则表现层会读到旧实现永远不会给出的字段。
+- 运行时 C#：本批后伤害管线不再创建 C# 对象，`project.godot` 的 autoload 全为 `.gd` / `.tscn`；资产侧只剩 Crafting 的 2 个 recipe `.tres` 挂 C# 资源脚本，属下一批对象。
+
+### 兼容边界
+
+- 生产脚本 5 个：`core/combat/skills/skill_target.gd`、`skill_execution_context.gd`、`skill_execution_modifier_context.gd`、`core/combat/effects/damage_effect_hit_count_context.gd`、`damage_effect_segment_context.gd`。全部 `extends RefCounted`、**不声明 `class_name`**，字段名 / 工厂名 / 方法名与旧 C# 逐字一致。
+- **C# 静态方法不在 Godot 反射方法集合里**：旧 `load("...SkillExecutionContext.cs").FromSingleTarget(...)` 在 GDScript 侧报 `Nonexistent function`（`Self` / `FromPrimaryTargets` / `FromSpread` 同理）。这是本次必须迁移的直接原因——凡是「C# 侧需要被 GDScript 通过 `load(path).Method(...)` 调用」的静态入口，都必须迁到 GDScript。工厂现在挂在 GDScript 脚本资源上，调用点写法不变。
+- 无 `class_name` 时的自举构造：静态函数内部不能对自身类型 `new()`，统一用 `load(SELF_PATH).new(source, targets, candidates)`；`SELF_PATH` / `TARGET_SCRIPT_PATH` 作为脚本内常量维护。
+- 语义等价与唯一差异：`SkillExecutionContext.PrimaryTarget` 在旧 C# 里当 `Targets[0]` 为 null 时抛空引用，GDScript 版返回 `null`（更安全，正常路径行为不变，已在注释标注）。
+- `SkillExecutionModifierContext` 的内部集合：旧 C# `HashSet<StringName>` → GDScript「去重数组 + 首次插入顺序」；`MarkStatusForConsumption("")` 忽略、同 Id 重复标记只保留一次；`GetStatusIdsMarkedForConsumptionSnapshot()` 返回 `.duplicate()` 副本，供跨语言读取且不可反向修改内部集合。
+- 消费方切换（5 处脚本路径常量）：`scripts/battle_scripts/battle_manager.gd`、`scripts/card_scripts/skill_card.gd`、`core/combat/status/attribute_change_trigger_status_instance.gd` 用 `CONTEXT_SCRIPT_PATH`；`core/combat/skills/combat_skill_data.gd` 用 `MODIFIER_CONTEXT_SCRIPT_PATH`；`core/combat/effects/damage_effect.gd` 用 `HIT_COUNT_CONTEXT_SCRIPT_PATH` / `SEGMENT_CONTEXT_SCRIPT_PATH`。
+- 旧 5 个 C# 上下文 / DTO 垫片完整保留：C# 状态实例（`HitCountModifierStatusInstance.cs`、`NextAttackDamageBonusStatusInstance.cs` 等）与 C# 测试工程继续按同一套字段 / 方法协议消费；GDScript 状态实例与 C# 状态实例都能读 GDScript 上下文，反之亦然。
+- 回滚点：5 个路径常量切回 `.cs`，删除 5 个新 `.gd` 与 uid 旁车，回退 `tests/godot/test_combat_skill_contract.gd` 的新增用例。
+
+### 遗留边界
+
+- `DamagePayload` 仍在 C#，载荷本体与 `DamageResolutionTrace` 的归宿待下一批；本族与载荷共同构成伤害管线的跨语言边界，先切上下文后切载荷，避免一次改动同时改变两侧签名。
+- 不带 `class_name` 的脚本不能被 `is` 类型判定：任何新消费方必须走脚本路径或字段 / 方法协议——这条对状态实例族与本族同时成立。
+
+## 属性域类型族生产边界（2026-09-20 22:07）
+
+### 兼容边界
+
+- 生产脚本 7 个：`core/attributes/attributes.gd`（`AttributeType` 0..14）、`attribute_modifier.gd`（条目本体 + `AttributeModifierMode` 0..2）、`attribute_recalculate_scope.gd`、`attribute_change_direction.gd`、`attribute_change_reason.gd`、`attribute_recalculate_request.gd`、`i_read_only_attribute.gd`。全部 `extends RefCounted`、**不声明 `class_name`**，避免与仍在使用的 C# 全局类型重名。
+- 旧 C# `AttributeModifier` 是 `readonly record struct`：GDScript 用 `RefCounted` + `_init(type, mode, value_per_stack, stacks, source_id)` 表达同一字段面，字段名必须与跨语言字典出口一致；`TotalValue()` 复用旧调用点 `ValuePerStack * Stacks` 的口径，`ToDictionary()` 字段与 `AttributeModifierDataProtocol.ToDictionary` 逐字一致。
+- 旧 C# `RecalculateRequest` 的私有 `Action _mutation` 在 GDScript 侧用 `Callable`（默认 `null`）等价，`ApplyMutation()` 无 Callable 时是空操作；`Single` / `All` 的默认参数（`allowInterception=true` / `emitEvents=true`）与 `All` 的 `type=default(AttributeType)=0` 逐字保留。
+- `IReadOnlyAttribute` 是 C# 接口，GDScript 没有接口语义：不造空实现，用 `REQUIRED_MEMBERS`（`Type` / `DisplayName` / `BaseValue` / `BonusValue` / `AllocatedPoints` / `GrowthPerPoint` / `RawValue`）描述协议面，契约测试同时核对旧 C# 接口与实际生产实现 `attribute_value.gd`。
+- 消费方保持整数常量（`attribute_component.gd` 的 `ATTRIBUTE_*` / `MODIFIER_MODE_*` / `REASON_*` / `SCOPE_*`，`attribute_change_context.gd` 的 `DIRECTION_*`）：本批用契约测试逐值锁定「枚举 ↔ 常量」一致，不为纯类型载体改动大脚本。
+- 旧 7 个 C# 类型完整保留：`AttributeComponent.cs`、`StatusEffectInstance.cs`、`AttributeModifierStatusInstance.cs` 与 C# 测试工程继续按强类型消费。
+- 回滚点：删除 7 个新 `.gd` 与 uid 旁车，回退 `tests/godot/test_attribute_component_contract.gd` 新增的 5 个用例。
+
+### 遗留边界
+
+- 本族跨语言表面只有两条：字段字典（`Type` / `Mode` / `ValuePerStack` / `Stacks` / `SourceId`）与整数枚举；两侧不互相传递类型实例本身。
+- `readonly record struct` 的值拷贝语义在 GDScript 侧变成引用语义：任何依赖「副本」的新调用方必须显式 `.duplicate()`。这是本族唯一允许存在的语义差异，已在脚本注释标注。
+- 枚举整数值散落在 `.tres` 反序列化路径与存档里：最终审计需逐项核对资源 / 存档里的整数与两侧枚举定义一致。
+
+## 地形操作族兼容边界（2026-09-20 22:10）
+
+### 兼容边界
+
+- 归类：`resources/interaction/operations/` 的 10 个 C# 类型（`TerrainOp` + 9 个操作类）是 **C#-only 兼容层**，运行期不可达。调用方只有 C# 地形交互链（`BossInteraction.cs` / `FarmingInteraction.cs` / `GatheringInteraction.cs` / `ReusableGatheringInteraction.cs` / `VaultInteraction.cs` 的 `BuildOps`）、`core/gameflow/TerrainInteractionExecutor.cs` 与 `tests/CUSGA.Tests/Program.cs`。
+- GDScript 等价不是新的类族，而是内联执行：生产交互资源（`resources/interaction/*_interaction.gd`，由 `res/terrain/*.tres` 与 `scenes/map_scenes/**` 挂载）返回「操作描述 Dictionary」，`core/gameflow/world_interaction_coordinator.gd` 的 `_apply_gdscript_ops` 按 `type` 执行。
+- 两侧唯一共享面是操作词汇：`pass_time` / `spawn_loot` / `mark_harvested` / `check_gathering_encounter` / `record_reusable_gathering` / `enter_vault` / `open_farming_panel` / `spawn_monster` / `remove_source_card`；未知类型两侧同文本硬失败。
+- 桥接语义落在端口实现上：`RemoveSourceCardOp` → `context.Board.RemoveSourceCard()`，C# 端口实现为 `boardController.Call("RemoveCard", sourceCard)`，与 GDScript 的 `_board_controller.call("RemoveCard", card)` 同义。
+- 契约测试：`tests/godot/test_world_interaction_coordinator_contract.gd::test_terrain_op_family_boundary`（词汇 ↔ 副作用逐条对照 + 资产零引用扫描）。
+
+### 遗留边界
+
+- 删除条件：该族必须与 C# 交互链（5 个交互资源 + `TerrainInteractionExecutor.cs` + C# 测试工程）**整链退役**，审计时不得只删操作类。
+- 词汇表有第二份真实现（`world_interaction_coordinator.gd` 内联 match）：新增操作类型时，词汇表与契约测试必须同步更新，否则新操作会在运行期落到「未知类型」硬失败。
+
+## 核心常量族生产边界（2026-09-20 22:15）
+
+### 载体与真源
+
+- 新增 GDScript 生产载体：`core/constants/combat_constants.gd`（`DAMAGE_FORMULA_CONSTANT = 100.0`）、`core/constants/element_type.gd`（`enum ElementType { None=0, Wood=1, Metal=2, Water=3, Earth=4, Fire=5 }`）、`core/constants/gd_signals.gd`（`OnPlayerAcquiredTalent` / `OnStatusChanged` / `OnEntityDropped` / `OnEnteredVault` / `OnEnteredRoom`，StringName）、`core/constants/tag_consts.gd`（7 个 StringName）、`core/constants/time_costs.gd`（`MapMove 10` / `EnterScene 5` / `ChopTree 20` / `PlantSeed 10`）。
+- 全部 `extends RefCounted`、无 `class_name`，与 `core/constants/{equipment_types,weather_type,world_interaction_timing}.gd` 的既有约定一致；均带 uid 旁车。
+- 载体是契约锚点，不替换既有消费方：`core/combat/damage_formula.gd`、`core/combat/damage_payload.gd`、`core/combat/elemental_system.gd`、`core/autoloads/GlobalEventBus.gd`、`core/autoloads/time_system.gd`、`scripts/map_scripts/map_instantiator.gd`、`core/ui/draggable/draggable_data.gd`、`entities/components/equipment_component.gd` 里的字面量本批一律不动。
+
+### 兼容边界
+
+- 旧 C#：`core/constants/{CombatConstants,ElementType,GDSignals,TagConsts,TimeCosts}.cs` 全部保留（兼容垫片 + C# 侧消费者仍在）。
+- 跨语言唯一共享面是「值」本身：常数 100、枚举 0..5、5 个信号名字符串、7 个标签字符串、4 个时间成本整数；GDScript 信号名与 `GlobalEventBus.gd` 的 `signal` 声明逐字一致（`on_entered_room` 例外，声明在 `map_instantiator.gd`）。
+- 有意不迁移：旧 C# `GDSignals.OnInventoryToggled`（源码中被注释掉）不在 GDScript 侧建立载体。
+- 「暂无 GDScript 消费方」的常量：`WoodDamageUp` / `HealAfterAction` / `EnterScene` / `ChopTree` / `PlantSeed`；契约测试以负向断言锁定其只命中载体自身。
+- 删除条件：C# 侧 5 个常量类与全部 C# 消费者（`ElementalSystem.cs` / `DamageFormula.cs` / `TimeSystem.cs` / `Player.cs` / `Monster.cs` / 各 `Component.cs` / `TalentManager.cs` / `tests/CUSGA.Tests/Program.cs`）整链退役后，方可清理。
+
+### 契约测试
+
+- `tests/godot/test_core_constants_contract.gd`（suite `core_constants_contract`，7 个用例）+ 根级 shim `tests/test_core_constants_contract.gd`（测试发现只扫 `res://tests/` 根目录）。
+- 断言面：载体形状 → 消费方同值 → 无消费方负向断言 → 枚举文本形（注意最后一项无尾逗号，用 `"%s = %d"` 拼接而非 `"Fire = 5,"`）。
+
+## 枚举族生产边界（2026-09-20 22:19）
+
+### 载体与真源
+
+- 新增 GDScript 载体 8 个（`extends RefCounted`、无 `class_name`）：`core/combat/status/status_change_reason.gd`、`stack_policy.gd`、`duration_tick_timing.gd`、`duration_expire_policy.gd`、`status_hook_phase.gd`、`core/crafting/crafting_failure_reason.gd`、`core/shop/shop_failure_reason.gd`、`core/progression/upgrade_kind.gd`。
+- `SkillTargetingType` 的 GDScript 等价物是**代码生成产物**：`addons/skill_targeting_type_codegen`（5 秒轮询）从 `core/combat/skills/SkillTargetingType.cs` 生成 `scripts/generated/SkillTargetingType.gd`（`class_name SkillTargetingType`，`enum Value`）。手改生成物会被覆盖，改动必须落到 C# 枚举；消费者为 `scripts/card_scripts/card_manager.gd` 与 `scripts/battle_scripts/battle_manager.gd`（`SKILL_TARGETING_TYPE.Value.<成员>`）。
+- 既有 GDScript 真源（本批不改）：`entities/components/status_component.gd`（`REASON_*` / `POLICY_*` / `TIMING_*` / `PHASE_*`）、`core/combat/status/status_effect_instance.gd`（`EXPIRE_POLICY_*`）、`core/crafting/crafting_service.gd` 与 `entities/components/crafting_component.gd`（内联 `enum CraftingFailureReason`）、`core/shop/shop_service.gd`（内联 `enum ShopFailureReason`）。
+- 本批补齐的唯一缺口：`StatusChangeReason.Cleared = 6`（旧 GDScript 侧只有注释、没有常量）。
+
+### 兼容边界
+
+- 旧 C# 9 个枚举全部保留；成员顺序与取值不允许重排或删除，只允许追加。
+- 「能力式边界」：`UpgradeKind` 不向 GDScript 暴露整数，能力由 `core/progression/player_progression.gd` 的具名方法（`GetWarehouseCapacity` / `TryUpgradeCarrySlots`）提供；载体当前无 GDScript 消费方，由负向断言锁定。
+- 消费方自带的整数镜像不合并、不替换，一致性由契约测试运行时常量表比对维持。
+- 删除条件：C# 侧 9 个枚举与全部 C# 消费者（战斗 / 合成 / 商店 / 进度脚本，以及 `PlayerProgression.cs` 的存档整数读取）整链退役后，方可清理。
+
+### 契约测试
+
+- `tests/godot/test_enum_family_contract.gd`（suite `enum_family_contract`，6 个用例 / 404 条断言）+ 根级 shim `tests/test_enum_family_contract.gd`。
+- 关键实现约束：C# 枚举多为隐式取值，必须用测试内的小型解析器（支持隐式递增、显式赋值、行尾注释、`///` 文档行，并显式跳过开头的 `{`）比对「顺序 + 取值」，不能按 `成员 = 值` 字面量匹配。
+- 统计口径：`SkillTargetingType.cs` 的孪生是 PascalCase 生成物，按 snake_case 匹配会漏计，审计时必须单独认。
+
+## 协议 / 接口族生产边界（2026-09-20 22:23）
+
+### 载体与真源
+
+- 7 个旧 C# 协议类是 **C#-only 读取垫片**：它们不产生运行时对象，只是让未迁移的 C# 代码按稳定字段/脚本路径读取已迁移的 GDScript 生产对象。GDScript 等价物 = 被读取的生产脚本：
+  - `CardEffectProtocol` → `core/combat/effects/{card_effect,damage_effect}.gd`（`Execute`）
+  - `CombatSkillDataProtocol` → `core/combat/skills/combat_skill_data.gd`（`Element` / `TargetingType` / `Execute`）+ `resources/item/base_card_data.gd`（`CardId` / `CardName`）
+  - `StatusEffectDataProtocol` → `core/combat/status/status_effect_data.gd`（12 个 `@export` 字段）
+  - `MonsterDataProtocol` → `resources/monster/monster_data.gd`（`MonsterName` / `ElementalProperty` / `Faction` / `SkillSet` / `LootTable`）
+  - `AttributeModifierDataProtocol` → `core/combat/status/attribute_modifier_data.gd`（`Type` / `Mode` / `ValuePerStack`）+ `core/attributes/attribute_modifier.gd::ToDictionary()`（`Type` / `Mode` / `ValuePerStack` / `Stacks` / `SourceId`）
+  - `TerrainInstanceProtocol` → `resources/interaction/terrain_instance.gd`（`LocalGridPos` / `BoardPosition` / `TerrainData` / `IsHarvested` / `GrowthStage` / `RemainingGatheringCount` / `RefreshReadyTotalTime`）
+  - `ItemStackProtocol` → `resources/item/item_stack.gd`（`Item` / `Amount` / `IsEmpty` + `SetItem` / `Clear`）
+- 4 个 C#-only 接口（GDScript 无法实现 C# 接口）的 GDScript 等价物是组件方法协议：`IDamageable` → `health_component.gd::TakeDamage`；`ICraftingInventory` → `inventory_component.gd` 的 `Slots` / `CanStore` / `CountWhere` / `AddItem` / `TryRemoveItems`；`IShopInventory` → 同文件的 `CanAddItem` / `AddItem` / `TryRemoveItem` / `ItemCnt`；`IPlayerWallet` → `core/autoloads/player_wallet.gd` 的 `Gold` / `TrySpend` / `Add`。
+
+### 兼容边界
+
+- 唯一共享面是「脚本路径 / 字段名 / 方法名」；字段改名会同时破坏 C# 垫片、GDScript 消费者与 `.tres` 反序列化。
+- 生产 GDScript 对 11 个标识符零裸依赖、对 11 个 `.cs` 路径零加载（4 个生产根目录全扫）；生产脚本中的名字只出现在说明等价关系的 `##` 文档注释里。
+- **AttributeModifierData 类型表前提：已满足** —— `ProjectSettings.get_global_class_list()` = 160 个全局类且含 `AttributeModifierData`；探针 API 必须用 `ProjectSettings.get_global_class_list()`，`ClassDB.class_exists()` 对 C# 全局类返回 false，会误判为「未刷新」。
+- 删除条件：C# 侧 7 个协议类与 4 个接口的全部 C# 消费者（战斗 / 地形执行器 / 商店 / 合成 / 进度脚本 + `tests/CUSGA.Tests/Program.cs`）整链退役后，方可清理。
+
+### 契约测试
+
+- `tests/godot/test_protocol_family_contract.gd`（suite `protocol_family_contract`，4 个用例 / 231 条断言）+ 根级 shim。
+- 关键实现约束：负向扫描必须去掉注释与字符串字面量后再匹配裸标识符（逐字符扫描器），否则 `## 等价旧 C# XxxProtocol` 这类文档注释会被误判成依赖；另需单独断言「生产 `.gd` 不得出现这些 `.cs` 路径」。
+
+## C# 地形交互链生产边界（2026-09-20 22:31）
+
+### 范围
+
+- 8 个 C# 文件：`resources/interaction/{TerrainInteraction,TerrainInteractionBuildContext,WorldInteractionContext,WorldInteractionPorts}.cs` + `core/gameflow/{TerrainInteractionExecutor,ScreenTransitionAdapter,WorldCombatScenePresenter,WorldViewVisibilityController}.cs`。
+- 与 10 个 `resources/interaction/operations/*Op.cs` 同链：C# 半幅 = 「读 GDScript 交互资源产出的 ops 并执行」的兼容层。
+
+### GDScript 生产等价物
+
+- 5 个交互资源：`@export var TimeCost: int = 20` + `build_ops(player, terrain, effective_time_cost_override := null) -> Array[Dictionary]`（`farming_` / `vault_` / `gathering_` / `boss_` / `reusable_gathering_interaction.gd`）。
+- `core/gameflow/world_interaction_coordinator.gd`：`_execute_terrain_interaction` / `_apply_gdscript_ops` / `_fade_out` / `_fade_in` / `_run_screen_transition` / `_enter_combat` / `_enter_combat_and_wait_for_result` / `_on_battle_ended` / `_create_battle_instance` / `_duplicate_current_background` / `_set_world_view_visible`，日志标签与 C# 同文本。
+
+### 兼容边界
+
+- 过场：`ScreenTransitionAdapter.RunAsync("fade_out", "fade_complete")` ↔ `_run_screen_transition("fade_out", "fade_complete")`；`/root/ScreenTransitions` 只暴露小写 `fade_out` / `fade_in` + 信号 `fade_complete` / `fade_in_complete`。`HasMethod` 为假时 C# 静默 return，属「静默 no-op 边界」，必须锁方法名字符串。
+- 资产（`.tscn` / `.tres` / `.res`）对 8 个链名零命中；生产逻辑本批零改动。
+- 删除条件：8 个 C# 文件 + 10 个 `*Op` 操作类 + `tests/CUSGA.Tests/Program.cs` 整链一起退役。
+- 本批修复的真实缺陷：两处 stale `.uid` 旁车（`world_interaction_coordinator.gd.uid`、`room_board_presenter.gd.uid`），权威值只能来自 `ResourceLoader.get_resource_uid()`。
+
+### 契约测试
+
+- `tests/godot/test_gameflow_chain_contract.gd`（suite `gameflow_chain_contract`，4 个用例 / 204 条断言）+ 根级 shim。
+- 关键实现约束：断言 GDScript 源码片段时若 `print` 参数跨行，只能匹配字符串字面量本身（例如 `"[TerrainInteractionExecutor] Build GDScript ops from %s"`），不要匹配跨行的完整调用。
+
+## C# 剩余逻辑族生产边界（2026-09-20 22:33）
+
+### 范围
+
+- 5 个逻辑型 C# 类型：`core/progression/UpgradeService`、`core/progression/PlayerDataPolicy`、`resources/encounters/MonsterStatMultiplier`、`core/application/EncounterMonsterScaler`、`core/map/PassageGuardEdge`。
+- `entities/components/ComponentLookup` 的三段回退已由 `test_status_component_contract.gd` 覆盖，本批不重复断言。
+
+### GDScript 生产等价物（改名并存，不是新代码）
+
+| 旧 C# | GDScript 生产实现 |
+| --- | --- |
+| `UpgradeService` | `core/progression/player_progression.gd`：`WarehouseBaseValue 27` / `WarehouseValuePerLevel 9` / `WarehouseMaxLevel 3` / `CarryBaseValue 5` / `CarryValuePerLevel 1` / `CarryMaxLevel 5`，费用表 `[300,600,1000]`、`[200,350,550,800,1100]`，`_clamp_level` / `_get_value` / `_is_max_level` / `_get_cost` |
+| `PlayerDataPolicy` | `player_wallet.gd` 与 `player_progression.gd` 各自 `const PersistAcrossRuns: bool = false` + 跳过分支 |
+| `MonsterStatMultiplier` | `encounter_manager.gd` 的 `MULTIPLIER_FIELDS` 与 `_identity_multiplier()`；地形浮动倍率走 `terrain_instance.gd::GetEncounterVarianceSnapshot()` |
+| `EncounterMonsterScaler` | `encounter_manager.gd` 的 `_build_day_multiplier` / `_scale_monsters` / `_scale_monster` / `_scale_stats`（30 字段）/ `_scale_float` |
+| `PassageGuardEdge` | `core/map/passage_guard_state.gd` 的 `_edge_key` / `_compare_points`（先比 X 再比 Y） |
+
+### 兼容边界与已知缺口
+
+- **`StartingStats` 是最后一个跨语言硬依赖**：`encounter_manager.gd::_scale_stats` 仍写 `var scaled: StartingStats = StartingStats.new()`，即运行时构造旧 C# `StartingStats`。`resources/stats/starting_stats.gd` 已有 30 个同名字段（无 `class_name`，标识符仍解析到 C# 全局类）。StartingStats 批次完成前不得删除 `resources/stats/StartingStats.cs`。
+- 能力式边界：`UpgradeService.GetRemainingTotalCost` 无任何调用方（含 C# 测试工程），GDScript 侧不新增同名入口；最终清理前需复核。
+- 数值真源：升级常量 / 费用表在 C# 与 GDScript 各一份，默认值表另有 `StartingStats.cs` 第三份；由 `test_logic_family_contract` 的三方比对维持一致。
+- 回滚点：删除测试与根级 shim 即可，生产代码与资产本批零改动。
+
+### 契约测试
+
+- `tests/godot/test_logic_family_contract.gd`（suite `logic_family_contract`，7 个用例 / 207 条断言）+ 根级 shim。
+- 可复用模式：`_csharp_const_int` / `_csharp_int_array` / `_csharp_property_order` / `_csharp_export_defaults` / `_read_stat_defaults(text, marker)`（C# 与 GDScript 共用同一解析器，只是 marker 不同）+ `_strip_gd_comments` + `_scan`。
+- 运行时必备：`tests/test_*.gd` 根级 shim 缺失会让 `test_run(suite=...)` 报 `No suite named ... is registered`。
+
+## StartingStats 生产边界（2026-09-20 22:37）
+
+### 范围与结论
+
+- 旧 C# `resources/stats/StartingStats.cs`（`[GlobalClass] partial : Resource`，30 个 `[Export] float`）保留为兼容垫片。
+- 资产侧早已迁移：53 个怪物 `.tres` 的 `CSV_StartingStats` / `Resource_stats` 子资源均指向 `res://resources/stats/starting_stats.gd`。
+- 生产侧唯一残留依赖是 `core/application/encounter_manager.gd::_scale_stats` 的 `StartingStats.new()`（裸标识符 → 旧 C# 全局类），本批切换为 GDScript 实现。
+
+### 改动
+
+- `encounter_manager.gd` 新增 `const STARTING_STATS_SCRIPT: GDScript = preload("res://resources/stats/starting_stats.gd")`。
+- `_scale_stats`：`var scaled: StartingStats = StartingStats.new()` → `var scaled: Resource = STARTING_STATS_SCRIPT.new()`；30 个字段写入与缩放公式不变。
+
+### 兼容边界
+
+- 跨语言协议 = 「`Resource` 基类 + 30 个同名字段 + 同默认值」。C# 与 GDScript 两侧改字段名或默认值会同时破坏 `.tres` 反序列化与缩放结果。
+- C# 侧无任何 `StartingStats` 强转：`MonsterData.InitialAttributes` / `AttributeComponent.InitialData` / `DebugLoadoutData.PlayerStartingStats` 都是 `Resource`；`Monster.cs` 走 `MonsterDataProtocol.ReadResourceField`。
+- `starting_stats.gd` 不得声明 `class_name`（会遮蔽 C# 全局类并打断未迁移的 C# 消费者）。
+- 回滚点：还原 `_scale_stats` 两行并删常量；测试与 shim 可整批删除。
+
+### 契约测试
+
+- `tests/godot/test_starting_stats_contract.gd`（suite `starting_stats_contract`，6 个用例 / 203 条断言）+ 根级 shim。
+- 关键实现约束：
+  - 「零命中」扫描必须自证有产出（例如 `_scan(dir, "", ["tres"])` 后断言 `files.size() > 40`）。
+  - `String.find("")` 返回 `-1`，空 needle 的「匹配全部」必须显式写成 `needle == "" or text.find(needle) != -1`。
+  - 词边界扫描用 `RegEx` 的 `(?<![A-Za-z0-9_])标识符(?![A-Za-z0-9_])`，否则 `PlayerStartingStats` 会被误判成 `StartingStats` 依赖。
+
+## Crafting 旧配方资产跨语言强转修复边界（2026-09-20 22:45）
+
+### 问题与根因
+
+- 生产侧早已全量切到 GDScript（`player.tscn` 用 `crafting_component.gd` + `crafting_recipe.gd` + `recipe_book_data.gd`，`Main.tscn` / `crafting_ui.tscn` 用 `crafting_ui.gd`），但 `resources/recipe/res/{torch_recipe,stone_axe_recipe}.tres` 仍以 `CraftingRecipe.cs` / `CraftingIngredient.cs` 作为 Script 引用——这是**全项目唯一的资产级 C# 脚本依赖**。
+- 旧 C# 垫片的导出字段是强类型：`[Export] public ItemData OutputItem`、`[Export] public ItemData RequiredItem`、`[Export] public Array<CraftingIngredient> Inputs`。而它们引用的物品资产（`torch.tres` / `axe.tres` / `branch.tres` / `charcoal.tres` / `stone.tres`）早已切到 `resource_card_data.gd`（GDScript `item_data.gd` 的子类）。
+- 结果：加载旧配方资产时托管层抛 `System.InvalidCastException: Unable to cast object of type 'Godot.Resource' to type 'CUSGA.resources.item.ItemData'`，被 Godot 记录后**静默丢弃该字段**——`OutputItem` 与 `RequiredItem` 变回 `null`，即「原序列化字段值丢失」。这是跨语言边界破损，不是渲染或玩法问题。
+
+### 修复决策
+
+- 采用「资产脚本身份升级」而不是「放宽 C# 垫片类型」：两个旧路径资产切换到 `crafting_recipe.gd` / `crafting_ingredient.gd`，文件路径、文件 UID（`uid://mq7g5ojandul` / `uid://ch4rxtqw0tc74`）、`RecipeName`、`Inputs` 顺序与 `Amount`、`OutputItem`、`OutputAmount` 默认值全部不变；`Array[ExtResource(...)]` 类型化数组降级为 `Array[Resource]`，与 GDScript 出口一致；C# 专用的 `metadata/_custom_type_script` 提示一并移除。
+- 理由：① 迁移终态本来就不允许资产绑定 C# 脚本，这一步是必经的；② C# 强类型链（`ICraftingInventory` / `VirtualInventory` / `ItemStack.Item` 全是 `ItemData`）一旦放宽出口类型就要连带改 4 个 C# 文件，而本轮验证边界限制为 GodotAI MCP（无 C# 编译验证手段），改动无法自证，风险高于收益；③ C# 配方类没有任何资产级消费者——`tests/CUSGA.Tests/Program.cs` 用 `RuntimeHelpers.GetUninitializedObject` 在内存里构造配方，不读 `.tres`。
+- C# 类本身（`CraftingRecipe.cs` / `CraftingIngredient.cs` / `RecipeBookData.cs` / `CraftingComponent.cs` / `CraftingService.cs` / `CraftingUI.cs`）原样保留为兼容垫片，未删除任何 `.cs` / `.csproj` / `.sln` / C# Autoload。
+
+### 兼容边界与回滚
+
+- 跨语言协议 = 「`Resource` 基类 + `RecipeName`/`Inputs`/`OutputItem`/`OutputAmount` 同名字段 + 同默认值」；两侧脚本都不得声明与被迁移物品资源冲突的强类型导出。
+- 回滚点：把两个 `.tres` 的 Script 引用与数组类型还原为 C# 版本即可（会重新引入强转丢值问题，仅用于紧急回退）。
+
+### 契约测试
+
+- `tests/godot/test_crafting_recipe_contract.gd`（suite `crafting_recipe_contract`，3 个用例 / 60 条断言）+ 根级 shim。
+- 关键断言：C# 垫片导出字段名/顺序/默认值与 GDScript 孪生脚本逐个一致（3 组字段契约）；旧路径资产与 `*_recipe_gd.tres` 的配方快照逐条相等，且**两侧脚本都必须是 GDScript**、`OutputItem` 与每个 `RequiredItem` 都必须非空（直接锁死本批的丢值回归）；生产场景/资产/GDScript 对 crafting 的 6 个 `.cs` 路径零引用（`LEGACY_ASSET_ALLOWLIST` 现为空，扫描另配「已知资产引用必须被扫出」的自证断言）。
+
+## 物品链与商店链跨语言边界（2026-09-20 22:53）
+
+### 范围与结论
+
+- 物品数据家族（`ItemData` / `BaseCardData` / `ResourceCardData` / `SkillCardData` / `ToolData` / `EquipmentData` / `EquipmentSetData` / `SetBonusTier`）、`ItemStack` 与商店链（`ShopCatalog` / `ShopFailureReason` / `ShopService` / `ShopTradeBridge` / `IPlayerWallet` / `IShopInventory`）在生产侧**早已全量 GDScript**：`player.tscn`、`Main.tscn`、`Shop.tscn` 与全部物品资产只绑定 `.gd`，19 个物品链 `.cs` 在资产与场景里零引用。
+- 本批因此不做资产切换，只做两件事：① 解除 `entities/components/battle_deck_component.gd::_can_store_item` 对「脚本是 `SkillCardData.cs`」的语言绑定（改为 `Skill` 字段协议）；② 把字段契约、容器弱化位置与「禁止出现的强类型容器」钉成契约测试。
+
+### 字段契约表（C# 垫片 ↔ GDScript 生产，导出顺序与默认值必须一致）
+
+| 家族 | C# 垫片 | GDScript 生产 | 导出字段（原顺序） |
+| --- | --- | --- | --- |
+| `ItemData` | `resources/item/ItemData.cs` | `resources/item/item_data.gd` | MaxStackSize=99, ItemTags, BuyPrice=0, SellPrice=0 |
+| `BaseCardData` | `resources/item/BaseCardData.cs` | `resources/item/base_card_data.gd` | CardId, CardName, CardIcon, Description |
+| `ResourceCardData` | `resources/item/card/ResourceCardData.cs` | `resources/item/card/resource_card_data.gd` | 无新增字段（继承 `BaseCardData`） |
+| `SkillCardData` | `resources/item/card/SkillCardData.cs` | `resources/item/card/skill_card_data.gd` | Skill, cost=10, CardTags |
+| `ToolData` | `resources/item/tool/ToolData.cs` | `resources/item/tool/tool_data.gd` | TargetGatheringTag, YieldGrowth=0, GatheringTimeReduction=0 |
+| `EquipmentData` | `resources/item/equipment/EquipmentData.cs` | `resources/item/equipment/equipment_data.gd` | ValidSlots, SetType=0, AttributeBonuses, GrantedTags |
+| `EquipmentSetData` | `resources/item/equipment/EquipmentSetData.cs` | `resources/item/equipment/equipment_set_data.gd` | SetType=0, Tiers |
+| `SetBonusTier` | `resources/item/equipment/SetBonusTier.cs` | `resources/item/equipment/set_bonus_tier.gd` | RequiredPieces=0, AttributeBonuses, GrantedTags |
+| `ShopCatalog` | `core/shop/ShopCatalog.cs` | `resources/shop/shop_catalog.gd` | Goods, AlsoIncludeEveryPricedItem=false, DefaultBuyPrice=100 |
+
+### 容器弱化登记（唯一允许的 C# 强类型 → GDScript 通用类型）
+
+| C# 强类型出口 | GDScript 出口 |
+| --- | --- |
+| `EquipmentData.ValidSlots : Array<EquipmentSlot>` | `Array[int]` |
+| `EquipmentData.AttributeBonuses : Dictionary<AttributeType, Vector2I>` | `Dictionary` |
+| `EquipmentSetData.Tiers : Array<SetBonusTier>` | `Array[Resource]` |
+| `SetBonusTier.AttributeBonuses : Dictionary<AttributeType, float>` | `Dictionary` |
+| `ShopCatalog.Goods : Godot.Collections.Array<ItemData>` | `Array[Resource]` |
+
+- 这 5 处是**唯一**允许出现的弱化；其余位置一旦出现 `Array[ItemData]` / `Array<ItemData>` / `Dictionary[AttributeType` 等强类型容器，就会在反序列化或赋值阶段拒收另一侧资源（`FORBIDDEN_GD_TYPES` 13 条），套件逐文件断言这些字符串在 13 个物品链生产脚本里零命中。
+- 物品链的 GDScript 脚本**不得声明 `class_name`**（会遮蔽 C# 全局类型并打断未迁移的 C# 消费者），与 `starting_stats.gd` 同一策略。
+
+### 商店失败原因三方同值（0..6）
+
+| 成员 | 值 |
+| --- | --- |
+| `None` | 0 |
+| `InvalidItem` | 1 |
+| `InvalidQuantity` | 2 |
+| `NotEnoughGold` | 3 |
+| `NotEnoughSpace` | 4 |
+| `MissingItem` | 5 |
+| `NotConfigured` | 6 |
+
+- 三方 = C# `ShopFailureReason` 枚举 + `scripts/shop/shop_control.gd` 的具名镜像常量（`FAILURE_NONE`..`FAILURE_NOT_CONFIGURED`）+ `core/shop/shop_failure_reason.gd`。具名常量刻意不用裸数字，避免后续有人在两处之间插入枚举成员时静默错位。
+
+### 出战卡组判定：从「脚本路径」改为「字段协议」
+
+- 旧实现：`_can_store_item` 先看资源脚本路径是不是 `SkillCardData.cs`，所以物品资产切到 GDScript 之后，**GDScript 技能卡反而进不了卡组**，而旧 C# 技能卡能进。这是迁移过程中的临时补丁留下的语言绑定。
+- 新实现：只扫 `get_property_list()` 里有没有 `Skill` 属性——旧 C# `SkillCardData`（`[Export] public Resource Skill`）与 GDScript `skill_card_data.gd`（`@export var Skill: Resource`）都满足，非卡物品不满足。行为与「卡牌=有技能字段」的原语义一致。
+- 运行时实测：`gd_card_ok=true`、`legacy_card_ok=true`、`plain_item_ok=false`、`deck_cards=4`。
+
+### 契约测试
+
+- `tests/godot/test_item_chain_boundary_contract.gd`（suite `item_chain_boundary_contract`，9 个用例 / 573 条断言）+ 根级 shim。
+- 关键实现约束（可复用）：一次 `DirAccess` 遍历 `_collect_files()` 收文件、再单趟扫描（4 个根目录 × 19 条旧路径的双循环会把套件拉到 12.4s，单趟扫描后 0.7s）；「零命中」断言必须配 `files.size() > 200` 的自证；`String.find("")` 返回 `-1`，空 needle 必须显式判空。
+
+### 回滚点
+
+- 还原 `_can_store_item` 的 C# 脚本路径分支，并删除本套件与根级 shim。本批其余生产代码、资产、场景零改动。
+
+## 生产 GDScript 语言绑定清理：能力协议 vs 字段协议（2026-09-20 23:40）
+
+### 问题模式
+
+- 「跨语言兼容分支」有两种形态：一种是**接受双方**（本批三处），一种是**只认一侧**（物品链的 `_can_store_item` 曾只认 GDScript，早期 `_can_store_item` 只认 C#）。只认一侧会直接丢功能；接受双方看似无害，但它把「语言身份」写进了生产逻辑——新增同协议资源被静默丢弃，垫片退役后分支又静默失效。
+- 判定手段的**选择顺序**（本批实测得出）：
+  1. **方法协议**（`Object.has_method`）：跨语言最稳，C# 与 GDScript 的方法都进方法表。
+  2. **字段取值类型探测**（`typeof(obj.get("Field")) == TYPE_*`）：适用于 C# 属性**没有 `[Export]`** 的情况（此时属性表为空，但按名 `get()` 有效）。
+  3. **属性表扫描**（`get_property_list()`）：只适用于两侧字段都可见的情形（C# 侧需 `[Export]`，如 `SkillCardData.Skill`）。
+  4. **脚本路径 / 类型名判定**：迁移期禁用，语言身份耦合，禁止进入生产代码。
+
+### 本批边界
+
+| 位置 | 旧判定 | 新判定 | 判定类型 |
+| --- | --- | --- | --- |
+| `entities/monster.gd::_is_combat_skill_data` | 脚本路径 ∈ {`combat_skill_data.gd`, `CombatSkillData.cs`} | `resource.has_method("Execute") and has_method("RequiresTarget")` | 方法协议 |
+| `core/ui/slot_ui.gd::_is_draggable_data` | 脚本路径 ∈ {`draggable_data.gd`, `DraggableData.cs`} | `typeof(obj.get("SourceSystem")) == TYPE_STRING_NAME` | 字段取值类型 |
+| `core/ui/equipment_slot_ui.gd::_is_draggable_data` | 同上 | 同上 | 字段取值类型 |
+
+### 实测事实（探针：编辑器进程 + 游戏进程各一次）
+
+- 战斗技能：GDScript `combat_skill_data.gd` = `[Execute: true, RequiresTarget: true]`；C# `CombatSkillData` = `[true, true]`；GDScript 物品技能卡 = `[false, false]`；C# `SkillCardData` = `[false, false]`。→ 方法协议有足够区分度，不会把物品卡当怪物技能。
+- 拖拽载荷：C# `DraggableData` 的 `get_property_list()` 只有 `["RefCounted", "script", "DraggableData"]`（属性未 `[Export]`），但 `get("SourceSystem")` 返回 `StringName`（`&"SystemInventory"`）；GDScript 载荷的属性表完整且同样返回 `StringName`；普通 `RefCounted` 返回 `null`（`TYPE_NIL`）。→ 只能用取值类型探测。
+- 真实数据面：53 个怪物资产 / 231 条技能条目在新判定下 **231/231 通过、0 拒绝**，且技能脚本 100% 为 GDScript 生产实现。
+
+### 契约测试
+
+- `tests/godot/test_production_language_binding_contract.gd`（suite `production_language_binding_contract`，4 个用例 / 29 条断言）+ 根级 shim。
+- 用例：① 生产 `.gd` 去注释后 `.cs` 字面量零命中（配「扫描器必须在 tests 目录扫出已知引用」的自证 + 生产文件数 > 150 的自证）；② 三处判定源码必须使用协议字面量、且不得出现 `resource_path`；③ 战斗技能四类对象矩阵；④ 拖拽载荷四类对象矩阵（含真实 GDScript 载荷）。
+- `tests/godot/test_monster_contract.gd::test_skill_protocol_contract` 同步改为能力协议断言，并新增反向断言「生产脚本不得再出现 `resource_path`」。
+
+### 回滚点
+
+- 还原三处判定的脚本路径分支（会重新把语言身份写回生产逻辑），并删除本套件与 shim；生产资产、场景、数值、序列化字段本批零改动。
+
+---
+
+## MonsterData 判定语言中立化（2026-09-21 00:05）
+
+### 判定手段优先级（沿用上批结论并补第 3 档）
+
+| 优先级 | 手段 | 成立条件 | 本批用法 |
+| --- | --- | --- | --- |
+| 1 | 方法协议 | 对侧成员一定进方法表 | 战斗技能（上批） |
+| 2 | 字段取值类型 | 属性未 `[Export]` 但按名 `get()` 可用 | 拖拽载荷（上批） |
+| 3 | 属性表字段面 | 属性带 `[Export]` / `@export`，两侧都进属性表 | **MonsterData（本批）** |
+| 4 | 脚本路径 / 类型名 | 迁移期禁用 | 生产代码已清零 |
+
+### 本批边界
+
+| 位置 | 旧判定 | 新判定 |
+| --- | --- | --- |
+| `core/application/encounter_manager.gd::_is_monster_data` | 脚本路径 ∈ {`monster_data.gd`, `MonsterData.cs`} | 属性表同时含 `MonsterName` + `ElementalProperty` + `SkillSet` |
+| `core/application/gameplay_port.gd::_is_monster_data` | 同上 | 同上 |
+| `core/gameflow/world_interaction_coordinator.gd::_is_monster_data` | 同上 | 同上 |
+| `resources/encounters/gathering_encounter_result.gd::_is_monster_data` | 同上 | 同上 |
+| `core/application/encounter_manager.gd::_new_monster_like` | 末段回退 `MonsterData.new()` | 末段回退 `MONSTER_DATA_SCRIPT.new()`（`preload("res://resources/monster/monster_data.gd")`） |
+
+### 实测事实（run 71 / run 72，游戏进程与编辑器进程一致）
+
+- 两侧怪物数据的属性表都含 `MonsterName / ElementalProperty / SkillSet / InitialAttributes`；`ItemData`、`SkillCardData`、`StartingStats`、`CombatSkillData` 的属性表都不含前三个字段 → 字段面具备区分度。
+- 本批刻意只取前三个字段：`InitialAttributes` 在旧 C# 侧默认可能为 `null`，纳入协议会让判定依赖数据填充状态，属行为放大的风险点。
+- 回退构造的实际优先级：源脚本可实例化 → 源脚本 → 浅拷贝 → 生产 GDScript 怪物数据（run 71 验证末段返回 `res://resources/monster/monster_data.gd` 实例）。
+- 真实数据面：`res://resources/monster` 下 **53/53** `.tres` 被新判定接受，脚本计数 `monster_data.gd = 53`、`MonsterData.cs = 0`。
+
+### 契约测试
+
+- `tests/godot/test_production_language_binding_contract.gd::test_monster_data_protocol_is_field_based`（20 条断言）：4 个消费方源码协议断言 + 5 类对象矩阵 + 全量怪物资产扫描（自带「资产数 > 40」自证，防止空扫描通过）。
+- `tests/godot/test_monster_data_contract.gd`：覆盖 4 个消费方，并禁止 `is MonsterData` / `as MonsterData` / `Array[MonsterData]`。
+
+### 回滚点
+
+- 还原 4 处判定的路径常量分支与 `MonsterData.new()` 构造，删除新增用例；资产、场景、数值、序列化字段零改动。
+
+
+## 批 K（2026-09-21 00:27–00:41）：C# 物理退役与退役期收口
+
+### 决策
+
+- **退役动作本身不是迁移动作**：物理删除的前提是「所有 C# 都有等价 GDScript 实现」已由全量测试 + 端到端流程分别证明，因此删除时不再改动任何生产逻辑；删除后出现的红灯一律按「断言过期」或「编辑器回写漂移」处理。
+- **回写漂移要按迁移前形态收敛，而不是按漂移改断言**。`scenes/Main.tscn` 上 `Player` / `InventoryUI` / `CraftingUI` / `WarehouseUI` 四个实例节点的 `script` / `custom_minimum_size` / `SlotPrefab` / `EquipmentSlotPrefab` 覆盖是编辑器会话回写的产物：取值与四个实例场景自身根节点逐字相同（已逐一比对 `scenes/player_scenes/player.tscn`、`scenes/inventory/inventory_ui.tscn`、`scenes/crafting/crafting_ui.tscn`、`scenes/Warehouse/warehouse_ui.tscn`），且 `git show HEAD:scenes/Main.tscn` 里这些覆盖与 `14_v0vrg` 等 `ext_resource` 并不存在。结论：删除覆盖 = 恢复迁移前节点结构，比改断言更忠于「语言迁移不改结构」。
+- **语言判定边界在 C# 退役后必须归零**。`gameplay_port.gd::_is_csharp_script_instance()` 是唯一保留的跨语言判定（旧强类型信号 vs 通用 Node 信号双路分发）。C# 组件全部退场后该分支不可达，删除它不改变任何运行时行为（GDScript 组件本来就走 `*Node*` 信号）。四个强类型旧信号仍保留声明与 UI 双向连接，避免改动信号 API 面。
+- **测试侧的 C# 对照保留为惰性输入**：`csharp_optional.gd` 的守卫与 39 个套件里的 `.cs` 常量不删，因为它们是「两侧行为逐字一致」的历史证据；C# 缺席时整体 `skip` 并给出统一原因，而不是产生解析期错误或「空源文假通过」。
+- **判定 C# 类型名的扫描必须覆盖 `.new()`**：只用「`: 类型` / `-> 类型` / `is 类型`」做正则时，`var x := MonsterData.new()` 这类写法会漏网（`new` 前有 `.`）。本批的收口扫描因此把 `X.new()` 与 `as X` 一并纳入判据。
+
+### 契约测试
+
+- `test_final_migration_audit_contract.gd::test_no_language_boundary_remains`：生产四根目录内「语言判定谓词」与「按脚本扩展名判定语言」双谓词 0 命中，并附测试目录阳性自证（同一扫描逻辑必须在 `res://tests` 扫出已知命中）。
+- `test_attribute_component_contract.gd::test_main_scene_drops_legacy_player_override`：主场景不得含旧玩家脚本的 `ext_resource id`，且必须仍 `instance=ExtResource("8_jlsqs")` —— 本批按「删漂移」而非「改断言」通过。
+- 退役期双模态：`test_classified_csharp_files_follow_phase_contract` 在无 `CUSGA.csproj` 时要求 39 个 `.cs` 清零 + 工程文件已删。
+- 测试助手修复：`csharp_optional.gd::read()` 先判存在，缺失文件不再让 `FileAccess.get_file_as_string` 往编辑器日志推 `Cannot open file` / `Failed loading resource`。
+
+### 回滚点
+
+- 隔离区 `%TEMP%\cusga-csharp-quarantine-20260921-0030\`（306 个文件）保留全部 `.cs` / `.cs.uid` / `.csproj` / `.sln` / `.godot/mono/` / `tests/CUSGA.Tests/` 的原相对路径；退役前 `project.godot` 备份在 `%TEMP%\cusga-cs-untracked-20260921-0027\project.godot.before-retirement`。回滚 = 移回文件 + 恢复 `[dotnet]` 段 + 还原 4 处 `Request*` 双路分发与审计断言。

@@ -21,14 +21,19 @@ const MONSTER_SKILL_PREVIEW_SCRIPT: GDScript = preload("res://resources/monster/
 const CURRENT_MAP_BACKGROUND_RESOLVER_SCRIPT: GDScript = preload("res://core/gameflow/current_map_background_resolver.gd")
 const LOOT_DROP_SCRIPT: GDScript = preload("res://resources/loot/loot_drop.gd")
 const LOOT_TABLE_SCRIPT: GDScript = preload("res://resources/loot/loot_table.gd")
-const LEGACY_ITEM_DATA_SCRIPT: Script = preload("res://resources/item/ItemData.cs")
-const LEGACY_ITEM_STACK_SCRIPT: Script = preload("res://core/inventory/ItemStack.cs")
+## C# 兼容垫片路径：迁移期用作跨语言对照输入，C# 退役后自动换成等价的生产 GDScript 实现。
+const LEGACY_ITEM_DATA_CS_PATH: String = "res://resources/item/ItemData.cs"
+const LEGACY_ITEM_STACK_CS_PATH: String = "res://core/inventory/ItemStack.cs"
+## 上述两个 C# 垫片退役后的等价 GDScript 实现路径。
+const PRODUCTION_ITEM_STACK_GD_PATH: String = "res://resources/item/item_stack.gd"
+## C# 可选助手：C# 缺席时安全替代或收起跨语言对照，避免解析期错误与假通过。
+const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
 const ITEM_STACK_SCRIPT: GDScript = preload("res://resources/item/item_stack.gd")
 const BASE_CARD_DATA_SCRIPT_PATH: String = "res://resources/item/base_card_data.gd"
 const ITEM_DATA_SCRIPT_PATH: String = "res://resources/item/item_data.gd"
 const RESOURCE_CARD_DATA_SCRIPT_PATH: String = "res://resources/item/card/resource_card_data.gd"
 const SKILL_CARD_DATA_SCRIPT_PATH: String = "res://resources/item/card/skill_card_data.gd"
-const LEGACY_COMBAT_SKILL_SCRIPT: Script = preload("res://core/combat/skills/CombatSkillData.cs")
+const LEGACY_COMBAT_SKILL_CS_PATH: String = "res://core/combat/skills/CombatSkillData.cs"
 const ITEM_DATA_COMPAT_SCRIPT: GDScript = preload("res://resources/item/item_data_compat.gd")
 const CRAFTING_INGREDIENT_SCRIPT: GDScript = preload("res://resources/recipe/crafting_ingredient.gd")
 const CRAFTING_RECIPE_SCRIPT: GDScript = preload("res://resources/recipe/crafting_recipe.gd")
@@ -68,7 +73,7 @@ const PRODUCTION_TOOL_ASSET_PATHS: Array[String] = [
 	"res://items/tool/Ax.tres",
 	"res://items/tool/Pickaxe.tres",
 ]
-const LEGACY_TOOL_DATA_SCRIPT: Script = preload("res://resources/item/tool/ToolData.cs")
+const LEGACY_TOOL_DATA_CS_PATH: String = "res://resources/item/tool/ToolData.cs"
 const MONSTER_SKILL_ASSETS: Array[String] = [
 	"res://resources/monster/anvil_cuihuotiewei.tres",
 	"res://resources/monster/anvil_duantiezhano.tres",
@@ -531,12 +536,16 @@ func test_boss_map_interactions_use_gdscript() -> void:
 					)
 					assert_eq(interaction.get("TimeCost"), 20, "%s 必须保留原 Boss 耗时。" % scene_path)
 					var monster: Resource = interaction.get("Monster") as Resource
-					assert_true(monster != null, "%s 必须保留原 MonsterData。" % scene_path)
+					assert_true(monster != null, "%s 必须保留原怪物数据资源。" % scene_path)
 					if monster != null:
 						assert_eq(
 							monster.get_script().resource_path,
-							"res://resources/monster/MonsterData.cs",
-							"%s 的 Boss 怪物必须继续使用兼容 C# MonsterData。" % scene_path
+							"res://resources/monster/monster_data.gd",
+							"%s 的 Boss 怪物必须使用 GDScript 怪物数据生产实现。" % scene_path
+						)
+						assert_true(
+							str(monster.get("MonsterName")) != "",
+							"%s 的 Boss 怪物必须保留名称字段。" % scene_path
 						)
 		map_node.free()
 
@@ -899,11 +908,13 @@ func test_current_map_background_resolver_contract() -> void:
 	map_system.free()
 	assert_eq(resolver.get_script().resource_path, CURRENT_MAP_BACKGROUND_RESOLVER_SCRIPT.resource_path, "解析器实例应来自 GDScript 并行实现")
 
-	var presenter_source := FileAccess.get_file_as_string("res://core/gameflow/WorldCombatScenePresenter.cs")
-	assert_true(presenter_source.contains("res://core/gameflow/current_map_background_resolver.gd"), "生产 Presenter 必须加载 GDScript 背景解析器。")
-	assert_true(presenter_source.contains('resolverScript.Call("new")'), "C# Presenter 必须通过 Script 动态工厂创建 GDScript Resolver。")
-	assert_true(presenter_source.contains('resolver.Call("DuplicateCurrentBackground", mapSystem)'), "生产调用必须使用稳定方法协议。")
-	assert_false(presenter_source.contains("CurrentMapBackgroundResolver.DuplicateCurrentBackground"), "生产 Presenter 不得继续静态调用旧 C# Resolver。")
+	## C# 源文对照：C# 退役后 read() 返回空串，整块按条件收起而不是假通过。
+	var presenter_source := CS_OPTIONAL.read("res://core/gameflow/WorldCombatScenePresenter.cs")
+	if not presenter_source.is_empty():
+		assert_true(presenter_source.contains("res://core/gameflow/current_map_background_resolver.gd"), "生产 Presenter 必须加载 GDScript 背景解析器。")
+		assert_true(presenter_source.contains('resolverScript.Call("new")'), "C# Presenter 必须通过 Script 动态工厂创建 GDScript Resolver。")
+		assert_true(presenter_source.contains('resolver.Call("DuplicateCurrentBackground", mapSystem)'), "生产调用必须使用稳定方法协议。")
+		assert_false(presenter_source.contains("CurrentMapBackgroundResolver.DuplicateCurrentBackground"), "生产 Presenter 不得继续静态调用旧 C# Resolver。")
 
 
 ## 验证掉落条目迁移后的默认字段和代表性怪物资产嵌套资源引用。
@@ -943,8 +954,9 @@ func test_loot_table_production_roll_contract() -> void:
 	## 新建的生产掉落表。
 	var table: Resource = LOOT_TABLE_SCRIPT.new()
 	assert_eq(table.get("Drops").size(), 0, "新建掉落表的 Drops 默认应为空数组。")
-	# 编辑器工具态会把部分 C# .tres 降为基础 Resource；直接实例化脚本才能验证真实强类型调用边界。
-	var item: Resource = LEGACY_ITEM_DATA_SCRIPT.new() as Resource
+	# 编辑器工具态会把部分 .tres 降为基础 Resource；直接实例化脚本才能验证真实强类型调用边界。
+	# 迁移期优先用旧 C# 垫片，C# 退役后自动换成等价的生产 GDScript ItemData。
+	var item: Resource = CS_OPTIONAL.script_or(LEGACY_ITEM_DATA_CS_PATH, ITEM_DATA_SCRIPT_PATH).new() as Resource
 	item.set("CardId", &"loot_table_contract_item")
 	item.set("CardName", "掉落表契约物品")
 	## 固定数量且必定命中的掉落条目。
@@ -994,15 +1006,15 @@ func test_loot_table_production_roll_contract() -> void:
 ## 验证棋盘可按同一稳定属性协议接收生产 GDScript 与旧 C# ItemStack。
 ## 返回值：无。
 func test_board_loot_stack_cross_language_contract() -> void:
-	## 两种 ItemStack 共同保存的旧 C# 物品 Resource。
-	var item: Resource = LEGACY_ITEM_DATA_SCRIPT.new() as Resource
+	## 两种 ItemStack 共同保存的物品 Resource（迁移期优先旧 C# 垫片，C# 退役后换等价 GDScript）。
+	var item: Resource = CS_OPTIONAL.script_or(LEGACY_ITEM_DATA_CS_PATH, ITEM_DATA_SCRIPT_PATH).new() as Resource
 	item.set("CardName", "棋盘掉落契约物品")
 
 	## 生产 GDScript 物品堆叠。
 	var gdscript_stack: RefCounted = ITEM_STACK_SCRIPT.new() as RefCounted
 	gdscript_stack.call("SetItem", item, 3)
-	## 旧 C# 兼容物品堆叠。
-	var legacy_stack: RefCounted = LEGACY_ITEM_STACK_SCRIPT.new() as RefCounted
+	## 兼容物品堆叠：迁移期是旧 C# 垫片，C# 退役后是等价的生产 GDScript 堆叠。
+	var legacy_stack: RefCounted = CS_OPTIONAL.script_or(LEGACY_ITEM_STACK_CS_PATH, PRODUCTION_ITEM_STACK_GD_PATH).new() as RefCounted
 	legacy_stack.call("SetItem", item, 2)
 	assert_true(gdscript_stack.get("Item") == item, "GDScript 堆叠必须保留原物品 Resource 身份。")
 	assert_eq(int(gdscript_stack.get("Amount")), 3, "GDScript 堆叠必须公开 Amount。")
@@ -1012,15 +1024,24 @@ func test_board_loot_stack_cross_language_contract() -> void:
 	assert_false(bool(legacy_stack.get("IsEmpty")), "旧 C# 堆叠必须继续公开 IsEmpty。")
 
 	## 棋盘生产链的源码协议；实际场景实例化由 Main 运行时冒烟覆盖。
-	var state_source := FileAccess.get_file_as_string("res://core/board/BoardCardState.cs")
-	var controller_source := FileAccess.get_file_as_string("res://core/board/BoardController.cs")
-	var executor_source := FileAccess.get_file_as_string("res://core/gameflow/TerrainInteractionExecutor.cs")
-	var player_source := FileAccess.get_file_as_string("res://entities/Player.cs")
-	var spawn_op_source := FileAccess.get_file_as_string("res://resources/interaction/operations/SpawnLootOp.cs")
+	## C# 源文对照：C# 退役后 read() 返回空串，相关断言按条件收起而不是假通过。
+	var state_source := CS_OPTIONAL.read("res://core/board/BoardCardState.cs")
+	var controller_source := FileAccess.get_file_as_string("res://core/board/board_controller.gd")
+	var controller_shim_source := CS_OPTIONAL.read("res://core/board/BoardController.cs")
+	var executor_source := CS_OPTIONAL.read("res://core/gameflow/TerrainInteractionExecutor.cs")
+	var player_source := CS_OPTIONAL.read("res://entities/Player.cs")
+	var spawn_op_source := CS_OPTIONAL.read("res://resources/interaction/operations/SpawnLootOp.cs")
 	var state_gd: Script = load("res://core/board/board_card_state.gd")
 	assert_true(state_gd != null, "棋盘卡状态必须存在等价 GDScript 实现。")
 	assert_true(controller_source.contains('res://core/board/board_card_state.gd'), "BoardController 必须通过 GDScript 状态脚本创建卡牌状态。")
-	assert_false(controller_source.contains("BoardCardState state"), "BoardController 生产路径不得继续依赖 C# BoardCardState 具体类型。")
+	assert_false(controller_source.contains("BoardCardState"), "生产棋盘控制器不得引用 C# BoardCardState 具体类型。")
+	if not controller_shim_source.is_empty():
+		assert_true(
+			controller_shim_source.contains(
+				"public Node2D SpawnTerrainCard(RefCounted terrainInstance, Vector2 globalPosition)"
+			),
+			"旧 C# 棋盘控制器兼容垫片必须保留跨语言地形入口。"
+		)
 	if state_gd != null:
 		var state := state_gd.call("new") as RefCounted
 		assert_true(state.call("InitializeLoot", gdscript_stack), "GDScript 状态必须接受生产 ItemStack。")
@@ -1028,12 +1049,16 @@ func test_board_loot_stack_cross_language_contract() -> void:
 		assert_true(state.call("GetCardData") == item, "掉落状态必须保留原物品 Resource 身份。")
 		assert_eq(int(state.call("GetStackAmount")), 3, "掉落状态必须保留数量。")
 		assert_true(state.call("CanShowAmount"), "数量大于 1 时必须显示数量标签。")
-	assert_true(state_source.contains("public RefCounted LootStack"), "棋盘状态必须以 RefCounted 保存跨语言堆叠。")
-	assert_true(controller_source.contains("SpawnLootCards(Godot.Collections.Array stacks"), "棋盘批量入口必须接收非泛型数组。")
-	assert_true(executor_source.contains("ItemStackProtocol.TryRead(stack"), "地形执行器必须过滤跨语言堆叠协议。")
-	assert_true(player_source.contains("TryAddItemToInventory(RefCounted stack)"), "玩家拾取入口必须接收跨语言堆叠。")
-	assert_true(spawn_op_source.contains("public SpawnLootOp(Array<ItemStack> drops)"), "旧 C# 交互数组构造入口必须继续保留。")
-	assert_true(spawn_op_source.contains("public SpawnLootOp(Array drops)"), "GDScript 非泛型数组构造入口必须存在。")
+	assert_true(controller_source.contains("func SpawnLootCards(stacks: Array"), "棋盘批量入口必须接收非泛型数组。")
+	if not state_source.is_empty():
+		assert_true(state_source.contains("public RefCounted LootStack"), "棋盘状态必须以 RefCounted 保存跨语言堆叠。")
+	if not executor_source.is_empty():
+		assert_true(executor_source.contains("ItemStackProtocol.TryRead(stack"), "地形执行器必须过滤跨语言堆叠协议。")
+	if not player_source.is_empty():
+		assert_true(player_source.contains("TryAddItemToInventory(RefCounted stack)"), "玩家拾取入口必须接收跨语言堆叠。")
+	if not spawn_op_source.is_empty():
+		assert_true(spawn_op_source.contains("public SpawnLootOp(Array<ItemStack> drops)"), "旧 C# 交互数组构造入口必须继续保留。")
+		assert_true(spawn_op_source.contains("public SpawnLootOp(Array drops)"), "GDScript 非泛型数组构造入口必须存在。")
 
 
 ## 验证基础物品 GDScript Resource 与旧 C# 数据类保持字段和显示回退契约。
@@ -1110,7 +1135,8 @@ func test_skill_card_data_gdscript_dynamic_contract() -> void:
 	assert_true(skill.last_context == context, "ApplyEffect 必须保持原执行上下文身份。")
 
 	var legacy_fallback_icon := GradientTexture1D.new()
-	var legacy_skill := LEGACY_COMBAT_SKILL_SCRIPT.new() as Resource
+	## 兼容战斗技能：迁移期是旧 C# 垫片，C# 退役后是等价的生产 GDScript 技能。
+	var legacy_skill := CS_OPTIONAL.script_or(LEGACY_COMBAT_SKILL_CS_PATH, "res://core/combat/skills/combat_skill_data.gd").new() as Resource
 	assert_true(legacy_skill != null and legacy_skill.has_method("Execute"), "并行技能卡必须继续接受 C# CombatSkillData。")
 	legacy_skill.set("CardName", "C# 协议技能")
 	legacy_skill.set("Description", "C# 协议技能描述")
@@ -1239,7 +1265,8 @@ func test_item_data_compat_bridge_accepts_legacy_and_gdscript_resources() -> voi
 	assert_true(bool(ITEM_DATA_COMPAT_SCRIPT.call("same_item", gd_item, gd_item)), "同一 GDScript 资源必须被识别为同一物品。")
 	assert_false(bool(ITEM_DATA_COMPAT_SCRIPT.call("same_item", gd_item, load(ITEM_DATA_SCRIPT_PATH).new())), "不同 GDScript 资源实例不得合并堆叠。")
 
-	var legacy_item := LEGACY_ITEM_DATA_SCRIPT.new() as Resource
+	## 兼容物品：迁移期是旧 C# 垫片，C# 退役后是等价的生产 GDScript ItemData。
+	var legacy_item := CS_OPTIONAL.script_or(LEGACY_ITEM_DATA_CS_PATH, ITEM_DATA_SCRIPT_PATH).new() as Resource
 	legacy_item.set("CardId", &"legacy_item_compat")
 	legacy_item.set("CardName", "旧 C# 兼容物品")
 	legacy_item.set("Description", "保留类型输入")
@@ -1516,20 +1543,21 @@ func test_equipment_data_compat_reads_both_language_resources() -> void:
 	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_yield_growth", gd_tool), 3, "GDScript 工具额外产量必须保留。")
 	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_gathering_time_reduction", gd_tool), 12, "GDScript 工具时间减免必须保留。")
 
-	var legacy_tool := LEGACY_TOOL_DATA_SCRIPT.new() as Resource
-	assert_true(legacy_tool != null, "旧 C# ToolData 必须可供装备兼容桥读取。")
-	if legacy_tool == null:
-		return
-	var legacy_slots: Array = legacy_tool.get("ValidSlots")
-	legacy_slots.append(5)
-	legacy_tool.set("TargetGatheringTag", &"wood")
-	legacy_tool.set("GatheringTimeReduction", 10)
-	assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_equipment_resource", legacy_tool)), "旧 C# ToolData 必须被识别为装备。")
-	assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_tool_resource", legacy_tool)), "旧 C# ToolData 必须被识别为工具。")
-	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_valid_slots", legacy_tool), [5], "旧 C# 斧头槽位必须读取为 Axe=5。")
-	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_target_gathering_tag", legacy_tool), &"wood", "旧 C# 斧头采集标签必须保留。")
-	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_yield_growth", legacy_tool), 0, "旧 C# 斧头默认额外产量必须保持 0。")
-	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_gathering_time_reduction", legacy_tool), 10, "旧 C# 斧头时间减免必须保持 10。")
+	## 旧 C# ToolData 的兼容读取能力：C# 退役后不再有旧实现可测，整块按条件收起
+	## （本用例其余 GDScript 断言仍在执行，因此不会退化成 0 断言）。
+	if CS_OPTIONAL.present(LEGACY_TOOL_DATA_CS_PATH):
+		var legacy_tool := CS_OPTIONAL.script(LEGACY_TOOL_DATA_CS_PATH).new() as Resource
+		assert_true(legacy_tool != null, "旧 C# ToolData 必须可供装备兼容桥读取。")
+		var legacy_slots: Array = legacy_tool.get("ValidSlots")
+		legacy_slots.append(5)
+		legacy_tool.set("TargetGatheringTag", &"wood")
+		legacy_tool.set("GatheringTimeReduction", 10)
+		assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_equipment_resource", legacy_tool)), "旧 C# ToolData 必须被识别为装备。")
+		assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_tool_resource", legacy_tool)), "旧 C# ToolData 必须被识别为工具。")
+		assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_valid_slots", legacy_tool), [5], "旧 C# 斧头槽位必须读取为 Axe=5。")
+		assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_target_gathering_tag", legacy_tool), &"wood", "旧 C# 斧头采集标签必须保留。")
+		assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_yield_growth", legacy_tool), 0, "旧 C# 斧头默认额外产量必须保持 0。")
+		assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_gathering_time_reduction", legacy_tool), 10, "旧 C# 斧头时间减免必须保持 10。")
 
 	var plain_item: Resource = load(PRODUCTION_PLAIN_ITEM_ASSET_PATH)
 	assert_false(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_equipment_resource", plain_item)), "普通 ItemData 不能被误判为装备。")
@@ -1641,7 +1669,7 @@ func test_crafting_resource_gdscript_contract() -> void:
 	assert_eq(book.get_script().resource_path, "res://resources/recipe/recipe_book_data.gd")
 
 
-## 验证 Crafting 生产 C# 资产仍可加载，作为并行实现的兼容输入保留。
+## 验证旧路径配方资产仍可加载，且已切换到 GDScript 脚本（不再被 C# 强类型字段拒收）。
 func test_crafting_legacy_assets_remain_loadable() -> void:
 	var torch: Resource = load("res://resources/recipe/res/torch_recipe.tres")
 	var axe: Resource = load("res://resources/recipe/res/stone_axe_recipe.tres")
@@ -1651,13 +1679,25 @@ func test_crafting_legacy_assets_remain_loadable() -> void:
 		assert_eq(torch.get("RecipeName"), "火把合成表", "火把配方名称不得丢失。")
 		assert_eq(torch.get("Inputs").size(), 2, "火把配方材料数量不得丢失。")
 		assert_eq(torch.get("OutputAmount"), 1, "火把配方产出数量不得改变。")
+		assert_eq(
+			(torch.get_script() as Script).resource_path,
+			"res://resources/recipe/crafting_recipe.gd",
+			"火把配方资产必须使用 GDScript 配方脚本。"
+		)
+		assert_true(torch.get("OutputItem") != null, "火把配方产出物品不得丢失。")
 	if axe != null:
 		assert_eq(axe.get("RecipeName"), "stone_axe", "石斧配方名称不得丢失。")
 		assert_eq(axe.get("Inputs").size(), 2, "石斧配方材料数量不得丢失。")
 		assert_eq(axe.get("OutputAmount"), 1, "石斧配方产出数量不得改变。")
+		assert_eq(
+			(axe.get_script() as Script).resource_path,
+			"res://resources/recipe/crafting_recipe.gd",
+			"石斧配方资产必须使用 GDScript 配方脚本。"
+		)
+		assert_true(axe.get("OutputItem") != null, "石斧配方产出物品不得丢失。")
 
 
-## 验证玩家生产配方书已经切换到 GDScript Resource，同时保留旧 C# 资产兼容输入。
+## 验证玩家生产配方书已经切换到 GDScript Resource，旧路径资产同样已切到 GDScript。
 func test_crafting_production_assets_use_gdscript() -> void:
 	var production_paths := [
 		"res://resources/recipe/res/torch_recipe_gd.tres",
@@ -2008,9 +2048,12 @@ func test_time_system_production_contract() -> void:
 	assert_false(project_text.contains('TimeSystem="*uid://da5qjs7g2tqfs"'), "生产 Autoload 不得继续引用旧 C# TimeSystem UID。")
 	var production_consumers: Array[String] = [
 		"res://core/gameflow/WorldInteractionCoordinator.cs",
+		"res://core/gameflow/world_interaction_coordinator.gd",
 		"res://core/gameflow/TerrainInteractionExecutor.cs",
 		"res://core/map/RoomBoardPresenter.cs",
+		"res://core/map/room_board_presenter.gd",
 		"res://core/application/EncounterManager.cs",
+		"res://core/application/encounter_manager.gd",
 		"res://resources/interaction/ReusableGatheringInteraction.cs",
 		"res://resources/interaction/operations/PassTimeOp.cs",
 		"res://resources/interaction/operations/RecordReusableGatheringOp.cs",

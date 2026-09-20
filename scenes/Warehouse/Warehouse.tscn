@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://g47jvjcxw2n6" path="res://scripts/warehouse/warehouse_control.gd" id="1_control"]
 [ext_resource type="Texture2D" uid="uid://bxm7l4xyy2xpn" path="res://res/UI/按钮-未选中-选中-按下的样子.png" id="2_button"]
-[ext_resource type="Script" uid="uid://co2n4lt8ah3oh" path="res://tests/huhu9/test_fish.gd" id="3_70npq"]
+[ext_resource type="Script" uid="uid://dbp5tkd216qhu" path="res://tests/huhu9/test_fish.gd" id="3_70npq"]
 [ext_resource type="Resource" uid="uid://cpm5luho4crhu" path="res://items/items/fish.tres" id="4_nyrtq"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="5_88770"]
 

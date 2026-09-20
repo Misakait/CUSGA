@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dyu838ljiy5ul"]
+[gd_resource type="Resource" format=3 uid="uid://dyu838ljiy5ul"]
 
-[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
+[ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="2_monster"]
 [ext_resource type="Resource" uid="uid://qjyf4gthfgg0" path="res://resources/skill_cards/water_phys_canghaifufanchen.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://dgtn8xvgflfdj" path="res://resources/skill_cards/water_phys_hanlangchong.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://dmmhu7qhj6f8o" path="res://resources/skill_cards/water_phys_hongtaoxijuanlai.tres" id="6_skill_3"]
@@ -101,5 +101,5 @@ InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 3
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
+metadata/_custom_type_script = "uid://buhigatdeqss6"
 Faction = 0

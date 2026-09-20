@@ -536,7 +536,7 @@ ApplyStatusCardEffect
 路径：
 
 - `core/combat/buffs/BurnStatusData.cs`
-- `core/combat/buffs/BurnStatusDataInstance.cs`
+- `core/combat/buffs/BurnStatusInstance.cs`
 
 作用：拥有者行动开始时，按层数受到持续伤害。
 

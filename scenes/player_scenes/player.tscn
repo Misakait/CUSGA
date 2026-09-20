@@ -1,17 +1,17 @@
 [gd_scene format=3 uid="uid://disdd0mnwhfht"]
 
-[ext_resource type="Script" uid="uid://dke2t2x325k63" path="res://entities/Player.cs" id="1_d8qmr"]
-[ext_resource type="Script" uid="uid://coyiavqkkmsgv" path="res://entities/components/EnergyComponent.cs" id="2_k3sny"]
-[ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
-[ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]
-[ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="5_k3sny"]
+[ext_resource type="Script" uid="uid://chi5xxdxm0amm" path="res://entities/player.gd" id="1_d8qmr"]
+[ext_resource type="Script" uid="uid://cqk6nbgt7pb6l" path="res://entities/components/energy_component.gd" id="2_k3sny"]
+[ext_resource type="Script" uid="uid://tdur6n7ypt1o" path="res://entities/components/health_component.gd" id="3_shuw1"]
+[ext_resource type="Script" uid="uid://cnttauh7b27jw" path="res://entities/components/satiety_component.gd" id="4_b744r"]
+[ext_resource type="Script" uid="uid://ba4f811xp0el" path="res://entities/components/attribute_component.gd" id="5_k3sny"]
 [ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="6_5ro12"]
 [ext_resource type="Script" uid="uid://i6khooevdohm" path="res://entities/components/tag_component.gd" id="6_shuw1"]
 [ext_resource type="Script" uid="uid://cbdmft2a3jhg" path="res://entities/components/equipment_component.gd" id="7_b744r"]
 [ext_resource type="Script" uid="uid://bkqrnyyayxqkx" path="res://entities/components/inventory_component.gd" id="8_j2xde"]
 [ext_resource type="Script" uid="uid://iset81ag1f6r" path="res://entities/components/crafting_component.gd" id="9_v0ulg"]
-[ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="10_4xp6m"]
-[ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="11_mm880"]
+[ext_resource type="Script" uid="uid://teq3xtey3ker" path="res://entities/components/status_component.gd" id="10_4xp6m"]
+[ext_resource type="Script" uid="uid://dwdggwaghdncs" path="res://entities/components/damage_receiver_component.gd" id="11_mm880"]
 [ext_resource type="Script" uid="uid://cunxbq7v4rf68" path="res://resources/recipe/crafting_recipe.gd" id="12_recipe_gd"]
 [ext_resource type="Script" uid="uid://d4lfyog558ndn" path="res://entities/components/battle_deck_component.gd" id="12_bdeck"]
 [ext_resource type="Resource" path="res://resources/recipe/res/torch_recipe_gd.tres" id="13_recipe_gd"]
@@ -32,17 +32,17 @@ script = ExtResource("1_d8qmr")
 
 [node name="EnergyComponent" type="Node" parent="Components" unique_id=1967012898]
 script = ExtResource("2_k3sny")
-metadata/_custom_type_script = "uid://coyiavqkkmsgv"
+metadata/_custom_type_script = "uid://cqk6nbgt7pb6l"
 
 [node name="HealthComponent" type="Node" parent="Components" unique_id=2132131474]
 unique_name_in_owner = true
 script = ExtResource("3_shuw1")
 MaxValue = 1000
-metadata/_custom_type_script = "uid://d4gp22cg5vjro"
+metadata/_custom_type_script = "uid://tdur6n7ypt1o"
 
 [node name="SatietyComponent" type="Node" parent="Components" unique_id=1837990178]
 script = ExtResource("4_b744r")
-metadata/_custom_type_script = "uid://vhrfbyuub4pr"
+metadata/_custom_type_script = "uid://cnttauh7b27jw"
 
 [node name="AttributeComponent" type="Node" parent="Components" unique_id=1231615670]
 script = ExtResource("5_k3sny")
@@ -67,8 +67,8 @@ RecipeBook = SubResource("Resource_oyr7h")
 [node name="StatusComponent" type="Node" parent="Components" unique_id=935942802]
 unique_name_in_owner = true
 script = ExtResource("10_4xp6m")
-metadata/_custom_type_script = "uid://gek5smi6lrcs"
+metadata/_custom_type_script = "uid://teq3xtey3ker"
 
 [node name="DamageReceiverComponent" type="Node" parent="Components" unique_id=298072180]
 script = ExtResource("11_mm880")
-metadata/_custom_type_script = "uid://delpo10ufxcco"
+metadata/_custom_type_script = "uid://dwdggwaghdncs"

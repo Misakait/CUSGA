@@ -40,6 +40,14 @@ signal WarehouseNodeRequested(player_inventory, warehouse_inventory)
 ## 遭遇请求信号，参数为地形、技能卡数组、怪物数组和提示文本。
 signal EncounterRequested(terrain, battle_deck, monsters, message)
 
+## 怪物数据的跨语言字段协议：C# MonsterData 为 [Export]，GDScript monster_data.gd 为 @export。
+## 判定只看字段面，不看类型名或脚本路径，避免把语言身份写进生产逻辑。
+const MONSTER_DATA_REQUIRED_FIELDS: Array[StringName] = [
+	&"MonsterName",
+	&"ElementalProperty",
+	&"SkillSet",
+]
+
 ## 解析出的玩家节点。
 var Player: Node = null
 ## 解析出的玩家库存节点。
@@ -80,24 +88,18 @@ func _ready() -> void:
 
 
 ## 请求切换背包。
+## 背包组件已全部迁移到 GDScript，因此只广播通用 Node 信号；
+## 旧的强类型信号 InventoryToggleRequested 仍保留在节点 API 上，供外部按原信号名对接。
 func RequestToggleInventory() -> void:
-	if _is_csharp_script_instance(PlayerInventory):
-		InventoryToggleRequested.emit(PlayerInventory)
-		return
 	InventoryNodeToggleRequested.emit(PlayerInventoryNode)
 
 ## 请求切换合成界面。
+## 同上：C# 组件退役后只保留通用 Node 信号路径。
 func RequestToggleCrafting() -> void:
-	if _is_csharp_script_instance(PlayerCrafting):
-		CraftingToggleRequested.emit(PlayerCrafting)
-		return
 	CraftingNodeToggleRequested.emit(PlayerCraftingNode)
 
 ## 请求打开合成界面；该请求是幂等打开而不是切换。
 func RequestOpenCrafting() -> void:
-	if _is_csharp_script_instance(PlayerCrafting):
-		CraftingOpenRequested.emit(PlayerCrafting)
-		return
 	CraftingNodeOpenRequested.emit(PlayerCraftingNode)
 
 ## 将堆叠交给玩家库存。
@@ -118,9 +120,6 @@ func RequestOpenWarehouse() -> void:
 	if GlobalWarehouseNode == null:
 		push_error("GameplayPort 未绑定全局仓库节点。")
 		return
-	if _is_csharp_script_instance(PlayerInventory) and _is_csharp_script_instance(GlobalWarehouseInventory):
-		WarehouseRequested.emit(PlayerInventory, GlobalWarehouseInventory)
-		return
 	WarehouseNodeRequested.emit(PlayerInventoryNode, GlobalWarehouseNode)
 
 ## 请求进入遭遇流程。
@@ -128,7 +127,7 @@ func RequestOpenWarehouse() -> void:
 ## @param monster_or_monsters 单个怪物 Resource 或怪物数组。
 ## @param message 遭遇提示文本。
 func RequestEncounter(terrain: Variant, monster_or_monsters: Variant, message: String = "") -> void:
-	var monsters: Array[MonsterData] = _filter_monsters(monster_or_monsters)
+	var monsters: Array[Resource] = _filter_monsters(monster_or_monsters)
 	var scaled_monsters: Variant = monsters
 	var encounter_scaler: Node = _get_encounter_scaler()
 	if encounter_scaler != null and encounter_scaler.has_method("ScaleEncounterMonsters"):
@@ -156,42 +155,54 @@ func GetPlayerSkillCards() -> Array[Resource]:
 	return cards
 
 
-## 把单个怪物或动态数组转换为战斗边界要求的强类型数组。
-## @param source 单个 MonsterData、任意数组或空值。
-## @return 仅包含有效 MonsterData 的新数组，保持原顺序和 Resource 身份。
-func _filter_monsters(source: Variant) -> Array[MonsterData]:
-	var monsters: Array[MonsterData] = []
+## 把单个怪物或动态数组转换为战斗边界要求的怪物资源数组。
+## @param source 单个怪物数据、任意数组或空值。
+## @return 仅包含有效怪物数据的新数组，保持原顺序和 Resource 身份。
+func _filter_monsters(source: Variant) -> Array[Resource]:
+	var monsters: Array[Resource] = []
 	if source is Array:
 		for raw_monster: Variant in source:
-			if raw_monster is MonsterData:
-				monsters.append(raw_monster)
-	elif source is MonsterData:
-		monsters.append(source)
+			if _is_monster_data(raw_monster):
+				monsters.append(raw_monster as Resource)
+	elif _is_monster_data(source):
+		monsters.append(source as Resource)
 	return monsters
 
 
+## 判断资源是否为旧 C# MonsterData 或迁移后的 GDScript 怪物数据。
+##
+## 两侧实现共用同一组导出字段，因此判定只扫字段面（属性表）。
+##
+## @param value 待判断的动态值。
+## @return 属于两种怪物数据实现之一时返回 true。
+func _is_monster_data(value: Variant) -> bool:
+	if not (value is Resource):
+		return false
+
+	var resource: Resource = value
+	var present: Dictionary = {}
+	for property: Dictionary in resource.get_property_list():
+		present[StringName(property.get("name", ""))] = true
+
+	for field: StringName in MONSTER_DATA_REQUIRED_FIELDS:
+		if not present.has(field):
+			return false
+
+	return true
+
+
 ## 解析遭遇倍率桥；生产 Main 由同级 WorldInteractionCoordinator 完成动态数组过滤。
-## @return 优先返回同级协调器；仅允许 GDScript EncounterManager 走直接兼容回退。
+## @return 优先返回同级协调器；否则回退到同级或全局 EncounterManager。
 func _get_encounter_scaler() -> Node:
 	var coordinator := get_node_or_null("../WorldInteractionCoordinator") as Node
 	if coordinator != null and coordinator.has_method("ScaleEncounterMonsters"):
 		return coordinator
 	var sibling_manager := get_node_or_null("../EncounterManager") as Node
-	if sibling_manager != null and not _is_csharp_script_instance(sibling_manager):
+	if sibling_manager != null:
 		return sibling_manager
 	if is_inside_tree():
 		var root_manager := get_node_or_null("/root/EncounterManager") as Node
-		if root_manager != null and not _is_csharp_script_instance(root_manager):
+		if root_manager != null:
 			return root_manager
 	push_error("GameplayPort 未找到可安全接收动态怪物数组的遭遇倍率桥。")
 	return null
-
-
-## 判断节点是否仍由 C# 脚本实现，用于选择旧强类型信号或通用 Node 信号。
-## @param node 待检查的组件节点。
-## @return 节点脚本扩展名为 .cs 时返回 true。
-func _is_csharp_script_instance(node: Node) -> bool:
-	if node == null:
-		return false
-	var node_script := node.get_script() as Script
-	return node_script != null and node_script.resource_path.get_extension().to_lower() == "cs"

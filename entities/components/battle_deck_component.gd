@@ -11,13 +11,13 @@ func _init() -> void:
 	KeepsTrailingEmptySlot = true
 
 
-## 只接受 C# SkillCardData 或具有 Skill 字段的并行 GDScript 物品资源。
+## 只接受暴露 Skill 字段的物品资源（旧 C# SkillCardData 与 GDScript 技能卡都满足该协议）。
+##
+## 这里刻意不按脚本路径判定：生产物品已全部使用 GDScript，而「脚本是不是 SkillCardData.cs」
+## 这类分支会把语言绑定留在生产代码里；旧 C# 类型的 Skill 同样是导出属性，字段协议已完全覆盖。
 func _can_store_item(item: Resource) -> bool:
 	if item == null:
 		return false
-	var script: Script = item.get_script()
-	if script != null and String(script.resource_path).ends_with("SkillCardData.cs"):
-		return true
 	for property_info in item.get_property_list():
 		if property_info is Dictionary and StringName(property_info.get("name", "")) == &"Skill":
 			return true

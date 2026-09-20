@@ -6,7 +6,7 @@
 [ext_resource type="Resource" uid="uid://b7ptrlcnbc7bw" path="res://items/items/sand.tres" id="2_2lf7b"]
 [ext_resource type="Resource" uid="uid://dppaaom3xxsak" path="res://items/environment/sandpile.tres" id="3_tml74"]
 [ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="4_hrn4a"]
-[ext_resource type="Script" path="res://resources/interaction/gathering_interaction.gd" id="5_cfkty"]
+[ext_resource type="Script" uid="uid://b12x5ghy82no3" path="res://resources/interaction/gathering_interaction.gd" id="5_cfkty"]
 
 [sub_resource type="Resource" id="Resource_8j2mo"]
 script = ExtResource("1_l4qi2")

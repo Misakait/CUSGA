@@ -57,9 +57,9 @@ configure_console_encoding()
 
 SKILL_CARD_SCRIPT = "res://resources/item/card/skill_card_data.gd"
 SKILL_CARD_SCRIPT_UID = "uid://d1ln6w8iaa4px"
-COMBAT_SKILL_SCRIPT = "res://core/combat/skills/CombatSkillData.cs"
-MONSTER_SCRIPT = "res://resources/monster/MonsterData.cs"
-STARTING_STATS_SCRIPT = "res://resources/stats/StartingStats.cs"
+COMBAT_SKILL_SCRIPT = "res://core/combat/skills/combat_skill_data.gd"
+MONSTER_SCRIPT = "res://resources/monster/monster_data.gd"
+STARTING_STATS_SCRIPT = "res://resources/stats/starting_stats.gd"
 MONSTER_SKILL_ENTRY_SCRIPT = "res://resources/monster/monster_skill_entry_data.gd"
 MONSTER_SKILL_SET_SCRIPT = "res://resources/monster/monster_skill_set_data.gd"
 
@@ -1576,7 +1576,7 @@ def create_combat_skill_resource(row: dict[str, str]) -> str:
     """生成最小 CombatSkillData 资源；后续复杂 Effects 仍由 Inspector 或专门效果表扩展。"""
     return "\n".join(
         [
-            '[gd_resource type="Resource" script_class="CombatSkillData" format=3]',
+            '[gd_resource type="Resource" format=3]',
             "",
             f'[ext_resource type="Script" path="{COMBAT_SKILL_SCRIPT}" id="combat_script"]',
             "",
@@ -1627,7 +1627,7 @@ def create_skill_card_resource(row: dict[str, str], combat_path: str) -> str:
 def create_monster_resource(row: dict[str, str], skill_paths: list[str]) -> str:
     """生成最小 MonsterData 资源，包含 StartingStats 与 SkillSet。"""
     lines = [
-        '[gd_resource type="Resource" script_class="MonsterData" format=3]',
+        '[gd_resource type="Resource" format=3]',
         "",
         f'[ext_resource type="Script" path="{MONSTER_SCRIPT}" id="monster_script"]',
         f'[ext_resource type="Script" path="{STARTING_STATS_SCRIPT}" id="starting_stats_script"]',
@@ -1672,7 +1672,7 @@ def create_monster_resource(row: dict[str, str], skill_paths: list[str]) -> str:
             "",
             '[sub_resource type="Resource" id="CSV_MonsterSkillSet"]',
             'script = ExtResource("monster_skill_set_script")',
-            f'Skills = Array[ExtResource("monster_skill_entry_script")]([{entry_refs}])',
+            f'Skills = Array[Resource]([{entry_refs}])',
             "",
             "[resource]",
             'script = ExtResource("monster_script")',
@@ -1757,6 +1757,8 @@ def upsert_existing_skill_card(
 def upsert_existing_combat_skill(path: Path, row: dict[str, str]) -> str:
     """生成已有 CombatSkillData 的更新文本，保留 Effects 子资源。"""
     text = path.read_text(encoding="utf-8")
+    # 战斗技能已由 GDScript 提供；导入旧文件时同步清理 C# 全局类型标头。
+    text = re.sub(r'\s+script_class="CombatSkillData"', "", text, count=1)
     text = replace_or_add_resource_property(text, "Element", row.get("element") or "0")
     text = replace_or_add_resource_property(
         text, "TargetingType", row.get("targeting_type") or "1"
@@ -1830,7 +1832,7 @@ def update_monster_skillset(text: str, skill_paths: list[str]) -> str:
         [
             '[sub_resource type="Resource" id="CSV_MonsterSkillSet"]',
             'script = ExtResource("csv_set_script")',
-            f'Skills = Array[ExtResource("csv_entry_script")]([{entry_refs}])',
+            f'Skills = Array[Resource]([{entry_refs}])',
             "",
         ]
     )

@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="CombatSkillData" format=3]
+[gd_resource type="Resource" format=3]
 
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_jvsli"]
-[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_mmttl"]
-[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_0yfcq"]
+[ext_resource type="Script" uid="uid://bu272src84v8y" path="res://core/combat/effects/card_effect.gd" id="1_jvsli"]
+[ext_resource type="Script" uid="uid://0nubbe6tiwxp" path="res://core/combat/effects/damage_effect.gd" id="2_mmttl"]
+[ext_resource type="Script" uid="uid://sxc1b8jrnrys" path="res://core/combat/skills/combat_skill_data.gd" id="3_0yfcq"]
 [ext_resource type="Texture2D" uid="uid://dwl4y02inrubl" path="res://res/skillcard/wood_skill_card.png" id="icon_skillcard"]
 
 [sub_resource type="Resource" id="Resource_c0lj7"]
@@ -10,19 +10,19 @@ script = ExtResource("2_mmttl")
 BaseDamage = 1
 Element = 1
 TargetScope = 0
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
+metadata/_custom_type_script = "uid://0nubbe6tiwxp"
 
 [sub_resource type="Resource" id="Resource_mqmeo"]
 script = ExtResource("2_mmttl")
 Element = 1
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
+metadata/_custom_type_script = "uid://0nubbe6tiwxp"
 
 [resource]
 script = ExtResource("3_0yfcq")
 Element = 1
-Effects = Array[ExtResource("1_jvsli")]([SubResource("Resource_c0lj7"), SubResource("Resource_mqmeo")])
+Effects = Array[Resource]([SubResource("Resource_c0lj7"), SubResource("Resource_mqmeo")])
 CardId = "&\"senketsu\""
 CardName = "穿血"
 Description = "对自己造成一点伤害，对一个敌人造成10点伤害"
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+metadata/_custom_type_script = "uid://sxc1b8jrnrys"
 TargetingType = 1

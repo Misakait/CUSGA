@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dipywoi5vwhhh"]
 
-[ext_resource type="Texture2D" uid="uid://n8dpd6gtfj6l" path="res://res/items/broth.png" id="1_d21v3"]
+[ext_resource type="Texture2D" uid="uid://dtjjjyc7ljb6a" path="res://res/items/broth.png" id="1_d21v3"]
 [ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_nclji"]
 
 [resource]

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://tatgubna8cvp"]
 
-[ext_resource type="Script" uid="uid://cw3ppj00qmjxn" path="res://scripts/map_scripts/map_son_scripts/map_snowfield.gd" id="1_4olyq"]
+[ext_resource type="Script" path="res://scripts/map_scripts/map_son_scripts/map_snowfield.gd" id="1_4olyq"]
 [ext_resource type="Texture2D" uid="uid://bf60q8evt0wm2" path="res://res/image/黑暗破败感像素背景画 (3).png" id="1_lqndg"]
 [ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="3_profile"]
 [ext_resource type="Texture2D" uid="uid://cakl1fn186udi" path="res://res/environment/altar.png" id="4_15fsb"]

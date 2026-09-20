@@ -45,9 +45,16 @@ const CRAFTING_UI_SCENE_PATH: String = "res://scenes/crafting/crafting_ui.tscn"
 const PLAYER_SOURCE_PATH: String = "res://entities/Player.cs"
 const HUD_CONTROLLER_SCRIPT: GDScript = preload("res://core/ui/hud/hud_controller.gd")
 const BACKPACK_BUTTON_SCRIPT: GDScript = preload("res://core/ui/hud/backpack_button.gd")
-const LEGACY_ITEM_DATA_SCRIPT: Script = preload("res://resources/item/ItemData.cs")
-const LEGACY_ITEM_STACK_SCRIPT: Script = preload("res://core/inventory/ItemStack.cs")
-const LEGACY_DRAGGABLE_DATA_SCRIPT: Script = preload("res://core/ui/draggable/DraggableData.cs")
+## C# 兼容垫片路径：迁移期作为对照输入，C# 退役后自动换成等价的生产 GDScript 实现。
+const LEGACY_ITEM_DATA_CS_PATH: String = "res://resources/item/ItemData.cs"
+const LEGACY_ITEM_STACK_CS_PATH: String = "res://core/inventory/ItemStack.cs"
+const LEGACY_DRAGGABLE_DATA_CS_PATH: String = "res://core/ui/draggable/DraggableData.cs"
+## 上述三个 C# 垫片退役后的等价 GDScript 实现路径。
+const PRODUCTION_ITEM_DATA_PATH: String = "res://resources/item/item_data.gd"
+const PRODUCTION_ITEM_STACK_PATH: String = "res://resources/item/item_stack.gd"
+const PRODUCTION_DRAGGABLE_DATA_PATH: String = "res://core/ui/draggable/draggable_data.gd"
+## C# 可选助手：C# 缺席时安全替代或收起跨语言对照，避免解析期错误与假通过。
+const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
 const SKILL_CARD_PROBE_SCRIPT: GDScript = preload("res://tests/godot/inventory_skill_card_probe.gd")
 const LEGACY_ITEM_PATH: String = "res://items/items/applecore.tres"
 const PRODUCTION_AX_PATH: String = "res://items/tool/Ax.tres"
@@ -317,8 +324,12 @@ func suite_name() -> String:
 ## 验证玩家根脚本只通过稳定方法协议访问库存，不再要求具体 C# InventoryComponent。
 ## 返回值：无。
 func test_player_inventory_access_uses_node_protocol() -> void:
-	var player_source: String = FileAccess.get_file_as_string(PLAYER_SOURCE_PATH)
-	assert_false(player_source.is_empty(), "Player.cs 必须能够以 UTF-8 文本读取。")
+	## C# 源文对照：C# 退役后 read() 返回空串，相关断言按条件收起而不是假通过。
+	var player_source: String = CS_OPTIONAL.read(PLAYER_SOURCE_PATH)
+	if player_source.is_empty():
+		## Player.cs 已随 C# 退役下线：本用例整体只对照 C# 源文，因此记跳过而不是 0 断言失败。
+		skip(CS_OPTIONAL.SKIP_REASON)
+		return
 	assert_true(player_source.contains("private Node _inventory;"), "Player 库存字段必须使用通用 Node 边界。")
 	assert_true(player_source.contains("GetNode<Node>(\"Components/InventoryComponent\")"), "Player 必须按稳定节点路径解析任一语言库存。")
 	assert_true(player_source.contains("_inventory.Call(\"AddItem\", item, amount)"), "加入物品必须从跨语言堆叠读取稳定属性并委托库存的 AddItem 协议。")
@@ -328,19 +339,42 @@ func test_player_inventory_access_uses_node_protocol() -> void:
 ## 验证玩家和采集链只通过稳定方法协议读取装备组件。
 ## 返回值：无。
 func test_player_equipment_consumers_use_node_protocol() -> void:
-	var player_source: String = FileAccess.get_file_as_string(PLAYER_SOURCE_PATH)
-	var coordinator_source: String = FileAccess.get_file_as_string("res://core/gameflow/WorldInteractionCoordinator.cs")
-	var executor_source: String = FileAccess.get_file_as_string("res://core/gameflow/TerrainInteractionExecutor.cs")
-	var gathering_source: String = FileAccess.get_file_as_string("res://resources/interaction/GatheringInteraction.cs")
-	var reusable_source: String = FileAccess.get_file_as_string("res://resources/interaction/ReusableGatheringInteraction.cs")
-	assert_true(player_source.contains("public Node Equipment { get; private set; }"), "Player.Equipment 必须暴露通用 Node 边界。")
-	assert_true(player_source.contains("GetNode<Node>(\"Components/EquipmentComponent\")"), "Player 必须按稳定节点路径解析任一语言装备组件。")
-	assert_true(coordinator_source.contains("GetReusableEffectiveTimeCost(Resource interaction, Node equipment)"), "长按耗时入口必须接受通用装备节点。")
-	assert_true(executor_source.contains("equipment.Call(\"GetNightEncounterChanceMultiplier\")"), "采集遭遇必须动态读取夜晚装备倍率。")
-	assert_true(gathering_source.contains("Equipment.Call(\"GetGatheringYieldBonus\", GatheringTag)"), "一次性采集必须动态读取额外产量。")
-	assert_true(reusable_source.contains("GetEffectiveTimeCost(Node equipment)"), "旧可重复采集兼容资源必须接受通用装备节点。")
-	assert_true(reusable_source.contains("equipment.Call(\"GetGatheringTimeReduction\", GatheringTag, (int)EffectiveToolSlot)"), "旧可重复采集必须动态读取工具减免。")
-	assert_false(player_source.contains("GetNode<EquipmentComponent>(\"Components/EquipmentComponent\")"), "Player 不得继续强制转换装备组件为 C# EquipmentComponent。")
+	## C# 源文对照：C# 退役后 read() 返回空串，相关断言按条件收起而不是假通过。
+	var player_source: String = CS_OPTIONAL.read(PLAYER_SOURCE_PATH)
+	var coordinator_source: String = CS_OPTIONAL.read("res://core/gameflow/WorldInteractionCoordinator.cs")
+	var executor_source: String = CS_OPTIONAL.read("res://core/gameflow/TerrainInteractionExecutor.cs")
+	var gathering_source: String = CS_OPTIONAL.read("res://resources/interaction/GatheringInteraction.cs")
+	var reusable_source: String = CS_OPTIONAL.read("res://resources/interaction/ReusableGatheringInteraction.cs")
+	if not player_source.is_empty():
+		assert_true(player_source.contains("public Node Equipment { get; private set; }"), "Player.Equipment 必须暴露通用 Node 边界。")
+		assert_true(player_source.contains("GetNode<Node>(\"Components/EquipmentComponent\")"), "Player 必须按稳定节点路径解析任一语言装备组件。")
+	if not coordinator_source.is_empty():
+		assert_true(coordinator_source.contains("GetReusableEffectiveTimeCost(Resource interaction, Node equipment)"), "长按耗时入口必须接受通用装备节点。")
+		assert_true(coordinator_source.contains("IsReusableGathering(Resource interaction)"), "长按判定必须兼容两种可重复采集实现。")
+	var coordinator_gd_source: String = FileAccess.get_file_as_string("res://core/gameflow/world_interaction_coordinator.gd")
+	assert_true(coordinator_gd_source.contains("func _get_reusable_effective_time_cost(interaction: Resource, equipment: Node) -> int:"), "GDScript 长按耗时入口必须接受通用装备节点。")
+	assert_true(
+		coordinator_gd_source.contains("_resolve_reusable_gathering_method(interaction, REUSABLE_GATHERING_TIME_COST_INDEX)"),
+		"GDScript 长按耗时入口必须按方法协议动态解析可重复采集 API。"
+	)
+	assert_true(
+		coordinator_gd_source.contains("&\"GetEffectiveTimeCost\""),
+		"GDScript 长按耗时入口必须保留旧 C# 的 PascalCase 方法名。"
+	)
+	assert_true(
+		not coordinator_gd_source.contains("is ReusableGatheringInteraction"),
+		"GDScript 长按耗时入口不得再按 C# 类型名判定语言身份。"
+	)
+	assert_true(coordinator_gd_source.contains("func _is_reusable_gathering(interaction: Resource) -> bool:"), "GDScript 长按判定必须兼容两种可重复采集实现。")
+	if not executor_source.is_empty():
+		assert_true(executor_source.contains("equipment.Call(\"GetNightEncounterChanceMultiplier\")"), "采集遭遇必须动态读取夜晚装备倍率。")
+	if not gathering_source.is_empty():
+		assert_true(gathering_source.contains("Equipment.Call(\"GetGatheringYieldBonus\", GatheringTag)"), "一次性采集必须动态读取额外产量。")
+	if not reusable_source.is_empty():
+		assert_true(reusable_source.contains("GetEffectiveTimeCost(Node equipment)"), "旧可重复采集兼容资源必须接受通用装备节点。")
+		assert_true(reusable_source.contains("equipment.Call(\"GetGatheringTimeReduction\", GatheringTag, (int)EffectiveToolSlot)"), "旧可重复采集必须动态读取工具减免。")
+	if not player_source.is_empty():
+		assert_false(player_source.contains("GetNode<EquipmentComponent>(\"Components/EquipmentComponent\")"), "Player 不得继续强制转换装备组件为 C# EquipmentComponent。")
 
 
 ## 验证玩家生产场景已经切换到 GDScript EquipmentComponent，并保留无 out 查询入口。
@@ -366,12 +400,15 @@ func test_player_equipment_production_uses_gdscript() -> void:
 ## 验证玩家卡组及战斗请求通过 Node 边界切换为 GDScript，同时保留技能卡数组过滤。
 ## 返回值：无。
 func test_player_battle_deck_production_uses_gdscript() -> void:
-	var player_source: String = FileAccess.get_file_as_string(PLAYER_SOURCE_PATH)
-	var port_source: String = FileAccess.get_file_as_string("res://core/application/GameplayPort.cs")
-	assert_true(player_source.contains("public Node BattleDeck { get; private set; }"), "Player.BattleDeck 必须使用通用 Node 边界。")
-	assert_true(port_source.contains("public Node PlayerBattleDeck"), "GameplayPort 必须暴露通用卡组节点。")
-	assert_true(port_source.contains("public Array<Resource> GetPlayerSkillCards()"), "GameplayPort 必须提供跨语言技能卡 Resource 数组出口。")
-	assert_true(port_source.contains("rawCard.AsGodotObject() is Resource skillCard") and port_source.contains('skillCard.HasMethod("ApplyEffect")'), "卡组出口必须按稳定方法过滤无效 Resource 元素。")
+	## C# 源文对照：C# 退役后 read() 返回空串，相关断言按条件收起而不是假通过。
+	var player_source: String = CS_OPTIONAL.read(PLAYER_SOURCE_PATH)
+	var port_source: String = CS_OPTIONAL.read("res://core/application/GameplayPort.cs")
+	if not player_source.is_empty():
+		assert_true(player_source.contains("public Node BattleDeck { get; private set; }"), "Player.BattleDeck 必须使用通用 Node 边界。")
+	if not port_source.is_empty():
+		assert_true(port_source.contains("public Node PlayerBattleDeck"), "GameplayPort 必须暴露通用卡组节点。")
+		assert_true(port_source.contains("public Array<Resource> GetPlayerSkillCards()"), "GameplayPort 必须提供跨语言技能卡 Resource 数组出口。")
+		assert_true(port_source.contains("rawCard.AsGodotObject() is Resource skillCard") and port_source.contains('skillCard.HasMethod("ApplyEffect")'), "卡组出口必须按稳定方法过滤无效 Resource 元素。")
 	var player_scene := ResourceLoader.load("res://scenes/player_scenes/player.tscn", "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 	assert_true(player_scene != null, "玩家生产场景必须能够加载。")
 	if player_scene == null:
@@ -988,16 +1025,18 @@ func test_draggable_data_preserves_cross_language_payload() -> void:
 func test_item_tooltip_presenter_accepts_cross_language_items() -> void:
 	var panel: FakeItemTooltipPanel = track(FakeItemTooltipPanel.new()) as FakeItemTooltipPanel
 	var presenter: RefCounted = ITEM_TOOLTIP_PRESENTER_SCRIPT.new(panel)
-	var legacy_item: Resource = LEGACY_ITEM_DATA_SCRIPT.new() as Resource
+	## 兼容物品：迁移期是旧 C# 垫片实例，C# 退役后是等价的生产 GDScript 实例。
+	var legacy_item: Resource = CS_OPTIONAL.script_or(LEGACY_ITEM_DATA_CS_PATH, PRODUCTION_ITEM_DATA_PATH).new() as Resource
 	legacy_item.set("CardId", &"legacy_tooltip_probe")
-	legacy_item.set("CardName", "旧 C# 提示物品")
-	legacy_item.set("Description", "旧 C# 物品描述")
+	legacy_item.set("CardName", "兼容提示物品")
+	legacy_item.set("Description", "兼容物品描述")
 
-	var legacy_stack: RefCounted = LEGACY_ITEM_STACK_SCRIPT.new() as RefCounted
+	## 兼容堆叠：迁移期是旧 C# 垫片实例，C# 退役后是等价的生产 GDScript 实例。
+	var legacy_stack: RefCounted = CS_OPTIONAL.script_or(LEGACY_ITEM_STACK_CS_PATH, PRODUCTION_ITEM_STACK_PATH).new() as RefCounted
 	legacy_stack.call("SetItem", legacy_item, 1)
 	presenter.call("Show", legacy_stack)
-	assert_eq(panel.shown_title, "旧 C# 提示物品", "旧 C# ItemStack 必须显示 ItemData 名称。")
-	assert_eq(panel.shown_description, "旧 C# 物品描述", "旧 C# ItemStack 必须显示 ItemData 描述。")
+	assert_eq(panel.shown_title, "兼容提示物品", "兼容 ItemStack 必须显示 ItemData 名称。")
+	assert_eq(panel.shown_description, "兼容物品描述", "兼容 ItemStack 必须显示 ItemData 描述。")
 
 	var gd_item: Resource = _new_item(&"tooltip_probe", "并行提示物品", 1)
 	gd_item.set("Description", "")
@@ -1055,7 +1094,10 @@ func test_equipment_slot_ui_preserves_visual_and_drag_payload_contract() -> void
 	assert_true(payload.get("SourceEquipment") == equipment, "拖拽载荷必须保留来源装备组件。")
 	assert_eq(payload.get("FromEquipmentSlot"), int(EQUIPMENT_TYPES.EquipmentSlot.Weapon), "拖拽载荷必须保留来源槽位。")
 	assert_true(payload.get("HeldStack") == equipment.TryGetEquippedStack(int(EQUIPMENT_TYPES.EquipmentSlot.Weapon)), "拖拽载荷必须保留当前装备堆叠引用。")
-	assert_true(bool(slot_ui.call("_is_draggable_data", LEGACY_DRAGGABLE_DATA_SCRIPT.new())), "并行装备槽必须识别旧 C# DraggableData。")
+	assert_true(
+		bool(slot_ui.call("_is_draggable_data", CS_OPTIONAL.script_or(LEGACY_DRAGGABLE_DATA_CS_PATH, PRODUCTION_DRAGGABLE_DATA_PATH).new())),
+		"并行装备槽必须识别兼容 DraggableData 载荷。"
+	)
 	var preview: Control = track(slot_ui.call("_create_drag_preview")) as Control
 	var preview_icon: TextureRect = preview.get_child(0) as TextureRect
 	assert_true(preview_icon.texture == icon_texture, "拖拽预览必须显示原物品图标。")
@@ -1153,7 +1195,10 @@ func test_slot_ui_preserves_binding_visual_shortcut_and_drag_contract() -> void:
 	assert_eq(payload.get("FromIndex"), 0, "拖拽载荷必须保留来源索引。")
 	assert_true(payload.get("SourceInventory") == inventory, "拖拽载荷必须保留来源库存组件。")
 	assert_true(payload.get("HeldStack") == bound_stack, "拖拽载荷必须保留当前堆叠引用。")
-	assert_true(bool(slot_ui.call("_is_draggable_data", LEGACY_DRAGGABLE_DATA_SCRIPT.new())), "并行普通槽必须识别旧 C# DraggableData。")
+	assert_true(
+		bool(slot_ui.call("_is_draggable_data", CS_OPTIONAL.script_or(LEGACY_DRAGGABLE_DATA_CS_PATH, PRODUCTION_DRAGGABLE_DATA_PATH).new())),
+		"并行普通槽必须识别兼容 DraggableData 载荷。"
+	)
 	var preview: Control = track(slot_ui.call("_create_drag_preview")) as Control
 	var preview_icon: TextureRect = preview.get_child(0) as TextureRect
 	assert_true(preview_icon.texture == icon_texture, "普通槽拖拽预览必须显示原物品图标。")

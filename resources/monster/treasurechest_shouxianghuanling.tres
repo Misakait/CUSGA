@@ -1,12 +1,12 @@
-[gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://df4y6m6waryjo"]
+[gd_resource type="Resource" format=3 uid="uid://df4y6m6waryjo"]
 
-[ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
+[ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="2_monster"]
 [ext_resource type="Script" path="res://resources/stats/starting_stats.gd" id="3_stats"]
 [ext_resource type="Resource" uid="uid://dlyeiar0v2cl2" path="res://resources/skill_cards/metal_phys_qianfengpodishi.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://cp4mf81epfamo" path="res://resources/skill_cards/metal_phys_qiege.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://bre4q55vq3sgo" path="res://resources/skill_cards/metal_phys_ruifengji.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://ckoqqpocqf0ec" path="res://resources/skill_cards/metal_phys_suitiekuangji.tres" id="7_skill_4"]
-[ext_resource type="Resource" uid="uid://pnag0n3qvdqi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="8_skill_5"]
+[ext_resource type="Resource" uid="uid://chqp3ixoqp4oi" path="res://resources/skill_cards/wood_magic_tengxiang.tres" id="8_skill_5"]
 [ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="loot_drop_script"]
 [ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="loot_table_script"]
 [ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="monster_skill_entry_script"]
@@ -807,6 +807,6 @@ InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 2
 LootTable = SubResource("Resource_loot")
 SkillSet = SubResource("CSV_MonsterSkillSet")
-metadata/_custom_type_script = "uid://dh28trwcjvre6"
+metadata/_custom_type_script = "uid://buhigatdeqss6"
 Faction = 0
 MaxHealth = 100

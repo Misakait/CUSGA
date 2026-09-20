@@ -7,8 +7,10 @@ extends McpTestSuite
 const TAG_COMPONENT_SCRIPT: GDScript = preload("res://entities/components/tag_component.gd")
 ## 生产玩家场景路径，用于锁定实际节点脚本引用。
 const PLAYER_SCENE_PATH: String = "res://scenes/player_scenes/player.tscn"
-## 旧 C# 驻守概率提供器，用于验证迁移期的反向跨语言兼容边界。
-const LEGACY_PASSAGE_GUARD_PROVIDER_SCRIPT: Script = preload("res://core/map/PassageGuardProbabilityProvider.cs")
+## 旧 C# 驻守概率提供器路径：迁移期用它验证反向跨语言兼容边界，C# 退役后相关对照用例整体跳过。
+const LEGACY_PASSAGE_GUARD_PROVIDER_CS_PATH: String = "res://core/map/PassageGuardProbabilityProvider.cs"
+## C# 可选助手：C# 缺席时安全跳过跨语言对照，避免 `preload` 造成解析期错误。
+const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
 ## GDScript 驻守设置脚本，为旧提供器提供迁移后的配置输入。
 const PASSAGE_GUARD_SETTINGS_SCRIPT: GDScript = preload("res://resources/map/passage_guard_settings.gd")
 ## GDScript 驻守概率修正脚本，为旧提供器提供迁移后的嵌套资源输入。
@@ -70,6 +72,10 @@ func test_player_scene_uses_gdscript_tag_component() -> void:
 ## 验证保留的 C# 驻守兼容垫片可查询 GDScript 标签组件。
 ## 返回值：无。
 func test_legacy_passage_guard_provider_accepts_gdscript_tags() -> void:
+	## C# 垫片已退役时本用例没有可测对象，记跳过而不是失败（C# 存在时下面的断言照常执行）。
+	if not CS_OPTIONAL.present(LEGACY_PASSAGE_GUARD_PROVIDER_CS_PATH):
+		skip(CS_OPTIONAL.SKIP_REASON)
+		return
 	## 迁移后的驻守全局配置。
 	var settings := PASSAGE_GUARD_SETTINGS_SCRIPT.new() as Resource
 	settings.set("BaseGuardChance", 0.2)
@@ -83,7 +89,7 @@ func test_legacy_passage_guard_provider_accepts_gdscript_tags() -> void:
 	## 迁移后的玩家标签组件。
 	var tags := TAG_COMPONENT_SCRIPT.new() as Node
 	## 保留的旧 C# 提供器实例。
-	var provider := LEGACY_PASSAGE_GUARD_PROVIDER_SCRIPT.new() as RefCounted
+	var provider := CS_OPTIONAL.script(LEGACY_PASSAGE_GUARD_PROVIDER_CS_PATH).new() as RefCounted
 	## 缺少标签协议的节点，用于锁定动态边界的安全退化行为。
 	var missing_protocol := Node.new()
 	assert_true(is_equal_approx(float(provider.call("Calculate", settings, missing_protocol)), 0.2), "缺少 HasTag 方法时旧 C# 提供器必须安全忽略标签修正。")

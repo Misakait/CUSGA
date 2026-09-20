@@ -1,21 +1,21 @@
-[gd_resource type="Resource" script_class="CombatSkillData" format=3 uid="uid://bjsh48hlrddwy"]
+[gd_resource type="Resource" format=3 uid="uid://bjsh48hlrddwy"]
 
-[ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="1_cardeffect"]
-[ext_resource type="Script" uid="uid://b2df0ritlplj8" path="res://core/combat/effects/DamageEffect.cs" id="2_damage"]
-[ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="3_combat"]
+[ext_resource type="Script" uid="uid://bu272src84v8y" path="res://core/combat/effects/card_effect.gd" id="1_cardeffect"]
+[ext_resource type="Script" uid="uid://0nubbe6tiwxp" path="res://core/combat/effects/damage_effect.gd" id="2_damage"]
+[ext_resource type="Script" uid="uid://sxc1b8jrnrys" path="res://core/combat/skills/combat_skill_data.gd" id="3_combat"]
 
 [sub_resource type="Resource" id="Resource_damage"]
 script = ExtResource("2_damage")
 BaseDamage = 5
 Element = 3
-metadata/_custom_type_script = "uid://b2df0ritlplj8"
+metadata/_custom_type_script = "uid://0nubbe6tiwxp"
 
 [resource]
 script = ExtResource("3_combat")
 Element = 3
 TargetingType = 4
-Effects = Array[ExtResource("1_cardeffect")]([SubResource("Resource_damage")])
+Effects = Array[Resource]([SubResource("Resource_damage")])
 CardId = null
 CardName = "测试卡6（全体单位）"
 Description = "对所有单位造成5点水属性物理伤害。"
-metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
+metadata/_custom_type_script = "uid://sxc1b8jrnrys"

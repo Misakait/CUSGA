@@ -7,7 +7,7 @@ signal hovered_off
 var hand_position #手牌位置
 var data: Resource
 var is_lock:bool = false
-const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
+const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/skill_execution_context.gd"
 const ELEMENT_DISPLAY_NAMES := {
 	0: "无",
 	1: "木",
