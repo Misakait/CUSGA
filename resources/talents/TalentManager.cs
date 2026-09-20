@@ -1,4 +1,3 @@
-using CUSGA.core.autoloads;
 using CUSGA.core.constants;
 using Godot;
 using System;
@@ -11,7 +10,9 @@ public partial class TalentManager : CanvasLayer
 	[Export] public Godot.Collections.Array<TalentData> AllTalentsPool;
 	[Export] public PackedScene CardScenePrefab;
 	[Export] public HBoxContainer CardsContainer;
-	private TimeSystem _timeSystem;
+	private static readonly StringName TalentSelectionTriggeredSignal = "TalentSelectionTriggered";
+	private Node _timeSystem;
+	private Callable _talentSelectionCallable;
 	private readonly Random _random = new();
 	private List<TalentData> _availableTalents = [];
 
@@ -19,13 +20,27 @@ public partial class TalentManager : CanvasLayer
 	{
 		Hide();
 		_availableTalents = [.. AllTalentsPool];
-		_timeSystem = GetNode<TimeSystem>("/root/TimeSystem");
-		_timeSystem.TalentSelectionTriggered += PopUpTalentSelection;
+		_timeSystem = GetNodeOrNull<Node>("/root/TimeSystem");
+		if (_timeSystem == null || !_timeSystem.HasSignal(TalentSelectionTriggeredSignal))
+		{
+			GD.PushError("TalentManager 未找到兼容的 TimeSystem 天赋触发信号。");
+			return;
+		}
+		_talentSelectionCallable = Callable.From(PopUpTalentSelection);
+		if (!_timeSystem.IsConnected(TalentSelectionTriggeredSignal, _talentSelectionCallable))
+		{
+			_timeSystem.Connect(TalentSelectionTriggeredSignal, _talentSelectionCallable);
+		}
 	}
 
 	public override void _ExitTree()
 	{
-		_timeSystem.TalentSelectionTriggered -= PopUpTalentSelection;
+		if (_timeSystem != null
+			&& _timeSystem.HasSignal(TalentSelectionTriggeredSignal)
+			&& _timeSystem.IsConnected(TalentSelectionTriggeredSignal, _talentSelectionCallable))
+		{
+			_timeSystem.Disconnect(TalentSelectionTriggeredSignal, _talentSelectionCallable);
+		}
 	}
 
 	private void PopUpTalentSelection()
@@ -74,12 +89,12 @@ public partial class TalentManager : CanvasLayer
 		for (int i = 0; i < drawCount; i++)
 		{
 			TalentData data = _availableTalents[i];
-			TalentCard newCard = CardScenePrefab.Instantiate<TalentCard>();
+			Control newCard = CardScenePrefab.Instantiate<Control>();
 
 			CardsContainer.AddChild(newCard);
 
-			newCard.Initialize(data);
-			newCard.OnCardClicked += OnTalentSelected;
+			newCard.Call("Initialize", data);
+			newCard.Connect("OnCardClicked", Callable.From<TalentData>(OnTalentSelected));
 		}
 	}
 }

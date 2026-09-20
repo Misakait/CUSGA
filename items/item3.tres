@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cv6r1ekigeyo4"]
+[gd_resource type="Resource" format=3 uid="uid://cv6r1ekigeyo4"]
 
 [ext_resource type="Texture2D" uid="uid://bxctyc25rpowe" path="res://res/element_icon/gold_icon.png" id="1_743t7"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_co30f"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_co30f"]
 
 [resource]
 script = ExtResource("1_co30f")
@@ -11,4 +11,4 @@ CardId = &"3"
 CardName = "金"
 CardIcon = ExtResource("1_743t7")
 Description = "这是一个什么用都没有的资源，你随时可以把他删掉"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

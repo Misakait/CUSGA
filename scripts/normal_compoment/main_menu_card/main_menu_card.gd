@@ -29,7 +29,8 @@ signal not_hovering_card(card)
 @export var card_cost_scale: Vector2 = Vector2(1,1)
 
 
-var item_data: ItemData
+## 当前卡牌关联的物品资源；兼容 GDScript 普通物品与保留的 C# 派生物品。
+var item_data: Resource
 var item_cnt: int
 
 var normal_scale: Vector2 = Vector2(0, 0)

@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="BiomeDefinition" format=3 uid="uid://1if71u0wx1x8"]
 
 [ext_resource type="Script" uid="uid://u4nusf1kaw5a" path="res://resources/map/map_attribute.gd" id="1_lnrxb"]
-[ext_resource type="Script" uid="uid://drhmmfbbl1x6o" path="res://resources/map/PassageGuardEncounterData.cs" id="2_yddfo"]
 [ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="3_8npsg"]
 
 [sub_resource type="Resource" id="Resource_48238"]

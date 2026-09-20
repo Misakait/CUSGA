@@ -1,5 +1,4 @@
 using Godot;
-using CUSGA.core.autoloads;
 
 namespace CUSGA.resources.interaction.operations;
 
@@ -12,7 +11,7 @@ public sealed partial class PassTimeOp(int minutes) : TerrainOp
         if (Amount > 0)
         {
             GD.Print($"[PassTimeOp] Pass time {Amount}");
-            TimeSystem.Instance.PassTime(Amount);
+            context.TimeSystem?.Call("PassTime", Amount);
         }
     }
 }

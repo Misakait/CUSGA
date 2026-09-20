@@ -1,6 +1,5 @@
 using System;
 using Godot;
-using CUSGA.core.autoloads;
 using CUSGA.core.board;
 using CUSGA.resources.interaction;
 using CUSGA.core.constants;
@@ -16,6 +15,8 @@ public partial class RoomBoardPresenter : Node
     [Export] public bool HideHarvestedTerrain { get; set; } = true;
 
     private Node _mapSystem = null!;
+    // 时间节点通过属性协议读取，兼容 C# 与 GDScript Autoload。
+    private Node _timeSystem = null!;
     private BoardController _boardController = null!;
     private RoomTerrainStore _terrainStore = null!;
     private readonly RoomTerrainLayoutGenerator _layoutGenerator = new(new Random());
@@ -40,6 +41,7 @@ public partial class RoomBoardPresenter : Node
         }
 
         _mapSystem = GetNode<Node>(MapSystemPath);
+        _timeSystem = GetNodeOrNull<Node>("/root/TimeSystem");
         _boardController = GetNode<BoardController>(BoardControllerPath);
         _terrainStore = GetNode<RoomTerrainStore>(TerrainStorePath);
 
@@ -89,9 +91,19 @@ public partial class RoomBoardPresenter : Node
                 continue;
             }
 
-            if (terrain.TerrainData.InteractionBehavior is ReusableGatheringInteraction reusable)
+            Resource interaction = terrain.TerrainData.Get("InteractionBehavior").AsGodotObject() as Resource;
+            int totalTimePassed = ReadTotalTime();
+            if (interaction is ReusableGatheringInteraction reusable)
             {
-                reusable.RefreshIfReady(terrain, TimeSystem.Instance?.TotalTimePassed ?? 0);
+                reusable.RefreshIfReady(terrain, totalTimePassed);
+            }
+            else if (interaction?.HasMethod("refresh_if_ready") == true)
+            {
+                interaction.Call(
+                    "refresh_if_ready",
+                    terrain,
+                    totalTimePassed
+                );
             }
 
             if (HideHarvestedTerrain && terrain.IsHarvested)
@@ -103,11 +115,24 @@ public partial class RoomBoardPresenter : Node
         }
     }
 
+    private int ReadTotalTime()
+    {
+        if (_timeSystem == null)
+        {
+            return 0;
+        }
+
+        Variant value = _timeSystem.Get("TotalTimePassed");
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? value.AsInt32()
+            : 0;
+    }
+
     private void CreateInitialRoomLayout(Vector2I roomPos, Node2D roomScene)
     {
         Variant profileValue = roomScene.Get("terrain_profile");
         if (profileValue.VariantType == Variant.Type.Nil ||
-            profileValue.AsGodotObject() is not RoomTerrainProfile profile)
+            profileValue.AsGodotObject() is not Resource profile)
         {
             _terrainStore.CreateRoomLayout(roomPos, []);
             return;

@@ -1,17 +1,16 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://4a3658xatwn7"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="3_stats"]
+[ext_resource type="Script" path="res://resources/stats/starting_stats.gd" id="3_stats"]
 [ext_resource type="Resource" uid="uid://dbcl1b88wkcg3" path="res://resources/skill_cards/water_magic_xuanshuimielingtai.tres" id="4_skill_1"]
 [ext_resource type="Resource" uid="uid://bwu05hfq7ylil" path="res://resources/skill_cards/water_magic_yanyusuoqianchuan.tres" id="5_skill_2"]
 [ext_resource type="Resource" uid="uid://qjyf4gthfgg0" path="res://resources/skill_cards/water_phys_canghaifufanchen.tres" id="6_skill_3"]
 [ext_resource type="Resource" uid="uid://dgtn8xvgflfdj" path="res://resources/skill_cards/water_phys_hanlangchong.tres" id="7_skill_4"]
 [ext_resource type="Resource" uid="uid://dmmhu7qhj6f8o" path="res://resources/skill_cards/water_phys_hongtaoxijuanlai.tres" id="8_skill_5"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
-[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
-[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="monster_skill_entry_script"]
-[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="monster_skill_set_script"]
+[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="loot_drop_script"]
+[ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="monster_skill_entry_script"]
+[ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="monster_skill_set_script"]
 [ext_resource type="Resource" path="res://resources/combat_skills/water_magic_xuanshuimielingtai.tres" id="combat_skill_1"]
 [ext_resource type="Resource" path="res://resources/combat_skills/water_magic_yanyusuoqianchuan.tres" id="combat_skill_2"]
 [ext_resource type="Resource" path="res://resources/combat_skills/water_phys_canghaifufanchen.tres" id="combat_skill_3"]
@@ -23,9 +22,9 @@
 [ext_resource type="Resource" path="res://resources/combat_skills/water_phys_canghaifufanchen.tres" id="csv_skill_3"]
 [ext_resource type="Resource" path="res://resources/combat_skills/water_phys_hanlangchong.tres" id="csv_skill_4"]
 [ext_resource type="Resource" path="res://resources/combat_skills/water_phys_hongtaoxijuanlai.tres" id="csv_skill_5"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
-[ext_resource type="Script" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
+[ext_resource type="Script" path="res://resources/monster/monster_skill_entry_data.gd" id="csv_entry_script"]
+[ext_resource type="Script" path="res://resources/monster/monster_skill_set_data.gd" id="csv_set_script"]
+[ext_resource type="Script" path="res://resources/stats/starting_stats.gd" id="csv_stats_script"]
 [sub_resource type="Resource" id="Resource_stats"]
 script = ExtResource("3_stats")
 BaseMaxHealth = 115.0
@@ -39,7 +38,6 @@ BaseMagResist = 220.0
 MagResistGrowth = 32.0
 BaseSpeed = 120.0
 SpeedGrowth = 5.5
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="LootDrop_1"]
 script = ExtResource("loot_drop_script")
@@ -47,7 +45,7 @@ Item = ExtResource("4_skill_1")
 DropChance = 15.0
 MinAmount = 1
 MaxAmount = 1
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="LootDrop_2"]
 script = ExtResource("loot_drop_script")
@@ -55,7 +53,7 @@ Item = ExtResource("5_skill_2")
 DropChance = 15.0
 MinAmount = 1
 MaxAmount = 1
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="LootDrop_3"]
 script = ExtResource("loot_drop_script")
@@ -63,7 +61,7 @@ Item = ExtResource("6_skill_3")
 DropChance = 15.0
 MinAmount = 1
 MaxAmount = 1
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="LootDrop_4"]
 script = ExtResource("loot_drop_script")
@@ -71,7 +69,7 @@ Item = ExtResource("7_skill_4")
 DropChance = 15.0
 MinAmount = 1
 MaxAmount = 1
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="LootDrop_5"]
 script = ExtResource("loot_drop_script")
@@ -79,42 +77,36 @@ Item = ExtResource("8_skill_5")
 DropChance = 15.0
 MinAmount = 1
 MaxAmount = 1
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
+metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="Resource_loot"]
 script = ExtResource("loot_table_script")
 Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5")])
-metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+metadata/_custom_type_script = "uid://14ol6fqeh53g"
 
 [sub_resource type="Resource" id="MonsterSkillEntry_migrated_1"]
 script = ExtResource("monster_skill_entry_script")
 Skill = ExtResource("combat_skill_1")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="MonsterSkillEntry_migrated_2"]
 script = ExtResource("monster_skill_entry_script")
 Skill = ExtResource("combat_skill_2")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="MonsterSkillEntry_migrated_3"]
 script = ExtResource("monster_skill_entry_script")
 Skill = ExtResource("combat_skill_3")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="MonsterSkillEntry_migrated_4"]
 script = ExtResource("monster_skill_entry_script")
 Skill = ExtResource("combat_skill_4")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="MonsterSkillEntry_migrated_5"]
 script = ExtResource("monster_skill_entry_script")
 Skill = ExtResource("combat_skill_5")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="MonsterSkillSet_migrated"]
 script = ExtResource("monster_skill_set_script")
 Skills = Array[ExtResource("monster_skill_entry_script")]([SubResource("MonsterSkillEntry_migrated_1"), SubResource("MonsterSkillEntry_migrated_2"), SubResource("MonsterSkillEntry_migrated_3"), SubResource("MonsterSkillEntry_migrated_4"), SubResource("MonsterSkillEntry_migrated_5")])
-metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
 
 
 

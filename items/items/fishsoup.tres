@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bbnlxxtssruri"]
+[gd_resource type="Resource" format=3 uid="uid://bbnlxxtssruri"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_a5wqj"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_a5wqj"]
 
 [resource]
 script = ExtResource("1_a5wqj")
@@ -11,4 +11,4 @@ ItemTags = Array[StringName]([&"fishsoup"])
 CardId = &"fishsoup"
 CardName = "鱼汤"
 Description = "鱼处理干净了吗？有点腥味"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

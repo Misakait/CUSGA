@@ -1,0 +1,12 @@
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查场景脚本、测试和 C# 协调器之间的跨层引用。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"检查长按行为、owner 取消和信号时序是否符合项目游戏系统约定。"}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"执行脚本解析、场景加载、编译和错误日志质量门禁。"}
+{"file":".trellis/tasks/09-18-cs-to-gdscript-migration/research/migration-inventory.md","reason":"对照已知高风险边界检查是否遗漏旧 C# 引用。"}
+{"file":"core/constants/world_interaction_timing.gd","reason":"Validated duration values 0, 10, 20, and negative input through GodotAI game_eval."}
+{"file":"core/constants/weather_type.gd","reason":"Validated class loading and Rain/RAIN value 0 through GodotAI game_eval after filesystem scan."}
+{"file":"resources/interaction/reusable_gathering_interaction.gd","reason":"检查 GDScript Resource 的公开字段、采集状态和操作描述协议。"}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"检查 `.tres` 资产切换和 C#/GDScript Resource 边界。"}
+{"file":"resources/loot/loot_drop.gd","reason":"GodotAI symbol scan and resource suite validation passed."}
+{"file":"resources/loot/LootTable.cs","reason":"CI=true C# solution build passed with 0 warnings and 0 errors."}
+{"file":"resources/monster/test_monster_1.tres","reason":"game_eval loaded the migrated drop and RollLoot produced an ItemStack."}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"检查掉落 Resource 序列化字段与运行时副作用边界。"}

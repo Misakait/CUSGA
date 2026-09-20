@@ -31,15 +31,15 @@ config/icon="res://icon.svg"
 [autoload]
 
 GlobalEventBus="*uid://f4acdsbh24f4"
-TimeSystem="*uid://da5qjs7g2tqfs"
-WeatherManager="*uid://b0l58aislix47"
 ItemsControl="*uid://b1nat1ps6dux8"
 GlobalWarehouse="*res://core/autoloads/global_warehouse.tscn"
 SceneManager="*uid://0cimhegik5tk"
 ScreenTransitions="*uid://byi0pyqiabw0d"
 SettingsManager="*res://core/autoloads/SettingsManager.gd"
-PlayerWallet="*res://core/autoloads/PlayerWallet.cs"
-PlayerProgression="*res://core/progression/PlayerProgression.cs"
+WeatherManager="*res://core/autoloads/weather_manager.gd"
+PlayerProgression="*res://core/progression/player_progression.gd"
+PlayerWallet="*res://core/autoloads/player_wallet.gd"
+TimeSystem="*res://core/autoloads/time_system.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cojid4wmjc4dm"]
+[gd_resource type="Resource" format=3 uid="uid://cojid4wmjc4dm"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_7lhfe"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_7lhfe"]
 [ext_resource type="Texture2D" uid="uid://b2j2pbdqq0mat" path="res://res/items/lifepotion.png" id="1_g1li1"]
 
 [resource]
@@ -13,4 +13,4 @@ CardId = &"lifepotion"
 CardName = "生命药剂"
 CardIcon = ExtResource("1_g1li1")
 Description = "回血用的"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

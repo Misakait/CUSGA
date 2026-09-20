@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
-using CUSGA.resources.item.card;
 using CUSGA.resources.monsters;
 
 namespace CUSGA.core.gameflow;
@@ -14,10 +13,12 @@ public sealed class WorldCombatScenePresenter(
 {
     private const string BattleEndedSignal = "battle_ended";
     private const string BattleScenePath = "res://scenes/battle_scenes/battle.tscn";
+    private const string MapBackgroundResolverScriptPath =
+        "res://core/gameflow/current_map_background_resolver.gd";
 
     private bool _isTransitioning;
 
-    public async Task EnterCombatAsync(Array<SkillCardData> battleDeck, Array<MonsterData> monsters)
+    public async Task EnterCombatAsync(Array<Resource> battleDeck, Array<MonsterData> monsters)
     {
         await EnterCombatAsync(battleDeck, monsters, null);
     }
@@ -29,7 +30,7 @@ public sealed class WorldCombatScenePresenter(
     /// <param name="monsters">本场战斗生成的怪物数组。</param>
     /// <returns>战斗胜利时返回 true；无法进入战斗或失败时返回 false。</returns>
     public async Task<bool> EnterCombatAndWaitForResultAsync(
-        Array<SkillCardData> battleDeck,
+        Array<Resource> battleDeck,
         Array<MonsterData> monsters)
     {
         if (_isTransitioning)
@@ -43,7 +44,7 @@ public sealed class WorldCombatScenePresenter(
     }
 
     private async Task EnterCombatAsync(
-        Array<SkillCardData> battleDeck,
+        Array<Resource> battleDeck,
         Array<MonsterData> monsters,
         TaskCompletionSource<bool> completion)
     {
@@ -60,7 +61,7 @@ public sealed class WorldCombatScenePresenter(
             await screenTransitions.FadeOutAsync();
 
             Node battleInstance = CreateBattleInstance(battleDeck, monsters);
-            Sprite2D battleBackground = CurrentMapBackgroundResolver.DuplicateCurrentBackground(mapSystem);
+            Sprite2D battleBackground = DuplicateCurrentBackground(mapSystem);
             if (battleBackground != null)
             {
                 battleInstance.AddChild(battleBackground);
@@ -111,7 +112,7 @@ public sealed class WorldCombatScenePresenter(
         }
     }
 
-    private static Node CreateBattleInstance(Array<SkillCardData> battleDeck, Array<MonsterData> monsters)
+    private static Node CreateBattleInstance(Array<Resource> battleDeck, Array<MonsterData> monsters)
     {
         PackedScene battleScene = GD.Load<PackedScene>(BattleScenePath);
         Node battleInstance = battleScene.Instantiate();
@@ -126,6 +127,31 @@ public sealed class WorldCombatScenePresenter(
         }
 
         return battleInstance;
+    }
+
+    /// <summary>
+    /// 通过稳定方法协议调用生产 GDScript 背景解析器。
+    /// </summary>
+    /// <param name="mapSystem">包含 MapInstantiator 的地图系统节点。</param>
+    /// <returns>复制出的战斗背景；脚本或协议不可用时返回 null。</returns>
+    private static Sprite2D DuplicateCurrentBackground(Node mapSystem)
+    {
+        Script resolverScript = GD.Load<Script>(MapBackgroundResolverScriptPath);
+        if (resolverScript == null)
+        {
+            GD.PushError($"无法加载战斗背景解析器：{MapBackgroundResolverScriptPath}");
+            return null;
+        }
+
+        Variant resolverValue = resolverScript.Call("new");
+        if (resolverValue.AsGodotObject() is not RefCounted resolver
+            || !resolver.HasMethod("DuplicateCurrentBackground"))
+        {
+            GD.PushError("战斗背景解析器缺少 DuplicateCurrentBackground 协议。");
+            return null;
+        }
+
+        return resolver.Call("DuplicateCurrentBackground", mapSystem).AsGodotObject() as Sprite2D;
     }
 
 }

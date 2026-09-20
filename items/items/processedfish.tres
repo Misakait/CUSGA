@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dpandyq233uyy"]
+[gd_resource type="Resource" format=3 uid="uid://dpandyq233uyy"]
 
 [ext_resource type="Texture2D" uid="uid://dge6bg1oe6bvo" path="res://res/items/processedfish.png" id="1_1vbpg"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_84xvh"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_84xvh"]
 
 [resource]
 script = ExtResource("1_84xvh")
@@ -13,4 +13,4 @@ CardId = &"processedfish"
 CardName = "被加工过得鱼"
 CardIcon = ExtResource("1_1vbpg")
 Description = "现在变得干净多了"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

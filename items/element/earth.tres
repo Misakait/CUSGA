@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dqm0uwwdlkv4e"]
+[gd_resource type="Resource" format=3 uid="uid://dqm0uwwdlkv4e"]
 
 [ext_resource type="Texture2D" uid="uid://26pqgm5aoa8u" path="res://res/element_icon/earth_icon.png" id="1_asskx"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_gxjt5"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="2_gxjt5"]
 
 [resource]
 script = ExtResource("2_gxjt5")
@@ -13,4 +13,4 @@ CardId = &"earth"
 CardName = "土"
 CardIcon = ExtResource("1_asskx")
 Description = "这是土"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

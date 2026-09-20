@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Godot;
 using Godot.Collections;
 using CUSGA.resources.encounters;
-using CUSGA.core.autoloads;
 using CUSGA.resources.interaction;
 using CUSGA.resources.monsters;
 
@@ -13,7 +12,10 @@ public partial class EncounterManager : Node
 {
     public static EncounterManager Instance { get; private set; } = null!;
 
-    [Export] public Array<GatheringEncounterRule> GatheringRules { get; set; } = [];
+    /// <summary>
+    /// 采集遭遇规则资源列表；使用通用 Resource 以兼容迁移中的 GDScript 规则。
+    /// </summary>
+    [Export] public Array<Resource> GatheringRules { get; set; } = [];
 
     [Export] public float BaseGatheringSpawnChance { get; set; } = 0.05f;
     [Export] public float NightChanceMultiplier { get; set; } = 6.0f;
@@ -28,9 +30,15 @@ public partial class EncounterManager : Node
 
     private readonly EncounterMonsterScaler _monsterScaler = new();
 
+    /// <summary>
+    /// 获取或设置提供昼夜与天数属性的时间节点；生产环境由 /root/TimeSystem 解析，测试可显式注入。
+    /// </summary>
+    public Node TimeSystemNode { get; set; }
+
     public override void _Ready()
     {
         Instance = this;
+        TimeSystemNode ??= GetNodeOrNull<Node>("/root/TimeSystem");
     }
 
     /// <summary>
@@ -58,20 +66,20 @@ public partial class EncounterManager : Node
             return GatheringEncounterResult.None();
         }
 
-        bool isNight = TimeSystem.Instance?.IsNight == true;
+        bool isNight = ReadBool(TimeSystemNode, "IsNight", false);
         float timeModifier = isNight ? NightChanceMultiplier : 1.0f;
         float equipmentModifier = isNight
             ? Mathf.Max(nightEncounterChanceMultiplier, 0.0f)
             : 1.0f;
 
-        foreach (var rule in GatheringRules)
+        foreach (Resource rule in GatheringRules)
         {
             if (rule == null)
             {
                 continue;
             }
 
-            if (rule.TriggerTag != resourceTag)
+            if (ReadStringName(rule, "TriggerTag") != resourceTag)
             {
                 continue;
             }
@@ -79,27 +87,99 @@ public partial class EncounterManager : Node
             float finalChance = BaseGatheringSpawnChance
                 * timeModifier
                 * equipmentModifier
-                * Mathf.Max(rule.ExtraChanceMultiplier, 0.0f);
+                * Mathf.Max(ReadFloat(rule, "ExtraChanceMultiplier", 1.0f), 0.0f);
             // float finalChance = 1.0f;
             GD.Print($"Resolving gathering encounter for tag: {resourceTag}, finalChance: {finalChance}");
             if (GD.Randf() <= finalChance)
             {
-                if (rule.MonsterToSpawn == null)
+                Array<MonsterData> monsters = ReadMonsterArray(rule, "MonsterToSpawn");
+                if (monsters.Count == 0)
                 {
                     return GatheringEncounterResult.None();
                 }
-                foreach (var monster in rule.MonsterToSpawn)
+                foreach (MonsterData monster in monsters)
                 {
                     GD.Print($"Gathering encounter triggered: {monster.MonsterName}");
                 }
                 return GatheringEncounterResult.Create(
-                    rule.MonsterToSpawn,
-                    rule.SpawnMessage
+                    monsters,
+                    ReadString(rule, "SpawnMessage", string.Empty)
                 );
             }
         }
 
         return GatheringEncounterResult.None();
+    }
+
+    /// <summary>
+    /// 从规则 Resource 读取标签字段，兼容 StringName、String 和空值。
+    /// </summary>
+    /// <param name="rule">待读取的遭遇规则资源。</param>
+    /// <param name="propertyName">属性名称。</param>
+    /// <returns>规则标签；无法读取时返回空标签。</returns>
+    private static StringName ReadStringName(Resource rule, string propertyName)
+    {
+        Variant value = rule.Get(propertyName);
+        return value.VariantType switch
+        {
+            Variant.Type.StringName => value.AsStringName(),
+            Variant.Type.String => new StringName(value.AsString()),
+            _ => default
+        };
+    }
+
+    /// <summary>
+    /// 从规则 Resource 读取浮点倍率，缺失时返回指定默认值。
+    /// </summary>
+    /// <param name="rule">待读取的遭遇规则资源。</param>
+    /// <param name="propertyName">属性名称。</param>
+    /// <param name="fallback">属性不存在或类型不匹配时的默认值。</param>
+    /// <returns>读取到的浮点倍率或默认值。</returns>
+    private static float ReadFloat(Resource rule, string propertyName, float fallback)
+    {
+        Variant value = rule.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? (float)value.AsDouble()
+            : fallback;
+    }
+
+    /// <summary>
+    /// 从规则 Resource 读取提示文本，兼容旧 C# 与 GDScript 资源。
+    /// </summary>
+    /// <param name="rule">待读取的遭遇规则资源。</param>
+    /// <param name="propertyName">属性名称。</param>
+    /// <param name="fallback">属性不存在时的默认文本。</param>
+    /// <returns>规则提示文本。</returns>
+    private static string ReadString(Resource rule, string propertyName, string fallback)
+    {
+        Variant value = rule.Get(propertyName);
+        return value.VariantType == Variant.Type.String ? value.AsString() : fallback;
+    }
+
+    /// <summary>
+    /// 将规则中的非泛型怪物数组转换为遭遇结果需要的数组。
+    /// </summary>
+    /// <param name="rule">待读取的遭遇规则资源。</param>
+    /// <param name="propertyName">怪物数组属性名称。</param>
+    /// <returns>过滤掉空值和非 MonsterData 元素后的数组。</returns>
+    private static Array<MonsterData> ReadMonsterArray(Resource rule, string propertyName)
+    {
+        Array<MonsterData> monsters = [];
+        Variant value = rule.Get(propertyName);
+        if (value.VariantType != Variant.Type.Array)
+        {
+            return monsters;
+        }
+
+        foreach (Variant item in value.AsGodotArray())
+        {
+            if (item.AsGodotObject() is MonsterData monster)
+            {
+                monsters.Add(monster);
+            }
+        }
+
+        return monsters;
     }
 
     public Array<MonsterData> ScaleEncounterMonsters(
@@ -109,7 +189,7 @@ public partial class EncounterManager : Node
         MonsterStatMultiplier terrainVariance =
             terrain?.EncounterVarianceMultiplier ?? MonsterStatMultiplier.Identity;
         MonsterStatMultiplier perDayGrowth = BuildPerDayGrowthMultiplier();
-        int currentDay = TimeSystem.Instance?.CurrentDay ?? 1;
+        int currentDay = ReadInt(TimeSystemNode, "CurrentDay", 1);
 
         IReadOnlyList<MonsterData> scaled = _monsterScaler.ScaleMonsters(
             monsters,
@@ -125,6 +205,30 @@ public partial class EncounterManager : Node
         }
 
         return result;
+    }
+
+    private static bool ReadBool(Node source, StringName propertyName, bool fallback)
+    {
+        if (source == null)
+        {
+            return fallback;
+        }
+
+        Variant value = source.Get(propertyName);
+        return value.VariantType == Variant.Type.Bool ? value.AsBool() : fallback;
+    }
+
+    private static int ReadInt(Node source, StringName propertyName, int fallback)
+    {
+        if (source == null)
+        {
+            return fallback;
+        }
+
+        Variant value = source.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? value.AsInt32()
+            : fallback;
     }
 
     private MonsterStatMultiplier BuildPerDayGrowthMultiplier()

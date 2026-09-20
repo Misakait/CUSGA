@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bdnl3rc3gx6sq"]
+[gd_resource type="Resource" format=3 uid="uid://bdnl3rc3gx6sq"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_lv0sf"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_lv0sf"]
 
 [resource]
 script = ExtResource("1_lv0sf")
@@ -11,4 +11,4 @@ ItemTags = Array[StringName]([&"StoneHammer"])
 CardId = &"StoneHammer"
 CardName = "石锤"
 Description = "锤石！锤怪！"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

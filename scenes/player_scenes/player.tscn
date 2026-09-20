@@ -5,27 +5,25 @@
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="3_shuw1"]
 [ext_resource type="Script" uid="uid://vhrfbyuub4pr" path="res://entities/components/SatietyComponent.cs" id="4_b744r"]
 [ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="5_k3sny"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="6_5ro12"]
-[ext_resource type="Script" uid="uid://l0wa2cwb0txu" path="res://entities/components/TagComponent.cs" id="6_shuw1"]
-[ext_resource type="Script" uid="uid://dh3lwksrhok2a" path="res://entities/components/EquipmentComponent.cs" id="7_b744r"]
-[ext_resource type="Script" uid="uid://c7okowgxs2l3v" path="res://entities/components/InventoryComponent.cs" id="8_j2xde"]
-[ext_resource type="Script" uid="uid://bji1u6alsgwam" path="res://entities/components/CraftingComponent.cs" id="9_v0ulg"]
+[ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="6_5ro12"]
+[ext_resource type="Script" uid="uid://i6khooevdohm" path="res://entities/components/tag_component.gd" id="6_shuw1"]
+[ext_resource type="Script" uid="uid://cbdmft2a3jhg" path="res://entities/components/equipment_component.gd" id="7_b744r"]
+[ext_resource type="Script" uid="uid://bkqrnyyayxqkx" path="res://entities/components/inventory_component.gd" id="8_j2xde"]
+[ext_resource type="Script" uid="uid://iset81ag1f6r" path="res://entities/components/crafting_component.gd" id="9_v0ulg"]
 [ext_resource type="Script" uid="uid://gek5smi6lrcs" path="res://entities/components/StatusComponent.cs" id="10_4xp6m"]
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="11_mm880"]
-[ext_resource type="Script" uid="uid://crlbihv7x1gu2" path="res://resources/recipe/CraftingRecipe.cs" id="12_8sxmk"]
-[ext_resource type="Script" uid="uid://c48vw35k5eu7c" path="res://entities/components/BattleDeckComponent.cs" id="12_bdeck"]
-[ext_resource type="Resource" uid="uid://mq7g5ojandul" path="res://resources/recipe/res/torch_recipe.tres" id="13_8sxmk"]
-[ext_resource type="Resource" uid="uid://ch4rxtqw0tc74" path="res://resources/recipe/res/stone_axe_recipe.tres" id="14_nvsj7"]
-[ext_resource type="Script" uid="uid://cu7qvvrrwxpgw" path="res://resources/recipe/RecipeBookData.cs" id="14_umohg"]
+[ext_resource type="Script" uid="uid://cunxbq7v4rf68" path="res://resources/recipe/crafting_recipe.gd" id="12_recipe_gd"]
+[ext_resource type="Script" uid="uid://d4lfyog558ndn" path="res://entities/components/battle_deck_component.gd" id="12_bdeck"]
+[ext_resource type="Resource" path="res://resources/recipe/res/torch_recipe_gd.tres" id="13_recipe_gd"]
+[ext_resource type="Resource" path="res://resources/recipe/res/stone_axe_recipe_gd.tres" id="14_recipe_gd"]
+[ext_resource type="Script" uid="uid://c7prbcvmav1b" path="res://resources/recipe/recipe_book_data.gd" id="14_book_gd"]
 
 [sub_resource type="Resource" id="Resource_whhsb"]
 script = ExtResource("6_5ro12")
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="Resource_oyr7h"]
-script = ExtResource("14_umohg")
-Recipes = Array[ExtResource("12_8sxmk")]([ExtResource("13_8sxmk"), ExtResource("14_nvsj7")])
-metadata/_custom_type_script = "uid://cu7qvvrrwxpgw"
+script = ExtResource("14_book_gd")
+Recipes = Array[ExtResource("12_recipe_gd")]([ExtResource("13_recipe_gd"), ExtResource("14_recipe_gd")])
 
 [node name="Player" type="Node" unique_id=1931166684]
 script = ExtResource("1_d8qmr")

@@ -1,0 +1,51 @@
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"迁移同时修改 GDScript、场景、Godot 测试和 C# 动态调用，需要检查跨层数据流。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"迁移长按时序和 HUD 锚点时需要复用现有控制器/组件模式，避免产生第二套行为。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"长按交互属于局外 gameflow，需保持现有行动值、信号和组件边界。"}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"用于迁移阶段的注释、类型安全和 Godot/C# 验证要求。"}
+{"file":".trellis/tasks/09-18-cs-to-gdscript-migration/research/migration-inventory.md","reason":"记录 C# 分层、风险和迁移顺序，实施阶段据此控制边界。"}
+{"file":"core/constants/world_interaction_timing.gd","reason":"Migrate active hold-duration conversion to a typed GDScript constant class while retaining C# compatibility during the staged migration."}
+{"file":"core/constants/weather_type.gd","reason":"Replace the unused WeatherType C# enum with a stable-value GDScript class."}
+{"file":"resources/interaction/reusable_gathering_interaction.gd","reason":"迁移可重复采集资源规则，并以操作描述保持现有执行器端口顺序。"}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"检查 Resource 导出字段、旧资产兼容和运行时状态边界。"}
+{"file":"resources/encounters/monster_stat_multiplier_range.gd","reason":"迁移怪物遭遇倍率范围 Resource，保持十二个序列化字段和 1.0 默认值。"}
+{"file":"core/map/RoomTerrainProfile.cs","reason":"将倍率范围导出边界放宽为通用 Resource，允许地形资产切换到 GDScript。"}
+{"file":"core/map/RoomTerrainLayoutGenerator.cs","reason":"按稳定字段读取 GDScript Resource，并保留现有随机抽样与 MonsterStatMultiplier 值对象。"}
+{"file":"resources/map/terrain/*.tres","reason":"切换七个地形倍率范围子资源的脚本引用。"}
+{"file":"scenes/map_scenes/map_son_scenes/*.tscn","reason":"切换七个地图场景倍率范围子资源的脚本引用。"}
+{"file":"scripts/generated/create_terrain_profiles.gd","reason":"防止一次性地形生成脚本重新写回旧 C# 倍率资源路径。"}
+{"file":"tests/godot/test_monster_stat_multiplier_range.gd","reason":"新增倍率范围资源字段、快照和资产引用回归测试。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"同步 Resource 并存桥接、倍率范围契约和验证矩阵。"}
+{"file":"resources/map/passage_guard_probability_modifier.gd","reason":"迁移通道驻守标签概率修正 Resource，保留导出字段和中性默认值。"}
+{"file":"resources/map/default_passage_guard_settings.tres","reason":"将默认驻守配置接入 GDScript 概率修正嵌套资源。"}
+{"file":"tests/godot/test_reusable_gathering_interaction.gd","reason":"补充通道驻守概率修正字段和实际配置脚本路径回归断言。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"记录通道驻守概率修正 Resource 的序列化契约、兼容边界和测试缓存注意事项。"}
+{"file":"resources/encounters/gathering_encounter_rule.gd","reason":"迁移采集遭遇规则 Resource，保留标签、怪物、提示语和倍率字段。"}
+{"file":"core/application/EncounterManager.cs","reason":"将采集规则列表放宽为通用 Resource，并集中动态读取 GDScript 规则字段。"}
+{"file":"scenes/Main.tscn","reason":"切换三个采集遭遇内嵌规则子资源的脚本引用并移除旧 C# 自定义类型 UID。"}
+{"file":"tests/godot/test_reusable_gathering_interaction.gd","reason":"补充采集遭遇规则默认字段回归断言。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"记录采集遭遇规则 Resource 的序列化契约、兼容边界和验证要求。"}
+{"file":"resources/map/passage_guard_encounter_data.gd","reason":"迁移驻守 encounter 怪物数组 Resource。"}
+{"file":"resources/map/passage_guard_settings.gd","reason":"迁移驻守全局 Settings Resource，修复嵌套 encounter 反序列化边界。"}
+{"file":"core/map/PassageGuardMonsterResolver.cs","reason":"增加通用 Resource encounter 解析入口并保留旧强类型重载。"}
+{"file":"core/map/PassageGuardProbabilityProvider.cs","reason":"将驻守概率配置读取放宽到通用 Settings Resource。"}
+{"file":"scripts/map_scripts/passage_guard_controller.gd","reason":"切换驻守控制器到 GDScript Settings 和通用 encounter 池。"}
+{"file":"resources/map/map_attribute.gd","reason":"将地图属性驻守池改为通用 Resource 数组。"}
+{"file":"resources/map/default_passage_guard_settings.tres","reason":"切换默认驻守 Settings 与 encounter 子资源脚本路径。"}
+{"file":"resources/map/biomes/*.tres","reason":"移除未配置 encounter 池的群系资源旧 C# 外部脚本引用。"}
+{"file":"tests/godot/test_reusable_gathering_interaction.gd","reason":"补充驻守 Settings/Encounter 默认值与实际资产脚本路径回归断言。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"记录驻守 Settings/Encounter 的嵌套 Resource 契约、兼容边界和反序列化验证。"}
+{"file":"resources/monster/monster_skill_entry_data.gd","reason":"迁移怪物单个技能条目 Resource，保留字段默认值和预览说明回退。"}
+{"file":"resources/monster/monster_skill_set_data.gd","reason":"迁移怪物技能集合 Resource，保留 Skills 数组协议和顺序。"}
+{"file":"resources/monster/*.tres","reason":"切换全部怪物资产中的技能条目/集合脚本引用并清理旧自定义类型元数据。"}
+{"file":"scenes/monster_scenes/monster.tscn","reason":"切换怪物场景技能子资源引用到 GDScript Resource。"}
+{"file":"resources/monster/MonsterData.cs","reason":"将 SkillSet 导出边界放宽为通用 Resource，支持 GDScript 资产并保留 C# 资源兼容。"}
+{"file":"entities/components/MonsterSkillComponent.cs","reason":"集中动态读取 C#/GDScript 技能集合字段并保留旧 Initialize 重载。"}
+{"file":"tests/godot/test_reusable_gathering_interaction.gd","reason":"补充怪物技能预览、默认集合和代表性资产脚本引用回归断言。"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"记录怪物技能条目/集合 Resource 序列化契约和跨语言读取边界。"}
+{"file":"resources/loot/loot_drop.gd","reason":"新增掉落条目 GDScript Resource，保留物品、概率和数量范围字段。"}
+{"file":"resources/loot/LootTable.cs","reason":"将掉落条目数组放宽为通用 Resource 并集中读取迁移字段。"}
+{"file":"resources/**/*.tres","reason":"批量切换掉落条目资源路径和对应脚本 UID。"}
+{"file":"scenes/**/*.tscn","reason":"批量切换场景内掉落条目资源路径和对应脚本 UID。"}
+{"file":"scripts/generated/create_terrain_profiles.gd","reason":"更新地形生成器使用 GDScript 掉落条目路径。"}
+{"file":"tests/godot/test_reusable_gathering_interaction.gd","reason":"补充掉落条目默认值与代表性资产引用回归测试。"}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"记录掉落条目字段稳定性和 LootTable 运行时兼容边界。"}

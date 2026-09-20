@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://es81inb5jx51"]
+[gd_resource type="Resource" format=3 uid="uid://es81inb5jx51"]
 
 [ext_resource type="Texture2D" uid="uid://cgpwha1yalblh" path="res://res/element_icon/fire_icon.png" id="1_iscxl"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_wmuvc"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_wmuvc"]
 
 [resource]
 script = ExtResource("1_wmuvc")
@@ -12,4 +12,4 @@ CardName = "火"
 CardIcon = ExtResource("1_iscxl")
 Description = "这是一个什么用都没有的资源，你随时可以把他删掉
 "
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

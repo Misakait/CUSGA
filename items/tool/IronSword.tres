@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cd1vgyxefpkma"]
+[gd_resource type="Resource" format=3 uid="uid://cd1vgyxefpkma"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_185tu"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_185tu"]
 
 [resource]
 script = ExtResource("1_185tu")
@@ -10,4 +10,4 @@ MaxStackSize = 1
 ItemTags = Array[StringName]([&"IronSword"])
 CardId = &"IronSword"
 Description = "一把好用的铁剑"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

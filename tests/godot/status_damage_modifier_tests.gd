@@ -4,7 +4,7 @@ const ATTRIBUTE_SCRIPT := "res://entities/components/AttributeComponent.cs"
 const BURN_STATUS_SCRIPT := "res://core/combat/buffs/BurnStatusData.cs"
 const DAMAGE_RECEIVER_SCRIPT := "res://entities/components/DamageReceiverComponent.cs"
 const HEALTH_SCRIPT := "res://entities/components/HealthComponent.cs"
-const STARTING_STATS_SCRIPT := "res://resources/stats/StartingStats.cs"
+const STARTING_STATS_SCRIPT := "res://resources/stats/starting_stats.gd"
 
 const DAMAGE_MODIFIER_CRITICAL := 2
 const DAMAGE_TYPE_REAL := 2

@@ -9,13 +9,15 @@ namespace CUSGA.core.board;
 
 public partial class BoardController : Node2D
 {
-    [Signal] public delegate void CardSpawnedEventHandler(BoardCardView card);
-    [Signal] public delegate void CardRemovedEventHandler(BoardCardView card);
-    [Signal] public delegate void CardClickedEventHandler(BoardCardView card);
-    [Signal] public delegate void CardPressedEventHandler(BoardCardView card);
-    [Signal] public delegate void CardReleasedEventHandler(BoardCardView card);
-    [Signal] public delegate void CardHoverStartedEventHandler(BoardCardView card);
-    [Signal] public delegate void CardHoverEndedEventHandler(BoardCardView card);
+    private const string BoardCardStateScriptPath = "res://core/board/board_card_state.gd";
+
+    [Signal] public delegate void CardSpawnedEventHandler(Node2D card);
+    [Signal] public delegate void CardRemovedEventHandler(Node2D card);
+    [Signal] public delegate void CardClickedEventHandler(Node2D card);
+    [Signal] public delegate void CardPressedEventHandler(Node2D card);
+    [Signal] public delegate void CardReleasedEventHandler(Node2D card);
+    [Signal] public delegate void CardHoverStartedEventHandler(Node2D card);
+    [Signal] public delegate void CardHoverEndedEventHandler(Node2D card);
 
     [Export] public PackedScene CardViewScene { get; set; }
     [Export] public NodePath CardsRootPath { get; set; }
@@ -25,8 +27,8 @@ public partial class BoardController : Node2D
 
     private Node2D _cardsRoot;
     private readonly RandomNumberGenerator _rng = new();
-    private readonly HashSet<BoardCardView> _activeCards = [];
-    private readonly Dictionary<Vector2I, BoardCardView> _terrainCardsByLocalGrid = [];
+    private readonly HashSet<Node2D> _activeCards = [];
+    private readonly Dictionary<Vector2I, Node2D> _terrainCardsByLocalGrid = [];
 
     public override void _Ready()
     {
@@ -40,7 +42,7 @@ public partial class BoardController : Node2D
 
     public override void _ExitTree()
     {
-        foreach (BoardCardView card in _activeCards)
+        foreach (Node2D card in _activeCards)
         {
             if (IsInstanceValid(card))
             {
@@ -52,7 +54,7 @@ public partial class BoardController : Node2D
         _terrainCardsByLocalGrid.Clear();
     }
 
-    public BoardCardView SpawnTerrainCard(TerrainInstance terrainInstance, Vector2 globalPosition)
+    public Node2D SpawnTerrainCard(TerrainInstance terrainInstance, Vector2 globalPosition)
     {
         ArgumentNullException.ThrowIfNull(terrainInstance);
         if (_terrainCardsByLocalGrid.ContainsKey(terrainInstance.LocalGridPos))
@@ -61,40 +63,56 @@ public partial class BoardController : Node2D
         }
         GD.Print($"[BoardController] Spawn terrain card at {globalPosition}, localGrid={terrainInstance.LocalGridPos}");
 
-        var state = new TerrainBoardCardState(terrainInstance);
+        RefCounted state = CreateTerrainState(terrainInstance);
         var card = SpawnCard(state, globalPosition);
 
         _terrainCardsByLocalGrid[terrainInstance.LocalGridPos] = card;
         return card;
     }
 
-    public BoardCardView SpawnLootCard(ItemStack stack, Vector2 globalPosition)
+    /// <summary>
+    /// 在指定位置生成一张掉落卡，并保留原物品堆叠引用。
+    /// </summary>
+    /// <param name="stack">旧 C# 或 GDScript ItemStack。</param>
+    /// <param name="globalPosition">掉落卡的目标全局坐标。</param>
+    /// <returns>新生成的掉落卡视图。</returns>
+    public Node2D SpawnLootCard(RefCounted stack, Vector2 globalPosition)
     {
         ArgumentNullException.ThrowIfNull(stack);
 
-        var state = new LootBoardCardState(stack);
+        RefCounted state = CreateLootState(stack);
         return SpawnCard(state, globalPosition);
     }
 
-    public void SpawnLootCards(Godot.Collections.Array<ItemStack> stacks, Vector2 spawnOrigin)
+    /// <summary>
+    /// 从同一原点散射生成一组跨语言物品堆叠对应的掉落卡。
+    /// </summary>
+    /// <param name="stacks">旧 C# 与 GDScript ItemStack 可混合组成的非泛型数组。</param>
+    /// <param name="spawnOrigin">散射动画的全局起点。</param>
+    public void SpawnLootCards(Godot.Collections.Array stacks, Vector2 spawnOrigin)
     {
         ArgumentNullException.ThrowIfNull(stacks);
 
-        foreach (ItemStack stack in stacks)
+        foreach (Variant value in stacks)
         {
-            SpawnSingleLootWithScatter(stack, spawnOrigin);
+            // 非泛型数组是跨语言封送边界；这里只接纳两种实现共同继承的 RefCounted。
+            if (value.AsGodotObject() is RefCounted stack
+                && ItemStackProtocol.TryRead(stack, out _, out _))
+            {
+                SpawnSingleLootWithScatter(stack, spawnOrigin);
+            }
         }
     }
 
-    public void RemoveCard(BoardCardView card)
+    public void RemoveCard(Node2D card)
     {
-        GD.Print($"Removing card: {card?.GetCardData()?.CardName}");
+        GD.Print($"Removing card: {card?.Call("GetCardDisplayName").AsString()}");
         if (card == null || !IsInstanceValid(card))
         {
             return;
         }
 
-        if (card.GetTerrainInstanceOrNull() is { } terrain)
+        if (card.Call("GetTerrainInstanceOrNull").AsGodotObject() is TerrainInstance terrain)
         {
             _terrainCardsByLocalGrid.Remove(terrain.LocalGridPos);
         }
@@ -104,26 +122,26 @@ public partial class BoardController : Node2D
 
         EmitSignal(SignalName.CardRemoved, card);
         card.QueueFree();
-        GD.Print($"Removed card: {card?.GetCardData()?.CardName}");
+        GD.Print($"Removed card: {card?.Call("GetCardDisplayName").AsString()}");
     }
 
     public void ClearAllCards()
     {
-        var snapshot = new List<BoardCardView>(_activeCards);
+        var snapshot = new List<Node2D>(_activeCards);
 
-        foreach (BoardCardView card in snapshot)
+        foreach (Node2D card in snapshot)
         {
             RemoveCard(card);
         }
         _terrainCardsByLocalGrid.Clear();
     }
 
-    public bool TryGetTerrainCardByLocalGrid(Vector2I gridPos, out BoardCardView card)
+    public bool TryGetTerrainCardByLocalGrid(Vector2I gridPos, out Node2D card)
     {
         return _terrainCardsByLocalGrid.TryGetValue(gridPos, out card);
     }
 
-    public BoardCardView GetTerrainCardByLocalGridOrNull(Vector2I gridPos)
+    public Node2D GetTerrainCardByLocalGridOrNull(Vector2I gridPos)
     {
         return _terrainCardsByLocalGrid.TryGetValue(gridPos, out var card) ? card : null;
     }
@@ -137,26 +155,37 @@ public partial class BoardController : Node2D
     /// 获取当前棋盘卡牌快照。
     /// </summary>
     /// <returns>返回当前仍由棋盘控制器持有的卡牌列表。</returns>
-    public IReadOnlyList<BoardCardView> GetActiveCardsSnapshot()
+    public IReadOnlyList<Node2D> GetActiveCardsSnapshot()
     {
         return [.. _activeCards];
     }
 
-    private void SpawnSingleLootWithScatter(ItemStack stack, Vector2 spawnOrigin)
+    private void SpawnSingleLootWithScatter(RefCounted stack, Vector2 spawnOrigin)
     {
         Vector2 target = spawnOrigin + RandomDirection() * _rng.RandfRange(ScatterRadiusMin, ScatterRadiusMax);
 
-        BoardCardView card = SpawnLootCard(stack, target);
-        card.PlayScatterFrom(spawnOrigin, target);
+        Node2D card = SpawnLootCard(stack, target);
+        card.Call("PlayScatterFrom", spawnOrigin, target);
     }
 
-    private BoardCardView SpawnCard(BoardCardState state, Vector2 globalPosition)
+    private Node2D SpawnCard(RefCounted state, Vector2 globalPosition)
     {
-        BoardCardView card = CardViewScene.Instantiate<BoardCardView>();
+        Node2D card = CardViewScene.Instantiate<Node2D>();
         _cardsRoot.AddChild(card);
 
         card.GlobalPosition = globalPosition;
-        card.Bind(state);
+        if (state.Call("IsTerrain").AsBool())
+        {
+            card.Call("InitializeTerrain", state.Call("GetTerrainInstanceOrNull").AsGodotObject());
+        }
+        else if (state.Call("IsLoot").AsBool())
+        {
+            card.Call("InitializeLoot", state.Call("GetLootStackOrNull").AsGodotObject());
+        }
+        else
+        {
+            throw new InvalidOperationException("未知棋盘卡状态，无法初始化视图。");
+        }
 
         ConnectCardSignals(card);
         _activeCards.Add(card);
@@ -165,46 +194,88 @@ public partial class BoardController : Node2D
         return card;
     }
 
-    private void ConnectCardSignals(BoardCardView card)
+    private static RefCounted CreateTerrainState(TerrainInstance terrainInstance)
     {
-        card.Clicked += OnCardClicked;
-        card.Pressed += OnCardPressed;
-        card.Released += OnCardReleased;
-        card.HoverStarted += OnCardHoverStarted;
-        card.HoverEnded += OnCardHoverEnded;
+        RefCounted state = CreateState();
+        if (!state.Call("InitializeTerrain", terrainInstance).AsBool())
+        {
+            throw new ArgumentException("TerrainInstance.TerrainData 不能为空。", nameof(terrainInstance));
+        }
+
+        return state;
     }
 
-    private void DisconnectCardSignals(BoardCardView card)
+    private static RefCounted CreateLootState(RefCounted stack)
     {
-        card.Clicked -= OnCardClicked;
-        card.Pressed -= OnCardPressed;
-        card.Released -= OnCardReleased;
-        card.HoverStarted -= OnCardHoverStarted;
-        card.HoverEnded -= OnCardHoverEnded;
+        RefCounted state = CreateState();
+        if (!state.Call("InitializeLoot", stack).AsBool())
+        {
+            throw new ArgumentException(
+                "LootStack 必须提供非空 Item、正 Amount 与 IsEmpty 属性。",
+                nameof(stack)
+            );
+        }
+
+        return state;
     }
 
-    private void OnCardClicked(BoardCardView card)
+    private static RefCounted CreateState()
     {
-        GD.Print($"Card clicked: {card.GetCardData().CardName}");
+        Script script = GD.Load<Script>(BoardCardStateScriptPath);
+        if (script == null)
+        {
+            throw new InvalidOperationException($"无法加载棋盘卡状态脚本：{BoardCardStateScriptPath}");
+        }
+
+        Variant value = script.Call("new");
+        if (value.AsGodotObject() is not RefCounted state)
+        {
+            throw new InvalidOperationException("棋盘卡状态脚本没有返回 RefCounted 实例。");
+        }
+
+        return state;
+    }
+
+    private void ConnectCardSignals(Node2D card)
+    {
+        card.Connect("Clicked", Callable.From<Node2D>(OnCardClicked));
+        card.Connect("Pressed", Callable.From<Node2D>(OnCardPressed));
+        card.Connect("Released", Callable.From<Node2D>(OnCardReleased));
+        card.Connect("HoverStarted", Callable.From<Node2D>(OnCardHoverStarted));
+        card.Connect("HoverEnded", Callable.From<Node2D>(OnCardHoverEnded));
+    }
+
+    private void DisconnectCardSignals(Node2D card)
+    {
+        DisconnectSignal(card, "Clicked", Callable.From<Node2D>(OnCardClicked));
+        DisconnectSignal(card, "Pressed", Callable.From<Node2D>(OnCardPressed));
+        DisconnectSignal(card, "Released", Callable.From<Node2D>(OnCardReleased));
+        DisconnectSignal(card, "HoverStarted", Callable.From<Node2D>(OnCardHoverStarted));
+        DisconnectSignal(card, "HoverEnded", Callable.From<Node2D>(OnCardHoverEnded));
+    }
+
+    private void OnCardClicked(Node2D card)
+    {
+        GD.Print($"Card clicked: {card.Call("GetCardDisplayName").AsString()}");
         EmitSignal(SignalName.CardClicked, card);
     }
 
-    private void OnCardPressed(BoardCardView card)
+    private void OnCardPressed(Node2D card)
     {
         EmitSignal(SignalName.CardPressed, card);
     }
 
-    private void OnCardReleased(BoardCardView card)
+    private void OnCardReleased(Node2D card)
     {
         EmitSignal(SignalName.CardReleased, card);
     }
 
-    private void OnCardHoverStarted(BoardCardView card)
+    private void OnCardHoverStarted(Node2D card)
     {
         EmitSignal(SignalName.CardHoverStarted, card);
     }
 
-    private void OnCardHoverEnded(BoardCardView card)
+    private void OnCardHoverEnded(Node2D card)
     {
         EmitSignal(SignalName.CardHoverEnded, card);
     }
@@ -213,5 +284,13 @@ public partial class BoardController : Node2D
     {
         float angle = _rng.RandfRange(0f, Mathf.Tau);
         return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+    }
+
+    private static void DisconnectSignal(Node source, StringName signal, Callable callback)
+    {
+        if (source.IsConnected(signal, callback))
+        {
+            source.Disconnect(signal, callback);
+        }
     }
 }

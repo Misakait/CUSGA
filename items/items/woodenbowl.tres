@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dlihk234rsns7"]
+[gd_resource type="Resource" format=3 uid="uid://dlihk234rsns7"]
 
 [ext_resource type="Texture2D" uid="uid://bg0pjha1uxmpb" path="res://res/items/woodenbowl.png" id="1_5mpon"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_g6mcl"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_g6mcl"]
 
 [resource]
 script = ExtResource("1_g6mcl")
@@ -13,4 +13,4 @@ CardId = &"woodenbowl"
 CardName = "木碗"
 CardIcon = ExtResource("1_5mpon")
 Description = "怪物路过都得丢给你两金币"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

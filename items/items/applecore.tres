@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://fnhhbatnnoeu"]
+[gd_resource type="Resource" format=3 uid="uid://fnhhbatnnoeu"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_li6lg"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_li6lg"]
 [ext_resource type="Texture2D" uid="uid://be53yeumy2m17" path="res://res/items/applecore.png" id="1_xi5ep"]
 
 [resource]
@@ -13,4 +13,4 @@ CardId = &"applecore"
 CardName = "苹果核"
 CardIcon = ExtResource("1_xi5ep")
 Description = "有什么用呢？"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

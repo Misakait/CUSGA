@@ -3,7 +3,7 @@ extends SceneTree
 ## 一次性脚本：创建 6 个群系默认 RoomTerrainProfile .tres 并分配到所有 map_env 场景。
 ##
 ## 用法：
-##   godot-mono --headless --path . --script res://scripts/generated/create_terrain_profiles.gd
+##   通过 Godot 编辑器 MCP 运行本脚本，避免依赖命令行 Mono 环境。
 
 const PROFILE_DIR := "res://resources/map/terrain"
 const MAP_ENV_DIR := "res://scenes/map_scenes/map_env"
@@ -44,23 +44,23 @@ func _create_profile(bname: String) -> void:
 	# --- 构建子资源链 ---
 
 	# LootDrop
-	var loot_drop := _new_rs("res://resources/loot/LootDrop.cs")
+	var loot_drop := _new_rs("res://resources/loot/loot_drop.gd")
 	loot_drop.set("Item", res_card)
 	loot_drop.set("MinAmount", 1)
 	loot_drop.set("MaxAmount", 3)
 
 	# LootTable
-	var loot_table := _new_rs("res://resources/loot/LootTable.cs")
+	var loot_table := _new_rs("res://resources/loot/loot_table.gd")
 	var drops: Array = [loot_drop]
 	loot_table.set("Drops", drops)
 
 	# GatheringInteraction
-	var gather := _new_rs("res://resources/interaction/GatheringInteraction.cs")
+	var gather := _new_rs("res://resources/interaction/gathering_interaction.gd")
 	gather.set("GatheringTag", card_info["tag"])
 	gather.set("DropTable", loot_table)
 
 	# TerrainCardData
-	var terrain_card := _new_rs("res://resources/interaction/TerrainCardData.cs")
+	var terrain_card := _new_rs("res://resources/interaction/terrain_card_data.gd")
 	terrain_card.set("InteractionBehavior", gather)
 	terrain_card.set("CardId", card_info["tag"])
 	terrain_card.set("CardName", card_info["name"])
@@ -69,18 +69,18 @@ func _create_profile(bname: String) -> void:
 		terrain_card.set("CardIcon", icon_tex)
 
 	# RoomTerrainPoolEntry
-	var pool_entry := _new_rs("res://core/map/RoomTerrainPoolEntry.cs")
+	var pool_entry := _new_rs("res://core/map/room_terrain_pool_entry.gd")
 	pool_entry.set("TerrainData", terrain_card)
 
 	# MonsterStatMultiplierRange (default 0.9~1.2)
-	var variance := _new_rs("res://resources/encounters/MonsterStatMultiplierRange.cs")
+	var variance := _new_rs("res://resources/encounters/monster_stat_multiplier_range.gd")
 	for stat in ["MinMaxHealth", "MinPhysAtk", "MinPhysDef", "MinMagPower", "MinMagResist", "MinSpeed"]:
 		variance.set(stat, 0.9)
 	for stat in ["MaxMaxHealth", "MaxPhysAtk", "MaxPhysDef", "MaxMagPower", "MaxMagResist", "MaxSpeed"]:
 		variance.set(stat, 1.2)
 
 	# RoomTerrainProfile
-	var profile := _new_rs("res://core/map/RoomTerrainProfile.cs")
+	var profile := _new_rs("res://core/map/room_terrain_profile.gd")
 	profile.set("TerrainPool", [pool_entry])
 	profile.set("MinCount", 1)
 	profile.set("MaxCount", 3)

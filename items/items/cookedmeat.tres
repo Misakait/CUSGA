@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b1fjoj322xor2"]
+[gd_resource type="Resource" format=3 uid="uid://b1fjoj322xor2"]
 
 [ext_resource type="Texture2D" uid="uid://cb2sr4gle6cmo" path="res://res/items/cookedmeat.png" id="1_6fuap"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_btjkd"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_btjkd"]
 
 [resource]
 script = ExtResource("1_btjkd")
@@ -13,4 +13,4 @@ CardId = &"cookedmeat"
 CardName = "烤肉"
 CardIcon = ExtResource("1_6fuap")
 Description = "好吃"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

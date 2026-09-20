@@ -12,7 +12,7 @@ public partial class RoomTerrainStore : Node
     private readonly Dictionary<Vector2I, Dictionary<Vector2I, TerrainInstance>> _terrainByRoom = [];
     private readonly Func<TerrainInstance> _terrainFactory = static () => new TerrainInstance();
 
-    public TerrainInstance GetOrCreate(Vector2I roomPos, Vector2I localGridPos, TerrainCardData terrainData)
+    public TerrainInstance GetOrCreate(Vector2I roomPos, Vector2I localGridPos, Resource terrainData)
     {
         return GetOrCreate(
             roomPos,
@@ -26,7 +26,7 @@ public partial class RoomTerrainStore : Node
     public TerrainInstance GetOrCreate(
         Vector2I roomPos,
         Vector2I localGridPos,
-        TerrainCardData terrainData,
+        Resource terrainData,
         Vector2 boardPosition)
     {
         return GetOrCreate(
@@ -41,7 +41,7 @@ public partial class RoomTerrainStore : Node
     public TerrainInstance GetOrCreate(
         Vector2I roomPos,
         Vector2I localGridPos,
-        TerrainCardData terrainData,
+        Resource terrainData,
         Vector2 boardPosition,
         MonsterStatMultiplier encounterVarianceMultiplier)
     {
@@ -111,7 +111,7 @@ public partial class RoomTerrainStore : Node
 
     private TerrainInstance CreateTerrainInstance(
         Vector2I localGridPos,
-        TerrainCardData terrainData,
+        Resource terrainData,
         Vector2 boardPosition,
         MonsterStatMultiplier encounterVarianceMultiplier)
     {

@@ -18,7 +18,8 @@ public partial class EquipmentComponent : Node
     private readonly Dictionary<EquipmentSlot, ItemStack> _equippedItems = [];
 
     private AttributeComponent _attributeComponent;
-    private TagComponent _tagComponent;
+    // 标签组件只通过稳定方法名交互，使旧 C# 与新 GDScript 节点可以在迁移期互换。
+    private Node _tagComponent;
 
     // 游戏所有的套装
     [Export] public Godot.Collections.Array<EquipmentSetData> AllSetDatabase { get; set; } = [];
@@ -34,7 +35,7 @@ public partial class EquipmentComponent : Node
     public override void _Ready()
     {
         _attributeComponent = GetParent().GetNode<AttributeComponent>("AttributeComponent");
-        _tagComponent = GetParent().GetNode<TagComponent>("TagComponent");
+        _tagComponent = GetParent().GetNode<Node>("TagComponent");
     }
 
     /// <summary>
@@ -92,6 +93,17 @@ public partial class EquipmentComponent : Node
     public bool TryGetEquippedStack(EquipmentSlot slot, out ItemStack stack)
     {
         return _equippedItems.TryGetValue(slot, out stack);
+    }
+
+    /// <summary>
+    /// 获取指定槽位当前装备的物品堆叠，供不支持 C# <c>out</c> 参数的 GDScript 视图读取。
+    /// </summary>
+    /// <param name="slot">需要查询的装备槽位。</param>
+    /// <returns>槽位已有装备时返回对应堆叠，否则返回 null。</returns>
+    public ItemStack GetEquippedStack(EquipmentSlot slot)
+    {
+        _equippedItems.TryGetValue(slot, out ItemStack stack);
+        return stack;
     }
 
     /// <summary>
@@ -355,7 +367,7 @@ public partial class EquipmentComponent : Node
         {
             foreach (var tag in equipData.GrantedTags)
             {
-                _tagComponent.AddTag(tag);
+                _tagComponent.Call("AddTag", tag);
             }
         }
     }
@@ -372,7 +384,7 @@ public partial class EquipmentComponent : Node
         {
             foreach (var tag in equipData.GrantedTags)
             {
-                _tagComponent.RemoveTag(tag);
+                _tagComponent.Call("RemoveTag", tag);
             }
         }
     }
@@ -451,7 +463,7 @@ public partial class EquipmentComponent : Node
 
         foreach (var tag in tier.GrantedTags)
         {
-            _tagComponent.AddTag(tag);
+            _tagComponent.Call("AddTag", tag);
         }
     }
 
@@ -464,7 +476,7 @@ public partial class EquipmentComponent : Node
 
         foreach (var tag in tier.GrantedTags)
         {
-            _tagComponent.RemoveTag(tag);
+            _tagComponent.Call("RemoveTag", tag);
         }
     }
 

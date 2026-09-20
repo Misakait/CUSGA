@@ -7,8 +7,8 @@ class_name DeckManager
 @onready var player_hand = $"../PlayerHand"
 @onready var control_lock = $"../ControlLock"
 
-var draw_pile_data: Array[SkillCardData] = []     ## 当前战斗的抽牌堆（只存数据不存节点）
-var discard_pile_data: Array[SkillCardData] = []  ## 当前战斗的弃牌堆
+var draw_pile_data: Array[Resource] = []     ## 当前战斗的抽牌堆（只存技能卡 Resource，不存节点）
+var discard_pile_data: Array[Resource] = []  ## 当前战斗的弃牌堆
 var min_start_cards_count:int = 20 ## 最少卡牌数量，低于该值会被填充基础卡牌
 
 const BASIC_CARD_PATHS := [
@@ -28,7 +28,7 @@ const BASIC_CARD_PATHS := [
 # 同一张展示节点只能在行动完成出口写入一次弃牌堆，防止重复入堆与重复销毁。
 const PLAYED_CARD_FINALIZED_METADATA_KEY: StringName = &"deck_manager_played_card_finalized"
 
-var _basic_card_pool: Array[SkillCardData] = []
+var _basic_card_pool: Array[Resource] = []
 var _rng := RandomNumberGenerator.new()
 
 #region 动画部分
@@ -40,7 +40,7 @@ func _ready() -> void:
 	_rng.randomize()
 
 ## 战斗开始时初始化牌库
-func initialize_deck(starting_deck_data: Array[SkillCardData]):
+func initialize_deck(starting_deck_data: Array[Resource]):
 	draw_pile_data = starting_deck_data.duplicate()
 
 	# 规则：卡牌太少，补充低级卡
@@ -174,11 +174,11 @@ func fill_with_basic_cards(amount: int):
 		var index = _rng.randi_range(0, basic_cards.size() - 1)
 		draw_pile_data.append(basic_cards[index])
 
-func _get_basic_card_pool() -> Array[SkillCardData]:
+func _get_basic_card_pool() -> Array[Resource]:
 	if _basic_card_pool.is_empty():
 		for path in BASIC_CARD_PATHS:
-			var card = load(path) as SkillCardData
-			if card:
+			var card := load(path) as Resource
+			if card != null and card.has_method("ApplyEffect"):
 				_basic_card_pool.append(card)
 			else:
 				push_warning("无法加载基础卡牌资源：" + path)

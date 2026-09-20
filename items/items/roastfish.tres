@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://du51780at5riy"]
+[gd_resource type="Resource" format=3 uid="uid://du51780at5riy"]
 
 [ext_resource type="Texture2D" uid="uid://duobenjm16dmh" path="res://res/items/roastfish.png" id="1_7cpco"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_42jbg"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_42jbg"]
 
 [resource]
 script = ExtResource("1_42jbg")
@@ -13,4 +13,4 @@ CardId = &"roastfish"
 CardName = "烤鱼"
 CardIcon = ExtResource("1_7cpco")
 Description = "直接把鱼烤，能吃就行"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

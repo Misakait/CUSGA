@@ -2,19 +2,18 @@
 
 [ext_resource type="Script" uid="uid://k4sqlory2k80" path="res://scripts/map_scripts/map_son_scripts/map_volcanic.gd" id="1_pe143"]
 [ext_resource type="Texture2D" uid="uid://d3sfyr5m8abmv" path="res://res/background/火山-b1ed(1).png" id="2_pe143"]
-[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
-[ext_resource type="Script" uid="uid://dqnapmglm6cgw" path="res://resources/interaction/VaultInteraction.cs" id="4_3yw2j"]
+[ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="2_profile"]
+[ext_resource type="Script" path="res://resources/interaction/vault_interaction.gd" id="4_3yw2j"]
 [ext_resource type="Texture2D" uid="uid://bv1k70f7dwhhm" path="res://res/image/button_glod.png" id="4_pe143"]
-[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="5_woxxq"]
-[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="6_pool"]
-[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="7_variance"]
+[ext_resource type="Script" path="res://resources/interaction/terrain_card_data.gd" id="5_woxxq"]
+[ext_resource type="Script" path="res://core/map/room_terrain_pool_entry.gd" id="6_pool"]
+[ext_resource type="Script" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="7_variance"]
 
 [sub_resource type="Resource" id="Variance_volcanic"]
 script = ExtResource("7_variance")
 
 [sub_resource type="Resource" id="Resource_16ixg"]
 script = ExtResource("4_3yw2j")
-metadata/_custom_type_script = "uid://dqnapmglm6cgw"
 
 [sub_resource type="Resource" id="Resource_qbqyj"]
 script = ExtResource("5_woxxq")
@@ -22,7 +21,6 @@ InteractionBehavior = SubResource("Resource_16ixg")
 CardId = &"vault"
 CardName = "火山密库"
 CardIcon = ExtResource("4_pe143")
-metadata/_custom_type_script = "uid://bpfhfc81wwi3i"
 
 [sub_resource type="Resource" id="Pool_vault"]
 script = ExtResource("6_pool")

@@ -23,7 +23,7 @@ class_name map_attribute
 @export var scene_count: int = 1
 
 ## 该场景的通道驻守怪物池（为空时回退到全局默认池）
-@export var guard_encounter_pool: Array[PassageGuardEncounterData] = []
+@export var guard_encounter_pool: Array[Resource] = []
 
 ## 勾选后该场景的通道永不生成驻守怪物（忽略自身池和全局默认池）
 @export var disable_guards: bool = false

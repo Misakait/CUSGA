@@ -5,7 +5,7 @@ signal hovered
 signal hovered_off
 
 var hand_position #手牌位置
-var data:SkillCardData
+var data: Resource
 var is_lock:bool = false
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/SkillExecutionContext.cs"
 const ELEMENT_DISPLAY_NAMES := {
@@ -53,16 +53,16 @@ func use(target: Node = null):
 
 			data.ApplyEffect(context)
 
-func init_card_data(card_data):
+func init_card_data(card_data: Resource) -> void:
 	data = card_data
-	# 调用 SkillCardData.cs 的 DisplayName 属性获取实际显示的名称（如果没有独立命名则获取技能名称）
+	# 通过稳定显示属性获取名称，使 C# 与 GDScript SkillCardData 共用同一界面路径。
 	$CardName.text = data.DisplayName
 	# CardElement 只展示真实战斗技能 CombatSkillData 的五行属性，避免卡牌包装层和战斗结算数据不一致。
 	$CardElement.text = _get_combat_skill_element_display_text(data)
 	$CardElement.visible = not $CardElement.text.is_empty()
-	# 调用 SkillCardData.cs 的 DisplayDescription 属性获取实际显示的描述（如果没有独立描述则获取技能描述）
+	# 通过稳定显示属性获取描述，保留卡牌独立文本优先、技能文本回退的语义。
 	$CardDescription.text = data.DisplayDescription
-	# 调用 SkillCardData.cs 的 DisplayTag 属性获取实际显示的标签（多个标签以换行分隔）
+	# 通过稳定显示属性获取标签，多个标签继续以换行分隔。
 	$CardTag.text = data.DisplayTag
 	$CardTag.visible = not $CardTag.text.is_empty()
 	$CardCost.text = str(data.cost)

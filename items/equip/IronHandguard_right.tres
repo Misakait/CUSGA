@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dxvx5kyjb0bjm"]
+[gd_resource type="Resource" format=3 uid="uid://dxvx5kyjb0bjm"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_7eog1"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_7eog1"]
 [ext_resource type="Texture2D" uid="uid://c3110c8jrivjh" path="res://res/equip/IronHandguard_right.png" id="1_tokic"]
 
 [resource]
@@ -13,4 +13,4 @@ CardId = &"IronHandguard_right"
 CardName = "铁护手右"
 CardIcon = ExtResource("1_tokic")
 Description = "这是一个铁做的护手，给你的右手穿戴"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

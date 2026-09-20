@@ -1,11 +1,9 @@
 [gd_scene format=3 uid="uid://bfeqverkbm7m0"]
 
 [ext_resource type="Script" uid="uid://dwg8krhsoeyra" path="res://scripts/shop/shop_control.gd" id="1_control"]
-[ext_resource type="Script" uid="uid://cx1b5quhtgykf" path="res://core/shop/ShopTradeBridge.cs" id="2_bridge"]
+[ext_resource type="Script" uid="uid://byk86elmmfkue" path="res://core/shop/shop_trade_bridge.gd" id="2_bridge"]
 [ext_resource type="Texture2D" uid="uid://bxm7l4xyy2xpn" path="res://res/UI/按钮-未选中-选中-按下的样子.png" id="3_button"]
 [ext_resource type="Resource" uid="uid://bvwok4goxoivg" path="res://resources/shop/shop_catalog.tres" id="4_catalog"]
-[ext_resource type="Script" uid="uid://cduwskyydgo2q" path="res://tests/huhu9/test_gold.gd" id="5_gpwso"]
-[ext_resource type="Resource" uid="uid://becce1opep0e1" path="res://items/items/goldingot.tres" id="6_rkvd3"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="7_4bgoy"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
@@ -82,8 +80,6 @@ offset_right = 503.0
 offset_bottom = 695.0
 theme_override_styles/normal = SubResource("StyleBoxTexture_35b51")
 text = "测试：买东西"
-script = ExtResource("5_gpwso")
-test_item = ExtResource("6_rkvd3")
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=716119589]
 

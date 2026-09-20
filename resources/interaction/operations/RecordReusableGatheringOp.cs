@@ -1,4 +1,4 @@
-using CUSGA.core.autoloads;
+using Godot;
 
 namespace CUSGA.resources.interaction.operations;
 
@@ -20,7 +20,20 @@ public sealed partial class RecordReusableGatheringOp(ReusableGatheringInteracti
     {
         Interaction?.RecordSuccessfulHarvest(
             context.Terrain,
-            TimeSystem.Instance?.TotalTimePassed ?? 0
+            ReadTotalTime(context.TimeSystem)
         );
+    }
+
+    private static int ReadTotalTime(Node timeSystem)
+    {
+        if (timeSystem == null)
+        {
+            return 0;
+        }
+
+        Variant value = timeSystem.Get("TotalTimePassed");
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? value.AsInt32()
+            : 0;
     }
 }

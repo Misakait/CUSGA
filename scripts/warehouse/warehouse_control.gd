@@ -56,7 +56,8 @@ var _progression = null
 var _warehouse_slots: Array[ItemSlot] = []
 var _carry_slots: Array[ItemSlot] = []
 
-## 带入栏内容。索引即栏位序号，元素形如 {"item": ItemData, "count": int}。
+## 带入栏内容。索引即栏位序号，元素形如 {"item": Resource, "count": int}。
+## Resource 同时承接 GDScript 普通物品和保留的 C# 派生物品。
 var _carry_items: Array = []
 
 ## 当前选中项：{"side": StringName, "index": int}。空字典表示未选中。
@@ -203,7 +204,7 @@ func _absorb_items_brought_back() -> void:
 		return
 
 	for i in ItemsControl.player_to_warehouse.size():
-		var item: ItemData = ItemsControl.player_to_warehouse[i]
+		var item: Resource = ItemsControl.player_to_warehouse[i]
 		var count: int = ItemsControl.player_to_warehouse_cnt[i]
 		if item == null or count <= 0:
 			continue
@@ -280,7 +281,7 @@ func _fill_carry_slots() -> void:
 		slot.modulate = Color.WHITE
 
 		var entry: Dictionary = _carry_items[i]
-		var item: ItemData = entry["item"]
+		var item: Resource = entry["item"] as Resource
 		if item == null or int(entry["count"]) <= 0:
 			# 可用但为空的栏位：保留一个可点的空框，选中它时动作区只会提供「放入」。
 			slot.clear_slot()
@@ -413,7 +414,7 @@ func _on_put_in_pressed() -> void:
 		_refresh_all()
 		return
 
-	var item: ItemData = stack.Item
+	var item: Resource = stack.Item as Resource
 	var amount := int(stack.Amount)
 
 	# 先移出再写入带入栏：移出失败时带入栏保持原样，不会凭空多出物品。
@@ -434,7 +435,7 @@ func _on_take_out_pressed() -> void:
 
 	var index: int = _selected["index"]
 	var entry: Dictionary = _carry_items[index]
-	var item: ItemData = entry["item"]
+	var item: Resource = entry["item"] as Resource
 	if item == null:
 		return
 
@@ -603,8 +604,8 @@ func _has_free_carry_slot() -> bool:
 
 
 ## 取当前选中的物品。
-## @return ItemData 选中的物品；未选中或选中格已空时返回 null。
-func _selected_item() -> ItemData:
+## @return Resource 选中的物品；未选中或选中格已空时返回 null。
+func _selected_item() -> Resource:
 	if _selected.is_empty():
 		return null
 
@@ -612,12 +613,12 @@ func _selected_item() -> ItemData:
 	if _selected["side"] == SIDE_CARRY:
 		if index < 0 or index >= _carry_items.size():
 			return null
-		return _carry_items[index]["item"]
+		return _carry_items[index]["item"] as Resource
 
 	var stack = _get_warehouse_stack(index)
 	if stack == null or stack.IsEmpty:
 		return null
-	return stack.Item
+	return stack.Item as Resource
 
 
 ## 计算总页数。

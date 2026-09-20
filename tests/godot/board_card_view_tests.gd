@@ -3,7 +3,7 @@ extends SceneTree
 const BOARD_CONTROLLER_SCRIPT := "res://core/board/BoardController.cs"
 const BOARD_CARD_VIEW_SCENE := "res://scenes/board_card_scene/BoardCardView.tscn"
 const TERRAIN_INSTANCE_SCRIPT := "res://resources/interaction/TerrainInstance.cs"
-const TERRAIN_CARD_DATA_SCRIPT := "res://resources/interaction/TerrainCardData.cs"
+const TERRAIN_CARD_DATA_SCRIPT := "res://resources/interaction/terrain_card_data.gd"
 
 var _failures: Array[String] = []
 

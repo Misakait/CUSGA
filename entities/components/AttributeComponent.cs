@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using CUSGA.core.attributes;
 using CUSGA.core.combat.status;
-using CUSGA.resources.stats;
 
 using GameAttribute = CUSGA.core.attributes.Attribute;
 
@@ -19,7 +18,8 @@ public partial class AttributeComponent : Node
     [Signal]
     public delegate void AvailablePointsChangedEventHandler(int availablePoints);
 
-    [Export] public StartingStats InitialData;
+    // 使用通用 Resource 作为迁移边界，使旧 C# StartingStats 与新 GDScript 资源都能提供同名字段。
+    [Export] public Resource InitialData;
 
     public int AvailablePoints { get; private set; }
 
@@ -223,11 +223,11 @@ public partial class AttributeComponent : Node
         }
     }
 
-    public void InitializeWithData(StartingStats data)
+    public void InitializeWithData(Resource data)
     {
         if (data == null)
         {
-            GD.PushError($"{nameof(AttributeComponent)} initialized with null StartingStats.");
+            GD.PushError($"{nameof(AttributeComponent)} initialized with null starting stats Resource.");
             return;
         }
 
@@ -237,21 +237,21 @@ public partial class AttributeComponent : Node
         _effectiveCache.Clear();
         _recalculateQueue.Clear();
 
-        SetAttribute(AttributeType.PhysAtk, "物理攻击", data.BasePhysAtk, data.PhysAtkGrowth);
-        SetAttribute(AttributeType.PhysDef, "物理抗性", data.BasePhysDef, data.PhysDefGrowth);
-        SetAttribute(AttributeType.MagPower, "法术强度", data.BaseMagPower, data.MagPowerGrowth);
-        SetAttribute(AttributeType.MagResist, "法术抗性", data.BaseMagResist, data.MagResistGrowth);
-        SetAttribute(AttributeType.Speed, "速度", data.BaseSpeed, data.SpeedGrowth);
-        SetAttribute(AttributeType.MaxHealth, "生命上限", data.BaseMaxHealth, data.MaxHealthGrowth);
-        SetAttribute(AttributeType.MaxEnergy, "能量上限", data.BaseMaxEnergy, data.MaxEnergyGrowth);
-        SetAttribute(AttributeType.FixedPhysPenetration, "固定物理穿透", data.BaseFixedPhysPenetration, data.FixedPhysPenetrationGrowth);
-        SetAttribute(AttributeType.PhysPenetrationRate, "物理穿透率", data.BasePhysPenetrationRate, data.PhysPenetrationRateGrowth);
-        SetAttribute(AttributeType.FixedMagicPenetration, "固定法术穿透", data.BaseFixedMagicPenetration, data.FixedMagicPenetrationGrowth);
-        SetAttribute(AttributeType.MagicPenetrationRate, "法术穿透率", data.BaseMagicPenetrationRate, data.MagicPenetrationRateGrowth);
-        SetAttribute(AttributeType.CritRate, "暴击率", data.BaseCritRate, data.CritRateGrowth);
-        SetAttribute(AttributeType.CritDamage, "暴击伤害", data.BaseCritDamage, data.CritDamageGrowth);
-        SetAttribute(AttributeType.EvasionRate, "闪避率", data.BaseEvasionRate, data.EvasionRateGrowth);
-        SetAttribute(AttributeType.LifestealRate, "吸血率", data.BaseLifestealRate, data.LifestealRateGrowth);
+        SetAttribute(AttributeType.PhysAtk, "物理攻击", ReadStat(data, "BasePhysAtk", 100f), ReadStat(data, "PhysAtkGrowth", 25f));
+        SetAttribute(AttributeType.PhysDef, "物理抗性", ReadStat(data, "BasePhysDef", 100f), ReadStat(data, "PhysDefGrowth", 20f));
+        SetAttribute(AttributeType.MagPower, "法术强度", ReadStat(data, "BaseMagPower", 100f), ReadStat(data, "MagPowerGrowth", 30f));
+        SetAttribute(AttributeType.MagResist, "法术抗性", ReadStat(data, "BaseMagResist", 100f), ReadStat(data, "MagResistGrowth", 20f));
+        SetAttribute(AttributeType.Speed, "速度", ReadStat(data, "BaseSpeed", 100f), ReadStat(data, "SpeedGrowth", 5f));
+        SetAttribute(AttributeType.MaxHealth, "生命上限", ReadStat(data, "BaseMaxHealth", 1000f), ReadStat(data, "MaxHealthGrowth"));
+        SetAttribute(AttributeType.MaxEnergy, "能量上限", ReadStat(data, "BaseMaxEnergy", 100f), ReadStat(data, "MaxEnergyGrowth"));
+        SetAttribute(AttributeType.FixedPhysPenetration, "固定物理穿透", ReadStat(data, "BaseFixedPhysPenetration"), ReadStat(data, "FixedPhysPenetrationGrowth"));
+        SetAttribute(AttributeType.PhysPenetrationRate, "物理穿透率", ReadStat(data, "BasePhysPenetrationRate"), ReadStat(data, "PhysPenetrationRateGrowth"));
+        SetAttribute(AttributeType.FixedMagicPenetration, "固定法术穿透", ReadStat(data, "BaseFixedMagicPenetration"), ReadStat(data, "FixedMagicPenetrationGrowth"));
+        SetAttribute(AttributeType.MagicPenetrationRate, "法术穿透率", ReadStat(data, "BaseMagicPenetrationRate"), ReadStat(data, "MagicPenetrationRateGrowth"));
+        SetAttribute(AttributeType.CritRate, "暴击率", ReadStat(data, "BaseCritRate"), ReadStat(data, "CritRateGrowth"));
+        SetAttribute(AttributeType.CritDamage, "暴击伤害", ReadStat(data, "BaseCritDamage", 1.5f), ReadStat(data, "CritDamageGrowth"));
+        SetAttribute(AttributeType.EvasionRate, "闪避率", ReadStat(data, "BaseEvasionRate"), ReadStat(data, "EvasionRateGrowth"));
+        SetAttribute(AttributeType.LifestealRate, "吸血率", ReadStat(data, "BaseLifestealRate"), ReadStat(data, "LifestealRateGrowth"));
 
         GD.Print("InitializeWithData", data);
 
@@ -261,6 +261,21 @@ public partial class AttributeComponent : Node
             allowInterception: false,
             emitEvents: false
         );
+    }
+
+    /// <summary>
+    /// 从 C# 或 GDScript Resource 读取同名浮点字段。
+    /// </summary>
+    /// <param name="data">提供初始属性字段的 Resource。</param>
+    /// <param name="propertyName">要读取的字段名。</param>
+    /// <param name="fallback">字段缺失或类型不匹配时使用的旧默认值。</param>
+    /// <returns>字段值或兼容默认值。</returns>
+    private static float ReadStat(Resource data, string propertyName, float fallback = 0f)
+    {
+        Variant value = data.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? (float)value.AsDouble()
+            : fallback;
     }
 
     private void SetAttribute(

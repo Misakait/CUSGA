@@ -2,11 +2,10 @@
 
 [ext_resource type="Script" uid="uid://wl3ajed8xmqo" path="res://entities/Monster.cs" id="1_1wyrm"]
 [ext_resource type="Script" uid="uid://d4gp22cg5vjro" path="res://entities/components/HealthComponent.cs" id="1_i8hiw"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="2_gqard"]
+[ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="2_gqard"]
 [ext_resource type="Script" uid="uid://ckflk2am2hx30" path="res://entities/components/AttributeComponent.cs" id="2_twjs6"]
-[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="3_f5jq7"]
-[ext_resource type="Script" uid="uid://qp3tco60xl2b" path="res://entities/components/FactionComponent.cs" id="3_tgvxs"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="4_twqyq"]
+[ext_resource type="Script" uid="uid://ber7n2jykqngx" path="res://entities/components/faction_component.gd" id="3_tgvxs"]
+[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="4_twqyq"]
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
 [ext_resource type="Texture2D" uid="uid://bhp1kn0sgqewf" path="res://res/monstercard/卡牌模板2.png" id="8_bgonl"]
@@ -18,24 +17,23 @@
 [ext_resource type="Script" uid="uid://delpo10ufxcco" path="res://entities/components/DamageReceiverComponent.cs" id="12_twqyq"]
 [ext_resource type="Texture2D" uid="uid://coexdqa0rbbyi" path="res://res/monstercard/PhyDefIcon.png" id="12_ve02a"]
 [ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="13_8mndn"]
-[ext_resource type="Script" uid="uid://dhw7i7lc8tobr" path="res://entities/components/LootComponent.cs" id="13_kt6in"]
+[ext_resource type="Script" uid="uid://cxcyp1avu7xtb" path="res://entities/components/loot_component.gd" id="13_kt6in"]
 [ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="14_svjq7"]
-[ext_resource type="Script" uid="uid://b7el5njnasp45" path="res://entities/components/MonsterSkillComponent.cs" id="16_1lcr1"]
-[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="17_3855q"]
+[ext_resource type="Script" uid="uid://1kvwpmm6xleh" path="res://entities/components/monster_skill_component.gd" id="16_1lcr1"]
+[ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="17_3855q"]
 [ext_resource type="Script" uid="uid://deqpvvm5duhfp" path="res://core/combat/effects/CardEffect.cs" id="18_gxwrs"]
 [ext_resource type="Script" uid="uid://dq1ts5ykp8ai6" path="res://core/combat/skills/CombatSkillData.cs" id="19_ia034"]
-[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="20_ve02a"]
+[ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="20_ve02a"]
 [ext_resource type="Script" uid="uid://ck6vnjbp88ek7" path="res://scripts/ui_scripts/status_effect_bar.gd" id="status_bar_script"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
 script = ExtResource("2_gqard")
 BaseMaxHealth = 100.0
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="Resource_bgonl"]
 script = ExtResource("4_twqyq")
-metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+metadata/_custom_type_script = "uid://14ol6fqeh53g"
 
 [sub_resource type="PackedScene" id="PackedScene_1lcr1"]
 
@@ -67,7 +65,6 @@ corner_radius_bottom_left = 4
 
 [sub_resource type="Resource" id="Resource_1lcr1"]
 script = ExtResource("2_gqard")
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [sub_resource type="Resource" id="Resource_8mndn"]
 script = ExtResource("19_ia034")
@@ -77,12 +74,10 @@ metadata/_custom_type_script = "uid://dq1ts5ykp8ai6"
 [sub_resource type="Resource" id="Resource_svjq7"]
 script = ExtResource("17_3855q")
 Skill = SubResource("Resource_8mndn")
-metadata/_custom_type_script = "uid://b7y5vs8oep7hw"
 
 [sub_resource type="Resource" id="Resource_nmmph"]
 script = ExtResource("20_ve02a")
-Skills = Array[ExtResource("17_3855q")]([SubResource("Resource_svjq7")])
-metadata/_custom_type_script = "uid://dgjjdl52wm4gs"
+Skills = Array[Resource]([SubResource("Resource_svjq7")])
 
 [node name="Monster" type="Node2D" unique_id=1392813721]
 script = ExtResource("1_1wyrm")
@@ -290,7 +285,7 @@ metadata/_custom_type_script = "uid://ckflk2am2hx30"
 [node name="FactionComponent" type="Node" parent="Components" unique_id=1986993091]
 unique_name_in_owner = true
 script = ExtResource("3_tgvxs")
-metadata/_custom_type_script = "uid://qp3tco60xl2b"
+metadata/_custom_type_script = "uid://ber7n2jykqngx"
 
 [node name="StatusComponent" type="Node" parent="Components" unique_id=1115103239]
 unique_name_in_owner = true
@@ -305,7 +300,7 @@ metadata/_custom_type_script = "uid://delpo10ufxcco"
 [node name="LootComponent" type="Node" parent="Components" unique_id=1412221465]
 unique_name_in_owner = true
 script = ExtResource("13_kt6in")
-metadata/_custom_type_script = "uid://dhw7i7lc8tobr"
+metadata/_custom_type_script = "uid://cxcyp1avu7xtb"
 
 [node name="SkillComponent" type="Node" parent="Components" unique_id=1880625831]
 script = ExtResource("16_1lcr1")

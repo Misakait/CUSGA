@@ -6,6 +6,7 @@ using Godot;
 using GodotArray = Godot.Collections.Array;
 using MonsterArray = Godot.Collections.Array<CUSGA.resources.monsters.MonsterData>;
 using PassageEncounterArray = Godot.Collections.Array<CUSGA.resources.map.PassageGuardEncounterData>;
+using ResourceArray = Godot.Collections.Array<Godot.Resource>;
 
 namespace CUSGA.core.map;
 
@@ -50,6 +51,21 @@ public partial class PassageGuardMonsterResolver(Func<int, int> indexPicker) : R
         Vector2I to,
         PassageEncounterArray encounterPool)
     {
+        return ResolveResources(from, to, ConvertLegacyPool(encounterPool));
+    }
+
+    /// <summary>
+    /// 根据通用 Resource 怪物池，为一条驻守通道解析怪物组合。
+    /// </summary>
+    /// <param name="from">通道的一端。</param>
+    /// <param name="to">通道的另一端。</param>
+    /// <param name="encounterPool">由 C# 或 GDScript Resource 组成的 encounter 池。</param>
+    /// <returns>当前房间内稳定的怪物数组；没有可用配置时返回空数组。</returns>
+    public MonsterArray ResolveResources(
+        Vector2I from,
+        Vector2I to,
+        ResourceArray encounterPool)
+    {
         var edge = PassageGuardEdge.From(from, to);
         if (_resolvedByEdge.TryGetValue(edge, out MonsterArray cached))
         {
@@ -61,7 +77,7 @@ public partial class PassageGuardMonsterResolver(Func<int, int> indexPicker) : R
         return resolved;
     }
 
-    private MonsterArray PickEncounter(PassageEncounterArray encounterPool)
+    private MonsterArray PickEncounter(ResourceArray encounterPool)
     {
         if (encounterPool == null || encounterPool.Count == 0)
         {
@@ -69,22 +85,47 @@ public partial class PassageGuardMonsterResolver(Func<int, int> indexPicker) : R
         }
 
         int index = Mathf.Clamp(_indexPicker(encounterPool.Count), 0, encounterPool.Count - 1);
-        PassageGuardEncounterData encounter = encounterPool[index];
-        if (encounter?.Monsters == null || encounter.Monsters.Count == 0)
+        Resource encounter = encounterPool[index];
+        if (encounter == null)
         {
             return [];
         }
 
         var monsters = new MonsterArray();
-        foreach (MonsterData monster in encounter.Monsters)
+        Variant rawMonsters = encounter.Get("Monsters");
+        if (rawMonsters.VariantType != Variant.Type.Array)
         {
-            if (monster != null)
+            return monsters;
+        }
+
+        foreach (Variant value in rawMonsters.AsGodotArray())
+        {
+            if (value.AsGodotObject() is MonsterData monster)
             {
                 monsters.Add(monster);
             }
         }
 
         return monsters;
+    }
+
+    private static ResourceArray ConvertLegacyPool(PassageEncounterArray encounterPool)
+    {
+        var resources = new ResourceArray();
+        if (encounterPool == null)
+        {
+            return resources;
+        }
+
+        foreach (PassageGuardEncounterData encounter in encounterPool)
+        {
+            if (encounter != null)
+            {
+                resources.Add(encounter);
+            }
+        }
+
+        return resources;
     }
 
     private static int DefaultIndexPicker(int count)

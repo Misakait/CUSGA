@@ -207,12 +207,12 @@ internal sealed partial class TerrainRandomizationTests
         MonsterData scaledMonster = scaled[0];
         Assert.NotSame(monster, scaledMonster);
         Assert.NotSame(baseStats, scaledMonster.InitialAttributes);
-        Assert.Approximately(180f, scaledMonster.InitialAttributes.BaseMaxHealth);
-        Assert.Approximately(240f, scaledMonster.InitialAttributes.BasePhysAtk);
-        Assert.Approximately(1440f, scaledMonster.InitialAttributes.BasePhysDef);
-        Assert.Approximately(1440f, scaledMonster.InitialAttributes.BaseMagPower);
-        Assert.Approximately(4800f, scaledMonster.InitialAttributes.BaseMagResist);
-        Assert.Approximately(30f, scaledMonster.InitialAttributes.BaseSpeed);
+        Assert.Approximately(180f, ReadStat(scaledMonster.InitialAttributes, "BaseMaxHealth"));
+        Assert.Approximately(240f, ReadStat(scaledMonster.InitialAttributes, "BasePhysAtk"));
+        Assert.Approximately(1440f, ReadStat(scaledMonster.InitialAttributes, "BasePhysDef"));
+        Assert.Approximately(1440f, ReadStat(scaledMonster.InitialAttributes, "BaseMagPower"));
+        Assert.Approximately(4800f, ReadStat(scaledMonster.InitialAttributes, "BaseMagResist"));
+        Assert.Approximately(30f, ReadStat(scaledMonster.InitialAttributes, "BaseSpeed"));
         Assert.Approximately(100f, baseStats.BaseMaxHealth);
         Assert.Approximately(100f, baseStats.BasePhysAtk);
         Assert.Same(monster.SkillSet, scaledMonster.SkillSet);
@@ -1136,6 +1136,7 @@ internal sealed partial class TerrainRandomizationTests
         {
             var manager = new EncounterManager
             {
+                TimeSystemNode = time,
                 GatheringRules =
                 [
                     CreateGatheringEncounterRule(
@@ -2108,6 +2109,14 @@ internal sealed partial class TerrainRandomizationTests
     private static StartingStats CreateStartingStatsStub()
     {
         return (StartingStats)RuntimeHelpers.GetUninitializedObject(typeof(StartingStats));
+    }
+
+    private static float ReadStat(Resource source, string propertyName)
+    {
+        Variant value = source.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? (float)value.AsDouble()
+            : 0f;
     }
 
     private static ItemData CreateItemDataStub(int maxStackSize)

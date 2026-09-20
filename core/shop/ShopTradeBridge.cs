@@ -28,9 +28,11 @@ public partial class ShopTradeBridge : Node
     /// </summary>
     /// <remarks>
     /// 留空时退化为「所有自身配置了买价的物品全部上架」，与引入目录之前的行为一致。
+    /// 使用通用 Resource 是迁移期的跨语言边界：旧 C# ShopCatalog 和新的 GDScript
+    /// shop_catalog.gd 都通过稳定字段名提供同一份目录数据。
     /// </remarks>
     [Export]
-    public ShopCatalog Catalog { get; set; }
+    public Resource Catalog { get; set; }
 
     // 规则服务本身无状态，跨语言调用每次都复用同一实例即可。
     private readonly ShopService _service = new();
@@ -95,19 +97,16 @@ public partial class ShopTradeBridge : Node
         var result = new Godot.Collections.Array<ItemData>();
         var included = new HashSet<ItemData>();
 
-        if (Catalog?.Goods != null)
+        foreach (Resource listedResource in ReadResourceArray(Catalog, "Goods"))
         {
-            foreach (ItemData listed in Catalog.Goods)
+            if (listedResource is ItemData listed && included.Add(listed))
             {
-                if (listed != null && included.Add(listed))
-                {
-                    result.Add(listed);
-                }
+                result.Add(listed);
             }
         }
 
         // 目录为空，或显式开启「自动上架一切已定价物品」时，补入其余商品。
-        if (Catalog == null || Catalog.AlsoIncludeEveryPricedItem)
+        if (Catalog == null || ReadBool(Catalog, "AlsoIncludeEveryPricedItem", false))
         {
             var autoIncluded = new List<ItemData>();
             if (allItems != null)
@@ -241,9 +240,13 @@ public partial class ShopTradeBridge : Node
             return item.BuyPrice;
         }
 
-        if (Catalog != null && Catalog.DefaultBuyPrice > 0 && Catalog.ContainsExplicitly(item))
+        if (
+            Catalog != null
+            && ReadInt(Catalog, "DefaultBuyPrice", 0) > 0
+            && ContainsCatalogItem(Catalog, item)
+        )
         {
-            return Catalog.DefaultBuyPrice;
+            return ReadInt(Catalog, "DefaultBuyPrice", 0);
         }
 
         return 0;
@@ -269,5 +272,96 @@ public partial class ShopTradeBridge : Node
         // 与 ShopService.ResolveSellPrice 同为「买价折半向下取整」，只是买价改用目录解析后的值。
         int resolvedBuyPrice = ResolveUnitBuyPrice(item);
         return resolvedBuyPrice > 0 ? resolvedBuyPrice / 2 : 0;
+    }
+
+    /// <summary>
+    /// 从目录 Resource 读取商品数组，并过滤掉非 Resource 元素。
+    /// </summary>
+    /// <param name="catalog">旧 C# 或新 GDScript 商品目录。</param>
+    /// <param name="propertyName">目录数组字段名。</param>
+    /// <returns>可供桥接器继续处理的 Resource 数组。</returns>
+    private static Godot.Collections.Array<Resource> ReadResourceArray(Resource catalog, string propertyName)
+    {
+        var resources = new Godot.Collections.Array<Resource>();
+        if (catalog == null)
+        {
+            return resources;
+        }
+
+        Variant rawValue = catalog.Get(propertyName);
+        if (rawValue.VariantType != Variant.Type.Array)
+        {
+            return resources;
+        }
+
+        foreach (Variant value in rawValue.AsGodotArray())
+        {
+            if (value.AsGodotObject() is Resource resource)
+            {
+                resources.Add(resource);
+            }
+        }
+
+        return resources;
+    }
+
+    /// <summary>
+    /// 从目录 Resource 读取布尔字段，并在旧资源缺失字段时使用默认值。
+    /// </summary>
+    /// <param name="catalog">旧 C# 或新 GDScript 商品目录。</param>
+    /// <param name="propertyName">布尔字段名。</param>
+    /// <param name="fallback">字段缺失或类型不匹配时的默认值。</param>
+    /// <returns>解析后的布尔值。</returns>
+    private static bool ReadBool(Resource catalog, string propertyName, bool fallback)
+    {
+        if (catalog == null)
+        {
+            return fallback;
+        }
+
+        Variant value = catalog.Get(propertyName);
+        return value.VariantType == Variant.Type.Bool ? value.AsBool() : fallback;
+    }
+
+    /// <summary>
+    /// 从目录 Resource 读取整数价格，并在旧资源缺失字段时使用默认值。
+    /// </summary>
+    /// <param name="catalog">旧 C# 或新 GDScript 商品目录。</param>
+    /// <param name="propertyName">整数价格字段名。</param>
+    /// <param name="fallback">字段缺失或类型不匹配时的默认值。</param>
+    /// <returns>解析后的整数值。</returns>
+    private static int ReadInt(Resource catalog, string propertyName, int fallback)
+    {
+        if (catalog == null)
+        {
+            return fallback;
+        }
+
+        Variant value = catalog.Get(propertyName);
+        return value.VariantType == Variant.Type.Int ? value.AsInt32() : fallback;
+    }
+
+    /// <summary>
+    /// 判断目录是否显式包含指定物品。
+    /// </summary>
+    /// <param name="catalog">旧 C# 或新 GDScript 商品目录。</param>
+    /// <param name="item">待判断的物品。</param>
+    /// <returns>目录中存在同一物品资源实例时为 true。</returns>
+    private static bool ContainsCatalogItem(Resource catalog, ItemData item)
+    {
+        if (item == null)
+        {
+            return false;
+        }
+
+        foreach (Resource listedResource in ReadResourceArray(catalog, "Goods"))
+        {
+            if (listedResource == item)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://dop5mxunkxcir" path="res://scripts/map_scripts/map_son_scripts/map_brook.gd" id="1_0ct7l"]
 [ext_resource type="Texture2D" uid="uid://bxmddcfa1ssjt" path="res://res/background/溪流-a1ed.png" id="1_jbof8"]
-[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="2_profile"]
+[ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="2_profile"]
 [ext_resource type="Resource" uid="uid://baru50meo8ob7" path="res://res/terrain/berryubush.tres" id="3_nw8mf"]
-[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="4_pool"]
-[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="5_variance"]
+[ext_resource type="Script" path="res://core/map/room_terrain_pool_entry.gd" id="4_pool"]
+[ext_resource type="Script" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="5_variance"]
 
 [sub_resource type="Resource" id="Variance_brook"]
 script = ExtResource("5_variance")

@@ -55,12 +55,13 @@ def configure_console_encoding() -> None:
 
 configure_console_encoding()
 
-SKILL_CARD_SCRIPT = "res://resources/item/card/SkillCardData.cs"
+SKILL_CARD_SCRIPT = "res://resources/item/card/skill_card_data.gd"
+SKILL_CARD_SCRIPT_UID = "uid://d1ln6w8iaa4px"
 COMBAT_SKILL_SCRIPT = "res://core/combat/skills/CombatSkillData.cs"
 MONSTER_SCRIPT = "res://resources/monster/MonsterData.cs"
 STARTING_STATS_SCRIPT = "res://resources/stats/StartingStats.cs"
-MONSTER_SKILL_ENTRY_SCRIPT = "res://resources/monster/MonsterSkillEntryData.cs"
-MONSTER_SKILL_SET_SCRIPT = "res://resources/monster/MonsterSkillSetData.cs"
+MONSTER_SKILL_ENTRY_SCRIPT = "res://resources/monster/monster_skill_entry_data.gd"
+MONSTER_SKILL_SET_SCRIPT = "res://resources/monster/monster_skill_set_data.gd"
 
 SKILL_HEADERS = [
     "resource_path",
@@ -1594,9 +1595,9 @@ def create_combat_skill_resource(row: dict[str, str]) -> str:
 def create_skill_card_resource(row: dict[str, str], combat_path: str) -> str:
     """生成最小 SkillCardData 资源，并链接对应 CombatSkillData。"""
     lines = [
-        '[gd_resource type="Resource" script_class="SkillCardData" format=3]',
+        '[gd_resource type="Resource" format=3]',
         "",
-        f'[ext_resource type="Script" path="{SKILL_CARD_SCRIPT}" id="skill_card_script"]',
+        f'[ext_resource type="Script" uid="{SKILL_CARD_SCRIPT_UID}" path="{SKILL_CARD_SCRIPT}" id="skill_card_script"]',
         f'[ext_resource type="Resource" path="{combat_path}" id="combat_skill"]',
     ]
     icon_path = (row.get("icon_path") or "").strip()
@@ -1691,6 +1692,46 @@ def upsert_existing_skill_card(
 ) -> str:
     """生成已有 SkillCardData 的更新文本，保留复杂资源引用与已有子资源。"""
     text = path.read_text(encoding="utf-8")
+    header, resource_block = get_resource_block(text)
+    # 技能卡已由 GDScript 提供；导入旧文件时同步清理 C# 全局类型标头和根资源元数据。
+    header = re.sub(r'\s+script_class="SkillCardData"', "", header, count=1)
+    resource_block = re.sub(
+        r'^metadata/_custom_type_script\s*=.*\n?',
+        "",
+        resource_block,
+        flags=re.MULTILINE,
+    )
+    script_match = re.search(
+        r'^script\s*=\s*ExtResource\("([^"]+)"\)',
+        resource_block,
+        flags=re.MULTILINE,
+    )
+    if script_match is None:
+        raise CardTableSyncError(
+            f"技能卡资源缺少根脚本引用，已拒绝修改：{path.relative_to(ROOT)}"
+        )
+    script_resource_id = script_match.group(1)
+    text = header + resource_block
+    script_line_pattern = (
+        r'^\[ext_resource[^\]]*id="'
+        + re.escape(script_resource_id)
+        + r'"[^\]]*\]\n?'
+    )
+    script_line = (
+        f'[ext_resource type="Script" uid="{SKILL_CARD_SCRIPT_UID}" '
+        f'path="{SKILL_CARD_SCRIPT}" id="{script_resource_id}"]\n'
+    )
+    text, replacement_count = re.subn(
+        script_line_pattern,
+        script_line,
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    if replacement_count != 1:
+        raise CardTableSyncError(
+            f"技能卡根脚本声明无法定位，已拒绝修改：{path.relative_to(ROOT)}"
+        )
     text = replace_or_add_resource_property(
         text, "CardId", string_or_null(row.get("card_id", ""))
     )

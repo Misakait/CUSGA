@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cx6d0836hkgj0"]
 
-[ext_resource type="Script" uid="uid://bts8tc1jf7jl" path="res://core/ui/EquipmentSlotUI.cs" id="1_l4xgi"]
+[ext_resource type="Script" uid="uid://w2aftuo23hpg" path="res://core/ui/equipment_slot_ui.gd" id="1_l4xgi"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l4xgi"]
 content_margin_left = 1.0

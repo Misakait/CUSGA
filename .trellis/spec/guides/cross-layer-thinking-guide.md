@@ -72,6 +72,34 @@ GDScript 的 `Callable` 经过 `Object.call()` 传入 C# 时，编译不会验�
 
 对于需要在 C# 完成异步工作后回到 GDScript 的流程，应由 C# 持有自己的 `Callable.From(...)`，再发出携带最小事实数据（例如 owner 节点）的 Godot 信号；GDScript 在开始操作前连接该信号并保存自身需要的局部状态。这样回调生命周期由各自语言维护，跨层边界只传递 Godot 原生信号参数。
 
+### Mistake 0.2: Dropping Retained C# Type Imports During Boundary Changes
+
+把某个消费字段从具体 C# 类型降为 `Node` / `Resource`，只移除了被迁移对象的类型依赖；同一文件中保留的其他 C# 参数、字段或构造器类型仍需要可解析的命名空间。签名调整后若只验证 GDScript 契约，旧程序集可能继续让运行测试通过，而下一次 C# 构建才暴露 `CS0246`。
+
+跨语言边界改签名后必须同批检查：
+
+- 列出该 C# 文件仍出现的项目自有类型，确认每个类型属于当前命名空间、普通 `using` 或显式类型别名；
+- 对迁移期关键类型优先使用 `using TypeName = Full.Namespace.TypeName;`，让保留边界和回滚点一眼可见；
+- 确认验证所用程序集时间晚于已修改的 C# 源码，不能把旧 DLL 的运行成功当作当前源码已编译；
+- 再用 GodotAI 运行相关场景，确认别名修复没有改变节点脚本、序列化字段或跨语言行为。
+
+```csharp
+// 错误：文件仍使用 EncounterManager，却只保留了被降型对象相关的导入。
+private EncounterManager _encounterManager;
+```
+
+```csharp
+// 正确：显式固定迁移期保留类型的完整命名空间。
+using EncounterManager = CUSGA.core.application.EncounterManager;
+
+namespace CUSGA.core.gameflow;
+
+public partial class WorldInteractionCoordinator
+{
+    private EncounterManager _encounterManager;
+}
+```
+
 ### Mistake 1: Implicit Format Assumptions
 
 **Bad**: Assuming date format without checking
@@ -139,6 +167,7 @@ After implementation:
       casting payload fields locally
 - [ ] Checked that derived state points back to the source event identifier
       (`seq`, `id`, `version`) instead of inventing a second cursor
+- [ ] C# 边界签名降型后，检查同文件所有保留项目类型的命名空间/别名，并确认验证程序集晚于源码
 
 ---
 

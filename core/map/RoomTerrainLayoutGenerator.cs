@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using CUSGA.resources.encounters;
-using CUSGA.resources.interaction;
 using Godot;
 
 namespace CUSGA.core.map;
 
 public sealed class TerrainSpawnPlacement(
-    TerrainCardData terrainData,
+    Resource terrainData,
     Vector2I localGridPos,
     Vector2 boardPosition,
     MonsterStatMultiplier encounterVarianceMultiplier)
 {
-    public TerrainCardData TerrainData { get; } =
+    public Resource TerrainData { get; } =
         terrainData ?? throw new ArgumentNullException(nameof(terrainData));
 
     public Vector2I LocalGridPos { get; } = localGridPos;
@@ -21,7 +20,7 @@ public sealed class TerrainSpawnPlacement(
         encounterVarianceMultiplier ?? MonsterStatMultiplier.Identity;
 
     public TerrainSpawnPlacement(
-        TerrainCardData terrainData,
+        Resource terrainData,
         Vector2I localGridPos,
         Vector2 boardPosition)
         : this(terrainData, localGridPos, boardPosition, MonsterStatMultiplier.Identity)
@@ -33,21 +32,45 @@ public sealed class RoomTerrainLayoutGenerator(Random random)
 {
     private readonly Random _random = random ?? throw new ArgumentNullException(nameof(random));
 
+    /// <summary>
+    /// 根据旧 C# 地形配置生成布局，保留旧调用方的强类型入口。
+    /// </summary>
+    /// <param name="profile">旧 C# 地形配置。</param>
+    /// <returns>按配置生成的地形摆放结果。</returns>
     public IReadOnlyList<TerrainSpawnPlacement> Generate(RoomTerrainProfile profile)
+    {
+        return Generate((Resource)profile);
+    }
+
+    /// <summary>
+    /// 根据 C# 或 GDScript 地形配置生成布局。
+    /// </summary>
+    /// <param name="profile">包含稳定地形配置字段的 Resource。</param>
+    /// <returns>按配置生成的地形摆放结果。</returns>
+    public IReadOnlyList<TerrainSpawnPlacement> Generate(Resource profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
-        if (profile.TerrainPool == null || profile.TerrainPool.Length == 0)
+        Godot.Collections.Array<Resource> terrainPool = ReadResourceArray(profile, "TerrainPool");
+        if (terrainPool.Count == 0)
         {
             return [];
         }
 
-        int gridColumns = Math.Max(profile.GridColumns, 1);
-        int gridRows = Math.Max(profile.GridRows, 1);
+        int gridColumns = Math.Max(ReadInt(profile, "GridColumns", 1), 1);
+        int gridRows = Math.Max(ReadInt(profile, "GridRows", 1), 1);
         int availableSlots = gridColumns * gridRows;
-        int minCount = Math.Clamp(profile.MinCount, 0, availableSlots);
-        int maxCount = Math.Clamp(Math.Max(profile.MaxCount, minCount), minCount, availableSlots);
+        int minCount = Math.Clamp(ReadInt(profile, "MinCount", 0), 0, availableSlots);
+        int maxCount = Math.Clamp(
+            Math.Max(ReadInt(profile, "MaxCount", minCount), minCount),
+            minCount,
+            availableSlots
+        );
         int count = _random.Next(minCount, maxCount + 1);
+
+        Vector2 placementMin = ReadVector2(profile, "PlacementMin", Vector2.Zero);
+        Vector2 placementMax = ReadVector2(profile, "PlacementMax", Vector2.Zero);
+        Resource varianceRange = ReadResource(profile, "EncounterVarianceRange");
 
         var cells = BuildCells(gridColumns, gridRows);
         Shuffle(cells);
@@ -55,24 +78,25 @@ public sealed class RoomTerrainLayoutGenerator(Random random)
         var placements = new List<TerrainSpawnPlacement>(count);
         for (int i = 0; i < count; i++)
         {
-            RoomTerrainPoolEntry entry = ChooseTerrainEntry(profile);
-            if (entry?.TerrainData == null)
+            Resource entry = ChooseTerrainEntry(terrainPool);
+            Resource terrainData = ReadTerrainData(entry);
+            if (terrainData == null)
             {
                 continue;
             }
 
             Vector2I cell = cells[i];
             placements.Add(new TerrainSpawnPlacement(
-                entry.TerrainData,
+                terrainData,
                 cell,
                 CellCenterToBoardPosition(
                     cell,
                     gridColumns,
                     gridRows,
-                    profile.PlacementMin,
-                    profile.PlacementMax
+                    placementMin,
+                    placementMax
                 ),
-                RollMultiplier(profile.EncounterVarianceRange)
+                RollMultiplier(varianceRange)
             ));
         }
 
@@ -83,20 +107,20 @@ public sealed class RoomTerrainLayoutGenerator(Random random)
     /// 根据权重从地形池中随机选择一个地形条目。
     /// 权重越高的地形，被选中的概率越大。
     /// </summary>
-    /// <param name="profile">包含地形池配置的地形配置文件</param>
+    /// <param name="terrainPool">包含候选地形条目的地形池。</param>
     /// <returns>选中的地形条目。如果池为空或没有有效数据，则返回 null。</returns>
-    private RoomTerrainPoolEntry ChooseTerrainEntry(RoomTerrainProfile profile)
+    private Resource ChooseTerrainEntry(Godot.Collections.Array<Resource> terrainPool)
     {
         // 计算所有有效地形的权重总和
         float totalWeight = 0f;
-        foreach (RoomTerrainPoolEntry entry in profile.TerrainPool)
+        foreach (Resource entry in terrainPool)
         {
-            if (entry?.TerrainData == null)
+            if (ReadTerrainData(entry) == null)
             {
                 continue;
             }
 
-            totalWeight += Math.Max(entry.Weight, 0f);
+            totalWeight += Math.Max(ReadFloat(entry, "Weight", 1f), 0f);
         }
 
 
@@ -105,9 +129,9 @@ public sealed class RoomTerrainLayoutGenerator(Random random)
         if (totalWeight <= 0f)
         {
             // 直接返回池子里的第一个有效地形（不进行随机）
-            foreach (RoomTerrainPoolEntry entry in profile.TerrainPool)
+            foreach (Resource entry in terrainPool)
             {
-                if (entry?.TerrainData != null)
+                if (ReadTerrainData(entry) != null)
                 {
                     return entry;
                 }
@@ -121,14 +145,14 @@ public sealed class RoomTerrainLayoutGenerator(Random random)
         // 在 [0, totalWeight) 范围内掷一个随机数
         double roll = _random.NextDouble() * totalWeight;
         float accumulated = 0f;
-        foreach (RoomTerrainPoolEntry entry in profile.TerrainPool)
+        foreach (Resource entry in terrainPool)
         {
-            if (entry?.TerrainData == null)
+            if (ReadTerrainData(entry) == null)
             {
                 continue;
             }
             // 将当前地形的权重累加到“扇区”中
-            accumulated += Math.Max(entry.Weight, 0f);
+            accumulated += Math.Max(ReadFloat(entry, "Weight", 1f), 0f);
             // 如果随机数落在了当前累加权重的范围内，说明抽中了该地形
             if (roll <= accumulated)
             {
@@ -139,24 +163,145 @@ public sealed class RoomTerrainLayoutGenerator(Random random)
         return null;
     }
 
-    private MonsterStatMultiplier RollMultiplier(MonsterStatMultiplierRange range)
+    /// <summary>
+    /// 从迁移中的 Resource 读取资源数组，并过滤掉非 Resource 元素。
+    /// </summary>
+    /// <param name="resource">待读取的配置资源。</param>
+    /// <param name="propertyName">数组字段名称。</param>
+    /// <returns>过滤后的 Resource 数组。</returns>
+    private static Godot.Collections.Array<Resource> ReadResourceArray(
+        Resource resource,
+        string propertyName)
+    {
+        var resources = new Godot.Collections.Array<Resource>();
+        Variant value = resource.Get(propertyName);
+        if (value.VariantType != Variant.Type.Array)
+        {
+            return resources;
+        }
+
+        foreach (Variant item in value.AsGodotArray())
+        {
+            if (item.AsGodotObject() is Resource nestedResource)
+            {
+                resources.Add(nestedResource);
+            }
+        }
+
+        return resources;
+    }
+
+    /// <summary>
+    /// 从迁移中的 Resource 读取嵌套 Resource 字段。
+    /// </summary>
+    /// <param name="resource">待读取的配置资源。</param>
+    /// <param name="propertyName">字段名称。</param>
+    /// <returns>嵌套 Resource；字段缺失时返回 null。</returns>
+    private static Resource ReadResource(Resource resource, string propertyName)
+    {
+        Variant value = resource.Get(propertyName);
+        return value.AsGodotObject() as Resource;
+    }
+
+    /// <summary>
+    /// 从迁移中的 Resource 读取整数配置。
+    /// </summary>
+    /// <param name="resource">待读取的配置资源。</param>
+    /// <param name="propertyName">字段名称。</param>
+    /// <param name="fallback">字段缺失或类型不匹配时的默认值。</param>
+    /// <returns>转换后的整数配置。</returns>
+    private static int ReadInt(Resource resource, string propertyName, int fallback)
+    {
+        Variant value = resource.Get(propertyName);
+        return value.VariantType switch
+        {
+            Variant.Type.Int => value.AsInt32(),
+            Variant.Type.Float => (int)value.AsSingle(),
+            _ => fallback
+        };
+    }
+
+    /// <summary>
+    /// 从迁移中的 Resource 读取二维坐标配置。
+    /// </summary>
+    /// <param name="resource">待读取的配置资源。</param>
+    /// <param name="propertyName">字段名称。</param>
+    /// <param name="fallback">字段缺失或类型不匹配时的默认坐标。</param>
+    /// <returns>资源中的二维坐标或默认值。</returns>
+    private static Vector2 ReadVector2(Resource resource, string propertyName, Vector2 fallback)
+    {
+        Variant value = resource.Get(propertyName);
+        return value.VariantType == Variant.Type.Vector2
+            ? value.AsVector2()
+            : fallback;
+    }
+
+    /// <summary>
+    /// 从迁移中的地形池条目读取 TerrainData，兼容 C# 与 GDScript Resource。
+    /// </summary>
+    /// <param name="entry">待读取的地形池条目。</param>
+    /// <returns>条目中的地形卡；字段缺失或类型不匹配时返回 null。</returns>
+    private static Resource ReadTerrainData(Resource entry)
+    {
+        if (entry == null)
+        {
+            return null;
+        }
+
+        Variant value = entry.Get("TerrainData");
+        return value.AsGodotObject() as Resource;
+    }
+
+    /// <summary>
+    /// 从迁移中的 Resource 读取浮点配置，并在字段缺失时返回中性默认值。
+    /// </summary>
+    /// <param name="resource">待读取的资源。</param>
+    /// <param name="propertyName">导出字段名称。</param>
+    /// <param name="fallback">字段缺失或类型不匹配时使用的默认值。</param>
+    /// <returns>资源中的浮点配置或默认值。</returns>
+    private static float ReadFloat(Resource resource, string propertyName, float fallback)
+    {
+        if (resource == null)
+        {
+            return fallback;
+        }
+
+        Variant value = resource.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? (float)value.AsDouble()
+            : fallback;
+    }
+
+    private MonsterStatMultiplier RollMultiplier(Resource range)
     {
         if (range == null)
         {
             return MonsterStatMultiplier.Identity;
         }
 
-        MonsterStatMultiplier min = range.Min;
-        MonsterStatMultiplier max = range.Max;
         return new MonsterStatMultiplier
         {
-            MaxHealth = RollFloat(min.MaxHealth, max.MaxHealth),
-            PhysAtk = RollFloat(min.PhysAtk, max.PhysAtk),
-            PhysDef = RollFloat(min.PhysDef, max.PhysDef),
-            MagPower = RollFloat(min.MagPower, max.MagPower),
-            MagResist = RollFloat(min.MagResist, max.MagResist),
-            Speed = RollFloat(min.Speed, max.Speed)
+            MaxHealth = RollFloat(ReadMultiplier(range, "MinMaxHealth"), ReadMultiplier(range, "MaxMaxHealth")),
+            PhysAtk = RollFloat(ReadMultiplier(range, "MinPhysAtk"), ReadMultiplier(range, "MaxPhysAtk")),
+            PhysDef = RollFloat(ReadMultiplier(range, "MinPhysDef"), ReadMultiplier(range, "MaxPhysDef")),
+            MagPower = RollFloat(ReadMultiplier(range, "MinMagPower"), ReadMultiplier(range, "MaxMagPower")),
+            MagResist = RollFloat(ReadMultiplier(range, "MinMagResist"), ReadMultiplier(range, "MaxMagResist")),
+            Speed = RollFloat(ReadMultiplier(range, "MinSpeed"), ReadMultiplier(range, "MaxSpeed"))
         };
+    }
+
+    /// <summary>
+    /// 从迁移中的 Resource 读取一个倍率字段，并为旧资源或缺失字段提供中性默认值。
+    /// </summary>
+    /// <param name="range">倍率范围资源。</param>
+    /// <param name="propertyName">导出字段名称。</param>
+    /// <returns>可用于随机抽样的倍率；无法读取时返回 1。</returns>
+    private static float ReadMultiplier(Resource range, string propertyName)
+    {
+        Variant value = range.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? (float)value.AsDouble()
+            : 1f;
     }
 
     private float RollFloat(float min, float max)

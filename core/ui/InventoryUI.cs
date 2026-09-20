@@ -19,7 +19,7 @@ public partial class InventoryUI : Control
     [Export] public NodePath GameplayPortPath { get; set; }
     [Export] public NodePath TooltipPanelPath { get; set; } = new("../../TooltipPanel");
 
-    private AttributeSummaryUI _attributeSummary = null!;
+    private Node _attributeSummary = null!;
     private GridContainer _slotGrid = null!;
     private GridContainer _equipmentSlotGrid = null!;
     private GridContainer _deckSlotGrid = null!;
@@ -45,7 +45,7 @@ public partial class InventoryUI : Control
         closeButton.Pressed += Close;
         _craftingButton = GetNode<Button>("%CraftingButton");
         _craftingButton.Pressed += OnCraftingButtonPressed;
-        _attributeSummary = GetNode<AttributeSummaryUI>("%AttributeSummaryUI");
+        _attributeSummary = GetNode<Node>("%AttributeSummaryUI");
         _slotGrid = GetNode<GridContainer>("%SlotGrid");
         _equipmentSlotGrid = GetNode<GridContainer>("%EquipmentSlotGrid");
         _deckSlotGrid = GetNode<GridContainer>("%DeckSlotGrid");
@@ -86,9 +86,11 @@ public partial class InventoryUI : Control
         }
 
         BindPlayerInventory(inventory);
-        _attributeSummary.Bind(_gameplayPort.Player.Attributes);
-        BindEquipment(_gameplayPort.Player.Equipment);
-        BindBattleDeck(_gameplayPort.PlayerBattleDeck);
+        _attributeSummary.Call("Bind", _gameplayPort.Player.Attributes);
+        // 旧 C# 界面只作为兼容垫片保留；生产 GDScript 界面可直接消费任一语言装备节点。
+        BindEquipment(_gameplayPort.Player.Equipment as EquipmentComponent);
+        // 旧 C# 界面只作为兼容垫片保留；生产 GDScript 界面直接消费 Node 卡组。
+        BindBattleDeck(_gameplayPort.PlayerBattleDeck as BattleDeckComponent);
         if (_equipment == null || _battleDeck == null)
         {
             return;

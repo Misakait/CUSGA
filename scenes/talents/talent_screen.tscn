@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://ddyp7h04g6e3l"]
 
-[ext_resource type="Script" uid="uid://cd1qff3m6jtji" path="res://resources/talents/TalentManager.cs" id="1_wtvrj"]
+[ext_resource type="Script" path="res://resources/talents/talent_manager.gd" id="1_wtvrj"]
 [ext_resource type="PackedScene" uid="uid://dmywehu7v1ws0" path="res://scenes/talents/talent_card.tscn" id="2_tcet3"]
 
 [node name="TalentScreen" type="CanvasLayer" unique_id=729571503 node_paths=PackedStringArray("CardsContainer")]
 process_mode = 3
 script = ExtResource("1_wtvrj")
-AllTalentsPool = Array[Object]([])
+AllTalentsPool = Array[Resource]([])
 CardScenePrefab = ExtResource("2_tcet3")
 CardsContainer = NodePath("HBoxContainer")
 

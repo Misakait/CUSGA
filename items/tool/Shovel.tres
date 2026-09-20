@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dlr3asdupfmim"]
+[gd_resource type="Resource" format=3 uid="uid://dlr3asdupfmim"]
 
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_e7m0y"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_e7m0y"]
 [ext_resource type="Texture2D" uid="uid://cl54ynoa5f6ab" path="res://res/tool/Shovel.png" id="1_q6rn1"]
 
 [resource]
@@ -13,4 +13,4 @@ CardId = &"Shovel"
 CardName = "铲子"
 CardIcon = ExtResource("1_q6rn1")
 Description = "铲土！铲怪！"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

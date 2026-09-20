@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="ResourceCardData" format=3 uid="uid://mslyvpd6f5xi"]
+[gd_resource type="Resource" format=3 uid="uid://mslyvpd6f5xi"]
 
-[ext_resource type="Script" uid="uid://tg4u4lol2cpi" path="res://resources/item/card/ResourceCardData.cs" id="1_ukusq"]
+[ext_resource type="Script" path="res://resources/item/card/resource_card_data.gd" id="1_resource_card"]
 [ext_resource type="Texture2D" uid="uid://b4j1hw36xnpc3" path="res://res/tool/Ax.png" id="1_uy0kl"]
 
 [resource]
-script = ExtResource("1_ukusq")
+script = ExtResource("1_resource_card")
 CardId = &"StoneAxe"
 CardName = "石斧"
 CardIcon = ExtResource("1_uy0kl")
 Description = "较垃圾的石斧"
-metadata/_custom_type_script = "uid://tg4u4lol2cpi"

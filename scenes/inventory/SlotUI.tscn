@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://rukl64pxxdie"]
 
-[ext_resource type="Script" uid="uid://dcf3gy8nblbdv" path="res://core/ui/SlotUI.cs" id="1_ota37"]
+[ext_resource type="Script" uid="uid://d3os65c5grca4" path="res://core/ui/slot_ui.gd" id="1_ota37"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ota37"]
 content_margin_left = 1.0

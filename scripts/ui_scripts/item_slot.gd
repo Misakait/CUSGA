@@ -1,6 +1,9 @@
 class_name ItemSlot
 extends Button
 
+## 物品显示字段的跨语言读取边界。
+const ITEM_DATA_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
+
 ## 通用物品格子的表现脚本，商店与局外仓库共用。
 ##
 ## 只负责「显示什么」和「被谁点了」两件事。选中态由使用它的界面脚本统一持有，
@@ -15,7 +18,7 @@ extends Button
 signal slot_clicked(slot: Button)
 
 ## 该格子当前展示的物品；为 null 表示空格子。
-var item_data: ItemData = null
+var item_data: Resource = null
 
 ## 该格子代表的数量，只在出售侧显示。
 var item_count: int = 0
@@ -68,11 +71,11 @@ func _resolve_nodes() -> void:
 
 
 ## 把物品绑定到格子上。
-## @param item 要展示的物品数据；为 null 时等价于清空格子。
+## @param item 要展示的 GDScript 或 C# 物品 Resource；为 null 时等价于清空格子。
 ## @param amount 数量，出售侧会显示出来。
 ## @param price 该侧对应的单价；小于等于 0 时不显示价格标签。
 ## @param kind 价格语义，&"buy" 或 &"sell"。
-func bind(item: ItemData, amount: int, price: int, kind: StringName) -> void:
+func bind(item: Resource, amount: int, price: int, kind: StringName) -> void:
 	if item == null:
 		clear_slot()
 		return
@@ -83,7 +86,7 @@ func bind(item: ItemData, amount: int, price: int, kind: StringName) -> void:
 	item_count = amount
 	price_kind = kind
 
-	_icon.texture = item.CardIcon
+	_icon.texture = ITEM_DATA_COMPAT.call("get_display_icon", item, null) as Texture2D
 	_name_label.text = _resolve_display_name(item)
 	disabled = false
 
@@ -134,11 +137,9 @@ func is_selected() -> bool:
 ## 既有数据里存在 CardName 为空的物品（例如 items/tool/IronSword.tres）。
 ## 回退到 CardId 而不是留空，是为了让这类物品在界面上仍可辨认——
 ## 空白格子会让玩家以为那是个坏掉的格子，也会掩盖数据问题。
-func _resolve_display_name(item: ItemData) -> String:
-	var card_name := String(item.get("CardName"))
-	if not card_name.is_empty():
-		return card_name
-	return String(item.get("CardId"))
+func _resolve_display_name(item: Resource) -> String:
+	var card_id: StringName = ITEM_DATA_COMPAT.call("get_card_id", item, &"")
+	return String(ITEM_DATA_COMPAT.call("get_display_name", item, String(card_id)))
 
 
 func _on_pressed() -> void:

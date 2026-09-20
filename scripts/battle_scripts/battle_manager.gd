@@ -15,7 +15,7 @@ signal battle_ended(is_victory: bool)
 
 #region exprot
 @export_group("初始化参数")
-@export var starting_deck_data: Array[SkillCardData] ##初始携带的卡组的卡牌数据。
+@export var starting_deck_data: Array[Resource] ##初始携带的卡组 Resource，兼容 C# 与 GDScript SkillCardData。
 @export var starting_monster_data: Array[MonsterData] ##初始怪物的卡牌数据。
 @export var card_scene: PackedScene
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using CUSGA.core.autoloads;
 using CUSGA.core.constants;
 using CUSGA.entities.components;
 using CUSGA.resources.interaction.operations;
@@ -58,9 +57,11 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
     /// </summary>
     /// <param name="equipment">玩家当前装备组件；为空时不应用工具减免。</param>
     /// <returns>返回夹在最短时间以上的实际采集时间。</returns>
-    public int GetEffectiveTimeCost(EquipmentComponent equipment)
+    public int GetEffectiveTimeCost(Node equipment)
     {
-        int reduction = equipment?.GetGatheringTimeReduction(GatheringTag, EffectiveToolSlot) ?? 0;
+        int reduction = equipment?.HasMethod("GetGatheringTimeReduction") == true
+            ? equipment.Call("GetGatheringTimeReduction", GatheringTag, (int)EffectiveToolSlot).AsInt32()
+            : 0;
         return Math.Max(GetMinimumTimeCost(), Math.Max(0, TimeCost) - reduction);
     }
 
@@ -69,7 +70,7 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
     /// </summary>
     /// <param name="equipment">玩家当前装备组件；为空时不应用工具减免。</param>
     /// <returns>返回长按进度条需要运行的秒数。</returns>
-    public float GetRequiredHoldSeconds(EquipmentComponent equipment)
+    public float GetRequiredHoldSeconds(Node equipment)
     {
         return WorldInteractionTiming.GetHoldDurationSeconds(GetEffectiveTimeCost(equipment));
     }
@@ -155,14 +156,16 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
         ArgumentNullException.ThrowIfNull(context);
 
         var ops = new List<TerrainOp>();
-        if (!CanHarvest(context.Terrain, GetCurrentTotalTime()))
+        if (!CanHarvest(context.Terrain, GetCurrentTotalTime(context.TimeSystem)))
         {
             return ops;
         }
 
-        EquipmentComponent equipment = context.Player?.Equipment;
+        Node equipment = context.Player?.Equipment;
         int effectiveTimeCost = GetBuildTimeCost(context, equipment);
-        int extraYield = equipment?.GetGatheringYieldBonus(GatheringTag) ?? 0;
+        int extraYield = equipment?.HasMethod("GetGatheringYieldBonus") == true
+            ? equipment.Call("GetGatheringYieldBonus", GatheringTag).AsInt32()
+            : 0;
         var loots = DropTable?.RollLoot(extraYield) ?? [];
 
         ops.Add(new PassTimeOp(effectiveTimeCost));
@@ -191,7 +194,7 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
 
     private int GetBuildTimeCost(
         TerrainInteractionBuildContext context,
-        EquipmentComponent equipment)
+        Node equipment)
     {
         if (context.EffectiveTimeCostOverride.HasValue)
         {
@@ -206,8 +209,16 @@ public partial class ReusableGatheringInteraction : TerrainInteraction
         return GatheringTag != null && !GatheringTag.IsEmpty;
     }
 
-    private static int GetCurrentTotalTime()
+    private static int GetCurrentTotalTime(Node timeSystem)
     {
-        return TimeSystem.Instance?.TotalTimePassed ?? 0;
+        if (timeSystem == null)
+        {
+            return 0;
+        }
+
+        Variant value = timeSystem.Get("TotalTimePassed");
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? value.AsInt32()
+            : 0;
     }
 }

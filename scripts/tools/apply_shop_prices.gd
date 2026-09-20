@@ -1,5 +1,8 @@
 extends SceneTree
 
+## 物品字段的跨语言读取边界，用于验证 GDScript 普通物品与保留的 C# 派生物品。
+const ITEM_DATA_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
+
 ## 一次性工具：为局外商店批量写入物品买价与卖价。
 ##
 ## 用法：
@@ -343,16 +346,18 @@ func _verify_written_prices(paths: PackedStringArray) -> int:
 
 		# CACHE_MODE_IGNORE 绕开资源缓存，强制从磁盘重新反序列化，否则校验的只是内存对象。
 		var resource := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
-		if resource == null or not (resource is ItemData):
+		if resource == null or not bool(ITEM_DATA_COMPAT.call("is_item_resource", resource)):
 			push_error("apply_shop_prices: 自校验无法加载 %s" % path)
 			failures += 1
 			continue
 
-		var item := resource as ItemData
-		if item.BuyPrice != expected or item.SellPrice != int(expected / 2):
+		var item := resource as Resource
+		var actual_buy_price: int = int(item.get("BuyPrice"))
+		var actual_sell_price: int = int(item.get("SellPrice"))
+		if actual_buy_price != expected or actual_sell_price != int(expected / 2):
 			push_error(
 				"apply_shop_prices: 自校验价格不符 %s（读回 BuyPrice=%d SellPrice=%d，期望 %d/%d）"
-				% [path, item.BuyPrice, item.SellPrice, expected, int(expected / 2)]
+				% [path, actual_buy_price, actual_sell_price, expected, int(expected / 2)]
 			)
 			failures += 1
 

@@ -20,7 +20,7 @@ func _ready() -> void:
 	
 	#将局外仓库里的东西带入游戏
 	for i in ItemsControl.warehouse_to_player.size():
-		var item_data: ItemData = ItemsControl.warehouse_to_player[i]
+		var item_data: Resource = ItemsControl.warehouse_to_player[i]
 		var amount: int = ItemsControl.warehouse_to_player_cnt[i]
 		player._inventory.AddItem(item_data,amount)
 

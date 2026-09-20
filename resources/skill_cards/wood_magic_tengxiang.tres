@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://chqp3ixoqp4oi"]
+[gd_resource type="Resource" format=3 uid="uid://chqp3ixoqp4oi"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_skillcard"]
+[ext_resource type="Script" uid="uid://d1ln6w8iaa4px" path="res://resources/item/card/skill_card_data.gd" id="1_skillcard"]
 [ext_resource type="Texture2D" uid="uid://dwl4y02inrubl" path="res://res/skillcard/wood_skill_card.png" id="icon_skillcard"]
 
 [ext_resource type="Resource" path="res://resources/combat_skills/wood_magic_tengxiang.tres" id="combat_skill"]

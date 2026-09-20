@@ -12,7 +12,8 @@ namespace CUSGA.entities.components;
 [GlobalClass]
 public partial class MonsterSkillComponent : Node
 {
-    [Export] public MonsterSkillSetData SkillSet { get; set; }
+    // 使用通用 Resource 承接 GDScript 技能集合；旧 C# MonsterSkillSetData 仍可直接赋值。
+    [Export] public Resource SkillSet { get; set; }
 
     public Node Host => GetParent();
 
@@ -27,6 +28,15 @@ public partial class MonsterSkillComponent : Node
     /// <param name="skillSet">此组件要暴露给战斗系统的怪物技能集合。</param>
     public void Initialize(MonsterSkillSetData skillSet)
     {
+        Initialize((Resource)skillSet);
+    }
+
+    /// <summary>
+    /// 在运行时替换当前怪物的 C# 或 GDScript 技能集合。
+    /// </summary>
+    /// <param name="skillSet">包含 Skills 数组的技能集合 Resource。</param>
+    public void Initialize(Resource skillSet)
+    {
         SkillSet = skillSet;
         ValidateSkillSet();
     }
@@ -39,7 +49,7 @@ public partial class MonsterSkillComponent : Node
             return;
         }
 
-        foreach (var entry in SkillSet.Skills)
+        foreach (Resource entry in ReadSkillEntries())
         {
             if (entry == null)
             {
@@ -47,7 +57,7 @@ public partial class MonsterSkillComponent : Node
                 continue;
             }
 
-            if (entry.Skill == null)
+            if (ReadCombatSkill(entry) == null)
             {
                 GD.PushWarning($"{Host?.Name} has MonsterSkillEntryData with null CombatSkillData.");
             }
@@ -67,14 +77,15 @@ public partial class MonsterSkillComponent : Node
             return result;
         }
 
-        foreach (var entry in SkillSet.Skills)
+        foreach (Resource entry in ReadSkillEntries())
         {
-            if (entry?.Skill == null)
+            CombatSkillData skill = ReadCombatSkill(entry);
+            if (skill == null)
             {
                 continue;
             }
 
-            result.Add(entry.Skill);
+            result.Add(skill);
         }
 
         return result;
@@ -109,31 +120,127 @@ public partial class MonsterSkillComponent : Node
             return result;
         }
 
-        foreach (var entry in SkillSet.Skills)
+        foreach (Resource entry in ReadSkillEntries())
         {
             if (entry == null)
             {
                 continue;
             }
 
-            if (!entry.VisibleInPreview)
+            if (!ReadVisibleInPreview(entry))
             {
                 continue;
             }
 
-            if (entry.Skill == null)
+            CombatSkillData skill = ReadCombatSkill(entry);
+            if (skill == null)
             {
                 continue;
             }
 
             result.Add(
                 new MonsterSkillPreview(
-                    skill: entry.Skill,
-                    description: entry.GetPreviewDescription()
+                    skill: skill,
+                    description: ReadPreviewDescription(entry)
                 )
             );
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// 读取技能集合中的条目数组，并兼容旧 C# 强类型集合和 GDScript Resource。
+    /// </summary>
+    /// <returns>过滤掉空值后的技能条目 Resource 数组。</returns>
+    private Array<Resource> ReadSkillEntries()
+    {
+        var result = new Array<Resource>();
+        if (SkillSet == null)
+        {
+            return result;
+        }
+
+        if (SkillSet is MonsterSkillSetData legacySet)
+        {
+            foreach (MonsterSkillEntryData entry in legacySet.Skills)
+            {
+                if (entry != null)
+                {
+                    result.Add(entry);
+                }
+            }
+
+            return result;
+        }
+
+        Variant rawSkills = SkillSet.Get("Skills");
+        if (rawSkills.VariantType != Variant.Type.Array)
+        {
+            return result;
+        }
+
+        foreach (Variant value in rawSkills.AsGodotArray())
+        {
+            if (value.AsGodotObject() is Resource entry)
+            {
+                result.Add(entry);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 从一个技能条目中读取 CombatSkillData。
+    /// </summary>
+    /// <param name="entry">待读取的技能条目 Resource。</param>
+    /// <returns>条目中的战斗技能；字段缺失或类型不符时返回 null。</returns>
+    private static CombatSkillData ReadCombatSkill(Resource entry)
+    {
+        if (entry is MonsterSkillEntryData legacyEntry)
+        {
+            return legacyEntry.Skill;
+        }
+
+        Variant value = entry.Get("Skill");
+        return value.AsGodotObject() as CombatSkillData;
+    }
+
+    /// <summary>
+    /// 读取技能条目的预览可见标志。
+    /// </summary>
+    /// <param name="entry">待读取的技能条目 Resource。</param>
+    /// <returns>配置值；字段不存在时按旧默认值 true 处理。</returns>
+    private static bool ReadVisibleInPreview(Resource entry)
+    {
+        if (entry is MonsterSkillEntryData legacyEntry)
+        {
+            return legacyEntry.VisibleInPreview;
+        }
+
+        Variant value = entry.Get("VisibleInPreview");
+        return value.VariantType == Variant.Type.Nil || value.AsBool();
+    }
+
+    /// <summary>
+    /// 读取技能条目的预览说明，统一调用迁移后的稳定方法名。
+    /// </summary>
+    /// <param name="entry">待读取的技能条目 Resource。</param>
+    /// <returns>预览说明文本；条目没有该方法时返回空字符串。</returns>
+    private static string ReadPreviewDescription(Resource entry)
+    {
+        if (entry is MonsterSkillEntryData legacyEntry)
+        {
+            return legacyEntry.GetPreviewDescription();
+        }
+
+        if (!entry.HasMethod("GetPreviewDescription"))
+        {
+            return string.Empty;
+        }
+
+        Variant value = entry.Call("GetPreviewDescription");
+        return value.VariantType == Variant.Type.String ? value.AsString() : string.Empty;
     }
 }

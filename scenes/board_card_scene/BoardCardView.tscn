@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bti37y31fdnfr"]
 
-[ext_resource type="Script" uid="uid://b02abp0xlqjin" path="res://core/board/BoardCardView.cs" id="1_es72j"]
+[ext_resource type="Script" path="res://core/board/board_card_view.gd" id="1_es72j"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2akyy"]
 size = Vector2(68, 77)

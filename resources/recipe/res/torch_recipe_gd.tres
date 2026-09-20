@@ -1,0 +1,22 @@
+[gd_resource type="Resource" format=3 uid="uid://od88ns7dhkmj"]
+
+[ext_resource type="Script" uid="uid://dvv333pndfbmm" path="res://resources/recipe/crafting_ingredient.gd" id="1_ingredient"]
+[ext_resource type="Script" uid="uid://cunxbq7v4rf68" path="res://resources/recipe/crafting_recipe.gd" id="2_recipe"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="3_branch"]
+[ext_resource type="Resource" uid="uid://cf4li0yku7unk" path="res://resources/item/card/res_cards/charcoal.tres" id="4_charcoal"]
+[ext_resource type="Resource" uid="uid://vlltwh1x74yg" path="res://resources/item/card/res_cards/torch.tres" id="5_torch"]
+
+[sub_resource type="Resource" id="Ingredient_branch"]
+script = ExtResource("1_ingredient")
+RequiredItem = ExtResource("3_branch")
+Amount = 2
+
+[sub_resource type="Resource" id="Ingredient_charcoal"]
+script = ExtResource("1_ingredient")
+RequiredItem = ExtResource("4_charcoal")
+
+[resource]
+script = ExtResource("2_recipe")
+RecipeName = "火把合成表"
+Inputs = Array[Resource]([SubResource("Ingredient_branch"), SubResource("Ingredient_charcoal")])
+OutputItem = ExtResource("5_torch")

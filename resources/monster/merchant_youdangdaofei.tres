@@ -1,19 +1,14 @@
 [gd_resource type="Resource" script_class="MonsterData" format=3 uid="uid://dcf6yco4sdvxg"]
 
 [ext_resource type="Script" uid="uid://dh28trwcjvre6" path="res://resources/monster/MonsterData.cs" id="2_monster"]
-[ext_resource type="Resource" uid="uid://defad2x2jo3sb" path="res://resources/skill_cards/metal_phys_jinji.tres" id="4_skill_1"]
-[ext_resource type="Resource" uid="uid://cihx76k7aic7i" path="res://resources/skill_cards/metal_phys_liejinzhan.tres" id="5_skill_2"]
-[ext_resource type="Resource" uid="uid://dlyeiar0v2cl2" path="res://resources/skill_cards/metal_phys_qianfengpodishi.tres" id="6_skill_3"]
-[ext_resource type="Resource" uid="uid://cp4mf81epfamo" path="res://resources/skill_cards/metal_phys_qiege.tres" id="7_skill_4"]
-[ext_resource type="Script" uid="uid://b7y5vs8oep7hw" path="res://resources/monster/MonsterSkillEntryData.cs" id="csv_entry_script"]
-[ext_resource type="Script" uid="uid://dgjjdl52wm4gs" path="res://resources/monster/MonsterSkillSetData.cs" id="csv_set_script"]
+[ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="csv_entry_script"]
+[ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="csv_set_script"]
 [ext_resource type="Resource" uid="uid://bfh51o6ax5knt" path="res://resources/combat_skills/metal_phys_jinji.tres" id="csv_skill_1"]
 [ext_resource type="Resource" uid="uid://brus2psngc438" path="res://resources/combat_skills/metal_phys_liejinzhan.tres" id="csv_skill_2"]
 [ext_resource type="Resource" uid="uid://bdr4p84k87q1n" path="res://resources/combat_skills/metal_phys_qianfengpodishi.tres" id="csv_skill_3"]
 [ext_resource type="Resource" uid="uid://dwj63b4kogb2t" path="res://resources/combat_skills/metal_phys_qiege.tres" id="csv_skill_4"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="csv_stats_script"]
-[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="loot_drop_script"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="loot_table_script"]
+[ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="csv_stats_script"]
+[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="loot_table_script"]
 
 [sub_resource type="Resource" id="CSV_StartingStats"]
 script = ExtResource("csv_stats_script")
@@ -23,34 +18,9 @@ BaseMagPower = 60.0
 BaseMagResist = 160.0
 BaseSpeed = 95.0
 
-[sub_resource type="Resource" id="LootDrop_1"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("4_skill_1")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
-
-[sub_resource type="Resource" id="LootDrop_2"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("5_skill_2")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
-
-[sub_resource type="Resource" id="LootDrop_3"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("6_skill_3")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
-
-[sub_resource type="Resource" id="LootDrop_4"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("7_skill_4")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://cgf1hwe2s8na5"
-
 [sub_resource type="Resource" id="Resource_loot"]
 script = ExtResource("loot_table_script")
-Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4")])
-metadata/_custom_type_script = "uid://cauw0y3vbjow1"
+metadata/_custom_type_script = "uid://14ol6fqeh53g"
 
 [sub_resource type="Resource" id="CSV_MonsterSkillEntry_1"]
 script = ExtResource("csv_entry_script")
@@ -70,7 +40,7 @@ Skill = ExtResource("csv_skill_4")
 
 [sub_resource type="Resource" id="CSV_MonsterSkillSet"]
 script = ExtResource("csv_set_script")
-Skills = Array[ExtResource("csv_entry_script")]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4")])
+Skills = Array[Resource]([SubResource("CSV_MonsterSkillEntry_1"), SubResource("CSV_MonsterSkillEntry_2"), SubResource("CSV_MonsterSkillEntry_3"), SubResource("CSV_MonsterSkillEntry_4")])
 
 [resource]
 script = ExtResource("2_monster")

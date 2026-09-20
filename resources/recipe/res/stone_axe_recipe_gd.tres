@@ -1,0 +1,23 @@
+[gd_resource type="Resource" format=3 uid="uid://biacbm6kh04c4"]
+
+[ext_resource type="Script" uid="uid://dvv333pndfbmm" path="res://resources/recipe/crafting_ingredient.gd" id="1_ingredient"]
+[ext_resource type="Script" uid="uid://cunxbq7v4rf68" path="res://resources/recipe/crafting_recipe.gd" id="2_recipe"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="3_branch"]
+[ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="4_stone"]
+[ext_resource type="Resource" uid="uid://mslyvpd6f5xi" path="res://resources/item/card/res_cards/axe.tres" id="5_axe"]
+
+[sub_resource type="Resource" id="Ingredient_branch"]
+script = ExtResource("1_ingredient")
+RequiredItem = ExtResource("3_branch")
+Amount = 4
+
+[sub_resource type="Resource" id="Ingredient_stone"]
+script = ExtResource("1_ingredient")
+RequiredItem = ExtResource("4_stone")
+Amount = 4
+
+[resource]
+script = ExtResource("2_recipe")
+RecipeName = "stone_axe"
+Inputs = Array[Resource]([SubResource("Ingredient_branch"), SubResource("Ingredient_stone")])
+OutputItem = ExtResource("5_axe")

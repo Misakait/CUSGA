@@ -5,43 +5,43 @@
 [ext_resource type="Script" uid="uid://bv1xoc07ydxw7" path="res://core/board/BoardController.cs" id="2_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://55q6p6bk1ll7" path="res://scenes/map_scenes/map_control.tscn" id="2_rvslj"]
 [ext_resource type="PackedScene" uid="uid://bti37y31fdnfr" path="res://scenes/board_card_scene/BoardCardView.tscn" id="4_vcsgt"]
-[ext_resource type="Script" uid="uid://cdboqt73nndy5" path="res://core/application/GameplayPort.cs" id="6_c01mt"]
+[ext_resource type="Script" uid="uid://b70fsdh5gper6" path="res://core/application/gameplay_port.gd" id="6_c01mt"]
 [ext_resource type="Script" uid="uid://bvmf7jb6rrxk7" path="res://core/gameflow/WorldInteractionCoordinator.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://d0aq30etvrhiu" path="res://core/application/EncounterManager.cs" id="8_ft6cd"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="8_jlsqs"]
 [ext_resource type="Resource" uid="uid://b7sk1cm7siws7" path="res://resources/monster/tree_kumujing.tres" id="9_1iba3"]
-[ext_resource type="Script" uid="uid://b2503x8ewmybj" path="res://resources/encounters/GatheringEncounterRule.cs" id="9_bb450"]
+[ext_resource type="Script" uid="uid://bcy1h38m7fs2c" path="res://resources/encounters/gathering_encounter_rule.gd" id="9_bb450"]
 [ext_resource type="PackedScene" uid="uid://re28ypfb6pn7" path="res://scenes/inventory/inventory_ui.tscn" id="9_q8u5g"]
-[ext_resource type="Script" uid="uid://dkr5sf10iqq3b" path="res://core/ui/hud/HUDController.cs" id="9_wp0k4"]
-[ext_resource type="Script" uid="uid://cmpt04ncsoqpu" path="res://core/ui/hud/BackpackButton.cs" id="10_lhr70"]
+[ext_resource type="Script" uid="uid://dqoldwp4dbtdj" path="res://core/ui/hud/hud_controller.gd" id="9_wp0k4"]
+[ext_resource type="Script" uid="uid://q5ptdn5vi5u8" path="res://core/ui/hud/backpack_button.gd" id="10_lhr70"]
 [ext_resource type="Resource" uid="uid://cs11m2jpfad1e" path="res://resources/monster/rockwall_yankeshou.tres" id="10_yxlcp"]
 [ext_resource type="Resource" uid="uid://ina1t5oexech" path="res://resources/monster/berrybush_ducongyao.tres" id="11_ebg2g"]
-[ext_resource type="Script" uid="uid://ti4khreb8ppy" path="res://core/ui/hud/TimePanelUI.cs" id="11_qmy6f"]
-[ext_resource type="Script" uid="uid://2pdyihf4cpq1" path="res://core/ui/hud/HealthBarUI.cs" id="12_mwfav"]
-[ext_resource type="Script" uid="uid://dqlllnjrxs4n7" path="res://core/debug/DebugLoadoutSeeder.cs" id="13_debug"]
+[ext_resource type="Script" uid="uid://dnnbun11elbgk" path="res://core/ui/hud/time_panel_ui.gd" id="11_qmy6f"]
+[ext_resource type="Script" uid="uid://b2cjlfygx2goy" path="res://core/ui/hud/health_bar_ui.gd" id="12_mwfav"]
+[ext_resource type="Script" uid="uid://bshlhmrbxfyv2" path="res://core/debug/debug_loadout_seeder.gd" id="13_debug"]
 [ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
 [ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
-[ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
-[ext_resource type="Script" path="res://core/gameflow/WorldHoldInteractionController.cs" id="19_world_hold"]
-[ext_resource type="Script" path="res://core/ui/hud/WorldHoldProgressIndicator.cs" id="20_hold_indicator"]
+[ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/Warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
+[ext_resource type="Script" uid="uid://dggoia15cpbun" path="res://core/gameflow/world_hold_interaction_controller.gd" id="19_world_hold"]
+[ext_resource type="Script" uid="uid://btikxiw5fhx4d" path="res://core/ui/hud/world_hold_progress_indicator.gd" id="20_hold_indicator"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
 TriggerTag = &"wood"
-MonsterToSpawn = Array[Object]([ExtResource("9_1iba3")])
+MonsterToSpawn = Array[Resource]([ExtResource("9_1iba3")])
 metadata/_custom_type_script = "uid://b2503x8ewmybj"
 
 [sub_resource type="Resource" id="Resource_1iba3"]
 script = ExtResource("9_bb450")
 TriggerTag = &"stone"
-MonsterToSpawn = Array[Object]([ExtResource("10_yxlcp")])
+MonsterToSpawn = Array[Resource]([ExtResource("10_yxlcp")])
 metadata/_custom_type_script = "uid://b2503x8ewmybj"
 
 [sub_resource type="Resource" id="Resource_2ofn6"]
 script = ExtResource("9_bb450")
 TriggerTag = &"bush"
-MonsterToSpawn = Array[Object]([ExtResource("11_ebg2g")])
+MonsterToSpawn = Array[Resource]([ExtResource("11_ebg2g")])
 metadata/_custom_type_script = "uid://b2503x8ewmybj"
 
 [node name="Main" type="Node" unique_id=646455833]
@@ -79,13 +79,12 @@ GameplayPortPath = NodePath("../GameplayPort")
 BackpackFlyTargetPath = NodePath("../../UI/HUDLayer/HUDRoot/BackpackButton/BackpackFlyTarget")
 EncounterManagerPath = NodePath("../EncounterManager")
 
-[node name="WorldHoldInteractionController" type="Node" parent="Gameplay/WorldInteractionCoordinator" node_paths=PackedStringArray("ProgressIndicatorPath")]
+[node name="WorldHoldInteractionController" type="Node" parent="Gameplay/WorldInteractionCoordinator" unique_id=2034664232]
 script = ExtResource("19_world_hold")
-ProgressIndicatorPath = NodePath("../../../UI/HUDLayer/HUDRoot/WorldHoldProgressIndicator")
 
 [node name="EncounterManager" type="Node" parent="Gameplay" unique_id=2003392084]
 script = ExtResource("8_ft6cd")
-GatheringRules = Array[ExtResource("9_bb450")]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3"), SubResource("Resource_2ofn6")])
+GatheringRules = Array[Resource]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3"), SubResource("Resource_2ofn6")])
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 

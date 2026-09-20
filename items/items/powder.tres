@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dsov7v3jmttrj"]
+[gd_resource type="Resource" format=3 uid="uid://dsov7v3jmttrj"]
 
 [ext_resource type="Texture2D" uid="uid://b5u45m0kghb" path="res://res/items/powder.png" id="1_ttad0"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_xr02v"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_xr02v"]
 
 [resource]
 script = ExtResource("1_xr02v")
@@ -13,4 +13,4 @@ CardId = &"powder"
 CardName = "粉末"
 CardIcon = ExtResource("1_ttad0")
 Description = "粉末"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

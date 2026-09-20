@@ -3,8 +3,9 @@ extends Node2D
 ## 局外商店场景控制器。
 ##
 ## 职责边界：本脚本只负责「显示什么」与「把玩家意图转交给规则层」。
-## 一切「能不能买 / 能不能卖 / 会扣多少钱」的判断都在 `core/shop/ShopService.cs` 里，
-## 经由 `ShopTradeBridge` 这个 C# 节点跨语言调用。GDScript 侧不复制任何价格或容量规则，
+## 一切「能不能买 / 能不能卖 / 会扣多少钱」的判断都在 `core/shop/shop_service.gd` 里，
+## 经由 `ShopTradeBridge` 节点的稳定协议调用。Bridge 可由 GDScript 或保留的 C# 兼容垫片提供，
+## GDScript 侧不复制任何价格或容量规则，
 ## 否则规则一旦改动就会出现「界面显示可买、点击却失败」的分裂。
 ##
 ## 库存的唯一权威是 `GlobalWarehouse` autoload：商店界面里的仓库格子每次都从它读取。
@@ -60,7 +61,8 @@ var _wallet = null
 var _warehouse = null
 
 ## 商品目录：从 ItemsControl 过滤出可购买物品，并已按 CardId 排序。
-var _shop_catalog: Array[ItemData] = []
+## 使用通用 Resource 以同时接收 GDScript 普通物品和保留的 C# 派生物品。
+var _shop_catalog: Array[Resource] = []
 
 ## 两侧的格子视图，索引即页内序号。
 var _warehouse_slots: Array[ItemSlot] = []
@@ -199,7 +201,7 @@ func _disconnect_wallet() -> void:
 
 ## 构建商品目录。
 ## @remarks
-## 上架清单与排序规则完全由 C# 侧的 ShopCatalog 决定，GDScript 只负责把「全部物品」递过去。
+## 上架清单与排序规则完全由 ShopTradeBridge 的目录边界决定，GDScript 只负责把「全部物品」递过去。
 ## 这样「哪些算商品」只有一处实现，不会出现界面与会话两侧规则漂移。
 func _build_shop_catalog() -> void:
 	_shop_catalog.clear()
@@ -207,15 +209,14 @@ func _build_shop_catalog() -> void:
 	if _bridge == null:
 		return
 
-	var all_items: Array[ItemData] = []
+	var all_items: Array[Resource] = []
 	for value in ItemsControl.items.values():
-		var item: ItemData = value
+		var item: Resource = value as Resource
 		if item != null:
 			all_items.append(item)
 
-	# 必须先声明成 Array[ItemData] 再 assign：把 C# 返回的数组直接赋给类型化变量会跨越
-	# Godot 的元素类型校验边界，用 assign 转换是唯一稳妥的写法。
-	var stock: Array[ItemData] = []
+	# 桥接返回非泛型数组，先 assign 到 Array[Resource] 以执行统一元素类型校验。
+	var stock: Array[Resource] = []
 	stock.assign(_bridge.BuildStockList(all_items))
 	_shop_catalog = stock
 
@@ -257,7 +258,7 @@ func _fill_warehouse_page() -> void:
 			slot.clear_slot()
 			continue
 
-		var item: ItemData = stack.Item
+		var item: Resource = stack.Item as Resource
 		slot.bind(item, stack.Amount, _bridge.GetSellPrice(item), &"sell")
 
 
@@ -278,7 +279,7 @@ func _fill_shop_page() -> void:
 			slot.clear_slot()
 			continue
 
-		var item: ItemData = _shop_catalog[index]
+		var item: Resource = _shop_catalog[index]
 		# 商品是无限库存，数量传 0 且右侧不显示数量。
 		slot.bind(item, 0, _bridge.GetBuyPrice(item), &"buy")
 
@@ -482,8 +483,8 @@ func _warehouse_slot_total() -> int:
 
 
 ## 取当前选中的物品。
-## @return ItemData 选中的物品；未选中、或选中的格子已经空了时返回 null。
-func _selected_item() -> ItemData:
+## @return Resource 选中的物品；未选中、或选中的格子已经空了时返回 null。
+func _selected_item() -> Resource:
 	if _selected.is_empty():
 		return null
 
@@ -499,7 +500,7 @@ func _selected_item() -> ItemData:
 	var stack = _get_warehouse_stack(index)
 	if stack == null or stack.IsEmpty:
 		return null
-	return stack.Item
+	return stack.Item as Resource
 
 
 ## 计算总页数。

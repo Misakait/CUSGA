@@ -3,7 +3,12 @@ extends SceneTree
 const PassageGuardControllerScript: GDScript = preload("res://scripts/map_scripts/passage_guard_controller.gd")
 const MapInstantiatorScript: GDScript = preload("res://scripts/map_scripts/map_instantiator.gd")
 const MapButtonScript: GDScript = preload("res://scripts/map_scripts/map_button/map_button.gd")
-const TagComponentScript: CSharpScript = preload("res://entities/components/TagComponent.cs")
+const PassageGuardProbabilityModifierScript: GDScript = preload("res://resources/map/passage_guard_probability_modifier.gd")
+const PassageGuardStateScript: GDScript = preload("res://core/map/passage_guard_state.gd")
+const PassageGuardProbabilityProviderScript: GDScript = preload("res://core/map/passage_guard_probability_provider.gd")
+const PassageGuardMonsterResolverScript: GDScript = preload("res://core/map/passage_guard_monster_resolver.gd")
+const TagComponentScript: GDScript = preload("res://entities/components/tag_component.gd")
+const CurrentMapBackgroundResolverScript: GDScript = preload("res://core/gameflow/current_map_background_resolver.gd")
 
 var _failures: Array[String] = []
 
@@ -135,6 +140,7 @@ func _run() -> void:
 	await _test_shop_room_background_uses_standard_background_contract()
 	_test_passage_guard_state_treats_edges_as_undirected()
 	_test_passage_guard_probability_applies_modifiers()
+	_test_passage_guard_probability_accepts_gdscript_modifier()
 	_test_torch_multiplier_reduces_night_guard_rolls()
 	_test_torch_multiplier_keeps_default_guard_rolls()
 	_test_passage_guard_monster_resolver_keeps_visible_room_encounter_stable()
@@ -282,7 +288,7 @@ func _test_background_resolver_uses_map_instantiator_current_scene() -> void:
 	map_instantiator.add_child(desert)
 	map_instantiator.add_child(forest)
 	map_instantiator.current_scene = forest
-	var resolver := CurrentMapBackgroundResolver.new()
+	var resolver = CurrentMapBackgroundResolverScript.new()
 
 	var duplicated: Sprite2D = resolver.DuplicateCurrentBackground(map_system)
 
@@ -328,7 +334,7 @@ func _test_shop_room_background_uses_standard_background_contract() -> void:
 	map_system.add_child(map_instantiator)
 	map_instantiator.add_child(shop_scene)
 	map_instantiator.current_scene = shop_scene
-	var resolver := CurrentMapBackgroundResolver.new()
+	var resolver = CurrentMapBackgroundResolverScript.new()
 
 	var duplicated: Sprite2D = resolver.DuplicateCurrentBackground(map_system)
 
@@ -342,7 +348,7 @@ func _test_shop_room_background_uses_standard_background_contract() -> void:
 
 
 func _test_passage_guard_state_treats_edges_as_undirected() -> void:
-	var state := PassageGuardState.new()
+	var state: RefCounted = PassageGuardStateScript.new()
 	var home := Vector2i(1, 1)
 	var forest := Vector2i(1, 2)
 
@@ -361,11 +367,29 @@ func _test_passage_guard_probability_applies_modifiers() -> void:
 	var tags: Node = TagComponentScript.new()
 	tags.AddTag(&"quiet_night")
 	tags.AddTag(&"guard_discount")
-	var provider := PassageGuardProbabilityProvider.new()
+	var provider: RefCounted = PassageGuardProbabilityProviderScript.new()
 
-	var final_chance := provider.Calculate(settings, tags)
+	var final_chance: float = float(provider.call("Calculate", settings, tags))
 
 	_assert(abs(final_chance - 0.2) < 0.001, "驻守概率应当先加法修正再乘法修正，并忽略未拥有的标签。")
+	tags.free()
+
+
+func _test_passage_guard_probability_accepts_gdscript_modifier() -> void:
+	var settings := PassageGuardSettings.new()
+	settings.BaseGuardChance = 0.4
+	var modifier: Resource = PassageGuardProbabilityModifierScript.new()
+	modifier.set("RequiredTag", &"quiet_night")
+	modifier.set("AdditiveChance", 0.2)
+	modifier.set("Multiplier", 0.5)
+	settings.ProbabilityModifiers.append(modifier)
+	var tags: Node = TagComponentScript.new()
+	tags.AddTag(&"quiet_night")
+	var provider: RefCounted = PassageGuardProbabilityProviderScript.new()
+
+	var final_chance: float = float(provider.call("Calculate", settings, tags))
+
+	_assert(abs(final_chance - 0.3) < 0.001, "GDScript 驻守概率修正应通过通用 Resource 边界生效。")
 	tags.free()
 
 
@@ -399,7 +423,7 @@ func _test_passage_guard_monster_resolver_keeps_visible_room_encounter_stable() 
 	var monster := MonsterData.new()
 	monster.MonsterName = "木精"
 	var pool: Array[PassageGuardEncounterData] = [_create_encounter(monster)]
-	var resolver := PassageGuardMonsterResolver.new()
+	var resolver: RefCounted = PassageGuardMonsterResolverScript.new()
 	var from := Vector2i(3, 3)
 	var to := Vector2i(3, 4)
 

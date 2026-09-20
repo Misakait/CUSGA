@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cpm5luho4crhu"]
+[gd_resource type="Resource" format=3 uid="uid://cpm5luho4crhu"]
 
 [ext_resource type="Texture2D" uid="uid://bnpu81ca1d4io" path="res://res/items/fish.png" id="1_clo77"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="1_xolot"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_xolot"]
 
 [resource]
 script = ExtResource("1_xolot")
@@ -13,4 +13,4 @@ CardId = &"fish"
 CardName = "鱼"
 CardIcon = ExtResource("1_clo77")
 Description = "一条鱼......嗯...没了"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

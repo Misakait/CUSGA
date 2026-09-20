@@ -19,6 +19,11 @@ public partial class TerrainInteractionBuildContext : RefCounted
     public required TerrainInstance Terrain { get; init; }
 
     /// <summary>
+    /// 获取旧 C# 或生产 GDScript TimeSystem 节点；测试未提供时允许为空。
+    /// </summary>
+    public Node TimeSystem { get; init; }
+
+    /// <summary>
     /// 获取本次交互在输入开始时已经快照的有效采集游戏时间；为空时由交互资源现场计算。
     /// </summary>
     public int? EffectiveTimeCostOverride { get; init; }

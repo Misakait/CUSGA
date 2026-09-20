@@ -25,10 +25,17 @@ public partial class Monster : Node2D
 
     public HealthComponent Health { get; private set; }
     public AttributeComponent Attributes { get; private set; }
-    public FactionComponent Faction { get; private set; }
+    /// <summary>
+    /// 获取怪物的阵营组件节点；迁移期间通过稳定的 Faction 属性兼容 GDScript 实现。
+    /// </summary>
+    public Node Faction { get; private set; }
     public StatusComponent Status { get; private set; }
-    public MonsterSkillComponent SkillComponent { get; private set; }
-    private LootComponent Loot { get; set; }
+    /// <summary>
+    /// 获取怪物技能组件节点；迁移期间通过稳定方法名兼容 C# 与 GDScript 实现。
+    /// </summary>
+    public Node SkillComponent { get; private set; }
+    // 掉落组件已迁移为 GDScript，通过稳定 TriggerDrop 方法保持死亡流程兼容。
+    private Node Loot { get; set; }
 
     private ProgressBar _healthBar;
     private Area2D _area2D;
@@ -54,11 +61,11 @@ public partial class Monster : Node2D
     public override void _Ready()
     {
         Attributes = GetNode<AttributeComponent>("Components/AttributeComponent");
-        Faction = GetNode<FactionComponent>("Components/FactionComponent");
+        Faction = GetNode<Node>("Components/FactionComponent");
         Health = GetNode<HealthComponent>("Components/HealthComponent");
         Status = GetNode<StatusComponent>("%StatusComponent");
-        Loot = GetNodeOrNull<LootComponent>("Components/LootComponent");
-        SkillComponent = GetNodeOrNull<MonsterSkillComponent>("Components/SkillComponent");
+        Loot = GetNodeOrNull<Node>("Components/LootComponent");
+        SkillComponent = GetNodeOrNull<Node>("Components/SkillComponent");
         Health.Depleted += HandleDeath;
         Health.ValueChanged += OnHealthChanged;
 
@@ -159,7 +166,7 @@ public partial class Monster : Node2D
         }
 
         _isCombatDefeated = true;
-        Loot?.TriggerDrop(GlobalPosition, 0);
+        Loot?.Call("TriggerDrop", GlobalPosition, 0);
         if (_area2D != null)
         {
             // 逻辑死亡后立刻关闭鼠标拾取，避免视觉尸体在渐隐期间仍能成为卡牌目标。
@@ -226,10 +233,10 @@ public partial class Monster : Node2D
     {
         BaseData = data;
         Attributes.InitializeWithData(data.InitialAttributes ?? new StartingStats());
-        Faction.Faction = data.Faction;
+        Faction.Set("Faction", (int)data.Faction);
         if (data.SkillSet != null)
         {
-            SkillComponent?.Initialize(data.SkillSet);
+            SkillComponent?.Call("Initialize", data.SkillSet);
         }
         UpdateCardUi(data);
 
@@ -541,7 +548,27 @@ public partial class Monster : Node2D
     /// <returns>当前怪物可用的有效战斗技能数组。</returns>
     public Array<CombatSkillData> GetCombatSkills()
     {
-        return SkillComponent?.GetCombatSkills() ?? [];
+        var result = new Array<CombatSkillData>();
+        if (SkillComponent == null || !SkillComponent.HasMethod("GetCombatSkills"))
+        {
+            return result;
+        }
+
+        Variant rawSkills = SkillComponent.Call("GetCombatSkills");
+        if (rawSkills.VariantType != Variant.Type.Array)
+        {
+            return result;
+        }
+
+        foreach (Variant value in rawSkills.AsGodotArray())
+        {
+            if (value.AsGodotObject() is CombatSkillData skill)
+            {
+                result.Add(skill);
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -550,6 +577,12 @@ public partial class Monster : Node2D
     /// <returns>已配置的战斗技能；没有技能组件或没有技能时返回 null。</returns>
     public CombatSkillData GetRandomCombatSkill()
     {
-        return SkillComponent?.GetRandomCombatSkill();
+        if (SkillComponent == null || !SkillComponent.HasMethod("GetRandomCombatSkill"))
+        {
+            return null;
+        }
+
+        Variant value = SkillComponent.Call("GetRandomCombatSkill");
+        return value.AsGodotObject() as CombatSkillData;
     }
 }

@@ -2,7 +2,7 @@ extends Node
 
 signal guard_state_changed
 
-@export var settings: PassageGuardSettings
+@export var settings: Resource
 @export var map_position_create_path: NodePath = ^"../MapPositionCreate"
 @export var map_types_path: NodePath = ^"../MapTypes"
 @export var world_interaction_coordinator_path: NodePath = ^"../../Gameplay/WorldInteractionCoordinator"
@@ -13,10 +13,14 @@ const DIR_OFFSETS: Array[Vector2i] = [
 	Vector2i(1, 0),
 	Vector2i(0, -1),
 ]
+const SETTINGS_SCRIPT: GDScript = preload("res://resources/map/passage_guard_settings.gd")
+const PASSAGE_GUARD_STATE_SCRIPT: GDScript = preload("res://core/map/passage_guard_state.gd")
+const PASSAGE_GUARD_PROBABILITY_PROVIDER_SCRIPT: GDScript = preload("res://core/map/passage_guard_probability_provider.gd")
+const PASSAGE_GUARD_MONSTER_RESOLVER_SCRIPT: GDScript = preload("res://core/map/passage_guard_monster_resolver.gd")
 
-var _state: PassageGuardState = PassageGuardState.new()
-var _probability_provider: PassageGuardProbabilityProvider = PassageGuardProbabilityProvider.new()
-var _monster_resolver: PassageGuardMonsterResolver = PassageGuardMonsterResolver.new()
+var _state: RefCounted = PASSAGE_GUARD_STATE_SCRIPT.new()
+var _probability_provider: RefCounted = PASSAGE_GUARD_PROBABILITY_PROVIDER_SCRIPT.new()
+var _monster_resolver: RefCounted = PASSAGE_GUARD_MONSTER_RESOLVER_SCRIPT.new()
 var _current_room_position: Vector2i = Vector2i(-999999, -999999)
 
 @onready var _map_position_create: Node = get_node_or_null(map_position_create_path)
@@ -25,7 +29,7 @@ var _current_room_position: Vector2i = Vector2i(-999999, -999999)
 
 func _ready() -> void:
 	if settings == null:
-		settings = PassageGuardSettings.new()
+		settings = SETTINGS_SCRIPT.new()
 
 	var time_system := get_node_or_null("/root/TimeSystem")
 	if time_system != null and time_system.has_signal(&"DayNightToggled"):
@@ -55,7 +59,7 @@ func get_guard_encounter(from: Vector2i, to: Vector2i) -> Array:
 		return []
 
 	var pool := _get_guard_pool_for_position(from)
-	return _monster_resolver.Resolve(from, to, pool)
+	return _monster_resolver.ResolveResources(from, to, pool)
 
 func request_guard_battle(from: Vector2i, to: Vector2i) -> bool:
 	if not is_guarded(from, to):
@@ -96,7 +100,7 @@ func _roll_night_guards() -> void:
 		return
 
 	var tag_component := _get_player_tag_component()
-	var guard_chance: float = _probability_provider.Calculate(settings, tag_component)
+	var guard_chance: float = float(_probability_provider.call("Calculate", settings, tag_component))
 	guard_chance *= _get_player_night_encounter_chance_multiplier()
 	var scene_to_scene: Dictionary = _map_position_create.scene_to_scene
 	for from in scene_to_scene.keys():
@@ -116,9 +120,9 @@ func _roll_night_guards() -> void:
 	emit_signal(&"guard_state_changed")
 
 func _should_skip_home_edge(from: Vector2i, to: Vector2i, tag_component: Node) -> bool:
-	if settings == null or str(settings.HomeProtectionTag).is_empty():
+	if settings == null or str(settings.get("HomeProtectionTag")).is_empty():
 		return false
-	if tag_component == null or not tag_component.HasTag(settings.HomeProtectionTag):
+	if tag_component == null or not bool(tag_component.call(&"HasTag", settings.get("HomeProtectionTag"))):
 		return false
 
 	return _is_home_position(from) or _is_home_position(to)
@@ -136,7 +140,7 @@ func _is_home_position(position: Vector2i) -> bool:
 
 	return String(column[position.y]) == "home"
 
-func _get_guard_pool_for_position(position: Vector2i) -> Array[PassageGuardEncounterData]:
+func _get_guard_pool_for_position(position: Vector2i) -> Array[Resource]:
 	if _map_position_create == null or _map_types == null:
 		return []
 
@@ -162,7 +166,7 @@ func _get_guard_pool_for_position(position: Vector2i) -> Array[PassageGuardEncou
 
 	# 场景未配置驻守池，回退到全局默认池
 	if settings != null:
-		var default_pool: Array = settings.DefaultGuardPool
+		var default_pool: Array = settings.get("DefaultGuardPool")
 		if not default_pool.is_empty():
 			return default_pool
 

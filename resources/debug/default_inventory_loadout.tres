@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="DebugLoadoutData" format=3 uid="uid://dr7cyh83nt2jg"]
+[gd_resource type="Resource" format=3 uid="uid://dr7cyh83nt2jg"]
 
-[ext_resource type="Script" uid="uid://c68karjj3nmxc" path="res://resources/debug/DebugLoadoutData.cs" id="1_loadout"]
-[ext_resource type="Script" uid="uid://boejtq5adncuh" path="res://resources/debug/DebugItemStackEntry.cs" id="2_stack"]
-[ext_resource type="Script" uid="uid://cmxepni3ji8t6" path="res://resources/debug/DebugGeneratedEquipmentEntry.cs" id="3_equip"]
-[ext_resource type="Script" uid="uid://cvba2hrvpm0pt" path="res://resources/stats/StartingStats.cs" id="4_stats"]
+[ext_resource type="Script" uid="uid://cksw1pg51ug6f" path="res://resources/debug/debug_loadout_data.gd" id="1_loadout"]
+[ext_resource type="Script" uid="uid://kvefikr0wpof" path="res://resources/debug/debug_item_stack_entry.gd" id="2_stack"]
+[ext_resource type="Script" uid="uid://dp8s4lmqabjwl" path="res://resources/debug/debug_generated_equipment_entry.gd" id="3_equip"]
+[ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="4_stats"]
 [ext_resource type="Resource" uid="uid://brxj11n37x152" path="res://items/item1.tres" id="10_item1"]
 [ext_resource type="Resource" uid="uid://es81inb5jx51" path="res://items/item2.tres" id="11_item2"]
 [ext_resource type="Resource" uid="uid://cv6r1ekigeyo4" path="res://items/item3.tres" id="12_item3"]
@@ -51,7 +51,6 @@ Description = "开局已装备，测试卸下和属性变化。"
 CardIcon = ExtResource("30_helmet")
 BonusAttribute = 1
 BonusRange = Vector2i(40, 60)
-TargetGatheringTag = null
 
 [sub_resource type="Resource" id="Equipped_boots"]
 script = ExtResource("3_equip")
@@ -61,7 +60,6 @@ Description = "开局已装备，测试速度变化。"
 CardIcon = ExtResource("33_boots")
 BonusAttribute = 4
 BonusRange = Vector2i(5, 8)
-TargetGatheringTag = null
 
 [sub_resource type="Resource" id="Equip_weapon"]
 script = ExtResource("3_equip")
@@ -69,7 +67,6 @@ CardName = "Debug 木剑"
 Description = "拖到武器槽测试物攻变化。"
 CardIcon = ExtResource("34_weapon")
 BonusRange = Vector2i(70, 100)
-TargetGatheringTag = null
 
 [sub_resource type="Resource" id="Equip_chest"]
 script = ExtResource("3_equip")
@@ -79,7 +76,6 @@ Description = "拖到胸甲槽测试物防变化。"
 CardIcon = ExtResource("31_chest")
 BonusAttribute = 1
 BonusRange = Vector2i(80, 120)
-TargetGatheringTag = null
 
 [sub_resource type="Resource" id="Equip_legs"]
 script = ExtResource("3_equip")
@@ -89,7 +85,6 @@ Description = "拖到护腿槽测试物防变化。"
 CardIcon = ExtResource("32_legs")
 BonusAttribute = 1
 BonusRange = Vector2i(40, 80)
-TargetGatheringTag = null
 
 [sub_resource type="Resource" id="Equip_axe"]
 script = ExtResource("3_equip")
@@ -119,7 +114,6 @@ Description = "拖到鱼竿槽测试工具装备。"
 CardIcon = ExtResource("37_rod")
 BonusAttribute = 4
 BonusRange = Vector2i(3, 6)
-TargetGatheringTag = null
 
 [sub_resource type="Resource" id="Inventory_item1"]
 script = ExtResource("2_stack")
@@ -164,33 +158,32 @@ script = ExtResource("2_stack")
 Item = ExtResource("18_7drai")
 Amount = 4
 RollRandomStats = false
-metadata/_custom_type_script = "uid://boejtq5adncuh"
+metadata/_custom_type_script = "uid://kvefikr0wpof"
 
 [sub_resource type="Resource" id="Resource_emcri"]
 script = ExtResource("2_stack")
 Item = ExtResource("19_ibe04")
 Amount = 4
 RollRandomStats = false
-metadata/_custom_type_script = "uid://boejtq5adncuh"
+metadata/_custom_type_script = "uid://kvefikr0wpof"
 
 [sub_resource type="Resource" id="Resource_4s3f3"]
 script = ExtResource("2_stack")
 Item = ExtResource("20_ibe04")
 Amount = 8
 RollRandomStats = false
-metadata/_custom_type_script = "uid://boejtq5adncuh"
+metadata/_custom_type_script = "uid://kvefikr0wpof"
 
 [sub_resource type="Resource" id="StartingStats_debug"]
 script = ExtResource("4_stats")
 BasePhysAtk = 120.0
 BasePhysDef = 120.0
 BaseMagPower = 90.0
-metadata/_custom_type_script = "uid://cvba2hrvpm0pt"
 
 [resource]
 script = ExtResource("1_loadout")
 PlayerStartingStats = SubResource("StartingStats_debug")
-InventoryItems = Array[ExtResource("2_stack")]([SubResource("Inventory_item1"), SubResource("Inventory_item2"), SubResource("Inventory_item3"), SubResource("Inventory_card1"), SubResource("Inventory_card2"), SubResource("Inventory_card3"), SubResource("Inventory_bomb"), SubResource("Resource_mtqsv"), SubResource("Resource_emcri"), SubResource("Resource_4s3f3")])
-BattleDeckItems = Array[ExtResource("2_stack")]([SubResource("Deck_card1"), SubResource("Deck_card2"), SubResource("Deck_card3"), SubResource("Deck_bomb")])
-InventoryEquipment = Array[ExtResource("3_equip")]([SubResource("Equip_weapon"), SubResource("Equip_chest"), SubResource("Equip_legs"), SubResource("Equip_axe"), SubResource("Equip_pickaxe"), SubResource("Equip_rod")])
-EquippedEquipment = Array[ExtResource("3_equip")]([SubResource("Equipped_helmet"), SubResource("Equipped_boots")])
+InventoryItems = Array[Resource]([SubResource("Inventory_item1"), SubResource("Inventory_item2"), SubResource("Inventory_item3"), SubResource("Inventory_card1"), SubResource("Inventory_card2"), SubResource("Inventory_card3"), SubResource("Inventory_bomb"), SubResource("Resource_mtqsv"), SubResource("Resource_emcri"), SubResource("Resource_4s3f3")])
+BattleDeckItems = Array[Resource]([SubResource("Deck_card1"), SubResource("Deck_card2"), SubResource("Deck_card3"), SubResource("Deck_bomb")])
+InventoryEquipment = Array[Resource]([SubResource("Equip_weapon"), SubResource("Equip_chest"), SubResource("Equip_legs"), SubResource("Equip_axe"), SubResource("Equip_pickaxe"), SubResource("Equip_rod")])
+EquippedEquipment = Array[Resource]([SubResource("Equipped_helmet"), SubResource("Equipped_boots")])

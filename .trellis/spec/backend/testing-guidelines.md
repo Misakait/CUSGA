@@ -30,6 +30,8 @@ Current files:
 
 Use a Godot runner when the behavior depends on GDScript, scene tree timing, C# script loading from `res://`, generated GDScript files, or signal ordering across languages.
 
+> **GodotAI 工具态 C# 静态方法限制**：MCP 的 `McpTestSuite` 在编辑器工具态加载 `.cs` 时，返回对象可能只暴露为 `CSharpScript`，此时生产运行期可用的静态工厂（例如 `SkillExecutionContext.FromSingleTarget`）会报告方法不存在。Resource 迁移测试应在工具态验证 C# Resource 可赋值、方法协议与对象身份，再通过真实 battle/Main 场景验证静态工厂和执行链；不要为迎合工具态而改写生产 C# API，也不得把该工具限制掩盖成通过的断言。
+
 ## Validation Commands
 
 Always include `CI=true` for dotnet build commands in this repo:

@@ -24,7 +24,9 @@ public partial class GatheringInteraction : TerrainInteraction
         };
         if (!context.Terrain.IsHarvested)
         {
-            int extraYield = context.Player.Equipment.GetGatheringYieldBonus(GatheringTag);
+            int extraYield = context.Player.Equipment?.HasMethod("GetGatheringYieldBonus") == true
+                ? context.Player.Equipment.Call("GetGatheringYieldBonus", GatheringTag).AsInt32()
+                : 0;
             var loots = DropTable?.RollLoot(extraYield) ?? [];
 
             if (loots.Count > 0)

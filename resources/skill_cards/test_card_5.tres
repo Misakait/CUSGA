@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SkillCardData" format=3 uid="uid://bl0ireg07djwx"]
+[gd_resource type="Resource" format=3 uid="uid://bl0ireg07djwx"]
 
-[ext_resource type="Script" uid="uid://bejho62d28qir" path="res://resources/item/card/SkillCardData.cs" id="1_card"]
+[ext_resource type="Script" uid="uid://d1ln6w8iaa4px" path="res://resources/item/card/skill_card_data.gd" id="1_card"]
 [ext_resource type="Texture2D" uid="uid://dwl4y02inrubl" path="res://res/skillcard/wood_skill_card.png" id="icon_skillcard"]
 
 [ext_resource type="Resource" path="res://resources/combat_skills/test_card_5.tres" id="combat_skill"]
@@ -13,4 +13,3 @@ CardId = null
 CardName = "测试卡5（任意单位）"
 CardIcon = ExtResource("icon_skillcard")
 Description = "对任意单个单位造成10点金属性物理伤害。"
-metadata/_custom_type_script = "uid://bejho62d28qir"

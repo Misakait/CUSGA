@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3 uid="uid://c45r6hcgrdcit"]
+[gd_resource type="Resource" format=3 uid="uid://c45r6hcgrdcit"]
 
-[ext_resource type="Script" uid="uid://hu8p1nf5cgcy" path="res://resources/encounters/MonsterStatMultiplierRange.cs" id="1_lix4h"]
+[ext_resource type="Script" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="1_lix4h"]
 [ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="2_fcnkj"]
 [ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="3_3unss"]
-[ext_resource type="Script" uid="uid://cgf1hwe2s8na5" path="res://resources/loot/LootDrop.cs" id="4_kuieb"]
-[ext_resource type="Script" uid="uid://cauw0y3vbjow1" path="res://resources/loot/LootTable.cs" id="5_1sq63"]
-[ext_resource type="Script" uid="uid://dkhkhp61vqgdj" path="res://resources/interaction/GatheringInteraction.cs" id="6_rj5wv"]
-[ext_resource type="Script" uid="uid://bpfhfc81wwi3i" path="res://resources/interaction/TerrainCardData.cs" id="7_6fdhq"]
-[ext_resource type="Script" uid="uid://cotd2deuv8hmq" path="res://core/map/RoomTerrainPoolEntry.cs" id="8_dx027"]
-[ext_resource type="Script" uid="uid://fukee4llit0m" path="res://core/map/RoomTerrainProfile.cs" id="9_k15k0"]
+[ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="4_kuieb"]
+[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="5_1sq63"]
+[ext_resource type="Script" path="res://resources/interaction/gathering_interaction.gd" id="6_rj5wv"]
+[ext_resource type="Script" path="res://resources/interaction/terrain_card_data.gd" id="7_6fdhq"]
+[ext_resource type="Script" path="res://core/map/room_terrain_pool_entry.gd" id="8_dx027"]
+[ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="9_k15k0"]
 
 [sub_resource type="Resource" id="Resource_2kl7r"]
 script = ExtResource("1_lix4h")

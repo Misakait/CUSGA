@@ -27,7 +27,7 @@ public partial class TerrainInstance : RefCounted
     /// <summary>
     /// 获取或设置该实例使用的地形配置资源。
     /// </summary>
-    public TerrainCardData TerrainData { get; set; }
+    public Resource TerrainData { get; set; }
 
     /// <summary>
     /// 获取或设置该地形是否被其它玩法占用。
@@ -53,4 +53,5 @@ public partial class TerrainInstance : RefCounted
     /// 获取或设置可重复采集资源下一次恢复可采集的游戏总时间；0 表示当前没有冷却。
     /// </summary>
     public int RefreshReadyTotalTime { get; set; }
+
 }

@@ -1,9 +1,7 @@
 using Godot;
 using System;
 using CUSGA.core.board;
-using CUSGA.core.inventory;
 using CUSGA.resources.interaction;
-using CUSGA.resources.item;
 
 namespace CUSGA.entities;
 
@@ -51,9 +49,19 @@ public partial class BoardCardView : Area2D
 
     internal BoardCardState State => _state;
 
-    public BaseCardData GetCardData()
+    public Resource GetCardData()
     {
         return _state?.CardData;
+    }
+
+    /// <summary>
+    /// 获取当前卡牌的显示名称，兼容 C# 与 GDScript 卡牌资源。
+    /// </summary>
+    /// <returns>CardName 字段；卡牌为空或字段缺失时返回空字符串。</returns>
+    public string GetCardDisplayName()
+    {
+        Resource cardData = GetCardData();
+        return cardData == null ? string.Empty : cardData.Get("CardName").AsString();
     }
 
     public bool IsLootCard()
@@ -66,7 +74,11 @@ public partial class BoardCardView : Area2D
         return _state is TerrainBoardCardState;
     }
 
-    public ItemStack GetLootStackOrNull()
+    /// <summary>
+    /// 获取当前掉落卡持有的跨语言物品堆叠。
+    /// </summary>
+    /// <returns>旧 C# 或 GDScript ItemStack；当前不是掉落卡时返回 null。</returns>
+    public RefCounted GetLootStackOrNull()
     {
         return (_state as LootBoardCardState)?.LootStack;
     }
@@ -76,7 +88,7 @@ public partial class BoardCardView : Area2D
         return (_state as TerrainBoardCardState)?.TerrainInstance;
     }
 
-    public TerrainCardData GetTerrainDataOrNull()
+    public Resource GetTerrainDataOrNull()
     {
         return (_state as TerrainBoardCardState)?.TerrainData;
     }
@@ -94,16 +106,17 @@ public partial class BoardCardView : Area2D
             throw new InvalidOperationException("BoardCardView 在 Bind 之前不能刷新。");
         }
 
-        BaseCardData cardData = _state.CardData;
+        Resource cardData = _state.CardData;
 
-        _titleLabel.Text = cardData.CardName ?? string.Empty;
-        _iconSprite.Texture = cardData.CardIcon;
+        _titleLabel.Text = cardData.Get("CardName").AsString();
+        _iconSprite.Texture = cardData.Get("CardIcon").AsGodotObject() as Texture2D;
         Scale = GetRestingScale();
 
-        if (_state is LootBoardCardState lootState && lootState.LootStack.Amount > 1)
+        int? stackAmount = _state.StackAmount;
+        if (_state.CanShowAmount && stackAmount.HasValue)
         {
             _amountLabel.Visible = true;
-            _amountLabel.Text = lootState.LootStack.Amount.ToString();
+            _amountLabel.Text = stackAmount.Value.ToString();
         }
         else
         {

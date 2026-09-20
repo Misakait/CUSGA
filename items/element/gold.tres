@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://22kr333gr1f2"]
+[gd_resource type="Resource" format=3 uid="uid://22kr333gr1f2"]
 
 [ext_resource type="Texture2D" uid="uid://bxctyc25rpowe" path="res://res/element_icon/gold_icon.png" id="1_i4bbb"]
-[ext_resource type="Script" uid="uid://b5jfoakosaapj" path="res://resources/item/ItemData.cs" id="2_imgsg"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="2_imgsg"]
 
 [resource]
 script = ExtResource("2_imgsg")
@@ -13,4 +13,4 @@ CardId = &"gold"
 CardName = "金"
 CardIcon = ExtResource("1_i4bbb")
 Description = "这是金"
-metadata/_custom_type_script = "uid://b5jfoakosaapj"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

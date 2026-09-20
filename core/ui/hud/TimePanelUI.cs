@@ -1,14 +1,18 @@
 using Godot;
-using CUSGA.core.autoloads;
 
 namespace CUSGA.core.ui.hud;
 
 public partial class TimePanelUI : Control
 {
+    private const int PhaseLength = 100;
+    private static readonly StringName TimeChangedSignal = "TimeChanged";
+
     private Label _dayLabel = null!;
     private Label _phaseLabel = null!;
     private Label _timeLabel = null!;
     private ProgressBar _phaseProgress = null!;
+    private Node _timeSystem = null!;
+    private Callable _timeChangedCallable;
 
     public override void _Ready()
     {
@@ -17,22 +21,40 @@ public partial class TimePanelUI : Control
         _timeLabel = GetNode<Label>("%TimeLabel");
         _phaseProgress = GetNode<ProgressBar>("%PhaseProgress");
 
-        TimeSystem.Instance.TimeChanged += OnTimeChanged;
+        _timeSystem = GetNodeOrNull<Node>("/root/TimeSystem");
+        if (_timeSystem == null)
+        {
+            GD.PushError("TimePanelUI 未找到 TimeSystem Autoload。");
+            return;
+        }
+
+        _timeChangedCallable = Callable.From<int, int, bool, int, int>(OnTimeChanged);
+        if (!_timeSystem.HasSignal(TimeChangedSignal))
+        {
+            GD.PushError("TimePanelUI 需要 TimeSystem.TimeChanged 信号。");
+            return;
+        }
+        if (!_timeSystem.IsConnected(TimeChangedSignal, _timeChangedCallable))
+        {
+            _timeSystem.Connect(TimeChangedSignal, _timeChangedCallable);
+        }
 
         Refresh(
-            TimeSystem.Instance.TotalTimePassed,
-            TimeSystem.Instance.CurrentDay,
-            TimeSystem.Instance.IsNight,
-            TimeSystem.Instance.PhaseProgress,
-            TimeSystem.PhaseLength
+            ReadInt("TotalTimePassed", 0),
+            ReadInt("CurrentDay", 1),
+            ReadBool("IsNight", false),
+            ReadInt("PhaseProgress", 0),
+            PhaseLength
         );
     }
 
     public override void _ExitTree()
     {
-        if (TimeSystem.Instance != null)
+        if (_timeSystem != null
+            && _timeSystem.HasSignal(TimeChangedSignal)
+            && _timeSystem.IsConnected(TimeChangedSignal, _timeChangedCallable))
         {
-            TimeSystem.Instance.TimeChanged -= OnTimeChanged;
+            _timeSystem.Disconnect(TimeChangedSignal, _timeChangedCallable);
         }
     }
 
@@ -68,5 +90,19 @@ public partial class TimePanelUI : Control
         _phaseProgress.MinValue = 0;
         _phaseProgress.MaxValue = phaseLength;
         _phaseProgress.Value = phaseProgress;
+    }
+
+    private int ReadInt(StringName propertyName, int fallback)
+    {
+        Variant value = _timeSystem.Get(propertyName);
+        return value.VariantType is Variant.Type.Int or Variant.Type.Float
+            ? value.AsInt32()
+            : fallback;
+    }
+
+    private bool ReadBool(StringName propertyName, bool fallback)
+    {
+        Variant value = _timeSystem.Get(propertyName);
+        return value.VariantType == Variant.Type.Bool ? value.AsBool() : fallback;
     }
 }
