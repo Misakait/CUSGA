@@ -1,6 +1,6 @@
 # Directory Structure
 
-CUSGA is a Godot 4.6 C# project, not a web backend. Treat `backend` specs as the C# gameplay/runtime layer.
+CUSGA is a Godot 4.7.1 C# project, not a web backend. Treat `backend` specs as the C# gameplay/runtime layer.
 
 ## Top-Level Ownership
 

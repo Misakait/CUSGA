@@ -233,15 +233,11 @@ env CI=true dotnet build CUSGA.sln --no-restore
 env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj --no-restore
 ```
 
-- Godot C# 全局类和场景集成：
+- Godot C# 全局类和场景集成：~~`godot-mono --headless --path . --build-solutions --quit`~~
 
-```bash
-godot-mono --headless --path . --build-solutions --quit
-```
+- 触碰 GDScript 或场景时，额外 smoke test：~~`godot-mono --headless --path . --scene …`~~
 
-- 触碰 GDScript 或场景时，额外 smoke test：
-
-```bash
-godot-mono --headless --path . --scene res://scenes/inventory/AttributeSummaryUI.tscn --quit-after 5
-godot-mono --headless --path . --scene res://scenes/main_menu_scenes/main_menu.tscn --quit-after 5
-```
+> ⚠️ **上面两条验证命令已作废，不要照着执行。**
+> 它们是在项目还使用 Godot 4.6 命令行时写的。现在本机 CLI 是 4.6.3，而项目与 `addons/godot_ai` 要求 **4.7.1**，这些命令都无法再运行。
+> 等价做法：C# 全局类用编译刷新（`env CI=true dotnet build CUSGA.sln --no-restore`，编辑器会自行加载 `CUSGA.dll`）；场景冒烟走编辑器 MCP 的 `project_run` + `logs_read(source="game")`。详见 `AGENTS.md` 第 1 节与 `.trellis/spec/frontend/quality-guidelines.md`。
+> 本文其余设计内容不受影响。

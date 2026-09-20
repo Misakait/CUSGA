@@ -61,7 +61,7 @@
 
 ### R7. 验证
 
-- 用 Godot 4.7.1 headless 冒烟全部既有场景，确保删脚本 / 改场景没有回归。
+- 用编辑器 MCP 冒烟全部既有场景（`project_run` + `logs_read(source="game")`），确保删脚本 / 改场景没有回归。（原文写的是「Godot 4.7.1 headless」命令行，该路径已作废：本机 CLI 是 4.6.3，项目与 `addons/godot_ai` 要求 4.7.1。）
 - 升级与买卖的规则分支要有自动化覆盖。
 - 关键交互用真实鼠标事件在运行中的游戏里验证，并截图确认视觉。
 
@@ -82,7 +82,7 @@
 - [x] AC13：把 `BuyPrice = 0` 的物品拖进商品目录后，它出现在商店且可按兜底价成交。
 - [x] AC14：把物品从目录移除后它不再出现；关闭自动上架后商店只卖显式列出的商品。
 - [x] AC15：未挂目录时商店仍上架全部已定价物品（88 件），行为与改动前一致。
-- [x] AC16：Godot 4.7.1 headless 冒烟 `Warehouse` / `Shop` / `Main` / `main_menu` 四个场景均无 `SCRIPT ERROR`。
+- [x] AC16：`Warehouse` / `Shop` / `Main` / `main_menu` 四个场景冒烟均无 `SCRIPT ERROR`。（当时走 Godot 4.7.1 headless；该命令行路径现已作废，等价做法是编辑器 MCP 的 `project_run` + `logs_read(source="game")`。）
 - [x] AC17：删除 4 个旧仓库脚本后全部场景与规则测试仍通过。
 
 ### 验收后追加（用户反馈驱动）

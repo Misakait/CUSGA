@@ -7,6 +7,12 @@
       "command": "dotnet",
       "args": ["format", "CUSGA.sln", "--include", "${staged}"],
       "include": ["**/*.cs"]
+    },
+    {
+      "name": "Lint staged GDScript",
+      "group": "pre-commit-gdscript",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".husky/gdlint-staged.ps1"]
     }
   ]
 }

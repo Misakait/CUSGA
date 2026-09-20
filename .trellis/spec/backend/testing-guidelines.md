@@ -1,6 +1,10 @@
 # Testing Guidelines
 
-CUSGA currently uses a small custom C# console runner plus focused Godot headless script runners. Do not assume xUnit, NUnit, Playwright, or web test frameworks exist.
+CUSGA currently uses a small custom C# console runner plus focused Godot runtime script runners. Do not assume xUnit, NUnit, Playwright, or web test frameworks exist.
+
+> **Runtime validation goes through the Godot editor MCP, not the command line.**
+> The `godot-mono` CLI on this machine is Godot 4.6.3 while the project and `addons/godot_ai` require 4.7.1, so the older `godot-mono --headless` commands still quoted in some docs no longer work.
+> The editor must be open with the CUSGA project loaded; check with `editor_state` or `session_manage(op="list")`.
 
 ## C# Console Runner
 
@@ -41,15 +45,25 @@ env CI=true dotnet build CUSGA.sln --no-restore
 env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj --no-restore
 ```
 
-Run focused Godot checks when touching GDScript, scenes, resources, C# `[GlobalClass]` types, generated enum bridges, or runtime integration:
+Run focused Godot checks when touching GDScript, scenes, resources, C# `[GlobalClass]` types, generated enum bridges, or runtime integration.
 
-```bash
-godot-mono --headless --path . --build-solutions --quit
-godot-mono --headless --path . --script res://tests/godot/passage_guard_tests.gd
-godot-mono --headless --path . --script res://tests/godot/skill_targeting_type_codegen_tests.gd
-godot-mono --headless --path . --script res://tests/godot/multi_hit_damage_tests.gd
-godot-mono --headless --path . --script res://tests/godot/inventory_ui_performance_tests.gd
-```
+Older revisions of this spec listed `godot-mono --headless` invocations here (a `--build-solutions --quit` warm-up, then one `--script res://tests/godot/<name>.gd` line per runner). **None of them work any more** — do not reconstruct them from memory or from git history. Use the editor MCP equivalents:
+
+| What you need | Editor MCP |
+|---|---|
+| Refresh C# global classes / rebuild the assembly | Build with `env CI=true dotnet build CUSGA.sln --no-restore`; the editor reloads `CUSGA.dll` itself |
+| `passage_guard_tests.gd`, `multi_hit_damage_tests.gd`, `skill_targeting_type_codegen_tests.gd`, `inventory_ui_performance_tests.gd`, or any other `tests/godot/*.gd` runner | `test_run(suite=..., test_name=...)` — discovers `test_*.gd` under `res://tests/` and runs the `test_*` methods |
+| Scene smoke test | `project_run(mode="custom", scene="res://X.tscn")`, then `logs_read(source="game")` to read `SCRIPT ERROR` / `push_error`; finish with `project_manage(op="stop")` |
+| Inspecting or asserting state inside the running game | `game_eval(code=...)` (returns GDScript values) |
+| Visual confirmation of a UI change | `editor_screenshot(source="game")` |
+| Syntax checking a changed script | No equivalent — see the notes below; do not substitute the removed `--check-only` flag |
+
+Notes that decide what may be used as a gate:
+
+- `test_run` reports per-test results; narrow the suite with `suite` / `test_name` when only one area changed.
+- `project_run` starts a real game process, so autoloads are live. This is the only correct way to validate scenes that depend on C# autoloads such as `PlayerWallet` or `PlayerProgression`.
+- Syntax-only checking was never a valid gate on this project: the removed flag parsed without compiling, so any script referencing an autoload failed with `Identifier not found: <AutoloadName>`. Pre-existing scripts behaved identically. Treat that failure as noise, never as a regression, and never as pass/fail.
+- After adding a new `class_name`, the editor needs one filesystem scan before the type resolves. Use `filesystem_manage(op="scan")` (or simply focus the editor window); the old headless `--editor --quit` trick is gone because that CLI cannot run here.
 
 Use the C# runner when the environment can resolve GodotSharp:
 
@@ -65,4 +79,4 @@ For a new feature, add the smallest test that covers the local pattern being cha
 
 - Pure calculations or services: C# runner.
 - Scene timing, signals, GDScript, autoloads, or generated bridge behavior: Godot runner.
-- Resource schema changes that affect editor/runtime loading: Godot build-solutions plus a focused runtime runner.
+- Resource schema changes that affect editor/runtime loading: a C# build plus a focused `test_run` suite (or a `project_run` smoke test when the resource is only exercised by a real scene).

@@ -1,11 +1,11 @@
 # CUSGA
 
-CUSGA 是一个基于 **Godot 4.6 + C#（.NET 8）** 的 2D 游戏项目，当前包含地图探索、地形交互、遭遇战斗、背包/仓库、装备与词条、制作系统等核心玩法模块。
+CUSGA 是一个基于 **Godot 4.7.1 + C#（.NET 8）** 的 2D 游戏项目，当前包含地图探索、地形交互、遭遇战斗、背包/仓库、装备与词条、制作系统等核心玩法模块。
 
 ## 技术栈
 
-- Godot 4.6（启用 C#）
-- .NET 8（`Godot.NET.Sdk/4.6.3`）
+- Godot 4.7.1（启用 C#）
+- .NET 8.0（`Godot.NET.Sdk/4.7.1`）
 - C# + GDScript 混合开发
 
 ## 当前功能概览
@@ -33,8 +33,12 @@ addons/                编辑器插件（如技能目标类型代码生成）
 
 ## 环境要求
 
-- Godot 4.7（Mono/C# 版本）— 当前 `project.godot` 的 `config/features` 为 `("4.7", "C#", "Forward Plus")`
+- **Godot 4.7.1（Mono/C# 版本）** — 当前 `project.godot` 的 `config/features` 为 `("4.7", "C#", "Forward Plus")`
 - .NET SDK 8.0+
+
+> **注意目录名会误导人**：本仓库所在文件夹叫 `Godot_v4.6.3-stable_mono_win64`，同级还有一个 `Godot_v4.6.3-stable_mono_win64_console.exe`，这些都是**遗留物，不是项目用的引擎**。
+> 项目实际使用 **4.7.1**：编辑器会话报 `4.7.1-stable`，`CUSGA.csproj` 引用 `Godot.NET.Sdk/4.7.1`，且 `addons/godot_ai` 要求 Godot ≥ 4.7。
+> 判断版本请以这三处为准，不要看文件夹名。
 
 ## 快速开始
 
