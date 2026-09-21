@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://cj40pkfg5gy2s"]
+
+[ext_resource type="Script" uid="uid://bd7vtsl5dkwh4" path="res://core/ui/dev/dev_settings_ui.gd" id="1_8tr2l"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8tr2l"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dp4f3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a1uw1"]
+
+[node name="DevSettingsUI" type="Control" unique_id=149711311]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_8tr2l")
+
+[node name="CenterOverlay" type="CenterContainer" parent="." unique_id=1316363056]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="CenterOverlay" unique_id=1397808382]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterOverlay/Panel" unique_id=608646923]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterOverlay/Panel/MarginContainer" unique_id=1380660763]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1284937044]
+layout_mode = 2
+text = "开发者设置"
+
+[node name="DayLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=89496520]
+unique_name_in_owner = true
+layout_mode = 2
+text = "当前天数：1"
+
+[node name="CostRow" type="HBoxContainer" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=691536275]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CostLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/CostRow" unique_id=392631166]
+layout_mode = 2
+text = "行动值消耗"
+
+[node name="CostSpinBox" type="SpinBox" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/CostRow" unique_id=201677515]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 999.0
+value = 10.0
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1208381806]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NextDayButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=908285550]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_8tr2l")
+text = "下一天"
+
+[node name="ResetCostButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=1388125095]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_dp4f3")
+text = "恢复默认"
+
+[node name="CloseButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=1265758638]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_a1uw1")
+text = "关闭"

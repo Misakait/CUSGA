@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/Warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
 [ext_resource type="Script" uid="uid://dggoia15cpbun" path="res://core/gameflow/world_hold_interaction_controller.gd" id="19_world_hold"]
 [ext_resource type="Script" uid="uid://btikxiw5fhx4d" path="res://core/ui/hud/world_hold_progress_indicator.gd" id="20_hold_indicator"]
+[ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="25_36rkl"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -226,6 +227,11 @@ GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
 [node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
 layout_mode = 0
+
+[node name="DevSettingsUI" parent="UI/HUDLayer/HUDRoot" unique_id=149711311 instance=ExtResource("25_36rkl")]
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player") instance=ExtResource("2_rvslj")]
 player = NodePath("../Player")

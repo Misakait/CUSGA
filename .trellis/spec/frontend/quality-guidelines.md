@@ -299,3 +299,92 @@ func _open_card_table() -> void:
 		return
 	_open_card_table_after_guide()
 ```
+
+## MCP test_run 的套件发现路径与转发壳
+
+### 1. Scope / Trigger
+
+当新增一个由 `test_run` 执行的 Godot 运行期契约套件时。触发原因是 `test_run` **只扫描 `res://tests` 顶层**且**只认 `test_*.gd`**：把套件写在别处不会报错，只会静默不执行，看起来像"没有失败"。
+
+### 2. Signatures
+
+```gdscript
+# res://tests/godot/test_<name>_contract.gd —— 真正的实现
+@tool
+extends McpTestSuite
+
+func suite_name() -> String:
+	return "<name>_contract"
+
+func test_<behavior>() -> void:
+	assert_eq(actual, expected, "失败信息")
+```
+
+```gdscript
+# res://tests/test_<name>_contract.gd —— 4 行转发壳
+@tool
+extends "res://tests/godot/test_<name>_contract.gd"
+
+## MCP 测试入口转发到 tests/godot，保持项目现有测试发现路径。
+```
+
+```text
+test_run(suite="<name>_contract")
+```
+
+### 3. Contracts
+
+- 发现逻辑在 `addons/godot_ai/handlers/test_handler.gd`：`DirAccess.open("res://tests")` 之后只接受 `file_name.begins_with("test_") and file_name.ends_with(".gd")`。**不递归子目录**，也不认 `*_tests.gd`。
+- 因此 `tests/godot/*_tests.gd`（`world_hold_interaction_tests.gd`、`passage_guard_tests.gd` 等）**不会被 `test_run` 发现**——它们是另行驱动的旧式 `SceneTree` runner。写需要 `test_run` 执行的套件时不要照抄这个命名。
+- `suite_name()` 的返回值就是 `suite=` 过滤键，必须唯一。
+- 断言用 `McpTestSuite` 的 `assert_*`；一个 `test_*` 方法内首次失败后，该方法内后续断言被跳过（失败信息以第一条为准）。
+- 套件应自建最小节点树、并用伪 Autoload 替代真实 `/root/...`，这样不依赖编辑器当前打开哪个场景；依赖项目主场景的套件在主场景未打开时会得到 `scene_warning`。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 现象 | 处理 |
+|---|---|---|
+| 套件放 `tests/godot/` 且命名 `*_tests.gd` | `test_run` 返回 `total: 0`，无报错 | 实现改名 `test_*.gd` 放 `tests/godot/`，顶层加转发壳 |
+| 套件放 `res://tests/` 的任意子目录 | 同上 | 同上 |
+| `suite=` 名字写错 | `unknown_suite_error`，并列出 `suites_available` | 用返回的可用列表校正 |
+| 套件断言依赖项目主场景节点 | 主场景未打开时出现 `scene_warning` 与失败 | 先 `scene_open` 主场景再复跑，或改为自建节点树 |
+| 断言依赖 `preload` 的脚本，且该脚本刚被改过 | 可能读到旧缓存（响应里带 `cache_warning`） | 重启编辑器后再复跑，别把该次运行当作依赖改动的验证 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`tests/godot/test_dev_settings_contract.gd` 实现套件（`@tool extends McpTestSuite`），`tests/test_dev_settings_contract.gd` 只放 4 行转发壳，`test_run(suite="dev_settings_contract")` 直接命中。
+- Base：套件用 `unique_name_in_owner` 自建最小控件树，并用伪 `TimeSystem` 替代真实 Autoload，因此不依赖打开哪个场景。
+- Bad：把新套件写成 `tests/godot/dev_settings_tests.gd`。`test_run` 静默不执行它，报告里既没有失败也没有该套件，实际什么都没验证。
+
+### 6. Tests Required
+
+- 新增套件后跑 `test_run(suite="<新套件名>")`，断言 `total > 0`。`total: 0` 表示**没有被发现**，不是"通过"。
+- 再跑一次不带 `suite` 的全量 `test_run`，断言 `failed == 0`，并确认新套件出现在 `suites_run` 列表里。
+- 全量跑完后读 `logs_read(source="editor")`：`new_errors_since_last_call` 可能包含**既有负面路径测试故意触发的 `push_error`**（例如 `room_terrain_store` 的重复地形与空 `terrain_data`）。必须逐条按 `path`/`frames` 定位来源文件，确认不是本任务的回归再收工。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# res://tests/godot/dev_settings_tests.gd
+# test_run 不递归子目录、也不认 *_tests.gd → 静默不执行
+extends SceneTree
+```
+
+#### Correct
+
+```gdscript
+# res://tests/godot/test_dev_settings_contract.gd
+@tool
+extends McpTestSuite
+
+func suite_name() -> String:
+	return "dev_settings_contract"
+```
+
+```gdscript
+# res://tests/test_dev_settings_contract.gd
+@tool
+extends "res://tests/godot/test_dev_settings_contract.gd"
+```

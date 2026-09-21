@@ -483,3 +483,82 @@ func _resolve_nodes() -> void:
 ### 已知的既有缺陷（未修复）
 
 `warehouse_control.gd` 的 `init()` 会访问 `inventory_control.inventory`，而 `inventory` 是 `inventory_control.gd` 的 `@onready` 变量。把 `Warehouse.tscn` 当作初始场景直接运行时必然报 `Invalid call. Nonexistent function 'CopySlotsFrom' in base 'Nil'`。走 `main_menu` 启动再经 SceneManager 切换进入仓库不会触发。新增场景控制器时不要复制这个写法。
+
+## 局内战斗的 UI 宿主：battle.tscn 是 Main 的子节点
+
+### 1. Scope / Trigger
+
+当需要新增一个「在局外游玩与局内战斗中都可用」的 HUD 浮层、快捷键或调试面板时。触发原因是局内战斗**不切换 `current_scene`**，因此挂在 `Main` 上的 UI 在战斗期间依然存活——这决定了浮层该挂在哪里。
+
+### 2. Signatures
+
+```gdscript
+# core/gameflow/world_interaction_coordinator.gd
+const BATTLE_SCENE_PATH: String = "res://scenes/battle_scenes/battle.tscn"
+```
+
+```text
+Main                                  ← current_scene，始终存活
+├─ UI
+│  └─ HUDLayer (CanvasLayer)          ← 局外与局内战斗都存活
+│     └─ HUDRoot (Control)
+│        ├─ TopLeftPanel / BackpackButton / CenterOverlay / TooltipPanel
+│        └─ DevSettingsUI             ← 开发者设置浮层挂在这里
+└─ <battle.tscn 实例>                  ← 战斗期间作为 Main 的子节点挂载
+```
+
+### 3. Contracts
+
+- 局内战斗把 `battle.tscn` 作为 `Main` 的**子节点**挂载，`get_tree().current_scene` 仍然是 `Main`。`scripts/ui_scripts/status_effect_bar.gd` 的注释（「局内触发的战斗会把 battle.tscn 挂在世界主场景 Main 之下」）是同一事实的另一处记录。
+- 因此 `Main/UI/HUDLayer/HUDRoot` 是**唯一**在两种状态下都存活的 UI 宿主。需要跨状态可用的浮层挂在这里，不必新增 Autoload，也不必在 battle 场景里重复一份。
+- 战斗场景内定位玩家/怪物时不能依赖 `current_scene`，也不能依赖全局分组的首顺位，必须沿祖先链找最近的战斗节点（`status_effect_bar.gd` 就是这么做的）。
+- 独立运行 `battle.tscn`（`project_run(mode="custom", scene="res://scenes/battle_scenes/battle.tscn")`）时没有 `Main` 祖先，只挂在 `Main` 上的 UI 不会出现——这是预期行为，不是缺陷。
+- 全屏浮层的根 `Control` 应设 `mouse_filter = MOUSE_FILTER_IGNORE` 并默认 `visible = false`，避免隐藏时仍拦截 HUD 的鼠标事件；需要居中的内容交给全屏 `CenterContainer`，不要只给子面板设 0.5 锚点（offsets 为 0 会把它推到右下角）。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 结果 |
+|---|---|
+| 浮层挂在 `Main/UI/HUDLayer`，局外游玩 | 可用 |
+| 浮层挂在 `Main/UI/HUDLayer`，局内战斗 | 可用（`Main` 仍是 `current_scene`） |
+| 浮层挂在 `battle.tscn` 内，局外游玩 | 不可用 |
+| 浮层用 `get_tree().current_scene` 反查自身 | 战斗中拿到 `Main`，可能取到错误节点 |
+| 浮层根节点 `mouse_filter` 保持默认且 `visible = false` | 隐藏时仍可能吞掉 HUD 点击 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：开发者设置浮层挂在 `Main/UI/HUDLayer/HUDRoot`，用 `_unhandled_input` 监听隐藏序列，局外与局内战斗都能打开。
+- Base：战斗专用 UI（`BattleSettingsPanel`）挂在 `battle.tscn` 内，只在战斗中存在，职责清晰。
+- Bad：为了「全局可用」而新增一个 Autoload 承载 HUD 浮层——项目已有 `Main/UI/HUDLayer` 这个跨状态宿主，新增 Autoload 只会扩大全局面。
+
+### 6. Tests Required
+
+- 场景冒烟：分别 `project_run(mode="custom", scene="res://scenes/Main.tscn")` 与 `res://scenes/battle_scenes/battle.tscn`，`logs_read(source="game")` 断言无 `SCRIPT ERROR`。
+- 若浮层需要在真实游戏里可用，必须用 `game_eval` 在**运行中的游戏进程**里断言：节点存在、`visible` 状态正确、`get_tree().paused` 未被意外改变。编辑器 `test_run` 的环境没有 Autoload 与 `Main` 实例，无法覆盖这条。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# 战斗中 current_scene 是 Main，这个反查会拿到世界主场景而不是战斗场景。
+var battle := get_tree().current_scene
+```
+
+#### Correct
+
+```gdscript
+# 从自身沿祖先链向上查找最近的战斗节点（status_effect_bar.gd 的做法），
+# 独立运行 battle.tscn 时结果同样正确。
+var battle_root := _find_ancestor_battle_root()
+```
+
+### 附注：GDScript 脚本常量可以经实例读取
+
+`TimeSystem` 的阶段长度是脚本常量 `PhaseLength`，它**可以**通过实例动态读取：
+
+```gdscript
+var phase_length: int = int(TimeSystem.get("PhaseLength"))
+```
+
+原因是 Godot 的 `GDScriptInstance::get()` 先查成员变量，再沿脚本继承链查常量表。因此 UI 不必再复制一份 `const PHASE_LENGTH = 100`（`time_panel_ui.gd` 的旧写法）就能跟随时间系统的值；`core/ui/dev/dev_settings_ui.gd` 用这条路径计算「下一天」。仍应保留本地兜底值：读不到时不能让面板整体失效。
