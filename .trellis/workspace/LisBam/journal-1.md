@@ -368,3 +368,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: 开发者设置窗口（LISBAM 入口）
+<!-- trellis-session: v=2 fp=84d20263842448d0 -->
+
+**Date**: 2026-09-21
+**Task**: 开发者设置窗口（LISBAM 入口）
+**Branch**: `main`
+
+### Summary
+
+为游戏新增开发者设置浮层：游戏内依次按下 LISBAM 打开，首批提供「下一天」与「行动值消耗」两项功能。面板挂在 Main/UI/HUDLayer/HUDRoot（该层在局外与局内战斗中均存活），叠加显示且不暂停游戏。「下一天」复用 TimeSystem.PassTime 推进到下一个偶数阶段边界，保留昼夜、天数与天赋信号的既有顺序；「行动值消耗」用 SpinBox 夹紧非法输入并实时写入 TimeSystem.MapMoveTimeCost，按约定不持久化。新增 DevSequenceMatcher 纯逻辑状态机与 dev_settings_contract 契约套件（5 测试、35 断言），全量 40 套件 296 通过、0 失败、33 跳过；Main 与 battle 场景冒烟零脚本错误，game_eval 断言序列开面板、下一天 +1、行动值写入、未暂停。同步更新 frontend spec：新增「MCP test_run 的套件发现路径与转发壳」与「局内战斗的 UI 宿主」两节契约。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4d881e1` | 新增开发者设置窗口（LISBAM 入口） |
+
+### Status
+
+[OK] **Completed**
