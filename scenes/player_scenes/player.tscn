@@ -12,18 +12,17 @@
 [ext_resource type="Script" uid="uid://iset81ag1f6r" path="res://entities/components/crafting_component.gd" id="9_v0ulg"]
 [ext_resource type="Script" uid="uid://teq3xtey3ker" path="res://entities/components/status_component.gd" id="10_4xp6m"]
 [ext_resource type="Script" uid="uid://dwdggwaghdncs" path="res://entities/components/damage_receiver_component.gd" id="11_mm880"]
-[ext_resource type="Script" uid="uid://cunxbq7v4rf68" path="res://resources/recipe/crafting_recipe.gd" id="12_recipe_gd"]
 [ext_resource type="Script" uid="uid://d4lfyog558ndn" path="res://entities/components/battle_deck_component.gd" id="12_bdeck"]
-[ext_resource type="Resource" path="res://resources/recipe/res/torch_recipe_gd.tres" id="13_recipe_gd"]
-[ext_resource type="Resource" path="res://resources/recipe/res/stone_axe_recipe_gd.tres" id="14_recipe_gd"]
+[ext_resource type="Resource" uid="uid://od88ns7dhkmj" path="res://resources/recipe/res/torch_recipe_gd.tres" id="13_recipe_gd"]
 [ext_resource type="Script" uid="uid://c7prbcvmav1b" path="res://resources/recipe/recipe_book_data.gd" id="14_book_gd"]
+[ext_resource type="Resource" uid="uid://biacbm6kh04c4" path="res://resources/recipe/res/stone_axe_recipe_gd.tres" id="14_recipe_gd"]
 
 [sub_resource type="Resource" id="Resource_whhsb"]
 script = ExtResource("6_5ro12")
 
 [sub_resource type="Resource" id="Resource_oyr7h"]
 script = ExtResource("14_book_gd")
-Recipes = Array[ExtResource("12_recipe_gd")]([ExtResource("13_recipe_gd"), ExtResource("14_recipe_gd")])
+Recipes = Array[Resource]([ExtResource("13_recipe_gd"), ExtResource("14_recipe_gd")])
 
 [node name="Player" type="Node" unique_id=1931166684]
 script = ExtResource("1_d8qmr")
