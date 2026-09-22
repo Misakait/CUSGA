@@ -15,6 +15,7 @@ metadata/_custom_type_script = "uid://0nubbe6tiwxp"
 [sub_resource type="Resource" id="Resource_lmghr"]
 script = ExtResource("3_puyf7")
 DefaultShieldAmount = 20.0
+Id = &"shield"
 DisplayName = "护盾"
 Description = "对随机敌人造成20点火属性法术伤害，然后自身获得20点护盾。"
 metadata/_custom_type_script = "uid://cmi3qh7h7ny3i"

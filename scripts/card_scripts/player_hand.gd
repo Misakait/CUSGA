@@ -110,10 +110,14 @@ func remove_card_from_hand(card, should_play_discard_animation: bool = true) -> 
 ## 因此必须先移除失效引用，不能把 UI 缓存当作节点仍然存活的保证。
 ## @return void 无返回值。
 func _remove_invalid_hand_cards() -> void:
-	# 使用副本遍历，保证从原数组删除失效节点时不会跳过后续卡牌。
-	for card: Node2D in player_hand_card.duplicate():
+	# 手牌缓存是 Array[Node2D]：悬空实例既不能赋给类型化变量，也不能作为 erase()
+	# 的参数（TypedArray 会在校验阶段直接拒绝并报错），因此只能按下标删除。
+	# 倒序遍历保证删除当前元素后不会跳过尚未检查的卡牌。
+	for card_index: int in range(player_hand_card.size() - 1, -1, -1):
+		# 读取元素同样必须用 Variant，否则悬空实例在赋值时就会触发运行期错误。
+		var card: Variant = player_hand_card[card_index]
 		if not is_instance_valid(card) or card.is_queued_for_deletion():
-			player_hand_card.erase(card)
+			player_hand_card.remove_at(card_index)
 
 ## 按当前手牌列表重新计算并播放每张有效卡牌的归位动画。
 ## @return void 无返回值。
@@ -124,7 +128,9 @@ func update_hand_positions() -> void:
 		# 直接获取计算好的 Vector2 坐标
 		var new_position: Vector2 = calculate_card_position(card_index)
 		# 经过清理后的手牌节点仍再次校验，避免未来在此函数中插入异步逻辑后重新引入悬空访问。
-		var card: Node2D = player_hand_card[card_index]
+		# 这里同样必须用 Variant 读取：若声明为 Node2D，悬空实例会在赋值时先报错并中断重排，
+		# 这层二次校验就形同虚设。
+		var card: Variant = player_hand_card[card_index]
 		if not is_instance_valid(card) or card.is_queued_for_deletion():
 			continue
 		card.hand_position = new_position

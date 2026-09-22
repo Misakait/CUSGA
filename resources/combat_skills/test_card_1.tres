@@ -21,6 +21,7 @@ metadata/_custom_type_script = "uid://3uivcq44l7gy"
 [sub_resource type="Resource" id="Resource_l2nwx"]
 script = ExtResource("5_lwroi")
 Modifiers = Array[Resource]([SubResource("Resource_lwroi")])
+Id = &"speed_up"
 MaxStacks = 999
 Policy = 2
 metadata/_custom_type_script = "uid://6lmqxukkx47u"

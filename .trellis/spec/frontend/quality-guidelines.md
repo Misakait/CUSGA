@@ -530,3 +530,67 @@ func _build_rows() -> void:
 	for index in ALLOCATABLE_TYPES.size():
 		_rows_grid.add_child(...)
 ```
+
+## TypedArray 无法承载已释放实例
+
+### 1. Scope / Trigger
+
+- 触发条件：任何持有 `Array[T]`（`Array[Node2D]`、`Array[Resource]` 等类型化数组）的缓存，在元素被 `free()` / `queue_free()` 之后仍需遍历、清理或按值删除。
+- 典型场景：手牌缓存、场上实体缓存、信号订阅登记表——这些容器都允许“外部先释放节点、缓存后同步”。
+- 不适用：无类型 `Array` 与 `Dictionary` 不受此约束，但改用无类型容器会丢掉其余全部元素类型检查，不是推荐的替代方案。
+
+### 2. Signatures
+
+- 读取（正确）：`var item: Variant = typed_array[index]`
+- 读取（悬空时报错）：`var item: T = typed_array[index]`、`for item: T in typed_array`
+- 删除（正确）：`typed_array.remove_at(index)`
+- 删除（悬空时被拒）：`typed_array.erase(freed_instance)`
+
+### 3. Contracts
+
+- 遍历可能含悬空实例的类型化数组时，循环变量与临时变量必须声明为 `Variant`；只有 `is_instance_valid()` 通过之后才允许 `as T` 收敛回具体类型。项目既有实现见 `CombatFeedbackDirector._exit_tree` 的“先在 Variant 层校验”写法。
+- 移除失效元素必须按下标进行（`remove_at`），并倒序遍历，避免删除当前元素后跳过后续元素。
+- TypedArray 的校验发生在写入、按类型读取、`erase` 三个入口；它不保证“存进去的实例永远有效”。
+
+### 4. Validation & Error Matrix
+
+| 写法 | 元素有效 | 元素已释放 |
+|---|---|---|
+| `var x: Variant = arr[i]` | 正常 | 正常，交给 `is_instance_valid` 判断 |
+| `var x: T = arr[i]` / `for x: T in arr` | 正常 | `Trying to assign invalid previously freed instance.`，**当前函数中止** |
+| `arr.erase(freed)` | 正常 | `Attempted to erase an invalid (previously freed?) object instance into a 'TypedArray'.`，**元素不会被移除** |
+| `arr.remove_at(i)` | 正常 | 正常移除 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：倒序遍历 + `Variant` 读取 + `remove_at`，清理真正生效，且不产生任何运行期错误。
+- Base：容器里始终只有有效实例时三种写法表现一致——这正是该缺陷能长期潜伏的原因。
+- Bad：用 `for card: Node2D in cache` 或 `cache.erase(card)` 实现“清理失效引用”。清理函数自己先报错中止，悬空引用永远清不掉，还会在每帧刷错误日志。
+
+### 6. Tests Required
+
+- 清理路径必须进入 `test_run` 可发现的 `McpTestSuite`：`test_runner` 会把测试期间捕获的 SCRIPT ERROR 直接判为失败，因此“清理函数自己报错”会被当场抓住（见 `tests/godot/test_player_hand_cache_contract.gd`）。
+- 断言必须同时覆盖“失效引用被移除”与“有效元素仍被正常写入”，避免修复退化成“遇到悬空引用就整轮跳过”。
+- 分别覆盖 `free()`（previously freed）与 `queue_free()`（`is_queued_for_deletion`）两条分支。
+- 只断言数组长度而不关心运行期错误、或把用例留在 `extends SceneTree` runner 里，都不足以拦住这类缺陷。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+func _remove_invalid_cards() -> void:
+	for card: Node2D in _cards.duplicate():          # 悬空实例：类型赋值错误，函数中止
+		if not is_instance_valid(card):
+			_cards.erase(card)                       # 悬空实例：erase 被 TypedArray 校验拒绝
+```
+
+#### Correct
+
+```gdscript
+func _remove_invalid_cards() -> void:
+	for index: int in range(_cards.size() - 1, -1, -1):
+		var card: Variant = _cards[index]            # Variant 层承接悬空实例
+		if not is_instance_valid(card) or card.is_queued_for_deletion():
+			_cards.remove_at(index)                  # 按下标删除，不经过类型校验
+```

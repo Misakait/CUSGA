@@ -80,6 +80,7 @@ func CombatFeedbackDirector.play_monster_attack_feedback(monster: Node) -> void
 
 - `DeckManager.play_card` 必须先以 `remove_card_from_hand(card, false)` 让节点退出手牌布局，再把同一节点存入 `Action.presentation_card` 后入队；不能立即写入弃牌堆或调用渐隐销毁。
 - `PlayerHand.draw_card_data` 的容量判断与 `PlayerHand.update_hand_positions` 的位置写入都必须先从 `player_hand_card` 清除已释放或已进入删除队列的节点，再为剩余有效卡牌计算位置；节点缓存不能替代 `is_instance_valid` 校验。
+- 清理实现必须遵守 `Array[Node2D]` 的取值约束：读取元素用 `Variant` 接收，删除元素用 `remove_at(index)` 按下标移除。悬空实例既不能赋给 `Node2D` 类型变量（运行期类型赋值错误），也不能作为 `erase()` 的参数（TypedArray 校验会直接拒绝），这两种写法都会让“清理”本身变成运行期错误并中止函数，使失效引用反而清不掉。
 - `BattleManager._execute_single_action` 是玩家卡牌施放展示的唯一编排者：卡牌行动在显式目标仍是场上怪物时飞向目标，随后立即执行原有效果结算并最终弃牌。它不得调用 `play_enemy_hit_feedback` 预判命中；`CombatFeedbackDirector` 必须在 `DamageResolved` 后以绝对结算数值的饱和曲线播放目标受力、浮字、震屏和 Hit Stop。
 - 敌方 `SKILL` 与 `ATTACK` 行动开始时，`BattleManager` 仅请求 `CombatFeedbackDirector.play_monster_attack_feedback` 播放下冲，不得等待该 Tween 或让它改变伤害目标与结算顺序。
 - `Action.presentation_card` 对怪物技能和普通攻击始终可选，调用方不得假设它非空；旧的五参数 `Action.new(...)` 构造方式必须继续可用。
@@ -118,7 +119,8 @@ func CombatFeedbackDirector.play_monster_attack_feedback(monster: Node) -> void
 ### 6. Tests Required
 
 - 点击模式选中、取消、改选、模式切换和玩家失去回合：断言选中卡牌上移，并在每个非确认出口恢复 `hand_position` 且保留在 `player_hand_card`；再次点击已选卡牌必须走同一取消出口。
-- 运行 `tests/godot/player_hand_lifecycle_tests.gd`：在缓存中保留一张已释放卡牌后触发 `update_hand_positions`，断言无效引用被清理、有效卡牌仍按索引写入正确 `hand_position`。
+- 运行 `tests/godot/test_player_hand_cache_contract.gd`（套件 `player_hand_cache_contract`）：在缓存中保留一张已释放卡牌后触发 `update_hand_positions`，断言无效引用被清理、有效卡牌仍按索引写入正确 `hand_position`；已排队删除的卡牌、以及直接调用清理入口这两条路径各自独立断言。该套件由 `test_run` 执行，清理过程本身产生的 SCRIPT ERROR 会直接判为失败。
+- 旧的 `tests/godot/player_hand_lifecycle_tests.gd` 是 `extends SceneTree` runner，`test_run` 不会发现它，也没有 SCRIPT ERROR 捕获，因此不能作为该契约的验收入口；保留它只作历史参考。
 - 敌人目标取消：断言再次点击同一敌人只清空 `_selected_click_target`，已选卡牌与操作栏保持可用；自身与自动目标牌仍以玩家自身或固有范围结算，需要显式敌人的卡牌则把“确定”置为禁用。
 - 点击模式目标确认：运行 `tests/godot/test_click_mode_target_contract.gd`（套件 `click_mode_target_contract`），断言单体、任意单体与扩散牌在未选中在场敌人时既不能确认，也不消耗能量、不提交行动队列、不弃牌；选中在场敌人后恢复可用，已离场敌人不得通过；自身与自动目标牌不受该限制。
 - 显式敌人目标：断言 `Action.presentation_card` 与原手牌节点一致；断言节点先到目标位置、随后执行伤害结算，`discard_pile_data` 只新增一次。

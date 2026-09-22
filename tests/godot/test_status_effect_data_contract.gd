@@ -329,6 +329,9 @@ func test_serialized_asset_values_preserved() -> void:
 	)
 	assert_eq(int(card_one_status.get("MaxStacks")), 999, "测试卡1 最大层数不得改变。")
 	assert_eq(int(card_one_status.get("Policy")), 2, "测试卡1 叠加策略不得改变。")
+	# 状态 Id 是叠加、刷新与移除的唯一键；留空会让 StatusComponent.AddStatus 在运行期
+	# 直接拒绝该状态并 push_error，因此这里锁定具体取值。
+	assert_eq(str(card_one_status.get("Id")), "speed_up", "测试卡1 的状态 Id 不得为空或改名。")
 	var card_one_modifiers: Array = card_one_status.get("Modifiers")
 	assert_eq(int(card_one_modifiers[0].get("Type")), 4, "修正类型不得改变。")
 	assert_eq(float(card_one_modifiers[0].get("ValuePerStack")), 100.0, "修正数值不得改变。")
@@ -344,6 +347,7 @@ func test_serialized_asset_values_preserved() -> void:
 	)
 	assert_eq(float(shield_status.get("DefaultShieldAmount")), 20.0, "护盾数值不得改变。")
 	assert_eq(str(shield_status.get("DisplayName")), "护盾", "护盾显示名称不得改变。")
+	assert_eq(str(shield_status.get("Id")), "shield", "测试卡2 的护盾 Id 不得为空或改名。")
 
 	var bmob: Resource = load(BMOB_PATH)
 	var bmob_effects: Array = bmob.get("Effects")
@@ -666,3 +670,54 @@ func test_remaining_status_data_family_production() -> void:
 			VULNERABLE_INSTANCE_PATH,
 			"脆弱状态必须创建对应的 GDScript 实例。"
 		)
+
+
+## 验证所有内嵌状态数据的技能资源都配置了非空 Id。
+##
+## 状态 Id 是叠加、刷新与移除的唯一键；留空时 StatusComponent.AddStatus 会在运行期
+## 直接拒绝该状态并 push_error，玩家看不到任何效果，只在日志里留下一条错误。
+## 这里对 res://resources/combat_skills 下的全部技能资源做一次门禁，
+## 把“新增状态子资源必须写 Id”变成可自动检查的规则，而不是靠记性。
+## @return void 无返回值。
+func test_battle_assets_declare_non_empty_status_id() -> void:
+	var checked_status_count: int = 0
+	for skill_path: String in _collect_tres_paths("res://resources/combat_skills"):
+		var skill: Resource = load(skill_path)
+		if skill == null or not (skill.get("Effects") is Array):
+			continue
+
+		for effect: Variant in skill.get("Effects"):
+			if not (effect is Resource):
+				continue
+			# 状态类效果由 Status（通用状态）或 ShieldStatus（护盾专用）承载状态数据资源。
+			for status_field: StringName in [&"Status", &"ShieldStatus"]:
+				var status: Variant = (effect as Resource).get(status_field)
+				if not (status is Resource):
+					continue
+				checked_status_count += 1
+				assert_false(
+					str((status as Resource).get("Id")).strip_edges().is_empty(),
+					"%s 的 %s 状态资源必须配置非空 Id，否则 AddStatus 会拒绝施加该状态。" % [skill_path, status_field]
+				)
+
+	# 空跑会让门禁退化成永远通过，因此必须确认真的检查到了状态资源。
+	assert_true(checked_status_count > 0, "门禁至少需要检查到一个内嵌状态资源，避免路径变化后空跑。")
+
+
+## 收集目录下全部 .tres 资源路径；不递归子目录。
+## @param directory res:// 目录路径。
+## @return Array[String] 目录内的 .tres 资源路径。
+func _collect_tres_paths(directory: String) -> Array[String]:
+	var paths: Array[String] = []
+	var dir: DirAccess = DirAccess.open(directory)
+	if dir == null:
+		return paths
+
+	dir.list_dir_begin()
+	var file_name: String = dir.get_next()
+	while not file_name.is_empty():
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			paths.append(directory.path_join(file_name))
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	return paths
