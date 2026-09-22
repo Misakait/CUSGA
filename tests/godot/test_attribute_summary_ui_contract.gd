@@ -42,6 +42,33 @@ class FakeAttributeComponent extends Node:
 		AvailablePointsChanged.emit(available_points)
 
 
+## 提供 AttributeSummaryUI 所需等级查询与信号的最小等级来源。
+class FakeLevelSource extends Node:
+	## 等级变化时携带新等级。
+	signal LevelChanged(level: int)
+
+	## 当前等级。
+	var level: int = 1
+
+	## 读取当前等级。
+	## 返回值：已配置的等级。
+	func GetLevel() -> int:
+		return level
+
+	## 修改等级并发出 LevelChanged。
+	## 参数 new_level：新的等级。
+	## 返回值：无。
+	func set_level(new_level: int) -> void:
+		level = new_level
+		LevelChanged.emit(level)
+
+
+## 只暴露公开 Level 字段、既无查询方法也无信号的最小等级来源，用于验证跨语言兜底路径。
+class FakeLevelFieldSource extends Node:
+	## 当前等级，仅通过公开字段暴露。
+	var Level: int = 5
+
+
 ## 返回套件名称，供 GodotAI 精确筛选本批测试。
 ## 返回值：固定套件名。
 func suite_name() -> String:
@@ -178,6 +205,79 @@ func test_details_popup_and_exit_cleanup() -> void:
 	ui.free()
 
 
+## 验证属性栏第一行等级来源的显示、信号刷新、重绑清理与退出清理。
+## 返回值：无。
+func test_level_row_binding_and_refresh() -> void:
+	# 并行 UI 夹具用于观察等级行文本与连接生命周期。
+	var ui: PanelContainer = _new_attribute_summary_ui()
+	assert_eq(_label_text(ui, "LevelValue"), "-", "未绑定等级来源时等级行必须显示占位符。")
+
+	# 首个等级来源用于验证注入后的显示与信号驱动刷新。
+	var first := FakeLevelSource.new()
+	first.level = 7
+	ui.call("BindPlayerLevel", first)
+	assert_eq(_label_text(ui, "LevelValue"), "7", "绑定等级来源后等级行必须显示当前等级。")
+
+	# 等级变化回调用于核对连接生命周期。
+	var level_callback := Callable(ui, "_on_level_changed")
+	assert_true(first.LevelChanged.is_connected(level_callback), "BindPlayerLevel 必须连接 LevelChanged。")
+
+	first.set_level(8)
+	assert_eq(_label_text(ui, "LevelValue"), "8", "LevelChanged 必须立即刷新等级行。")
+
+	ui.call("BindPlayerLevel", first)
+	assert_true(first.LevelChanged.is_connected(level_callback), "重复绑定同一等级来源后信号必须仍保持单一有效连接。")
+
+	# 第二个等级来源用于验证重绑后的显示来源与旧连接移除。
+	var second := FakeLevelSource.new()
+	second.level = 42
+	ui.call("BindPlayerLevel", second)
+	assert_false(first.LevelChanged.is_connected(level_callback), "切换等级来源时必须解除旧 LevelChanged。")
+	assert_eq(_label_text(ui, "LevelValue"), "42", "切换等级来源后必须读取新来源的等级。")
+
+	# 编辑器主循环提供真实场景树的移除生命周期。
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	scene_tree.root.remove_child(ui)
+	assert_false(second.LevelChanged.is_connected(level_callback), "退出场景树时必须解除 LevelChanged。")
+	ui.free()
+
+
+## 验证等级来源缺少查询方法与信号时安全退化，并且不牵连属性行刷新。
+## 返回值：无。
+func test_level_row_degrades_without_method_or_signal() -> void:
+	# 只暴露公开字段的等级来源用于覆盖跨语言兜底读取路径。
+	var ui: PanelContainer = _new_attribute_summary_ui()
+	# 缺少 LevelChanged 信号时绑定必须安全跳过连接。
+	var bare := FakeLevelFieldSource.new()
+	ui.call("BindPlayerLevel", bare)
+	assert_eq(_label_text(ui, "LevelValue"), "5", "缺少查询方法时必须回退读取公开字段。")
+
+	# 属性组件用于确认等级行的存在不影响属性值来源。
+	var attributes := FakeAttributeComponent.new()
+	attributes.values[0] = 33.0
+	ui.call("Bind", attributes)
+	assert_eq(_label_text(ui, "PhysAtkValue"), "33", "绑定属性组件后摘要必须照常刷新。")
+	assert_eq(_label_text(ui, "LevelValue"), "5", "属性刷新不得覆盖等级行的来源。")
+	_dispose_ui(ui)
+
+
+## 验证解绑等级来源后等级行回到占位符。
+## 返回值：无。
+func test_level_row_resets_when_source_unbound() -> void:
+	# 并行 UI 夹具用于验证解绑后的显示回退。
+	var ui: PanelContainer = _new_attribute_summary_ui()
+	# 等级来源用于先建立非占位显示，再验证解绑清理。
+	var source := FakeLevelSource.new()
+	source.level = 12
+	ui.call("BindPlayerLevel", source)
+	assert_eq(_label_text(ui, "LevelValue"), "12", "绑定后必须先显示等级。")
+
+	ui.call("BindPlayerLevel", null)
+	assert_eq(_label_text(ui, "LevelValue"), "-", "解绑等级来源后必须回到占位符。")
+	assert_false(source.LevelChanged.is_connected(Callable(ui, "_on_level_changed")), "解绑时必须解除旧 LevelChanged。")
+	_dispose_ui(ui)
+
+
 ## 构造与生产唯一节点名一致的轻量属性摘要树并触发正常 Ready 生命周期。
 ## 返回值：已进入场景树的 AttributeSummaryUI。
 func _new_attribute_summary_ui() -> PanelContainer:
@@ -185,6 +285,7 @@ func _new_attribute_summary_ui() -> PanelContainer:
 	var ui := ATTRIBUTE_SUMMARY_UI_SCRIPT.new() as PanelContainer
 	ui.name = "AttributeSummaryUIContractProbe"
 	for label_name: String in [
+		"LevelValue",
 		"PhysAtkValue",
 		"PhysDefValue",
 		"MagPowerValue",
@@ -222,6 +323,9 @@ func _new_attribute_summary_ui() -> PanelContainer:
 	scene_tree.root.add_child(ui)
 	# 非 @tool 生产脚本在编辑器测试中不会自动执行脚本生命周期；节点入树后显式调用可保留 is_node_ready 契约。
 	ui.call("_ready")
+	# 生产 _ready 会尝试解析等级系统 Autoload，而编辑器测试环境是否加载 Autoload 并不确定；
+	# 这里显式解绑一次，使等级行的基线在所有环境下都固定为占位符。
+	ui.call("BindPlayerLevel", null)
 	return ui
 
 
@@ -240,6 +344,7 @@ func _label_text(ui: PanelContainer, label_name: String) -> String:
 ## 返回值：无。
 func _assert_all_values(ui: PanelContainer, expected: String, context: String) -> void:
 	for label_name: String in [
+		"LevelValue",
 		"PhysAtkValue",
 		"PhysDefValue",
 		"MagPowerValue",

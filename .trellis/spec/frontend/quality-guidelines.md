@@ -388,3 +388,65 @@ func suite_name() -> String:
 @tool
 extends "res://tests/godot/test_dev_settings_contract.gd"
 ```
+
+## Variant 推断告警在本项目是硬错误
+
+### 1. Scope / Trigger
+
+在 GDScript 里用 `:=` 从一个返回 `Variant` 的表达式推断类型时。触发原因是本项目把 `inference_on_variant` 从警告提升为**错误**：这类写法直接 `Parse Error`，而且同一文件里每一处同类写法各报一条，很容易被误读成"改动大面积出错"。
+
+### 2. Signatures
+
+```gdscript
+# 会 Parse Error：从 Variant 推断
+var level := _new_player_level()          # func _new_player_level() -> Variant
+
+# 正确：显式类型 + 字符串协议访问脚本自定义成员
+var level: Node = _new_player_level()
+level.call("GetLevel")
+level.set("CurrentExperience", 100)
+level.connect("LevelChanged", func(new_level: int) -> void: pass)
+```
+
+### 3. Contracts
+
+- 报错原文：`Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)`
+- 触发条件是 `:=`，不是"用了 Variant"。`var x: Variant = ...` 与不带推断的 `var x = ...` 都不触发该告警。
+- 无 `class_name` 的脚本没有可用作类型标注的全局名。**不要为了消警把它收窄成 `Node` 之后再用点号访问脚本自定义信号与字段**——`Node` 静态类型下访问脚本成员同样失败。正确做法是保留 `Node` 类型、把脚本自定义成员一律走字符串协议（`call` / `set` / `get` / `connect`）。
+- 这条规则与上一条「套件发现路径」叠加时最容易踩：新增套件往往同时包含「从 `track(...)` 拿实例」和「访问无 `class_name` 脚本的信号」，两个坑会连在一起报。
+
+### 4. Validation & Error Matrix
+
+| 写法 | 结果 | 处理 |
+|---|---|---|
+| `var x := <Variant 表达式>` | Parse Error（警告即错误） | 改 `var x: <显式类型> = ...`，或去掉 `:=` |
+| `var x: Node = ...` 后 `x.ScriptSignal.connect(...)` | 静态检查失败 | 改 `x.connect("ScriptSignal", ...)` |
+| `var x: Node = ...` 后读 `x.ScriptField` | 静态检查失败 | 改 `x.get("ScriptField")` |
+| `filesystem_manage(op="scan")` 返回 `new_errors_since_last_call > 0` | 可能正是本类错误 | 立刻 `logs_read(source="editor", include_details=true)` 按 `path` 定位 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`tests/godot/test_player_level_contract.gd` 的 `_new_player_level() -> Node`，全部访问走 `call` / `set` / `connect` 字符串协议。
+- Base：同一文件内用 `class FakeLevelSource extends Node` 声明的局部类**可以**直接点号访问，因为它是文件内具名类型，不涉及 Variant 推断。
+- Bad：`var level := track(SCRIPT.new())` 后 `level.LevelChanged.connect(...)` —— 既触发 Variant 推断错误，又会在改成 `Node` 后因为点号访问脚本信号而二次失败。
+
+### 6. Tests Required
+
+- 新增或修改 `.gd` 后跑一次 `filesystem_manage(op="scan")`，确认返回里没有 `new_errors_since_last_call`；有则按 `path` 定位来源。
+- 新增测试套件后跑 `test_run(suite="<name>")`，断言 `total > 0`。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+var level := _new_player_level()   # Parse Error: inferred from a Variant value
+level.LevelChanged.connect(_on_level_changed)
+```
+
+#### Correct
+
+```gdscript
+var level: Node = _new_player_level()
+level.connect("LevelChanged", _on_level_changed)
+```

@@ -1,6 +1,5 @@
 [gd_resource type="Resource" format=3 uid="uid://brus2psngc438"]
 
-[ext_resource type="Script" uid="uid://bu272src84v8y" path="res://core/combat/effects/card_effect.gd" id="2_cardeffect"]
 [ext_resource type="Script" uid="uid://0nubbe6tiwxp" path="res://core/combat/effects/damage_effect.gd" id="3_damageeffect"]
 [ext_resource type="Script" uid="uid://sxc1b8jrnrys" path="res://core/combat/skills/combat_skill_data.gd" id="4_combat"]
 

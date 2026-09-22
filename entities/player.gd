@@ -10,6 +10,8 @@ extends Node
 const DEPLETED_SIGNAL: StringName = &"Depleted"
 ## 全局事件总线节点路径。
 const GLOBAL_EVENT_BUS_PATH: NodePath = ^"/root/GlobalEventBus"
+## 等级系统 Autoload 节点路径；解析失败时只影响属性点发放，玩家其余行为不受影响。
+const PLAYER_LEVEL_PATH: NodePath = ^"/root/PlayerLevel"
 ## 天赋事件名，等价旧 C# GDSignals.OnPlayerAcquiredTalent。
 const ON_PLAYER_ACQUIRED_TALENT: StringName = &"on_player_acquired_talent"
 ## 玩家死亡事件名。
@@ -58,6 +60,8 @@ var _satiety: Node = null
 var _inventory: Node = null
 ## 全局事件总线节点。
 var _global_event_bus: Node = null
+## 等级系统节点，只按稳定方法与信号协议访问，不假设其语言实现。
+var _player_level: Node = null
 ## 饱食归零回调，缓存用于退出时精确断开。
 var _satiety_depleted_callable: Callable
 ## 生命归零回调，缓存用于退出时精确断开。
@@ -84,6 +88,62 @@ func _ready() -> void:
 
 	_global_event_bus = get_node(GLOBAL_EVENT_BUS_PATH)
 	_global_event_bus.connect(ON_PLAYER_ACQUIRED_TALENT, _absorb_talent)
+
+	# 等级系统由 Autoload 提供，必定先于玩家场景树就绪；这里仍按可空方式绑定，
+	# 使玩家在缺少该系统的裁剪环境里也能照常启动。
+	_player_level = get_node_or_null(PLAYER_LEVEL_PATH)
+	_bind_player_level()
+
+
+## 订阅等级系统的属性点发放信号，并补领进入场景前已经累积的挂起点数。
+##
+## 补领是必需的：玩家可能在升级发生之后才进入场景（场景切换、重载、死亡后重建），
+## 若只依赖信号，这段窗口期内发放的点数将永远收不到。
+##
+## @return 无返回值。
+func _bind_player_level() -> void:
+	if _player_level == null:
+		return
+
+	# 固定回调身份用于去重连接与精确断开。
+	var granted_callback := Callable(self, "_on_attribute_points_granted")
+	if (
+		_player_level.has_signal(&"AttributePointsGranted")
+		and not _player_level.is_connected(&"AttributePointsGranted", granted_callback)
+	):
+		_player_level.connect(&"AttributePointsGranted", granted_callback)
+
+	_grant_pending_attribute_points()
+
+
+## 等级系统发出属性点发放信号后的回调。
+##
+## @param _pending_points 当前挂起属性点总数；实际领取数量由领取接口返回，因此回调本身不使用该参数。
+## @return 无返回值。
+func _on_attribute_points_granted(_pending_points: int) -> void:
+	_grant_pending_attribute_points()
+
+
+## 领取挂起的属性点并写入属性组件。
+##
+## 领取顺序刻意设计为「先探测能力、再领取」：若先领取后才发现属性组件不支持发点，
+## 就必须再设计一套退点接口来补漏；先探测则让不支持的组合退化为「点数继续挂起」，
+## 用更少的代码彻底消除丢点的可能。
+##
+## @return 无返回值。
+func _grant_pending_attribute_points() -> void:
+	if _player_level == null or Attributes == null:
+		return
+	if not _player_level.has_method("ClaimPendingAttributePoints"):
+		return
+	if not Attributes.has_method("EarnPoints"):
+		return
+
+	var claimed: int = int(_player_level.call("ClaimPendingAttributePoints"))
+	if claimed <= 0:
+		return
+
+	Attributes.call("EarnPoints", claimed)
 
 
 ## 吸收一个天赋资源，逐条应用其中的效果。
@@ -138,6 +198,12 @@ func _exit_tree() -> void:
 		and _global_event_bus.is_connected(ON_PLAYER_ACQUIRED_TALENT, _absorb_talent)
 	):
 		_global_event_bus.disconnect(ON_PLAYER_ACQUIRED_TALENT, _absorb_talent)
+
+	if (
+		_player_level != null
+		and _player_level.is_connected(&"AttributePointsGranted", Callable(self, "_on_attribute_points_granted"))
+	):
+		_player_level.disconnect(&"AttributePointsGranted", Callable(self, "_on_attribute_points_granted"))
 
 
 ## 尝试把一个完整物品堆叠加入玩家库存。

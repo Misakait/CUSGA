@@ -36,8 +36,15 @@ const ATTRIBUTE_TYPE_EVASION_RATE: int = 13
 ## 吸血率枚举值；必须与 C# AttributeType.LifestealRate 保持为 14。
 const ATTRIBUTE_TYPE_LIFESTEAL_RATE: int = 14
 
+## 等级系统 Autoload 节点路径；解析失败时等级行降级为占位符，不影响其余属性显示。
+const PLAYER_LEVEL_PATH: NodePath = ^"/root/PlayerLevel"
+
 ## 当前绑定的旧 C# 或未来 GDScript AttributeComponent。
 var _attributes: Node = null
+## 提供等级查询与 LevelChanged 信号的等级系统节点；为空表示当前环境没有等级系统。
+var _player_level: Node = null
+## 摘要区等级数值标签。
+var _level_value: Label = null
 ## 摘要区物理攻击数值标签。
 var _phys_atk_value: Label = null
 ## 摘要区物理防御数值标签。
@@ -73,6 +80,7 @@ var _lifesteal_rate_detail_value: Label = null
 ## 解析生产场景中的唯一名称节点、连接详情按钮并显示当前绑定状态。
 ## 返回值：无。
 func _ready() -> void:
+	_level_value = get_node("%LevelValue") as Label
 	_phys_atk_value = get_node("%PhysAtkValue") as Label
 	_phys_def_value = get_node("%PhysDefValue") as Label
 	_mag_power_value = get_node("%MagPowerValue") as Label
@@ -90,6 +98,10 @@ func _ready() -> void:
 	_lifesteal_rate_detail_value = get_node("%LifestealRateDetailValue") as Label
 	if not _details_button.pressed.is_connected(_on_details_button_pressed):
 		_details_button.pressed.connect(_on_details_button_pressed)
+	# 等级来源缺省回退到等级系统 Autoload；外部已显式注入的来源优先保留。
+	if _player_level == null:
+		BindPlayerLevel(get_node_or_null(PLAYER_LEVEL_PATH))
+	# 等级行必须与五项摘要一起初始化，因此这里照旧走统一刷新出口。
 	_refresh()
 
 
@@ -106,12 +118,76 @@ func Bind(attributes: Node) -> void:
 	_refresh()
 
 
+## 绑定等级来源并同步等级行；重复绑定同一来源时仍会主动刷新。
+##
+## 等级行可以独立于 AttributeComponent 绑定，是因为等级属于全局成长数据、不属于属性组件；
+## 保留这个公开注入点还有一层工程考量：等级系统是 Autoload，编辑器侧的运行时测试环境
+## 并不加载 Autoload，只有允许显式注入才能在测试中覆盖「显示等级」这条路径。
+##
+## 参数 player_level：提供 GetLevel 与 LevelChanged 的等级系统节点；可为 null。
+## 返回值：无。
+func BindPlayerLevel(player_level: Node) -> void:
+	if _player_level == player_level:
+		_refresh_level()
+		return
+	_disconnect_player_level_signals()
+	_player_level = player_level
+	_connect_player_level_signals()
+	_refresh_level()
+
+
+## 连接等级来源的等级变化信号。
+func _connect_player_level_signals() -> void:
+	if _player_level == null:
+		return
+	# 固定回调身份用于去重连接 LevelChanged。
+	var level_changed_callback := Callable(self, "_on_level_changed")
+	if _player_level.has_signal(&"LevelChanged") and not _player_level.is_connected(&"LevelChanged", level_changed_callback):
+		_player_level.connect(&"LevelChanged", level_changed_callback)
+
+
+## 解除等级来源的等级变化信号。
+func _disconnect_player_level_signals() -> void:
+	if _player_level == null:
+		return
+	# 使用与连接阶段相同的方法身份解除 LevelChanged。
+	var level_changed_callback := Callable(self, "_on_level_changed")
+	if _player_level.has_signal(&"LevelChanged") and _player_level.is_connected(&"LevelChanged", level_changed_callback):
+		_player_level.disconnect(&"LevelChanged", level_changed_callback)
+
+
+## 等级变化后刷新等级行。
+## 参数 _level：变化后的等级；等级行统一读取来源的当前值，因此回调本身不使用该参数。
+func _on_level_changed(_level: int) -> void:
+	_refresh_level()
+
+
+## 同步等级行；没有可用等级来源时使用短横线占位，与其他属性值的降级表现保持一致。
+func _refresh_level() -> void:
+	if _level_value == null:
+		return
+	_level_value.text = "-" if _player_level == null else str(_read_player_level())
+
+
+## 通过稳定方法名读取等级来源的当前等级，方法缺失时回退到同名属性。
+## 返回值：当前等级；来源缺少两种读取途径时返回 0。
+func _read_player_level() -> int:
+	if _player_level == null:
+		return 0
+	if _player_level.has_method("GetLevel"):
+		return int(_player_level.call("GetLevel"))
+	# 跨语言兜底：等级系统可能只暴露公开字段而不提供查询方法。
+	var raw: Variant = _player_level.get("Level")
+	return int(raw) if (raw is int or raw is float) else 0
+
+
 ## 退出场景时解除按钮及属性组件信号，避免隐藏界面保留失效回调。
 ## 返回值：无。
 func _exit_tree() -> void:
 	if _details_button != null and _details_button.pressed.is_connected(_on_details_button_pressed):
 		_details_button.pressed.disconnect(_on_details_button_pressed)
 	_disconnect_attribute_signals()
+	_disconnect_player_level_signals()
 
 
 ## 连接新旧 AttributeComponent 共同暴露的稳定信号。
@@ -154,10 +230,11 @@ func _on_available_points_changed(_available_points: int) -> void:
 	_refresh()
 
 
-## 同步五项摘要与完整详情；节点尚未 Ready 时只保留绑定状态。
+## 同步等级行、五项摘要与完整详情；节点尚未 Ready 时只保留绑定状态。
 func _refresh() -> void:
 	if not is_node_ready():
 		return
+	_refresh_level()
 	_set_value(_phys_atk_value, ATTRIBUTE_TYPE_PHYS_ATK)
 	_set_value(_phys_def_value, ATTRIBUTE_TYPE_PHYS_DEF)
 	_set_value(_mag_power_value, ATTRIBUTE_TYPE_MAG_POWER)
