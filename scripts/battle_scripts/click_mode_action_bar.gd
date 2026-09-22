@@ -29,6 +29,19 @@ func _ready() -> void:
 ## @return void 无返回值。
 func set_actions_available(is_available: bool) -> void:
 	visible = is_available
+	if not is_available:
+		# 隐藏时同步恢复确认按钮的默认可用状态：
+		# 操作栏不可见期间没有待确认选择，禁用状态若被保留会在下一次选卡时误置灰按钮。
+		set_confirm_available(true)
+
+## 设置确认按钮是否允许点击。
+## 单体、任意单体与扩散等必须指定敌人的卡牌在未选中敌人时不能确认，
+## 否则确认会把玩家自身当成单体目标施放；在此处禁用按钮可让该规则在 UI 层直接可见。
+## 本方法只控制按钮可用性，判断依据由 CardManager 提供，操作栏不自行推断目标规则。
+## @param is_available 为 true 时确认按钮可点击，为 false 时置灰并拒绝点击输入。
+## @return void 无返回值。
+func set_confirm_available(is_available: bool) -> void:
+	_confirm_button.disabled = not is_available
 
 ## 转发确认意图。
 ## @return void 无返回值。

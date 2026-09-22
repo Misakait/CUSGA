@@ -104,21 +104,23 @@ func CombatFeedbackDirector.play_monster_attack_feedback(monster: Node) -> void
 | 已完成卡牌再次调用 `complete_played_card` | 检查完成元数据并直接返回 | 不重复写入弃牌堆、不重复 `queue_free` |
 | 玩家取消、改选、切换模式或失去回合 | `CardManager.clear_click_selection(true)` 交回 `PlayerHand` | 卡牌返回标准手牌布局，不产生行动或弃牌 |
 | 再次点击已选卡牌 | `CardManager.clear_click_selection(true)` | 撤销整次选择、清除目标高亮并隐藏操作栏 |
-| 再次点击已选敌人 | 仅将 `_selected_click_target` 置空后刷新预览 | 已选卡牌保持上移，确认按默认自身目标施放 |
+| 再次点击已选敌人 | 仅将 `_selected_click_target` 置空后刷新预览 | 已选卡牌保持上移；自身与自动目标牌仍按自身或固有范围施放，需要显式敌人的卡牌转为“确定”禁用 |
+| 未选敌人就请求确认（`SingleEnemy`、`AnySingleUnit`、`SpreadFromEnemy`） | `CardManager._is_click_selection_target_ready` 返回 false，保留当前选择 | 不扣能量、不入队、不弃牌，也不把玩家自身当作目标；玩家补选敌人后即可再次确认 |
 | 点击模式确认施放 | `clear_click_selection(false)` 保留节点 | 不触发归位 Tween，从选中状态连续进入飞行 |
 
 ### 5. Good / Base / Bad Cases
 
 - Good：点击模式选择一张卡和一个在场怪物，确认后卡牌飞至该怪物，再结算卡牌效果；每段真实伤害由导演播放结果反馈，卡牌只一次性进入弃牌堆渐隐。
 - Good：随机敌人卡牌无论点击或拖拽时指向何处，都在行动开始时随机一次；卡牌飞向该实际敌人并对同一敌人结算伤害，命中表现由该段结算结果决定。
-- Base：未选敌人确认施放，卡牌保留原有自身目标结算；跳过敌人飞行与命中反馈，仍只在动作完成后弃置。
+- Base：自身与自动目标牌可以不选敌人直接确认施放，并保留原有自身或固有范围结算；跳过敌人飞行与命中反馈，仍只在动作完成后弃置。单体、任意单体与扩散牌在未选中在场敌人时由确认入口直接拒绝，不产生任何结算。
 - Bad：`DeckManager.play_card` 入队后立刻调用 `into_discard_pile(card)`。这会在动画开始前让节点渐隐销毁，使队列持有无效展示节点。
 
 ### 6. Tests Required
 
 - 点击模式选中、取消、改选、模式切换和玩家失去回合：断言选中卡牌上移，并在每个非确认出口恢复 `hand_position` 且保留在 `player_hand_card`；再次点击已选卡牌必须走同一取消出口。
 - 运行 `tests/godot/player_hand_lifecycle_tests.gd`：在缓存中保留一张已释放卡牌后触发 `update_hand_positions`，断言无效引用被清理、有效卡牌仍按索引写入正确 `hand_position`。
-- 敌人目标取消：断言再次点击同一敌人只清空 `_selected_click_target`，已选卡牌与操作栏保持可用，确认时以玩家自身为默认目标。
+- 敌人目标取消：断言再次点击同一敌人只清空 `_selected_click_target`，已选卡牌与操作栏保持可用；自身与自动目标牌仍以玩家自身或固有范围结算，需要显式敌人的卡牌则把“确定”置为禁用。
+- 点击模式目标确认：运行 `tests/godot/test_click_mode_target_contract.gd`（套件 `click_mode_target_contract`），断言单体、任意单体与扩散牌在未选中在场敌人时既不能确认，也不消耗能量、不提交行动队列、不弃牌；选中在场敌人后恢复可用，已离场敌人不得通过；自身与自动目标牌不受该限制。
 - 显式敌人目标：断言 `Action.presentation_card` 与原手牌节点一致；断言节点先到目标位置、随后执行伤害结算，`discard_pile_data` 只新增一次。
 - 随机敌人卡牌：断言飞行目标与 `SkillExecutionContext` 的主目标相同；显式点击敌人不覆盖随机结果，无敌人时跳过飞行并安全回退。
 - 结果反馈：断言 `DamageResolved` 的闪避、护盾、暴击、击杀和多段元数据分别映射正确表现；同数值的多段浮字必须保持相同强度、随 `HitCount` 加速离场并按索引顺序显示；Profile 默认配置必须只允许索引 `0..2` 入局部受击 FIFO；高频全局冲击的前三条实际震屏后必须被置零，且批次只触发一次 Hit Stop；超高数值必须受 Profile 上限钳制，行动队列不得等待这些表现 Tween。
@@ -189,6 +191,7 @@ func _is_monster_card_presentation_control(control: Control) -> bool
 - `CardManager` 独占“目标类型 → 视觉状态”的决策权；`Monster` 只应用缩放、变暗和描边，不能自行推断技能目标类型。
 - `SingleEnemy`、`AnySingleUnit` 的可选敌人呼吸缩放；悬停放大；已确认点击或拖拽预览目标为主选状态。`SpreadFromEnemy` 的相邻受影响敌人为较小倍率的次选状态；悬停已选次级目标时进入 `SECONDARY_HOVERED`，仍保留次级描边并二次放大。
 - 点击模式已经确认主目标但尚未点击“确定”时，主目标必须继续保留主选中描边；当前鼠标下的其他有效敌人同时切换为 `HOVERED` 放大。若该敌人原为 `SECONDARY_SELECTED`，必须改为 `SECONDARY_HOVERED` 而非普通 `HOVERED`，以保留浅绿色范围描边；该悬停状态不能改写 `_selected_click_target`、范围结算或主目标描边。
+- 点击模式中，需要显式敌人的卡牌（`SingleEnemy`、`AnySingleUnit`、`SpreadFromEnemy`）在未选中敌人时不得把玩家当作缺省目标：`_refresh_target_selection_visuals` 的 `default_to_self` 必须为 `false`，从而既不高亮玩家时间轴，也不暗示这张牌可以对自己使用；只有 `Self` 牌才以玩家自身作为缺省预览目标。同一状态下操作栏的“确定”按钮必须处于禁用状态，判断依据由 `CardManager._can_confirm_click_selection()` 提供，`ClickModeActionBar` 只负责把可用性映射到按钮。
 - `AllEnemies`、`RandomEnemy`、`AllUnits` 的全部受影响敌人直接处于主选状态并显示绿色描边；这仅表示自动选择范围，`RandomEnemy` 的实际随机结算保持原逻辑。
 - `Self` 仅使敌人怪物卡面变暗，不缩放或变暗玩家生命/属性 UI。任何非普通状态切换前都要停止原有呼吸 Tween；结束选牌、结束拖拽或目标离场后必须恢复正常缩放、白色调制和隐藏描边。
 - 视觉缓存只能包含怪物卡面节点，必须排除 `HealthBar`，以免输入反馈污染生命条。
@@ -221,6 +224,7 @@ func _is_monster_card_presentation_control(control: Control) -> bool
 - `target_selection_visual_tests.gd` 必须覆盖“已确认主目标 + 悬停其他敌人”：普通可选目标应为 `HOVERED`；已选次级目标应为 `SECONDARY_HOVERED`，并断言它仍显示浅绿色描边且缩放为 `1.64`。
 - `target_selection_visual_tests.gd` 还必须断言主描边宽度为 `2px`、次级描边使用更淡颜色，以及怪物名称、元素和 `MonsterAttribute` 子控件会被输入白名单放行、无关 GUI 不会被放行。
 - 运行 `tests/godot/initial_test_deck_targeting_tests.gd`，断言 `battle.tscn` 初始牌池共 21 张，目标枚举 `Self` 至 `SpreadFromEnemy` 各至少三张。
+- 运行 `tests/godot/test_click_mode_target_contract.gd`（套件 `click_mode_target_contract`），覆盖点击模式确认可用性：目标类型矩阵（需要显式敌人的三类必须拒绝、自身与自动目标四类必须放行）、确认入口的拒绝路径，以及操作栏“确定”按钮的禁用与恢复。
 - 手动覆盖点击与拖拽：单体、任意单位、扩散、自身、全体敌人、随机敌人和全体单位；确认悬停、确认选中、取消和释放后均无残留状态。
 - 对随机敌人额外断言：视觉上可显示全部敌人自动选中，但行动结算仍由原随机目标逻辑决定。
 

@@ -199,6 +199,9 @@ func clear_click_selection(restore_hand_layout: bool = true) -> void:
 	_selected_click_card = null
 	_selected_click_target = null
 	_apply_target_highlights([])
+	# 先同步确认按钮再隐藏操作栏：隐藏动作会恢复按钮的默认可用状态，
+	# 从而保证禁用状态永远不会跨越两次选择残留下来。
+	_refresh_click_mode_confirm_availability()
 	_set_click_mode_action_bar_visible(false)
 
 ## 取消尚未松开的拖拽预览并清理其目标视觉。
@@ -270,19 +273,24 @@ func update_hovered_targets(new_slot: Node2D, release_in_hand_area: bool = false
 	var should_default_to_self: bool = allow_self_cast_on_empty and not release_in_hand_area and is_self_target_card(card_being_dragged)
 	_refresh_target_selection_visuals(card_being_dragged, primary_target, is_primary_preview, should_default_to_self)
 
-## 更新点击模式当前卡牌和目标的预览高亮。
-## 点击模式始终允许以玩家自身作为缺省目标，因此没有选择敌人时也会给出明确反馈。
+## 更新点击模式当前卡牌和目标的预览高亮，并同步确认按钮的可用性。
+## 点击模式不再无条件以玩家自身作为缺省目标：只有自身目标牌才这样预览，
+## 需要显式敌人的卡牌在未选中敌人时既不高亮玩家，也不允许点击“确定”。
+## 该函数是点击模式选卡、选目标与每帧刷新共用的唯一出口。
 ## @return void 无返回值。
 func _update_click_mode_target_highlights() -> void:
 	if not _selected_click_card:
 		_apply_target_highlights([])
+		_refresh_click_mode_confirm_availability()
 		return
 
 	# 自动目标牌不能在点击模式保存敌人主目标，否则确认后会把该敌人错误传入单体飞行动画。
 	var targeting_type: int = _get_card_targeting_type(_selected_click_card)
 	if not _requires_manual_enemy_target(targeting_type):
 		_selected_click_target = null
-		_refresh_target_selection_visuals(_selected_click_card, null, false, true)
+		# 只有【对自己使用】的卡牌才以玩家为缺省预览目标，判据与拖拽模式保持完全一致。
+		_refresh_target_selection_visuals(_selected_click_card, null, false, is_self_target_card(_selected_click_card))
+		_refresh_click_mode_confirm_availability()
 		return
 
 	# 点击模式在尚未点击目标时读取鼠标下卡槽，以显示仅放大、不描边的悬停反馈。
@@ -294,7 +302,10 @@ func _update_click_mode_target_highlights() -> void:
 	# 只有已点击目标才在点击模式中显示绿色主选中状态。
 	var is_primary_selected: bool = _selected_click_target != null
 	# 已选目标与当前鼠标目标分别传入；这样确认前仍可观察其他敌人的悬停放大，不会丢失已选目标描边。
-	_refresh_target_selection_visuals(_selected_click_card, primary_target, is_primary_selected, true, hovered_target)
+	# 第四参数固定为 false：需要显式敌人的卡牌不能退回玩家自身，
+	# 否则未选中敌人时时间轴会高亮玩家，向玩家暗示这张牌可以打自己，而确认按钮实际处于禁用状态。
+	_refresh_target_selection_visuals(_selected_click_card, primary_target, is_primary_selected, false, hovered_target)
+	_refresh_click_mode_confirm_availability()
 
 ## 从卡牌数据读取目标类型，并在数据缺失时使用既有的单体敌人保守回退。
 ## @param card 需要读取目标类型的卡牌对象。
@@ -314,6 +325,46 @@ func _requires_manual_enemy_target(targeting_type: int) -> bool:
 	return targeting_type == SKILL_TARGETING_TYPE.Value.SingleEnemy \
 		or targeting_type == SKILL_TARGETING_TYPE.Value.AnySingleUnit \
 		or targeting_type == SKILL_TARGETING_TYPE.Value.SpreadFromEnemy
+
+## 判断一名敌人是否可以作为点击模式的显式施放目标。
+## 目标必须在选择之后仍然存活且留在当前战场，避免选中后被击杀或已离场的敌人仍能通过确认。
+## @param target 待校验的候选敌人节点，允许为空。
+## @return bool 为 true 时该节点可以安全地作为显式主目标传入行动队列。
+func _is_valid_click_mode_enemy_target(target: Node) -> bool:
+	if target == null or not is_instance_valid(target):
+		return false
+	if not battle_manager or not battle_manager.monster_manager:
+		return false
+	return battle_manager.monster_manager.active_monsters.has(target)
+
+## 判断一张卡牌与它当前的待确认目标是否满足点击模式的施放条件。
+## 该函数只依赖入参而不读取临时选择状态，因此可以脱离战斗场景单独验证目标规则。
+## @param card 待确认施放的卡牌；为空或节点已失效时视为不可确认。
+## @param target 玩家显式选中的敌人，允许为空。
+## @return bool 为 true 时允许扣除能量并把该卡牌交给行动队列。
+func _is_click_selection_target_ready(card: Variant, target: Node) -> bool:
+	if not card or not is_instance_valid(card):
+		return false
+
+	# 自动目标与自身目标牌不需要玩家指定敌人，选中卡牌本身即可确认。
+	if not _requires_manual_enemy_target(_get_card_targeting_type(card)):
+		return true
+
+	# 单体、任意单体与扩散牌必须指向一名仍在场的敌人：
+	# 缺少有效敌人时确认会把玩家自身当成目标，因此这类卡牌在未选目标时必须拒绝确认。
+	return _is_valid_click_mode_enemy_target(target)
+
+## 判断当前点击模式选择是否已经具备可施放的目标。
+## @return bool 为 true 时点击模式操作栏的“确定”按钮应保持可用。
+func _can_confirm_click_selection() -> bool:
+	return _is_click_selection_target_ready(_selected_click_card, _selected_click_target)
+
+## 把当前选择的确认可用性同步到点击模式操作栏。
+## 让“必须指定敌人的卡牌不能对自己使用”这条规则在 UI 层直接可见，而不是只在点下按钮后才被拒绝。
+## @return void 无返回值。
+func _refresh_click_mode_confirm_availability() -> void:
+	if _click_mode_action_bar and _click_mode_action_bar.has_method("set_confirm_available"):
+		_click_mode_action_bar.call("set_confirm_available", _can_confirm_click_selection())
 
 ## 返回当前仍有效的场上怪物，集中过滤已删除节点以避免目标预览访问过期实体。
 ## @return Array[Node] 当前可展示目标视觉的怪物节点列表。
@@ -789,8 +840,13 @@ func _confirm_click_mode_card() -> void:
 	if player_manager.energy < _selected_click_card.data.cost:
 		clear_click_selection()
 		return
+	# 需要显式敌人的卡牌缺少有效目标时必须拒绝确认，否则会把玩家自身当成单体目标错误施放。
+	# 这里刻意保留当前选择而不清理：玩家可以直接补选一名敌人后再次点击“确定”。
+	if not _can_confirm_click_selection():
+		_refresh_click_mode_confirm_availability()
+		return
 
-	# 确认瞬间仍有效的施放目标；没有有效敌人时固定为 PlayerManager。
+	# 确认瞬间仍有效的施放目标；自动目标牌固定为 PlayerManager。
 	var confirmed_target: Node = _get_confirmed_click_mode_target()
 	# 提前保存节点引用后清理点击状态，确认路径不再触发手牌归位动画，避免抢占随后的飞行动画。
 	var confirmed_card: SkillCard = _selected_click_card
@@ -799,15 +855,18 @@ func _confirm_click_mode_card() -> void:
 	deck_manager.play_card(confirmed_card, confirmed_target)
 
 ## 返回点击模式确认时仍然有效的目标。
-## 目标在选择后死亡、离开场上或从未选择敌人时，都会安全回退到玩家自身。
-## @return Node 用于既有 DeckManager.play_card 的目标节点。
+## 自动目标牌与自身目标牌会安全回退到玩家自身；需要显式敌人的卡牌在目标失效时返回空值，
+## 由确认入口拒绝整次施放，而不是把玩家自身当成单体目标。
+## @return Node 用于既有 DeckManager.play_card 的目标节点；无法确定有效目标时返回 null。
 func _get_confirmed_click_mode_target() -> Node:
 	# 自动目标牌不允许携带显式敌人到行动队列，范围效果会在 BattleManager 按卡牌固有目标类型展开。
 	if not _selected_click_card or not _requires_manual_enemy_target(_get_card_targeting_type(_selected_click_card)):
 		return player_manager
-	if _selected_click_target and is_instance_valid(_selected_click_target) and battle_manager.monster_manager and battle_manager.monster_manager.active_monsters.has(_selected_click_target):
+	# 需要显式敌人的卡牌只能指向已选中的敌人；缺少有效敌人时不得回退为玩家自身，
+	# 否则单体伤害牌会对自己结算。
+	if _is_valid_click_mode_enemy_target(_selected_click_target):
 		return _selected_click_target
-	return player_manager
+	return null
 
 ## 当鼠标按下并检测到点中某张可用的卡时创建拖拽虚影。
 ## 真实卡只保存为行动队列候选节点，拖拽期间始终保留在原手牌布局中。
