@@ -4,6 +4,8 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8tr2l"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2i34x"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dp4f3"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a1uw1"]
@@ -14,6 +16,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_8tr2l")
 
@@ -51,7 +55,7 @@ theme_override_constants/separation = 8
 
 [node name="CostLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/CostRow" unique_id=392631166]
 layout_mode = 2
-text = "行动值消耗"
+text = "每次行动消耗的行动值"
 
 [node name="CostSpinBox" type="SpinBox" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/CostRow" unique_id=201677515]
 unique_name_in_owner = true
@@ -60,23 +64,25 @@ min_value = 1.0
 max_value = 999.0
 value = 10.0
 
-[node name="ButtonRow" type="HBoxContainer" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1208381806]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="NextDayButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=908285550]
+[node name="NextDayButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=908285550]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_8tr2l")
 text = "下一天"
 
-[node name="ResetCostButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=1388125095]
+[node name="LevelUpButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1295781766]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_2i34x")
+text = "增加一级"
+
+[node name="ResetCostButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1388125095]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_dp4f3")
 text = "恢复默认"
 
-[node name="CloseButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=1265758638]
+[node name="CloseButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1265758638]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_a1uw1")

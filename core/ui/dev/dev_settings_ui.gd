@@ -25,6 +25,10 @@ const MAX_ACTION_COST: int = 999
 ## 避免在面板里重复维护一份可能与时间系统脱节的常量。
 const FALLBACK_PHASE_LENGTH: int = 100
 
+## 等级系统 Autoload 的节点路径。
+## 「增加一级」按钮靠它定位等级系统；面板不自持任何等级数值，避免与等级系统分叉。
+const PLAYER_LEVEL_PATH: NodePath = ^"/root/PlayerLevel"
+
 ## 承载本面板各控件的稳定子节点。
 ## 用唯一名而不是固定层级路径访问：既与 TimePanelUI 的既有惯例一致，
 ## 也让面板可以在测试里用最小节点树构造，不必复刻整棵场景层级。
@@ -33,9 +37,14 @@ const FALLBACK_PHASE_LENGTH: int = 100
 @onready var _next_day_button: Button = %NextDayButton
 @onready var _reset_cost_button: Button = %ResetCostButton
 @onready var _close_button: Button = %CloseButton
+@onready var _level_up_button: Button = %LevelUpButton
 
 ## 时间系统 Autoload 的动态引用；缺失时面板功能整体禁用。
 var _time_system: Node = null
+
+## 等级系统 Autoload 的动态引用。
+## 它只是「增加一级」按钮的依赖，缺失时只让该按钮静默无效，不拖累面板其余功能。
+var _player_level: Node = null
 
 ## 序列匹配器实例。
 ## 匹配规则被拆到无场景依赖的 DevSequenceMatcher 中，因此可以在 tests 下独立断言。
@@ -51,6 +60,10 @@ func _ready() -> void:
 	hide()
 	_configure_cost_spin_box()
 	_connect_buttons()
+
+	# 等级系统是可选依赖：面板其余功能在它缺失时都能正常工作，因此这里不报错、
+	# 也不提前返回，只在点击「增加一级」时静默跳过。
+	_player_level = get_node_or_null(PLAYER_LEVEL_PATH)
 
 	_time_system = get_node_or_null("/root/TimeSystem") as Node
 	if _time_system == null:
@@ -167,6 +180,19 @@ func _on_next_day_button_pressed() -> void:
 	_time_system.call("PassTime", points)
 
 
+## 给玩家提升一级，用于免去反复刷经验去观察等级相关表现。
+##
+## 走等级系统的公开接口 AddLevels，而不是直接改写等级字段：AddLevels 复用完整的升级
+## 结算（逐级发出 LevelChanged 并累计待领属性点），直接写字段会让属性点与信号订阅方
+## 同等级脱节。
+## 返回值：无。
+func _on_level_up_button_pressed() -> void:
+	if _player_level == null or not _player_level.has_method("AddLevels"):
+		return
+
+	_player_level.call("AddLevels", 1)
+
+
 ## 把行动值消耗控件恢复为默认值。
 ## 返回值：无。
 func _on_reset_cost_button_pressed() -> void:
@@ -272,6 +298,7 @@ func _configure_cost_spin_box() -> void:
 ## 返回值：无。
 func _connect_buttons() -> void:
 	_next_day_button.pressed.connect(_on_next_day_button_pressed)
+	_level_up_button.pressed.connect(_on_level_up_button_pressed)
 	_reset_cost_button.pressed.connect(_on_reset_cost_button_pressed)
 	_close_button.pressed.connect(_on_close_button_pressed)
 	_cost_spin_box.value_changed.connect(_on_cost_spin_box_value_changed)
