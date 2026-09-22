@@ -20,6 +20,8 @@ class FakeAttributeComponent extends Node:
 
 	## 以 AttributeType 整数值索引的最终属性表。
 	var values: Dictionary = {}
+	## 可用属性点，与生产组件保持一致地使用公开字段。
+	var AvailablePoints: int = 0
 
 	## 读取指定属性的最终值。
 	## 参数 attribute_type：与 C# AttributeType 一致的整数值。
@@ -67,6 +69,24 @@ class FakeLevelSource extends Node:
 class FakeLevelFieldSource extends Node:
 	## 当前等级，仅通过公开字段暴露。
 	var Level: int = 5
+
+
+## 只记录打开请求的加点弹窗替身。
+##
+## 摘要与弹窗之间只有 OpenFor 一个契约，弹窗内部的累计与写入规则由独立的
+## attribute_allocation_popup_contract 套件覆盖，这里只验证摘要把正确的组件交了出去。
+class FakeAllocationPopup extends PopupPanel:
+	## 收到 OpenFor 的次数。
+	var open_calls: int = 0
+	## 最后一次 OpenFor 收到的属性组件。
+	var last_attributes: Node = null
+
+	## 记录一次打开请求。
+	## 参数 attributes：摘要传入的属性组件。
+	## 返回值：无。
+	func OpenFor(attributes: Node) -> void:
+		open_calls += 1
+		last_attributes = attributes
 
 
 ## 返回套件名称，供 GodotAI 精确筛选本批测试。
@@ -196,12 +216,17 @@ func test_details_popup_and_exit_cleanup() -> void:
 	var points_callback := Callable(ui, "_on_available_points_changed")
 	# 按钮回调用于核对退出清理。
 	var button_callback := Callable(ui, "_on_details_button_pressed")
+	# 分配按钮回调用于核对退出清理。
+	var allocate_callback := Callable(ui, "_on_allocate_button_pressed")
+	# 分配按钮用于核对退出后的连接状态。
+	var allocate_button := ui.get_node("%AllocateButton") as Button
 	# 编辑器主循环提供真实场景树的移除生命周期。
 	var scene_tree := Engine.get_main_loop() as SceneTree
 	scene_tree.root.remove_child(ui)
 	assert_false(attributes.AttributeChanged.is_connected(attribute_callback), "退出场景树时必须解除 AttributeChanged。")
 	assert_false(attributes.AvailablePointsChanged.is_connected(points_callback), "退出场景树时必须解除 AvailablePointsChanged。")
 	assert_false(details_button.pressed.is_connected(button_callback), "退出场景树时必须解除详情按钮。")
+	assert_false(allocate_button.pressed.is_connected(allocate_callback), "退出场景树时必须解除分配按钮。")
 	ui.free()
 
 
@@ -278,6 +303,81 @@ func test_level_row_resets_when_source_unbound() -> void:
 	_dispose_ui(ui)
 
 
+## 验证「分配」按钮的显隐完全跟随可用点数。
+## 返回值：无。
+func test_allocate_button_visibility_follows_available_points() -> void:
+	# 并行 UI 夹具用于观察按钮在三种点数状态下的显隐。
+	var ui: PanelContainer = _new_attribute_summary_ui()
+	# 生产唯一名称定位到等级行右侧的分配按钮。
+	var allocate_button := ui.get_node("%AllocateButton") as Button
+	assert_false(allocate_button.visible, "未绑定属性组件时「分配」按钮必须隐藏。")
+
+	# 属性夹具用于驱动显隐切换。
+	var attributes := FakeAttributeComponent.new()
+	ui.call("Bind", attributes)
+	assert_false(allocate_button.visible, "可用点数为 0 时「分配」按钮必须隐藏。")
+
+	attributes.AvailablePoints = 3
+	attributes.notify_available_points_changed(3)
+	assert_true(allocate_button.visible, "获得可用点数后「分配」按钮必须显示。")
+
+	attributes.AvailablePoints = 0
+	attributes.notify_available_points_changed(0)
+	assert_false(allocate_button.visible, "可用点数耗尽后「分配」按钮必须立即隐藏。")
+	_dispose_ui(ui)
+
+
+## 验证点击「分配」把当前属性组件交给加点弹窗。
+## 返回值：无。
+func test_allocate_button_opens_allocation_popup() -> void:
+	# 并行 UI 夹具用于触发真实按钮信号。
+	var ui: PanelContainer = _new_attribute_summary_ui()
+	# 生产唯一名称定位到分配按钮。
+	var allocate_button := ui.get_node("%AllocateButton") as Button
+	# 弹窗替身用于核对打开次数与传入的组件。
+	var allocation_popup := ui.get_node("%AttributeAllocationPopup") as FakeAllocationPopup
+	# 属性夹具用于核对摘要交出的正是当前绑定的组件。
+	var attributes := FakeAttributeComponent.new()
+	attributes.AvailablePoints = 2
+	ui.call("Bind", attributes)
+
+	allocate_button.pressed.emit()
+	assert_eq(allocation_popup.open_calls, 1, "点击「分配」必须请求打开加点弹窗一次。")
+	assert_eq(allocation_popup.last_attributes, attributes, "打开加点弹窗必须传入当前属性组件。")
+
+	# 只点击一次就不得重复打开，避免一次点击弹出多层窗口。
+	allocate_button.pressed.emit()
+	assert_eq(allocation_popup.open_calls, 2, "每次点击都必须且只能请求一次打开。")
+	_dispose_ui(ui)
+
+
+## 验证生产场景确实把「分配」按钮放进等级行，并实例化了加点弹窗。
+## 返回值：无。
+func test_production_scene_wires_allocate_button_and_popup() -> void:
+	var scene_text: String = FileAccess.get_file_as_string(ATTRIBUTE_SUMMARY_UI_SCENE_PATH)
+	assert_false(scene_text.is_empty(), "必须能读到属性摘要场景。")
+	assert_true(
+		scene_text.contains("res://scenes/inventory/AttributeAllocationPopup.tscn"),
+		"生产场景必须实例化加点弹窗。"
+	)
+
+	# 逐行定位「分配」按钮的声明，确认它与等级值同处一格。
+	var declaration: String = ""
+	for raw_line: String in scene_text.split("\n"):
+		if raw_line.begins_with("[node name=\"AllocateButton\""):
+			declaration = raw_line
+	assert_true(not declaration.is_empty(), "生产场景必须包含「分配」按钮。")
+	assert_true(
+		declaration.contains("parent=\"VBoxContainer/AttributeGrid/LevelValueCell\""),
+		"「分配」按钮必须与等级值同处一格，才能显示在「等级 x」的右侧。"
+	)
+	# 等级值必须仍然留在网格内，不能被按钮挤出等级行。
+	assert_true(
+		scene_text.contains("parent=\"VBoxContainer/AttributeGrid/LevelValueCell\""),
+		"等级值单元格必须保留在属性网格中。"
+	)
+
+
 ## 构造与生产唯一节点名一致的轻量属性摘要树并触发正常 Ready 生命周期。
 ## 返回值：已进入场景树的 AttributeSummaryUI。
 func _new_attribute_summary_ui() -> PanelContainer:
@@ -318,6 +418,18 @@ func _new_attribute_summary_ui() -> PanelContainer:
 	details_popup.unique_name_in_owner = true
 	ui.add_child(details_popup)
 	details_popup.owner = ui
+	# 等级行右侧的「分配」按钮保留生产场景唯一名称和 pressed 信号。
+	var allocate_button := Button.new()
+	allocate_button.name = "AllocateButton"
+	allocate_button.unique_name_in_owner = true
+	ui.add_child(allocate_button)
+	allocate_button.owner = ui
+	# 加点弹窗替身只记录打开请求，真实加点行为由独立套件覆盖。
+	var allocation_popup := FakeAllocationPopup.new()
+	allocation_popup.name = "AttributeAllocationPopup"
+	allocation_popup.unique_name_in_owner = true
+	ui.add_child(allocation_popup)
+	allocation_popup.owner = ui
 	# 编辑器主循环提供 is_node_ready 所需的真实场景树状态。
 	var scene_tree := Engine.get_main_loop() as SceneTree
 	scene_tree.root.add_child(ui)

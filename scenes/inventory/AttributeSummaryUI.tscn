@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b4aq56ipsxkpy"]
 
 [ext_resource type="Script" uid="uid://bhqmqn58pvlhq" path="res://core/ui/attribute_summary_ui.gd" id="1_vxqlk"]
+[ext_resource type="PackedScene" uid="uid://bo58neynilt46" path="res://scenes/inventory/AttributeAllocationPopup.tscn" id="2_q1i0y"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxqlk"]
 content_margin_left = 6.0
@@ -11,205 +12,219 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.53725493, 0.65882355, 0.85882354, 0.65)
+border_color = Color(0.5372549, 0.65882355, 0.85882354, 0.65)
 
-[node name="AttributeSummaryUI" type="PanelContainer"]
+[node name="AttributeSummaryUI" type="PanelContainer" unique_id=697971532]
 custom_minimum_size = Vector2(176, 0)
 theme_override_styles/panel = SubResource("StyleBoxFlat_vxqlk")
 script = ExtResource("1_vxqlk")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=255395770]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Title" type="Label" parent="VBoxContainer"]
+[node name="Title" type="Label" parent="VBoxContainer" unique_id=404043765]
 layout_mode = 2
 text = "属性"
 horizontal_alignment = 1
 
-[node name="AttributeGrid" type="GridContainer" parent="VBoxContainer"]
+[node name="AttributeGrid" type="GridContainer" parent="VBoxContainer" unique_id=1055663057]
 layout_mode = 2
 columns = 2
 
-[node name="LevelLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="LevelLabel" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=181922465]
 layout_mode = 2
 text = "等级"
 
-[node name="LevelValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="LevelValueCell" type="HBoxContainer" parent="VBoxContainer/AttributeGrid" unique_id=631332963]
+layout_mode = 2
+
+[node name="LevelValue" type="Label" parent="VBoxContainer/AttributeGrid/LevelValueCell" unique_id=2064351173]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="PhysAtkLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="AllocateButton" type="Button" parent="VBoxContainer/AttributeGrid/LevelValueCell" unique_id=637090687]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "分配"
+
+[node name="PhysAtkLabel" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=863176838]
 layout_mode = 2
 text = "物攻"
 
-[node name="PhysAtkValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="PhysAtkValue" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=304661150]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="PhysDefLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="PhysDefLabel" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=1249714095]
 layout_mode = 2
 text = "物防"
 
-[node name="PhysDefValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="PhysDefValue" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=231678232]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="MagPowerLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="MagPowerLabel" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=1670166585]
 layout_mode = 2
 text = "法强"
 
-[node name="MagPowerValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="MagPowerValue" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=452836346]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="MagResistLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="MagResistLabel" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=1269126635]
 layout_mode = 2
 text = "法抗"
 
-[node name="MagResistValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="MagResistValue" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=1504520074]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="SpeedLabel" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="SpeedLabel" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=999647493]
 layout_mode = 2
 text = "速度"
 
-[node name="SpeedValue" type="Label" parent="VBoxContainer/AttributeGrid"]
+[node name="SpeedValue" type="Label" parent="VBoxContainer/AttributeGrid" unique_id=1330987741]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="DetailsButton" type="Button" parent="VBoxContainer"]
+[node name="DetailsButton" type="Button" parent="VBoxContainer" unique_id=1486417153]
 unique_name_in_owner = true
 layout_mode = 2
 text = "详情"
 
-[node name="AttributeDetailsPopup" type="PopupPanel" parent="."]
+[node name="AttributeDetailsPopup" type="PopupPanel" parent="." unique_id=1946580703]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 0)
 
-[node name="MarginContainer" type="MarginContainer" parent="AttributeDetailsPopup"]
-layout_mode = 2
+[node name="MarginContainer" type="MarginContainer" parent="AttributeDetailsPopup" unique_id=1479424817]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 96.0
+offset_bottom = 243.0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="AttributeDetailsPopup/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="AttributeDetailsPopup/MarginContainer" unique_id=687603723]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Title" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer" unique_id=240780170]
 layout_mode = 2
 text = "详细属性"
 horizontal_alignment = 1
 
-[node name="DetailsGrid" type="GridContainer" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer"]
+[node name="DetailsGrid" type="GridContainer" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer" unique_id=252366618]
 layout_mode = 2
 columns = 2
 
-[node name="MaxHealthDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="MaxHealthDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1460724863]
 layout_mode = 2
 text = "生命上限"
 
-[node name="MaxHealthDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="MaxHealthDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=2031661779]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="MaxEnergyDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="MaxEnergyDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1096149802]
 layout_mode = 2
 text = "能量上限"
 
-[node name="MaxEnergyDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="MaxEnergyDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1259843823]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="PhysPenetrationDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="PhysPenetrationDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=490370606]
 layout_mode = 2
 text = "物理穿透"
 
-[node name="PhysPenetrationDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="PhysPenetrationDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=91421589]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="MagicPenetrationDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="MagicPenetrationDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=244051458]
 layout_mode = 2
 text = "法术穿透"
 
-[node name="MagicPenetrationDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="MagicPenetrationDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1205832903]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="CritRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="CritRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=939502808]
 layout_mode = 2
 text = "暴击率"
 
-[node name="CritRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="CritRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=474618452]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="CritDamageDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="CritDamageDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1083554892]
 layout_mode = 2
 text = "暴击伤害"
 
-[node name="CritDamageDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="CritDamageDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=77596078]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="EvasionRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="EvasionRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=282121282]
 layout_mode = 2
 text = "闪避率"
 
-[node name="EvasionRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="EvasionRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=948266625]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
 
-[node name="LifestealRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="LifestealRateDetailLabel" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1624843123]
 layout_mode = 2
 text = "吸血率"
 
-[node name="LifestealRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid"]
+[node name="LifestealRateDetailValue" type="Label" parent="AttributeDetailsPopup/MarginContainer/VBoxContainer/DetailsGrid" unique_id=1901677892]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "-"
 horizontal_alignment = 2
+
+[node name="AttributeAllocationPopup" parent="." unique_id=1797018357 instance=ExtResource("2_q1i0y")]
+unique_name_in_owner = true

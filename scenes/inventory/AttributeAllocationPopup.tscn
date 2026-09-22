@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://bo58neynilt46"]
+
+[ext_resource type="Script" uid="uid://g6wvceccuaot" path="res://core/ui/attribute_allocation_popup.gd" id="1_74svs"]
+
+[node name="AttributeAllocationPopup" type="PopupPanel" unique_id=1797018357]
+oversampling_override = 1.0
+size = Vector2i(260, 123)
+min_size = Vector2i(260, 0)
+script = ExtResource("1_74svs")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1909043780]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 256.0
+offset_bottom = 119.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=301089253]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1520767214]
+layout_mode = 2
+text = "分配属性点"
+horizontal_alignment = 1
+
+[node name="PointsLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=196749275]
+unique_name_in_owner = true
+layout_mode = 2
+text = "剩余可分配点数：0"
+
+[node name="AllocationGrid" type="GridContainer" parent="MarginContainer/VBoxContainer" unique_id=894172228]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 4
+
+[node name="ButtonRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1270769659]
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonRow" unique_id=1971137939]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "确认"
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonRow" unique_id=1403133560]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "取消"

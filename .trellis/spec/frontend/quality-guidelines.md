@@ -450,3 +450,83 @@ level.LevelChanged.connect(_on_level_changed)
 var level: Node = _new_player_level()
 level.connect("LevelChanged", _on_level_changed)
 ```
+
+
+## 编辑器测试里构造 UI 夹具的三条硬约束
+
+### 1. Scope / Trigger
+
+在编辑器进程（`test_run`）里为**非 `@tool` 的生产 UI 脚本**搭行为测试夹具时。这三条约束都不会报"夹具搭错了"，而是让断言以看似业务失败的方式挂掉。
+
+### 2. Signatures
+
+```gdscript
+# Window 系节点（PopupPanel / PopupMenu / AcceptDialog）用 min_size，不是 custom_minimum_size
+node_set_property(path, "min_size", {"x": 260, "y": 0})
+
+# 行为夹具：生产脚本 new() + 手工最小子树（name 与 unique_name_in_owner 必须与生产场景一致）
+var popup := ALLOCATION_POPUP_SCRIPT.new() as PopupPanel
+var grid := GridContainer.new()
+grid.name = "AllocationGrid"
+grid.unique_name_in_owner = true
+popup.add_child(grid)
+grid.owner = popup
+scene_tree.root.add_child(popup)   # 入树时引擎已经调用过 _ready
+```
+
+### 3. Contracts
+
+- `PopupPanel` / `PopupMenu` / `AcceptDialog` 继承自 `Window` 而非 `Control`，**没有** `custom_minimum_size`。误用返回 `PROPERTY_NOT_ON_CLASS`；在 `batch_execute` 里这会让整批已成功的子命令**原子回滚**（`rolled_back: true`），现场看起来像"什么也没发生"。`.tscn` 里手写 `custom_minimum_size` 不报错、加载时被静默忽略，历史场景中的此类行不要照抄。
+- 非 `@tool` 脚本经 `PackedScene.instantiate()` 得到的是 **placeholder instance**，连 `_ready` 都无法调用（`Attempt to call a method on a placeholder instance`）。行为测试必须用 `脚本.new()` 构造；生产场景的脚本引用、唯一名、列数等**形状契约**另用 `instantiate()` 只读断言锁定，两者分工不要混。
+- `scene_tree.root.add_child(脚本实例)` 会触发引擎正常调用一次 `_ready`。因此 `_ready` 里的**连接与节点生成都必须幂等**：连接前查 `is_connected`，生成前查哨兵（如"引用字典非空即返回"）。
+- 断言"某个弹窗被关掉了"之前，必须让它**真的可见过**；否则在从未显示的状态下 `assert_false(popup.visible)` 会无意义地通过。
+
+### 4. Validation & Error Matrix
+
+| 现象 | 真实原因 | 处理 |
+|---|---|---|
+| `PROPERTY_NOT_ON_CLASS: custom_minimum_size not found on PopupPanel` | `Window` 系节点用 `min_size` | 改 `min_size`；注意 `batch_execute` 已整体回滚，需重发全部子命令 |
+| `Attempt to call a method on a placeholder instance` | 用 `instantiate()` 构造了非 `@tool` 脚本的实例 | 改 `脚本.new()` + 手工子树 |
+| 生成的行数翻倍、值标签永远停在占位符 | `_ready` 被执行两次，第二批引用覆盖了第一批 | 生成逻辑加哨兵，连接前查 `is_connected` |
+| `Signal 'pressed' is already connected to given callable` | 同上，重复 `connect` | 同上 |
+| `assert_false(popup.visible)` 意外通过 | 弹窗本来就没显示过 | 断言前先 `popup.visible = true`（或真实 `popup_centered()`） |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`tests/godot/test_attribute_allocation_popup_contract.gd` 的 `_new_popup()` 用 `ALLOCATION_POPUP_SCRIPT.new()` 加四个手工唯一名子节点构造夹具，形状契约由 `test_production_popup_scene_uses_gdscript_and_unique_names` 用 `instantiate()` 只读锁定。
+- Base：`tests/godot/test_attribute_summary_ui_contract.gd` 同样用脚本 `new()` 构造，并对 `add_child` 后的显式 `call("_ready")` 免疫——因为 `attribute_summary_ui.gd` 的 `connect` 从一开始就带 `is_connected` 幂等守卫。
+- Bad：对 `packed_scene.instantiate()` 出来的节点调 `call("_ready")`——既拿不到可用实例，又掩盖了"引擎已自动跑过一次"的事实。
+
+### 6. Tests Required
+
+- 新增 UI 行为套件后，必须同时在**同一套件内**保留一条 `instantiate()` 只读的形状/唯一名断言，避免夹具与生产场景悄悄脱节。
+- 涉及"累计后再提交"这类两段式交互时，必须断言**中间态没有副作用**（如属性值、可用点数在累计阶段保持不变），不能只断言最终态。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+var popup := packed_scene.instantiate() as PopupPanel   # placeholder instance
+scene_tree.root.add_child(popup)
+popup.call("_ready")                                    # Invalid call
+
+func _build_rows() -> void:                             # 重复进入 Ready 会跑两遍
+	for index in ALLOCATABLE_TYPES.size():
+		_rows_grid.add_child(...)
+```
+
+#### Correct
+
+```gdscript
+var popup := ALLOCATION_POPUP_SCRIPT.new() as PopupPanel
+# ...按生产唯一名挂好最小子树...
+scene_tree.root.add_child(popup)
+popup.call("_ready")                                    # 幂等，补调无害
+
+func _build_rows() -> void:
+	if not _value_labels.is_empty():                    # 幂等哨兵
+		return
+	for index in ALLOCATABLE_TYPES.size():
+		_rows_grid.add_child(...)
+```

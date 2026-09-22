@@ -75,6 +75,10 @@ var _crit_damage_detail_value: Label = null
 var _evasion_rate_detail_value: Label = null
 ## 详情区吸血率数值标签。
 var _lifesteal_rate_detail_value: Label = null
+## 打开属性加点弹窗的按钮；没有可用点数时隐藏。
+var _allocate_button: Button = null
+## 承载属性加点交互的弹窗；加点规则全部由它自己负责，本视图只负责打开。
+var _allocation_popup: PopupPanel = null
 
 
 ## 解析生产场景中的唯一名称节点、连接详情按钮并显示当前绑定状态。
@@ -96,8 +100,12 @@ func _ready() -> void:
 	_crit_damage_detail_value = get_node("%CritDamageDetailValue") as Label
 	_evasion_rate_detail_value = get_node("%EvasionRateDetailValue") as Label
 	_lifesteal_rate_detail_value = get_node("%LifestealRateDetailValue") as Label
+	_allocate_button = get_node("%AllocateButton") as Button
+	_allocation_popup = get_node("%AttributeAllocationPopup") as PopupPanel
 	if not _details_button.pressed.is_connected(_on_details_button_pressed):
 		_details_button.pressed.connect(_on_details_button_pressed)
+	if not _allocate_button.pressed.is_connected(_on_allocate_button_pressed):
+		_allocate_button.pressed.connect(_on_allocate_button_pressed)
 	# 等级来源缺省回退到等级系统 Autoload；外部已显式注入的来源优先保留。
 	if _player_level == null:
 		BindPlayerLevel(get_node_or_null(PLAYER_LEVEL_PATH))
@@ -186,6 +194,8 @@ func _read_player_level() -> int:
 func _exit_tree() -> void:
 	if _details_button != null and _details_button.pressed.is_connected(_on_details_button_pressed):
 		_details_button.pressed.disconnect(_on_details_button_pressed)
+	if _allocate_button != null and _allocate_button.pressed.is_connected(_on_allocate_button_pressed):
+		_allocate_button.pressed.disconnect(_on_allocate_button_pressed)
 	_disconnect_attribute_signals()
 	_disconnect_player_level_signals()
 
@@ -241,12 +251,44 @@ func _refresh() -> void:
 	_set_value(_mag_resist_value, ATTRIBUTE_TYPE_MAG_RESIST)
 	_set_value(_speed_value, ATTRIBUTE_TYPE_SPEED)
 	_refresh_details()
+	_refresh_allocate_button()
 
 
 ## 在打开弹窗前重新读取详情，确保隐藏期间发生的变化不会展示旧值。
 func _on_details_button_pressed() -> void:
 	_refresh_details()
 	_details_popup.popup_centered()
+
+
+## 同步「分配」按钮的显隐。
+##
+## 只有存在剩余点数才提供入口：没有点数时把按钮留在等级行里不仅白占宽度，还会让玩家
+## 以为可以点。该刷新挂在 _refresh 上，而 AvailablePointsChanged 已经连到 _refresh，
+## 因此升级发点后按钮会自行出现，不需要额外订阅。
+func _refresh_allocate_button() -> void:
+	if _allocate_button == null:
+		return
+	_allocate_button.visible = _attributes != null and _read_available_points() > 0
+
+
+## 读取属性组件的可用点数。
+## 返回值：可用点数；组件缺失或没有该字段时返回 0。
+func _read_available_points() -> int:
+	if _attributes == null:
+		return 0
+	# 跨语言兜底：属性组件应当暴露公开字段 AvailablePoints，取值前先确认类型。
+	var raw: Variant = _attributes.get("AvailablePoints")
+	return int(raw) if (raw is int or raw is float) else 0
+
+
+## 打开属性加点弹窗。
+##
+## 每次打开都重新绑定当前属性组件：弹窗是独立子场景，只认识 Bind 与 OpenFor 两个公开
+## 方法，这样它既不需要知道摘要绑定了谁，也能在组件被换掉之后拿到新对象。
+func _on_allocate_button_pressed() -> void:
+	if _allocation_popup == null:
+		return
+	_allocation_popup.call("OpenFor", _attributes)
 
 
 ## 同步生命、能量、穿透及四项百分比详情。
