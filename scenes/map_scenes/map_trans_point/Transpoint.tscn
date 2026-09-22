@@ -5,14 +5,17 @@
 [ext_resource type="Script" uid="uid://bsbqld5tqq34t" path="res://scripts/juicy/Juicy_Button.gd" id="2_ryq5c"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_35b51"]
+radius = 18.0
 
 [node name="Door" type="Area2D" unique_id=1530987125]
+collision_mask = 16
 script = ExtResource("1_ryq5c")
+cool_down_time = 1.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=659580037]
 shape = SubResource("CircleShape2D_35b51")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1848495593]
+[node name="Offeset" type="Sprite2D" parent="." unique_id=1848495593]
 
 [node name="Button" type="Button" parent="." unique_id=381368596]
 anchors_preset = 8

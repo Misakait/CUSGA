@@ -232,7 +232,8 @@ layout_mode = 0
 [node name="DevSettingsUI" parent="UI/HUDLayer/HUDRoot" unique_id=149711311 instance=ExtResource("25_36rkl")]
 layout_mode = 1
 
-[node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player") instance=ExtResource("2_rvslj")]
+[node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player", "player_char") instance=ExtResource("2_rvslj")]
 player = NodePath("../Player")
+player_char = NodePath("../PlayerChar")
 
-[node name="PlayerChar" parent="." unique_id=761419866 instance=ExtResource("27_fs0b5")]
+[node name="PlayerChar" parent="." unique_id=761419866 groups=["tooltip_panel"] instance=ExtResource("27_fs0b5")]

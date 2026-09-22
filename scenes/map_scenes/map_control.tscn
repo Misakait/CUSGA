@@ -7,13 +7,13 @@
 [ext_resource type="Script" uid="uid://duexej0jf1ece" path="res://scripts/map_scripts/map_little.gd" id="7_aulaq"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_aulaq"]
 [ext_resource type="Script" uid="uid://5dcs4o1t3h0" path="res://scripts/map_scripts/map_button/up_button.gd" id="9_bl6s4"]
-[ext_resource type="Script" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
+[ext_resource type="Script" uid="uid://ceces3oo175j7" path="res://resources/draggable/hover_exit_zooming.gd" id="11_00bk6"]
 [ext_resource type="Texture2D" uid="uid://dqbi0ertlly3e" path="res://res/UI/物品框-f82c.png" id="12_rc7jg"]
 [ext_resource type="Texture2D" uid="uid://bsd554u1puu6u" path="res://res/UI/上-f597.png" id="13_2viwr"]
 [ext_resource type="Script" uid="uid://htnvjes8g8ym" path="res://scripts/map_scripts/map_button/right_button.gd" id="13_m5w21"]
 [ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_00bk6"]
 [ext_resource type="Script" uid="uid://c7yg358eqvkoy" path="res://scripts/map_scripts/map_button/down_button.gd" id="14_in5uc"]
-[ext_resource type="Script" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
+[ext_resource type="Script" uid="uid://148koyogpjrc" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_mrmfi"]
 [ext_resource type="Script" uid="uid://c64fkkngl08fo" path="res://scripts/map_scripts/map_button/left_button.gd" id="15_7fije"]
 [ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_m5w21"]
 [ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/右-f68c.png" id="16_rhltn"]
@@ -23,12 +23,14 @@
 [ext_resource type="Resource" uid="uid://ktq36y7kngt7" path="res://resources/map/default_passage_guard_settings.tres" id="20_pguard"]
 [ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="21_667l1"]
 [ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="22_biome"]
-[ext_resource type="Resource" path="res://resources/map/biomes/normal_biome.tres" id="23_normal"]
-[ext_resource type="Resource" path="res://resources/map/biomes/earth_biome.tres" id="24_earth"]
-[ext_resource type="Resource" path="res://resources/map/biomes/fire_biome.tres" id="25_fire"]
-[ext_resource type="Resource" path="res://resources/map/biomes/gold_biome.tres" id="26_gold"]
-[ext_resource type="Resource" path="res://resources/map/biomes/water_biome.tres" id="27_water"]
-[ext_resource type="Resource" path="res://resources/map/biomes/wood_biome.tres" id="28_wood"]
+[ext_resource type="Resource" uid="uid://1if71u0wx1x8" path="res://resources/map/biomes/normal_biome.tres" id="23_normal"]
+[ext_resource type="Resource" uid="uid://dehds73ldipyk" path="res://resources/map/biomes/earth_biome.tres" id="24_earth"]
+[ext_resource type="Resource" uid="uid://btu6hv2cucsyd" path="res://resources/map/biomes/fire_biome.tres" id="25_fire"]
+[ext_resource type="Resource" uid="uid://by40qwyvwd4k8" path="res://resources/map/biomes/gold_biome.tres" id="26_gold"]
+[ext_resource type="Resource" uid="uid://cmnngcyssxi8g" path="res://resources/map/biomes/water_biome.tres" id="27_water"]
+[ext_resource type="Resource" uid="uid://cvg5cevllo4mi" path="res://resources/map/biomes/wood_biome.tres" id="28_wood"]
+[ext_resource type="PackedScene" uid="uid://1mk382dirfjw" path="res://scenes/map_scenes/map_trans_point/Transpoint.tscn" id="30_7lejn"]
+[ext_resource type="Script" uid="uid://bd2qw0u6wvgri" path="res://scripts/map_scripts/DoorController.gd" id="30_kxp2x"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
 texture = ExtResource("14_00bk6")
@@ -49,6 +51,7 @@ script = ExtResource("19_pguard")
 settings = ExtResource("20_pguard")
 
 [node name="MapButton" type="Node2D" parent="." unique_id=276347947 node_paths=PackedStringArray("UpButton", "RightButton", "DownButton", "LeftButton")]
+visible = false
 script = ExtResource("5_vtfeq")
 UpButton = NodePath("Up")
 RightButton = NodePath("Right")
@@ -273,19 +276,56 @@ camera_node = NodePath("Camera2D")
 layout_mode = 2
 texture = ExtResource("16_m5w21")
 
-[connection signal="mouse_entered" from="MapButton/Up/UpButton/UpButton" to="MapButton/Up" method="_on_up_button_mouse_entered"]
-[connection signal="mouse_exited" from="MapButton/Up/UpButton/UpButton" to="MapButton/Up" method="_on_up_button_mouse_exited"]
+[node name="DoorController" type="Node2D" parent="." unique_id=231469876]
+position = Vector2(1061, 329)
+script = ExtResource("30_kxp2x")
+
+[node name="UpDoor" parent="DoorController" unique_id=1530987125 instance=ExtResource("30_7lejn")]
+position = Vector2(-457, -284)
+target_door_id = "DownDoor"
+
+[node name="Offeset" parent="DoorController/UpDoor" index="1" unique_id=1848495593]
+position = Vector2(-136, 1)
+
+[node name="DownDoor" parent="DoorController" unique_id=2106860179 instance=ExtResource("30_7lejn")]
+position = Vector2(-523, 360)
+target_door_id = "UpDoor"
+
+[node name="Offeset" parent="DoorController/DownDoor" index="1" unique_id=1848495593]
+position = Vector2(123, 9)
+
+[node name="LeftDoor" parent="DoorController" unique_id=1859796447 instance=ExtResource("30_7lejn")]
+position = Vector2(-991, -7)
+target_door_id = "RightDoor"
+
+[node name="Offeset" parent="DoorController/LeftDoor" index="1" unique_id=1848495593]
+position = Vector2(142, -1)
+
+[node name="RightDoor" parent="DoorController" unique_id=822420915 instance=ExtResource("30_7lejn")]
+position = Vector2(171, -5)
+target_door_id = "LeftDoor"
+
+[node name="Offeset" parent="DoorController/RightDoor" index="1" unique_id=1848495593]
+position = Vector2(-89, 1)
+
 [connection signal="button_down" from="MapButton/Up/UpButton/UpButton" to="MapButton" method="_on_up_button_button_down"]
 [connection signal="button_up" from="MapButton/Up/UpButton/UpButton" to="MapButton" method="_on_direction_button_button_up"]
-[connection signal="mouse_entered" from="MapButton/Right/RightButton/RightButton" to="MapButton/Right" method="_on_right_button_mouse_entered"]
-[connection signal="mouse_exited" from="MapButton/Right/RightButton/RightButton" to="MapButton/Right" method="_on_right_button_mouse_exited"]
+[connection signal="mouse_entered" from="MapButton/Up/UpButton/UpButton" to="MapButton/Up" method="_on_up_button_mouse_entered"]
+[connection signal="mouse_exited" from="MapButton/Up/UpButton/UpButton" to="MapButton/Up" method="_on_up_button_mouse_exited"]
 [connection signal="button_down" from="MapButton/Right/RightButton/RightButton" to="MapButton" method="_on_right_button_button_down"]
 [connection signal="button_up" from="MapButton/Right/RightButton/RightButton" to="MapButton" method="_on_direction_button_button_up"]
-[connection signal="mouse_entered" from="MapButton/Down/DownButton/DownButton" to="MapButton/Down" method="_on_down_button_mouse_entered"]
-[connection signal="mouse_exited" from="MapButton/Down/DownButton/DownButton" to="MapButton/Down" method="_on_down_button_mouse_exited"]
+[connection signal="mouse_entered" from="MapButton/Right/RightButton/RightButton" to="MapButton/Right" method="_on_right_button_mouse_entered"]
+[connection signal="mouse_exited" from="MapButton/Right/RightButton/RightButton" to="MapButton/Right" method="_on_right_button_mouse_exited"]
 [connection signal="button_down" from="MapButton/Down/DownButton/DownButton" to="MapButton" method="_on_down_button_button_down"]
 [connection signal="button_up" from="MapButton/Down/DownButton/DownButton" to="MapButton" method="_on_direction_button_button_up"]
-[connection signal="mouse_entered" from="MapButton/Left/LeftButton/LeftButton" to="MapButton/Left" method="_on_left_button_mouse_entered"]
-[connection signal="mouse_exited" from="MapButton/Left/LeftButton/LeftButton" to="MapButton/Left" method="_on_left_button_mouse_exited"]
+[connection signal="mouse_entered" from="MapButton/Down/DownButton/DownButton" to="MapButton/Down" method="_on_down_button_mouse_entered"]
+[connection signal="mouse_exited" from="MapButton/Down/DownButton/DownButton" to="MapButton/Down" method="_on_down_button_mouse_exited"]
 [connection signal="button_down" from="MapButton/Left/LeftButton/LeftButton" to="MapButton" method="_on_left_button_button_down"]
 [connection signal="button_up" from="MapButton/Left/LeftButton/LeftButton" to="MapButton" method="_on_direction_button_button_up"]
+[connection signal="mouse_entered" from="MapButton/Left/LeftButton/LeftButton" to="MapButton/Left" method="_on_left_button_mouse_entered"]
+[connection signal="mouse_exited" from="MapButton/Left/LeftButton/LeftButton" to="MapButton/Left" method="_on_left_button_mouse_exited"]
+
+[editable path="DoorController/UpDoor"]
+[editable path="DoorController/DownDoor"]
+[editable path="DoorController/LeftDoor"]
+[editable path="DoorController/RightDoor"]

@@ -20,4 +20,3 @@ func move_player(_delta: float) -> void:
 		sprite.flip_h = false if move_dir.x > 0 else true
 	velocity.x = lerp(velocity.x, player_data.walk_speed * move_dir.x , _delta * 12)
 	velocity.y = lerp(velocity.y, player_data.walk_speed * move_dir.y , _delta * 12)
-	print(velocity.x,"      ",velocity.y)

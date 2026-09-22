@@ -1,10 +1,12 @@
 extends Node
 
 @export var player: Node
+@export var player_char: CharacterBody2D
 @export var canvas_layer: CanvasLayer
 
 signal on_entered_room(position: Vector2i, scene: Node2D)
 
+@onready var door_controller: Node2D = $"DoorController"
 @onready var map_instantiator: Node = $MapInstantiator
 
 func _ready() -> void:
@@ -23,9 +25,12 @@ func _ready() -> void:
 		var item_data: Resource = ItemsControl.warehouse_to_player[i]
 		var amount: int = ItemsControl.warehouse_to_player_cnt[i]
 		player._inventory.AddItem(item_data,amount)
-
+	
 	ItemsControl.warehouse_to_player.clear()
 	ItemsControl.warehouse_to_player_cnt.clear()
+	
+	# 把表现层的playerchar给controller
+	door_controller.player = player_char
 
 func _on_map_instantiator_entered_room(position: Vector2i, scene: Node2D) -> void:
 	emit_signal(&"on_entered_room", position, scene)
