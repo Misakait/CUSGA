@@ -74,6 +74,9 @@ class FakeAttributeComponent extends Node:
 			float(base_values.get(attribute_type, 0.0)),
 			float(growth_per_point.get(attribute_type, 0.0))
 		)
+		# 已投入点数必须同步到载体上：生产 attribute_value 的 RawValue 依赖它，
+		# 弹窗的名称回显读的也是同一个字段。
+		attribute.set("AllocatedPoints", int(allocated_points.get(attribute_type, 0)))
 		return attribute
 
 
@@ -207,14 +210,40 @@ func test_rows_cover_five_allocatable_attributes() -> void:
 		"五项属性必须各生成一行。"
 	)
 
+	# 名称后必须带上该属性已投入的点数；这些属性都还没加过点，因此都是 0。
 	for index: int in ALLOCATABLE_TYPES.size():
 		assert_eq(
-			_cell(grid, index, COLUMN_NAME).text,
-			["物攻", "物防", "法强", "法抗", "速度"][index],
-			"第 %d 行必须显示对应属性名。" % index
+			_name_text(grid, index),
+			"%s（0）" % ["物攻", "物防", "法强", "法抗", "速度"][index],
+			"第 %d 行必须显示对应属性名与已投入点数。" % index
 		)
 	assert_eq(_value_text(grid, 0), "10", "物攻必须显示属性组件报告的当前值。")
 	assert_eq(_value_text(grid, 4), "50", "速度必须显示属性组件报告的当前值。")
+
+	_dispose_popup(popup)
+
+
+## 验证名称后回显已投入点数，累计时变为（x→y），确认后落定为新的 x。
+## 返回值：无。
+func test_name_column_echoes_allocated_points() -> void:
+	var popup := _new_popup()
+	if popup == null:
+		return
+	var attributes := _new_attributes()
+	attributes.AvailablePoints = 5
+	# 模拟该属性此前已经投入过 3 点，验证回显的是累计值而不是本次操作次数。
+	attributes.allocated_points[0] = 3
+	popup.call("Bind", attributes)
+	var grid := popup.get_node("%AllocationGrid") as GridContainer
+
+	assert_eq(_name_text(grid, 0), "物攻（3）", "未累计时必须显示该属性已投入的点数。")
+	assert_eq(_name_text(grid, 1), "物防（0）", "从未加过点的属性必须显示 0。")
+
+	(_cell(grid, 0, COLUMN_PLUS) as Button).pressed.emit()
+	assert_eq(_name_text(grid, 0), "物攻（3→4）", "累计后必须显示从 3 推到 4。")
+
+	(popup.get_node("%ConfirmButton") as Button).pressed.emit()
+	assert_eq(_name_text(grid, 0), "物攻（4）", "确认写入后必须落定为新的已投入点数。")
 
 	_dispose_popup(popup)
 
@@ -239,6 +268,7 @@ func test_plus_accumulates_without_touching_component() -> void:
 	assert_eq(attributes.AvailablePoints, 5, "点加号不得扣减可用点数。")
 	assert_eq(int(attributes.GetEffectiveValue(0)), 10, "点加号不得改变属性值。")
 	assert_eq(_value_text(grid, 0), "10 → 12", "累计后必须显示加点后的预计值。")
+	assert_eq(_name_text(grid, 0), "物攻（0→1）", "累计后名称必须显示已投入点数从 0 推到 1。")
 	assert_true(
 		(_cell(grid, 0, COLUMN_MINUS) as Button).disabled == false,
 		"累计过之后减号必须可用，玩家才能反悔。"
@@ -433,6 +463,11 @@ func test_missing_component_degrades_without_errors() -> void:
 	assert_true((popup.get_node("%ConfirmButton") as Button).disabled, "组件缺失时确认必须禁用。")
 	assert_true((grid.get_child(COLUMN_PLUS) as Button).disabled, "组件缺失时加号必须禁用。")
 	assert_eq(_value_text(grid, 0), "-", "组件缺失时值必须与摘要区一致地显示占位符。")
+	assert_eq(
+		_name_text(grid, 0),
+		"物攻",
+		"组件缺失时「已投入多少点」是未知的，名称不得擅自补 0。"
+	)
 
 	# 强制触发两个按钮也不得抛错或写入。
 	(grid.get_child(COLUMN_PLUS) as Button).pressed.emit()
@@ -516,6 +551,14 @@ func _cell(grid: GridContainer, index: int, offset: int) -> Control:
 ## 返回值：该行的值文本。
 func _value_text(grid: GridContainer, index: int) -> String:
 	return (_cell(grid, index, COLUMN_VALUE) as Label).text
+
+
+## 读取某行的名称标签文本。
+## 参数 grid：生产属性网格。
+## 参数 index：行序号。
+## 返回值：该行的名称文本（含已投入点数的括号）。
+func _name_text(grid: GridContainer, index: int) -> String:
+	return (_cell(grid, index, COLUMN_NAME) as Label).text
 
 
 ## 从场景树移除并释放测试弹窗。

@@ -40,6 +40,9 @@ var _plus_buttons: Dictionary = {}
 ## 每行的减号按钮：属性类型 → Button。
 var _minus_buttons: Dictionary = {}
 
+## 每行的名称标签：属性类型 → Label，用于回显该属性已投入的点数。
+var _name_labels: Dictionary = {}
+
 
 ## 生成属性行、连接按钮，并初始化为不可用状态。
 ## 返回值：无。
@@ -108,6 +111,7 @@ func _build_rows() -> void:
 		var name_label := Label.new()
 		name_label.text = ALLOCATABLE_NAMES[index]
 		_rows_grid.add_child(name_label)
+		_name_labels[attribute_type] = name_label
 
 		var value_label := Label.new()
 		value_label.text = "-"
@@ -171,6 +175,9 @@ func _refresh() -> void:
 		var attribute_type: int = ALLOCATABLE_TYPES[index]
 		var pending: int = int(_pending.get(attribute_type, 0))
 
+		var name_label: Label = _name_labels[attribute_type]
+		name_label.text = _format_name_text(attribute_type, pending)
+
 		var value_label: Label = _value_labels[attribute_type]
 		value_label.text = _format_value_text(attribute_type, pending)
 
@@ -179,6 +186,43 @@ func _refresh() -> void:
 		(_plus_buttons[attribute_type] as Button).disabled = not can_allocate or remaining <= 0
 
 	_confirm_button.disabled = _pending_total() <= 0 or not can_allocate
+
+
+## 生成某一行的名称文本。
+##
+## 名称后回显该属性已投入的点数：累计加点时组件尚未被改动，用 `（x→y）` 让玩家看清这一次
+## 会把该属性从 x 点推到 y 点；没有待分配点数时退化为单纯的 `（x）`。
+##
+## 参数 attribute_type：属性类型整数值。
+## 参数 pending：该属性当前的待分配点数。
+## 返回值：供名称标签显示的文本。
+func _format_name_text(attribute_type: int, pending: int) -> String:
+	var display_name: String = ALLOCATABLE_NAMES[ALLOCATABLE_TYPES.find(attribute_type)]
+	# 没有属性组件时「已投入多少点」是未知的，写 0 会骗人，因此只显示属性名。
+	if _attributes == null or not _attributes.has_method("GetAttribute"):
+		return display_name
+
+	var allocated: int = _get_allocated_points(attribute_type)
+	if pending <= 0:
+		return "%s（%d）" % [display_name, allocated]
+
+	return "%s（%d→%d）" % [display_name, allocated, allocated + pending]
+
+
+## 读取某属性已投入的点数。
+##
+## 只用于显示：某次分配真正写入多少点始终由属性组件决定。
+## 参数 attribute_type：属性类型整数值。
+## 返回值：已投入点数；组件缺少接口时返回 0。
+func _get_allocated_points(attribute_type: int) -> int:
+	if _attributes == null or not _attributes.has_method("GetAttribute"):
+		return 0
+
+	var attribute: RefCounted = _attributes.call("GetAttribute", attribute_type)
+	if attribute == null:
+		return 0
+
+	return int(attribute.get("AllocatedPoints"))
 
 
 ## 生成某一行的值文本。
@@ -291,18 +335,29 @@ func _on_confirm_pressed() -> void:
 			_refresh()
 			return
 
-	_pending.clear()
+	# 先清累计并刷新（让名称落定为新的已投入点数），再关闭窗口。
+	_discard_pending()
 	hide()
 
 
 ## 处理取消：放弃本次累计并关闭。
 ## 返回值：无。
 func _on_cancel_pressed() -> void:
-	_pending.clear()
+	_discard_pending()
 	hide()
 
 
 ## 处理窗口关闭：与取消一致地丢弃累计。
 ## 返回值：无。
 func _on_popup_hide() -> void:
+	_discard_pending()
+
+
+## 丢弃累计并立刻同步显示。
+##
+## 清空状态后必须马上刷新，不能只依赖 hide() 触发 popup_hide：窗口本来就不可见时 hide()
+## 根本不发出该信号，界面会停在累计态（名称与值仍显示 (x→y)）。
+## 返回值：无。
+func _discard_pending() -> void:
 	_pending.clear()
+	_refresh()
