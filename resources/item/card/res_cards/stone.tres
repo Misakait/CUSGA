@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://sokcwukqcau4"]
 
 [ext_resource type="Texture2D" uid="uid://beuq16m56b1jn" path="res://res/items/littlerock.png" id="1_05c4q"]
-[ext_resource type="Script" path="res://resources/item/card/resource_card_data.gd" id="1_resource_card"]
+[ext_resource type="Script" uid="uid://dooectaw14x6v" path="res://resources/item/card/resource_card_data.gd" id="1_resource_card"]
 
 [resource]
 script = ExtResource("1_resource_card")

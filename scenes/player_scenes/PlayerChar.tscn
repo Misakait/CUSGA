@@ -1,0 +1,243 @@
+[gd_scene format=3 uid="uid://bupnf6pmnnrxp"]
+
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="1_p4rea"]
+[ext_resource type="Script" uid="uid://bpcwrs6g1tmwe" path="res://scripts/player_scripts/PlayerChar.gd" id="1_xn0hb"]
+[ext_resource type="Resource" uid="uid://dbi6xi7rthwh7" path="res://resources/Player/PlayerData.tres" id="2_s04oc"]
+[ext_resource type="Texture2D" uid="uid://cime5163xllty" path="res://res/UI/卡牌模板.png" id="2_xn0hb"]
+[ext_resource type="Texture2D" uid="uid://5o0nybhchaq1" path="res://res/UI/Player_Char.png" id="3_uw8mp"]
+[ext_resource type="Script" uid="uid://bnio8ujbiqsk1" path="res://scripts/player_scripts/PlayerStateMachine.gd" id="5_uw8mp"]
+[ext_resource type="Script" uid="uid://cfyqhj52via0g" path="res://scripts/player_scripts/states/Idle.gd" id="6_am3nn"]
+[ext_resource type="Script" uid="uid://dnq4u185k7ps1" path="res://scripts/player_scripts/states/Walk.gd" id="7_y3bdq"]
+
+[sub_resource type="Shader" id="Shader_s04oc"]
+code = "// 玩家角色的闪白效果（供 AnimationPlayer 驱动）。
+//
+// 为什么用 shader 而不是 modulate：
+//   modulate 是整体乘一个颜色，暗色像素会变灰，达不到「被打亮」的纯白效果。
+//   本 shader 把每个像素朝纯白插值，flash_amount = 1.0 时完全变白。
+//
+// AnimationPlayer 的轨道路径写法（已实测）：
+//   Visuals:material:shader_parameter/flash_amount
+//   注意必须写 material 而不是 material_override；后者不是 CanvasItem 的基类属性，会解析失败。
+shader_type canvas_item;
+
+// 闪白强度。0 = 原图，1 = 全白。
+uniform float flash_amount : hint_range(0.0, 1.0) = 0.0;
+
+void fragment() {
+	vec4 tex = texture(TEXTURE, UV);
+	tex.rgb = mix(tex.rgb, vec3(1.0), flash_amount);
+	COLOR = tex;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sl4ay"]
+shader = SubResource("Shader_s04oc")
+shader_parameter/flash_amount = 0.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
+texture = ExtResource("2_xn0hb")
+region_rect = Rect2(0, 0, 100, 140)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sl4ay"]
+texture = ExtResource("2_xn0hb")
+region_rect = Rect2(0, 0, 100, 140)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q4h1m"]
+texture = ExtResource("2_xn0hb")
+region_rect = Rect2(0, 0, 99, 139)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sl4ay"]
+size = Vector2(100, 140)
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_p4rea"]
+animation = &"hover"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_xn0hb"]
+animation = &"idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_uw8mp"]
+animation = &"walk"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_am3nn"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_y3bdq"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_s04oc"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_sl4ay"]
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_35b51"]
+states/Start/position = Vector2(201, 113)
+states/hover/node = SubResource("AnimationNodeAnimation_p4rea")
+states/hover/position = Vector2(490, 28)
+states/idle/node = SubResource("AnimationNodeAnimation_xn0hb")
+states/idle/position = Vector2(314, 113)
+states/walk/node = SubResource("AnimationNodeAnimation_uw8mp")
+states/walk/position = Vector2(490, 113)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_am3nn"), "idle", "walk", SubResource("AnimationNodeStateMachineTransition_y3bdq"), "hover", "walk", SubResource("AnimationNodeStateMachineTransition_s04oc"), "walk", "idle", SubResource("AnimationNodeStateMachineTransition_sl4ay")]
+
+[sub_resource type="Animation" id="Animation_q4h1m"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals/PlayerView:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals/PlayerView:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_47jv3"]
+length = 0.36
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals/PlayerView:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.36),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.22, 0.8), Vector2(0.96, 1.05), Vector2(1.06, 1.06)]
+}
+
+[sub_resource type="Animation" id="Animation_53oty"]
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals/PlayerView:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.05, 0.95), Vector2(1, 1), Vector2(0.95, 1.05), Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_aqkay"]
+length = 0.7
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals/PlayerView:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.22, 0.38, 0.5, 0.62, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.14, 0.86), Vector2(0.94, 1.1), Vector2(0.97, 1.05), Vector2(1.14, 0.86), Vector2(0.94, 1.1), Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals/PlayerView:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.175, 0.35, 0.525, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.13, 0.0, -0.13, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_uhqyu"]
+_data = {
+&"RESET": SubResource("Animation_q4h1m"),
+&"hover": SubResource("Animation_47jv3"),
+&"idle": SubResource("Animation_53oty"),
+&"walk": SubResource("Animation_aqkay")
+}
+
+[node name="PlayerChar" type="CharacterBody2D" unique_id=761419866 groups=["Player"]]
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("1_xn0hb")
+player_data = ExtResource("2_s04oc")
+
+[node name="Visuals" type="Sprite2D" parent="." unique_id=50194922]
+material = SubResource("ShaderMaterial_sl4ay")
+
+[node name="PlayerView" type="Button" parent="Visuals" unique_id=1608944652]
+custom_minimum_size = Vector2(100, 140)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.5
+offset_top = -70.5
+offset_right = 49.5
+offset_bottom = 69.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_fonts/font = ExtResource("1_p4rea")
+theme_override_styles/normal = SubResource("StyleBoxTexture_35b51")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_sl4ay")
+theme_override_styles/hover = SubResource("StyleBoxTexture_q4h1m")
+
+[node name="Label" type="Label" parent="Visuals/PlayerView" unique_id=1540746428]
+layout_mode = 0
+offset_right = 99.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("1_p4rea")
+theme_override_font_sizes/font_size = 28
+text = "Player"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="Visuals/PlayerView" unique_id=1274701262]
+position = Vector2(50, 83)
+scale = Vector2(2, 2)
+texture = ExtResource("3_uw8mp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1694452917]
+shape = SubResource("RectangleShape2D_sl4ay")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=751446765]
+
+[node name="PlayerState" type="Node" parent="." unique_id=239607839 node_paths=PackedStringArray("initial_state")]
+script = ExtResource("5_uw8mp")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="PlayerState" unique_id=54481175]
+script = ExtResource("6_am3nn")
+
+[node name="Walk" type="Node" parent="PlayerState" unique_id=1314674107]
+script = ExtResource("7_y3bdq")
+
+[node name="Hover" type="Node" parent="PlayerState" unique_id=2083080510]
+
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=607388927]
+active = false
+tree_root = SubResource("AnimationNodeStateMachine_35b51")
+anim_player = NodePath("../AnimationPlayer")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1976089991]
+libraries/ = SubResource("AnimationLibrary_uhqyu")

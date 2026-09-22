@@ -14,6 +14,8 @@ const SCENE_MAP: Dictionary = {
 var _cache: Dictionary = {}
 var _current_id: String = ""
 
+var target_spawn_id: String = ""
+
 func _ready() -> void:
 	# 抓住游戏启动时加载的首个场景（Project Settings → Main Scene），缓存它
 	var initial_scene: Node = get_tree().current_scene
