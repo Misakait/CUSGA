@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://vlltwh1x74yg"]
 
 [ext_resource type="Texture2D" uid="uid://bwevt5skf8aer" path="res://res/items/flametorch.png" id="1_1i4mn"]
-[ext_resource type="Script" path="res://resources/item/card/resource_card_data.gd" id="1_resource_card"]
+[ext_resource type="Script" uid="uid://dooectaw14x6v" path="res://resources/item/card/resource_card_data.gd" id="1_resource_card"]
 
 [resource]
 script = ExtResource("1_resource_card")
