@@ -66,6 +66,14 @@ func _switch_to(target_id: String, target_path: String) -> void:
 			current.exit()
 		current.get_parent().remove_child(current)
 
+		# 只有缓存池里的实例才允许「移除后留着复用」；其余都是临时场景——典型来源是
+		# main_menu.gd / pause_menu.gd 用 change_scene_to_file 载入、SceneManager 只是
+		# 顺手把它从树上摘下来的那一个。临时场景一经 remove_child 就再无引用，若不显式
+		# 回收就会变成永久孤儿：它的子节点、内联子资源和信号连接全部继续存活，并污染
+		# 后续复用的同场景实例（例如 main_menu 共享的 Snapper 吸附记录会因此被旧卡牌占死）。
+		if not _cache.values().has(current):
+			current.queue_free()
+
 	# 2. 获取或创建目标场景
 	var target: Node = _cache.get(target_id) as Node
 	if target == null:

@@ -105,6 +105,14 @@ func init():
 	#重置binder.target_snapper的snapped_card
 	finish_drag()
 	
+	# finish_drag() 依赖 card 才能完成上面那次重置，所以清空必须放在它之后。
+	# SceneManager 会缓存本场景实例并复用，若把 card 留到下一次入场，下一次 init()
+	# 就会拿着上一轮的卡牌再跑一遍 finish_drag()，把早已离开的那次操作重新发射一次
+	# （表现为刚回到主菜单就被自动带进仓库或游戏）。hovering_card 是同一类残留，
+	# 一并清掉，让重新入场后的状态与首次进入完全一致。
+	card = null
+	hovering_card = null
+	
 
 
 func _on_button_pressed() -> void:

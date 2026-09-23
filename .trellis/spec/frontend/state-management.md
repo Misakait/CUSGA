@@ -705,3 +705,120 @@ var phase_length: int = int(TimeSystem.get("PhaseLength"))
 ```
 
 原因是 Godot 的 `GDScriptInstance::get()` 先查成员变量，再沿脚本继承链查常量表。因此 UI 不必再复制一份 `const PHASE_LENGTH = 100`（`time_panel_ui.gd` 的旧写法）就能跟随时间系统的值；`core/ui/dev/dev_settings_ui.gd` 用这条路径计算「下一天」。仍应保留本地兜底值：读不到时不能让面板整体失效。
+
+## 内联子资源的运行时可变态由所有场景实例共享
+
+### 1. Scope / Trigger
+
+当 `.tscn` 用 `[sub_resource]` 内联一个脚本资源，而该脚本声明了**非 `@export` 的可变字段**，并且承载它的场景会被重复实例化时。既有实例：`main_menu.tscn` 的 `Resource_v5kme`（`Snapper.snapped_cards`）与 `Resource_r5auf`（`Draggable.dragging` / `drag_offset`）。
+
+### 2. Signatures
+
+```gdscript
+# resources/draggable/snapper.gd
+var snapped_cards: Dictionary = {}          # {card: snap_position} —— 跨实例共享
+func can_snap(card, pos: Vector2) -> bool   # 判据是 snapped_cards.values().has(pos)
+func prune_snapped_cards() -> int           # 丢弃已释放 / 已离场的记录
+
+# resources/draggable/snapper_binder.gd
+func update_snapper_positions() -> void     # 在 _ready() 中调用
+```
+
+### 3. Contracts
+
+- `[sub_resource]` 在 Godot 实例化场景时**逐实例复用同一个对象**。因此非 `@export` 的可变字段是**跨实例的共享状态**，不是「每个场景一份」。
+- 依赖这类字段做占用判定时，必须显式定义**记录的生命周期**。`Snapper.snapped_cards` 的不变量是「记录只能属于此刻仍在场景树上的卡牌」，因此 `SnapperBinder.update_snapper_positions()` 必须在重建吸附坐标前调用 `prune_snapped_cards()`。
+- 清理失效引用必须**先 `is_instance_valid(obj)` 再 `obj as Node` 收窄类型**；顺序颠倒会让清理函数自身在已释放对象上抛错，失效引用反而清不掉（与 TypedArray 的清理约束同源）。
+- 本函数在 `_ready()` 中调用，此刻本实例的卡牌刚进树、尚未参与拖拽，因此清理不会误删本轮的有效记录。
+- `Draggable.dragging` / `drag_offset` 是同类共享字段，但每次鼠标按下都会重算，故当前无害；给这类资源新增字段时不要假设它属于单个实例。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 行为 | 结果 |
+|---|---|---|
+| 旧实例的卡牌已被释放 | `is_instance_valid` 为 false | 记录在重建吸附坐标时被清理 |
+| 旧实例的卡牌仍存活但已离场 | `is_inside_tree()` 为 false | 同上 |
+| 本实例的卡牌刚进树 | 两条判据都为 true | 记录保留，不误删 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`SnapperBinder._ready()` → `update_snapper_positions()` 先 prune 再重建坐标，主菜单在多轮「进游戏 / 进仓库 / 回主菜单」之后仍能拖动任意卡牌。
+- Base：`Draggable` 的共享字段每次按下都被覆盖，行为可接受。
+- Bad：让 `Snapper.snapped_cards` 永久保留旧记录。吸附点坐标被已离场卡牌占死，`can_snap()` 恒返回 false，`drag_func.finish_drag()` 因 `snapped == false` 永不发射 `card_be_snapper`，表现为主菜单所有卡牌拖进吸附点毫无反应——既进不了游戏也打不开仓库。
+
+### 6. Tests Required
+
+- 运行期断言（`game_eval`）：走完「主菜单 → 开始游戏 → 暂停退出 → 进仓库 → 操作仓库 → 回主菜单」后，断言新主菜单实例的 `snapped_cards.size() == 0`，且拖动任一卡牌能真正切换场景。
+- 同一路径上还要断言 `SceneManager._cache` 的值全部 `is_instance_valid`，且 `get_tree().root` 下只有一个场景实例。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+func update_snapper_positions():
+	if target_snapper:
+		target_snapper.snap_positions.clear()   # 只重置坐标，旧记录继续占位
+```
+
+#### Correct
+
+```gdscript
+func update_snapper_positions():
+	if target_snapper:
+		target_snapper.prune_snapped_cards()    # 先丢弃已离场实例的记录
+		target_snapper.snap_positions.clear()
+```
+
+## SceneManager 只复用缓存池里的实例，临时场景必须释放
+
+### 1. Scope / Trigger
+
+当 `SceneManager._switch_to()` 要移除「当前场景」，而该场景**不在 `_cache` 中**时。产生这种场景的路径是 `main_menu.gd`（开始游戏）与 `pause_menu.gd`（退出游戏）用 `change_scene_to_file` 直接加载场景：它们让新场景成为 `current_scene`，但 `_cache` 与 `_current_id` 仍停在旧值。
+
+### 2. Signatures
+
+```gdscript
+# core/autoloads/SceneManager.gd
+func _switch_to(target_id: String, target_path: String) -> void
+```
+
+### 3. Contracts
+
+- `_cache` 里的实例才允许「`remove_child` 后留着复用」；其余必须 `queue_free()`。
+- 判据用 `_cache.values().has(current)`，不要用「`_current_id` 是否命中」：上述路径下 `_current_id` 与 `current_scene` 本就不同步。
+- 未释放的临时场景会变成**永久孤儿**：子节点、内联子资源与信号连接继续存活，并污染后续同场景实例的状态（见上一节）。
+- 「先判 `is_instance_valid` 再决定移除谁」的既有逻辑保持不变。
+
+### 4. Validation & Error Matrix
+
+| 条件 | 行为 | 结果 |
+|---|---|---|
+| 当前场景在 `_cache` 中 | 只 `remove_child` | 保留复用，符合缓存设计 |
+| 当前场景不在 `_cache` 中 | `remove_child` + `queue_free()` | 不产生孤儿节点 |
+| 缓存实例已被 Godot 释放 | `is_instance_valid` 为 false → erase → 回退到 `current_scene` | 不撞已释放实例 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：进仓库时把 `change_scene_to_file` 载入的临时主菜单释放掉，切换前后孤儿节点数不增长。
+- Bad：一律 `remove_child` 而不释放。孤儿节点与其共享子资源持续累积，最终让主菜单卡牌全部失灵。
+
+### 6. Tests Required
+
+- `game_eval` 走完整场景循环后断言 `Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)` 不增长。**断言点必须选在「缓存实例正挂在树上」的时刻**：缓存池里的场景整体不在树上时，它的整棵子树本来就会计入该计数器，直接对比绝对零值会误判。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+current.get_parent().remove_child(current)   # 临时场景从此无人引用，成为孤儿
+```
+
+#### Correct
+
+```gdscript
+current.get_parent().remove_child(current)
+if not _cache.values().has(current):
+	current.queue_free()
+```
