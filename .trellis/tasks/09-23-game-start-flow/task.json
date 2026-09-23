@@ -1,0 +1,29 @@
+{
+  "id": "game-start-flow",
+  "name": "game-start-flow",
+  "title": "开局流程：角色背包初始化与技能卡抽取",
+  "description": "定义「从局外进入局内」开局流程的源需求与跨子任务验收口径：①每局开局初始化角色本体与其背包，只带入局外仓库「带入栏」中玩家选定要带入的物品；②开局触发技能卡抽取，抽 5 张、玩家选 2 张。父任务持有需求集、任务地图与集成验收，自身不承担实现。",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "LisBam",
+  "assignee": "LisBam",
+  "createdAt": "2026-09-23",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "09-23-run-start-loadout-init",
+    "09-23-run-start-skill-card-draft"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://dnnbun11elbgk" path="res://core/ui/hud/time_panel_ui.gd" id="11_qmy6f"]
 [ext_resource type="Script" uid="uid://b2cjlfygx2goy" path="res://core/ui/hud/health_bar_ui.gd" id="12_mwfav"]
 [ext_resource type="Script" uid="uid://bshlhmrbxfyv2" path="res://core/debug/debug_loadout_seeder.gd" id="13_debug"]
+[ext_resource type="Script" uid="uid://k13qj2wv8e41" path="res://core/gameflow/run_start_initializer.gd" id="14_e2s0e"]
 [ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
 [ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
@@ -91,8 +92,12 @@ GatheringRules = Array[Resource]([SubResource("Resource_nfivy"), SubResource("Re
 
 [node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
 
+[node name="RunStartInitializer" type="Node" parent="." unique_id=1307156547]
+script = ExtResource("14_e2s0e")
+
 [node name="DebugLoadoutSeeder" type="Node" parent="." unique_id=1135409514]
 script = ExtResource("13_debug")
+Enabled = false
 ClearInventoryBeforeApply = false
 Loadout = ExtResource("14_loadout")
 

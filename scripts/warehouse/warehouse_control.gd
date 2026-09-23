@@ -15,6 +15,10 @@ extends Node2D
 const PAGE_SIZE := 24
 
 ## 带入栏的栏位上限。升级只能在这个上限内增加可用数量。
+##
+## 【镜像常量】取值必须与 `ItemsControl.CARRY_SLOT_CAPACITY` 相等：格子视图必须按硬上限
+## 一次铺满（否则升级扩栏时要重建节点），而权威也按同一数量铺数组。
+## 两者由契约测试断言同值，禁止只改一处。
 const CARRY_MAX_POSITIONS := 10
 
 ## 通用物品格子场景。与商店共用同一个场景，保证两处观感一致。
@@ -52,12 +56,21 @@ var _warehouse = null
 var _wallet = null
 var _progression = null
 
+## 带入栏权威来源（`ItemsControl` Autoload）。刻意不写类型标注，理由同上。
+## 界面不再自己长期持有带入栏内容，一切读写都经它的 Get/Set/ClearCarryEntry。
+var _carry_authority = null
+
 ## 两侧的格子视图。
 var _warehouse_slots: Array[ItemSlot] = []
 var _carry_slots: Array[ItemSlot] = []
 
 ## 带入栏内容。索引即栏位序号，元素形如 {"item": Resource, "count": int}。
 ## Resource 同时承接 GDScript 普通物品和保留的 C# 派生物品。
+##
+## 语义说明：这里是**权威的视图**，不是权威本身。每次 `_refresh_all()` 都会由
+## `_sync_carry_view()` 从 `ItemsControl` 重建；写入也必须先落权威再刷新视图。
+## 之所以不再让界面长期持有内容：仓库场景实例会被 SceneManager 缓存复用，
+## 内容留在实例上时，开局「带入即消耗」在 Main 侧无法清空它，同一批物品会被重复带入。
 var _carry_items: Array = []
 
 ## 当前选中项：{"side": StringName, "index": int}。空字典表示未选中。
@@ -108,19 +121,11 @@ func _apply_init() -> void:
 ## @remarks
 ## 只把带入栏的内容导出给 `ItemsControl`，仓库库存不需要任何回写——
 ## 本次操作全程直接作用于 GlobalWarehouse。
+##
+## 【修订说明】带入栏的权威已上移到 `ItemsControl`（见 `_carry_items` 的声明注释），
+## 因此上面描述的「导出」动作被取消：界面的每次写入都已经直接落在权威上，
+## 退出时再导出一份只会产生第二份必须同步维护的状态。仓库库存依旧不需要任何回写。
 func exit() -> void:
-	ItemsControl.warehouse_to_player.clear()
-	ItemsControl.warehouse_to_player_cnt.clear()
-
-	# 只导出实际占用的栏位，空位不入列表，避免局内背包收到一堆空条目。
-	for i in _active_carry_count():
-		if i >= _carry_items.size():
-			break
-		var entry: Dictionary = _carry_items[i]
-		if entry["item"] != null and int(entry["count"]) > 0:
-			ItemsControl.warehouse_to_player.append(entry["item"])
-			ItemsControl.warehouse_to_player_cnt.append(int(entry["count"]))
-
 	_selected = {}
 
 
@@ -152,6 +157,7 @@ func _resolve_dependencies() -> void:
 	_warehouse = get_node_or_null("/root/GlobalWarehouse")
 	_wallet = get_node_or_null("/root/PlayerWallet")
 	_progression = get_node_or_null("/root/PlayerProgression")
+	_carry_authority = get_node_or_null("/root/ItemsControl")
 
 	if _warehouse == null:
 		push_error("Warehouse: 未找到 GlobalWarehouse autoload，仓库内容无法读写。")
@@ -159,6 +165,8 @@ func _resolve_dependencies() -> void:
 		push_error("Warehouse: 未找到 PlayerWallet autoload，金币无法显示。")
 	if _progression == null:
 		push_error("Warehouse: 未找到 PlayerProgression autoload，容量升级不可用。")
+	if _carry_authority == null:
+		push_error("Warehouse: 未找到 ItemsControl autoload，带入栏内容无法读写。")
 
 
 ## 创建两侧的格子视图。只创建一次，之后靠重新绑定复用。
@@ -174,9 +182,9 @@ func _build_slot_views() -> void:
 	_carry_slots = _create_slots(_carry_grid, SIDE_CARRY, CARRY_MAX_POSITIONS)
 
 	# 带入栏的内容与栏位一一对应，先铺满空位，之后按索引覆盖。
-	_carry_items.clear()
-	for i in CARRY_MAX_POSITIONS:
-		_carry_items.append({"item": null, "count": 0})
+	# 【修订说明】内容的铺法改由 `_sync_carry_view()` 从权威重建：格子视图只建一次，
+	# 而带入栏内容可能已被开局初始化取走，所以内容不能只在建格子时铺一次。
+	_sync_carry_view()
 
 
 ## 在指定网格下创建格子视图。
@@ -221,6 +229,9 @@ func _absorb_items_brought_back() -> void:
 
 ## 全量刷新。每页只有 24 个格子，重绘成本极低，换来的是「不可能忘记刷新某一处」。
 func _refresh_all() -> void:
+	# 先同步权威再画：带入栏内容可能已被开局初始化在场景外取走（带入即消耗），
+	# 视图若不重建就会继续显示已经不在权威里的物品。
+	_sync_carry_view()
 	_refresh_header()
 	_fill_warehouse_page()
 	_fill_carry_slots()
@@ -417,12 +428,26 @@ func _on_put_in_pressed() -> void:
 	var item: Resource = stack.Item as Resource
 	var amount := int(stack.Amount)
 
+	# 权威不可用时必须提前失败：下面的顺序是「先移出仓库、再写带入栏」，
+	# 若写不进去，物品已经从仓库消失，等于凭空销毁。
+	if _carry_authority == null:
+		_set_status("带入栏不可用，物品未移出仓库", true)
+		return
+
 	# 先移出再写入带入栏：移出失败时带入栏保持原样，不会凭空多出物品。
 	if not bool(_warehouse.TryRemoveItem(item, amount)):
 		_set_status("从仓库取出失败", true)
 		return
 
-	_carry_items[target] = {"item": item, "count": amount}
+	# 写入的是**权威**，视图会在 _refresh_all() 里按权威重建。
+	# 理论上不会失败（target 已按可用栏位选取、权威刚刚校验过存在）；
+	# 真失败时把物品退回仓库，避免无声销毁。
+	if not bool(_carry_authority.call("SetCarryEntry", target, item, amount)):
+		_warehouse.AddItem(item, amount)
+		_set_status("带入栏写入失败，物品已退回仓库", true)
+		_refresh_all()
+		return
+
 	_selected = {}
 	_set_status("已放入带入栏", false)
 	_refresh_all()
@@ -441,13 +466,18 @@ func _on_take_out_pressed() -> void:
 
 	var count := int(entry["count"])
 
+	# 权威不可用时提前失败：否则物品会从界面消失、却根本没写进任何权威。
+	if _carry_authority == null:
+		_set_status("带入栏不可用，无法取回", true)
+		return
+
 	# 仓库放不下就不要取出：否则物品会从带入栏消失却进不了仓库，等于凭空销毁。
 	if not bool(_warehouse.CanAddItem(item, count)):
 		_set_status("仓库放不下，先整理或扩容", true)
 		return
 
 	_warehouse.AddItem(item, count)
-	_carry_items[index] = {"item": null, "count": 0}
+	_carry_authority.call("ClearCarryEntry", index)
 	_selected = {}
 	_set_status("已取回仓库", false)
 	_refresh_all()
@@ -557,6 +587,22 @@ func _get_warehouse_stack(index: int):
 	if index < 0 or index >= _warehouse_capacity():
 		return null
 	return _warehouse.GetStackAt(index)
+
+
+## 从权威重建带入栏视图。
+##
+## 视图长度固定为 CARRY_MAX_POSITIONS（与权威的 CARRY_SLOT_CAPACITY 同值），
+## 因此任何调用方都可以按下标安全访问 `_carry_items`。
+## 权威缺失（autoload 未装配）时退化为全空，让界面保持可用而不是整屏报错。
+## 返回值：无。
+func _sync_carry_view() -> void:
+	_carry_items.clear()
+	for i in CARRY_MAX_POSITIONS:
+		if _carry_authority == null:
+			_carry_items.append({"item": null, "count": 0})
+			continue
+
+		_carry_items.append(_carry_authority.call("GetCarryEntry", i))
 
 
 ## 读取当前可用的带入栏数量。
