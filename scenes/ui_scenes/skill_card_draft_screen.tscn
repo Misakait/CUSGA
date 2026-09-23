@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://ca8m4rlwkbbvq" path="res://scenes/skill_card_scenes/SkillCard.tscn" id="2_5e8co"]
 
 [node name="SkillCardDraftScreen" type="Control" unique_id=397584942]
+process_mode = 3
 visible = false
 layout_mode = 3
 anchors_preset = 15

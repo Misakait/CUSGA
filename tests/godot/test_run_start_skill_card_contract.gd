@@ -25,6 +25,8 @@ const DRAFT_SCENE_PATH: String = "res://scenes/ui_scenes/skill_card_draft_screen
 const SKILL_CARD_GD: String = "res://scripts/card_scripts/skill_card.gd"
 const INVENTORY_SCRIPT: GDScript = preload("res://entities/components/inventory_component.gd")
 const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
+## 屏幕过渡场景（场景切换黑幕），用于锁定「过渡动画必须无视暂停」这条契约。
+const TRANSITIONS_SCENE_PATH: String = "res://scenes/ui_scenes/ScreenTransitions.tscn"
 
 ## 抽卡界面的确认按钮、卡面容器与提示标签路径（与界面场景结构一致）。
 const CONFIRM_BUTTON_PATH: String = "Content/ConfirmButton"
@@ -527,4 +529,41 @@ func test_production_wiring_shape() -> void:
 		skill_card_text,
 		'call("connect_card_signals", self)',
 		"守卫为真时仍必须照旧连接，战斗手牌行为不得改变。"
+	)
+
+
+## 暂停期可用性契约。
+##
+## 两条都曾经真实地把整屏变黑 / 让界面点不动：
+## 1) 抽卡界面自己必须 PROCESS_MODE_ALWAYS，否则暂停期间卡面按钮点不动（战斗暂停菜单与天赋界面同样如此）；
+## 2) 屏幕过渡动画（场景切换黑幕）必须无视暂停——淡入 Tween/动画一旦被暂停冻住，
+##    黑幕会永久停在 alpha=1，把包括抽卡界面在内的整个画面盖成全黑。
+## 返回值：无。
+func test_pause_safe_ui_and_screen_transition() -> void:
+	var screen_text: String = FileAccess.get_file_as_string(DRAFT_SCENE_PATH)
+	assert_contains(
+		screen_text,
+		"process_mode = 3",
+		"抽卡界面必须使用 PROCESS_MODE_ALWAYS，否则暂停期间卡面按钮点不动。"
+	)
+
+	var transitions_text: String = FileAccess.get_file_as_string(TRANSITIONS_SCENE_PATH)
+	assert_contains(
+		transitions_text,
+		"process_mode = 3",
+		"屏幕过渡必须无视暂停：淡入动画被冻住会让黑幕永久停在 alpha=1，整屏全黑。"
+	)
+
+	var script_text: String = FileAccess.get_file_as_string(DRAFT_GD)
+	assert_contains(
+		script_text,
+		'has_method("unlock")',
+		"挂载卡面后必须解除默认可见的锁定遮罩，否则每张卡都被黑块盖住。"
+	)
+
+	var skill_card_text: String = FileAccess.get_file_as_string(SKILL_CARD_GD)
+	assert_contains(
+		skill_card_text,
+		"$LockColor.visible = false",
+		"卡面的解锁协议必须隐藏 LockColor，抽卡界面正是依赖它清除遮罩。"
 	)

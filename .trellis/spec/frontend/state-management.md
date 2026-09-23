@@ -560,6 +560,73 @@ func _ready() -> void:
 		_on_run_start_initialized()
 ```
 
+## 全局暂停会冻住过渡动画与局内 UI
+
+### 1. Scope / Trigger
+
+代码里出现 `get_tree().paused = true`（暂停菜单、天赋界面、开局抽卡界面等），并且场景中还存在依赖 `AnimationPlayer` / `Tween` 的**全局视觉反馈**（`ScreenTransitions` 的场景切换黑幕就是），或者需要玩家在暂停期间继续操作的界面。
+
+### 2. Signatures
+
+```gdscript
+# 暂停方
+get_tree().paused = true
+
+# 暂停期间仍要能点：在**界面场景的根节点**上设 PROCESS_MODE_ALWAYS（.tscn 里是 process_mode = 3）
+[node name="SkillCardDraftScreen" type="Control"]
+process_mode = 3
+
+# 全局过渡也必须无视暂停（ScreenTransitions.tscn 根节点）
+[node name="SceneTransitions" type="Node"]
+process_mode = 3
+```
+
+### 3. Contracts
+
+- `paused = true` 会停住所有 `PROCESS_MODE_INHERIT` / `PROCESS_MODE_PAUSABLE` 节点的处理，**其中包含 `AnimationPlayer` 与 `Tween`**。这不是"逻辑不动"，而是"动画时间轴停住"。
+- 因此 `ScreenTransitions.fade_in()` 这类实现（`show()` → `play()` → `await animation_finished` → `hide()`）一旦在中途遇到暂停，就**永远等不到 `animation_finished`**，黑幕永久停在 `alpha = 1`。表现是**整屏像素级全黑**，而所有业务数据（抽卡张数、背包内容、`paused` 标志）全部正常——极易误诊为"某块遮罩太黑"。
+- 暂停期间仍要接受点击的界面必须在**场景根节点**设 `process_mode = 3`：Godot 的 GUI 分发用 `Control.can_process()` 过滤事件，INHERIT 的控件在暂停下 `can_process()` 为 `false`，**按钮点不动且没有任何报错**。既有先例：`scenes/ui_scenes/pause_menu.tscn`、`scenes/talents/talent_screen.tscn`。
+- 判断某个 CanvasItem 是否受暂停影响，用 `can_process()` 直接读，不要靠推理：ALWAYS 下为 `true`，INHERIT 下为 `false`。
+- **不要**用"让调用方先等过渡结束再暂停"来绕过：那会把时序依赖散到每个调用点，且新调用点必然再犯。
+
+### 4. Validation & Error Matrix
+
+| 现象 | 真实原因 | 处理 |
+|---|---|---|
+| 暂停后整屏全黑，业务数据全对 | 过渡黑幕的动画被暂停冻住，`FadeToBlack` 永久 `alpha = 1`，且它在高 `layer` 上盖住一切 | 给过渡节点设 `process_mode = 3` |
+| 暂停期间按钮点不动、无报错 | 控件为 INHERIT，暂停下 `can_process()` 为 `false`，GUI 事件被过滤 | 界面场景根节点设 `process_mode = 3` |
+| 看不到界面但 `visible` 为 `true`、尺寸正常 | 有更高 `layer` 的 CanvasLayer 盖住（如过渡层 `layer = 20`） | 列出所有 CanvasLayer 比较 `layer` |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`ScreenTransitions.tscn` 根节点设 `process_mode = 3`；`skill_card_draft_screen.tscn` 同样设 3。运行期验证：暂停中调 `fade_in()`，1 秒后 `FadeToBlack.visible == false` 且 `get_tree().paused` 仍为 `true`。
+- Base：`PauseMenu` 与天赋界面早已是 `process_mode = 3`，新界面照抄即可。
+- Bad：只断言"界面 `visible = true`、尺寸 1280×720、`modulate` 正常"就认为界面可见——这些在整屏全黑时同样成立。
+
+### 6. Tests Required
+
+- 场景形状断言：抽卡/暂停类界面场景的根节点含 `process_mode = 3`；过渡场景也含 `process_mode = 3`（去掉它就会让黑屏回归）。
+- 运行期断言：`get_viewport().get_texture().get_image()` 全屏网格采样，非黑像素比例必须 > 0；只做业务数据断言无法发现全黑屏。
+- 运行期断言：暂停中调 `ScreenTransitions.fade_in()` 后等待，断言黑幕 `visible == false`。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# 暂停了游戏，又指望依赖 AnimationPlayer 的过渡动画自己走完
+get_tree().paused = true
+fade_in()                       # await animation_finished 永远不返回 → 黑幕永久 alpha=1
+```
+
+#### Correct
+
+```ini
+; ScreenTransitions.tscn —— 过渡动画无视暂停
+[node name="SceneTransitions" type="Node"]
+process_mode = 3
+```
+
 ## 局内战斗的 UI 宿主：battle.tscn 是 Main 的子节点
 
 ### 1. Scope / Trigger
