@@ -26,6 +26,7 @@
 [ext_resource type="Script" uid="uid://dggoia15cpbun" path="res://core/gameflow/world_hold_interaction_controller.gd" id="19_world_hold"]
 [ext_resource type="Script" uid="uid://btikxiw5fhx4d" path="res://core/ui/hud/world_hold_progress_indicator.gd" id="20_hold_indicator"]
 [ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="25_36rkl"]
+[ext_resource type="PackedScene" uid="uid://dwahsdi12ru61" path="res://scenes/ui_scenes/pause_menu.tscn" id="26_ma7h6"]
 [ext_resource type="PackedScene" uid="uid://bupnf6pmnnrxp" path="res://scenes/player_scenes/PlayerChar.tscn" id="27_fs0b5"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
@@ -230,6 +231,9 @@ GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 layout_mode = 0
 
 [node name="DevSettingsUI" parent="UI/HUDLayer/HUDRoot" unique_id=149711311 instance=ExtResource("25_36rkl")]
+layout_mode = 1
+
+[node name="PauseMenu" parent="UI/HUDLayer/HUDRoot" unique_id=1024444119 instance=ExtResource("26_ma7h6")]
 layout_mode = 1
 
 [node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player", "player_char") instance=ExtResource("2_rvslj")]

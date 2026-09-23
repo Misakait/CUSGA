@@ -40,8 +40,23 @@ func _on_scene_requested(scene_id: String) -> void:
 	_switch_to(scene_id, path)
 
 func _switch_to(target_id: String, target_path: String) -> void:
-	# 1. 把当前场景从树中移除（但不销毁！引用还在 _cache 里）
-	var current: Node = _cache.get(_current_id) as Node
+	# 1. 解析当前场景：先把「缓存实例是否还活着」判掉，再决定移除谁。
+	#
+	# 缓存里的实例可能已经被 Godot 释放：Main 由 main_menu.gd 用
+	# change_scene_to_file 直接加载，那一刻作为旧 current_scene 的主菜单实例就被回收了，
+	# 而 _current_id 仍停在 "main_menu"。进游戏、再从暂停菜单退回主菜单之后，
+	# 这次切换若不丢弃失效缓存，就会撞上已释放实例，并把旧场景留在树上继续运行。
+	var cached_current: Variant = _cache.get(_current_id)
+	if not is_instance_valid(cached_current):
+		_cache.erase(_current_id)
+		cached_current = null
+
+	var current: Node = cached_current
+	# 缓存里没有可用的当前场景时回退到运行时的 current_scene：
+	# 它才是真正挂在树上、需要被移除的那一个。
+	if current == null:
+		current = get_tree().current_scene
+
 	if current and current.get_parent():
 
 		ScreenTransitions.fade_out()

@@ -1,0 +1,95 @@
+[gd_scene format=3 uid="uid://dwahsdi12ru61"]
+
+[ext_resource type="Script" uid="uid://b0mn2f28qu6lh" path="res://core/ui/hud/pause_menu.gd" id="1_pause"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pause_button"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_continue_button"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_exit_button"]
+
+[node name="PauseMenu" type="Control" unique_id=1024444119]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_pause")
+
+[node name="PauseButton" type="Button" parent="." unique_id=198737908]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -104.0
+offset_top = 12.0
+offset_right = -16.0
+offset_bottom = 52.0
+grow_horizontal = 0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_pause_button")
+text = "暂停"
+
+[node name="PauseOverlay" type="Control" parent="." unique_id=167868708]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="PauseOverlay" unique_id=1975736084]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="MenuCenter" type="CenterContainer" parent="PauseOverlay" unique_id=1456762142]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="PauseOverlay/MenuCenter" unique_id=1741679936]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PauseOverlay/MenuCenter/MenuPanel" unique_id=1604364464]
+layout_mode = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer" unique_id=1896376883]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TitleLabel" type="Label" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=575092640]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "已暂停"
+horizontal_alignment = 1
+
+[node name="ContinueButton" type="Button" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=1284376192]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_continue_button")
+text = "继续游戏"
+
+[node name="ExitButton" type="Button" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=694765966]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_exit_button")
+text = "退出游戏"
