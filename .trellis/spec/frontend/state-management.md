@@ -490,6 +490,76 @@ func _resolve_nodes() -> void:
 
 `warehouse_control.gd` 的 `init()` 会访问 `inventory_control.inventory`，而 `inventory` 是 `inventory_control.gd` 的 `@onready` 变量。把 `Warehouse.tscn` 当作初始场景直接运行时必然报 `Invalid call. Nonexistent function 'CopySlotsFrom' in base 'Nil'`。走 `main_menu` 启动再经 SceneManager 切换进入仓库不会触发。新增场景控制器时不要复制这个写法。
 
+## 开局信号是同步广播的，晚就绪的消费方必须补一次状态查询
+
+### 1. Scope / Trigger
+
+需要挂接 `Main.tscn` 里某个开局流程节点的完成信号，而消费方在**树顺序**上排在生产者之后时。典型：`core/gameflow/run_start_initializer.gd` 广播 `RunStartInitialized`，抽卡界面挂在 `UI/HUDLayer/HUDRoot` 下。
+
+### 2. Signatures
+
+```gdscript
+# 生产者：core/gameflow/run_start_initializer.gd
+signal RunStartInitialized
+func _ready() -> void:
+	Initialize()                   # 同步完成
+	RunStartInitialized.emit()     # 同步广播——此刻晚就绪的兄弟节点还没 _ready
+func HasInitialized() -> bool:     # 供消费方查询完成态
+	return _has_initialized
+
+# 消费方：core/gameflow/run_start_skill_card_draft.gd
+func _connect_initializer() -> void:
+	if initializer.has_signal(&"RunStartInitialized"):
+		initializer.connect(&"RunStartInitialized", Callable(self, "_on_run_start_initialized"))
+	# 订阅之后必须再补一次完成态查询：只 connect 会永远等不到那次同步广播
+	if initializer.has_method("HasInitialized") and bool(initializer.call("HasInitialized")):
+		_on_run_start_initialized()
+```
+
+### 3. Contracts
+
+- 同级 `_ready` 按**树顺序**触发。生产者排在前面时，它的同步广播发生在消费方 `_ready` 之前，消费方的 `connect()` 不可能收到那一次信号。
+- 正确做法是**订阅 + 完成态补偿查询**：`connect()` 覆盖"以后才完成"，查询覆盖"已经完成"，两条路径汇入同一个处理函数，由内部的幂等标志（如 `_has_drafted`）去重。
+- **不要**用"把消费方节点挪到生产者之前"来规避：那只是把时序依赖藏进场景文件，日后谁调整节点顺序，功能就静默失效。
+- 生产者侧只暴露一个纯查询方法即可，**不要**把同步流程改成异步（`call_deferred`、`await get_tree().process_frame`、定时器）来迁就消费方——那会把确定性的开局时机变成竞态。
+
+### 4. Validation & Error Matrix
+
+| 现象 | 真实原因 | 处理 |
+|---|---|---|
+| 开局环节完全不触发，且日志无任何报错 | 消费方只 `connect()`，广播已在其 `_ready` 之前发完 | 加完成态补偿查询 |
+| 开局环节触发两次 | 订阅路径与补偿路径都命中，处理函数缺幂等标志 | 处理函数首行查标志并置位 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`run_start_skill_card_draft.gd` 的 `Setup()` → `_connect_initializer()`，两条路径都由 `_has_drafted` 去重，且运行期 `game_eval` 证实补偿路径就是生产实际走的那条。
+- Bad：`initializer.connect(&"RunStartInitialized", ...)` 之后就认为"已经挂好了"。
+
+### 6. Tests Required
+
+- 契约测试必须**分别**驱动两条路径：夹具用桩的 `Initialized` 开关造出"未完成"（随后手动广播信号）与"已完成"（构造即触发）两种情形。
+- 因为广播同步、消费方可能晚就绪，只测信号路径**无法**发现"补偿缺失"——两条断言缺一不可。
+- 夹具要复刻生产层级，使脚本里 `../../../../` 这类相对导出默认值也被真实解析。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+func _ready() -> void:
+	initializer.connect(&"RunStartInitialized", _on_run_start_initialized)
+	# 生产者已在本节点 _ready 之前广播过 → 这一行之后再也不会触发
+```
+
+#### Correct
+
+```gdscript
+func _ready() -> void:
+	initializer.connect(&"RunStartInitialized", _on_run_start_initialized)
+	if bool(initializer.call("HasInitialized")):     # 补上"已经完成"这一格
+		_on_run_start_initialized()
+```
+
 ## 局内战斗的 UI 宿主：battle.tscn 是 Main 的子节点
 
 ### 1. Scope / Trigger

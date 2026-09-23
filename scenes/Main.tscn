@@ -29,6 +29,7 @@
 [ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="25_36rkl"]
 [ext_resource type="PackedScene" uid="uid://dwahsdi12ru61" path="res://scenes/ui_scenes/pause_menu.tscn" id="26_ma7h6"]
 [ext_resource type="PackedScene" uid="uid://bupnf6pmnnrxp" path="res://scenes/player_scenes/PlayerChar.tscn" id="27_fs0b5"]
+[ext_resource type="PackedScene" uid="uid://dwwq74s2nxwtj" path="res://scenes/ui_scenes/skill_card_draft_screen.tscn" id="28_gsxep"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -240,6 +241,11 @@ layout_mode = 1
 
 [node name="PauseMenu" parent="UI/HUDLayer/HUDRoot" unique_id=1024444119 instance=ExtResource("26_ma7h6")]
 layout_mode = 1
+
+[node name="SkillCardDraftScreen" parent="UI/HUDLayer/HUDRoot" unique_id=397584942 instance=ExtResource("28_gsxep")]
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player", "player_char") instance=ExtResource("2_rvslj")]
 player = NodePath("../Player")

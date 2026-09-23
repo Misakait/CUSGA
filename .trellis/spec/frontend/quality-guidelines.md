@@ -452,7 +452,7 @@ level.connect("LevelChanged", _on_level_changed)
 ```
 
 
-## 编辑器测试里构造 UI 夹具的三条硬约束
+## 编辑器测试里构造 UI 夹具的四条硬约束
 
 ### 1. Scope / Trigger
 
@@ -480,6 +480,8 @@ scene_tree.root.add_child(popup)   # 入树时引擎已经调用过 _ready
 - 非 `@tool` 脚本经 `PackedScene.instantiate()` 得到的是 **placeholder instance**，连 `_ready` 都无法调用（`Attempt to call a method on a placeholder instance`）。行为测试必须用 `脚本.new()` 构造；生产场景的脚本引用、唯一名、列数等**形状契约**另用 `instantiate()` 只读断言锁定，两者分工不要混。
 - `scene_tree.root.add_child(脚本实例)` 会触发引擎正常调用一次 `_ready`。因此 `_ready` 里的**连接与节点生成都必须幂等**：连接前查 `is_connected`，生成前查哨兵（如"引用字典非空即返回"）。
 - 断言"某个弹窗被关掉了"之前，必须让它**真的可见过**；否则在从未显示的状态下 `assert_false(popup.visible)` 会无意义地通过。
+- 未入树的节点**不能**直接调 `get_tree()`：引擎会打印 `Parameter "data.tree" is null`。返回值同样是 `null`，所以逻辑"看起来没错"，但日志会被刷满噪音、掩盖真正的问题。判"在不在树里"要先 `is_inside_tree()` 收口，再取 `get_tree()`。
+- 生产脚本用 `@export var XPath: NodePath` 携带相对路径默认值时，夹具必须**复刻生产层级**（例：`Main/UI/HUDLayer/HUDRoot/<界面>`），否则默认路径解析不到。额外收益：默认路径层级写错（少写一层 `..`）时测试会立刻失败，比运行起来才发现功能没触发便宜得多。
 
 ### 4. Validation & Error Matrix
 
@@ -487,6 +489,7 @@ scene_tree.root.add_child(popup)   # 入树时引擎已经调用过 _ready
 |---|---|---|
 | `PROPERTY_NOT_ON_CLASS: custom_minimum_size not found on PopupPanel` | `Window` 系节点用 `min_size` | 改 `min_size`；注意 `batch_execute` 已整体回滚，需重发全部子命令 |
 | `Attempt to call a method on a placeholder instance` | 用 `instantiate()` 构造了非 `@tool` 脚本的实例 | 改 `脚本.new()` + 手工子树 |
+| `Parameter "data.tree" is null` | 未入树的节点调了 `get_tree()` | 先用 `is_inside_tree()` 判空，再取 `get_tree()` |
 | 生成的行数翻倍、值标签永远停在占位符 | `_ready` 被执行两次，第二批引用覆盖了第一批 | 生成逻辑加哨兵，连接前查 `is_connected` |
 | `Signal 'pressed' is already connected to given callable` | 同上，重复 `connect` | 同上 |
 | `assert_false(popup.visible)` 意外通过 | 弹窗本来就没显示过 | 断言前先 `popup.visible = true`（或真实 `popup_centered()`） |

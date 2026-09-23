@@ -25,7 +25,15 @@ const ELEMENT_DISPLAY_NAMES := {
 
 #该节点必须挂载在CardManager下！
 func _ready() -> void:
-	get_parent().connect_card_signals(self)
+	#【修订说明】原实现无条件调用父节点的 connect_card_signals，隐含了「父节点必定是 CardManager」。
+	# 开局技能卡抽取界面（core/gameflow/run_start_skill_card_draft.gd）要复用同一份卡面，
+	# 但它的父节点是普通占位控件，无条件调用会直接抛错。因此改为存在性守卫：
+	# 战斗路径下父节点始终是 CardManager（scripts/card_scripts/card_manager.gd:1019 提供该方法），
+	# 守卫恒为真、连接照旧发生，战斗行为不变；非战斗场景跳过连接即可安全实例化。
+	# 上面那条「必须挂载在 CardManager 下」的注释描述的是战斗路径的既有约定，本守卫只解除这条隐含依赖。
+	var card_host: Node = get_parent()
+	if card_host != null and card_host.has_method("connect_card_signals"):
+		card_host.call("connect_card_signals", self)
 
 func _process(delta: float) -> void:
 	pass
