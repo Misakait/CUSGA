@@ -412,3 +412,45 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 14: 开局技能卡抽取（抽 5 选 2）
+<!-- trellis-session: v=2 fp=aeafa73803e803b9 -->
+
+**Date**: 2026-09-23
+**Task**: 开局技能卡抽取（抽 5 选 2）
+**Branch**: `main`
+
+### Summary
+
+子任务②完成：每局开局初始化完成后触发技能卡抽取，抽出 5 张互不重复的候选、玩家选 2 张写入背包；抽卡界面挂在 HUD 下并复用战斗卡面与全局暂停开关。
+
+### Main Changes
+
+- 新增 core/gameflow/run_start_skill_card_draft.gd 与 scenes/ui_scenes/skill_card_draft_screen.tscn，抽 5 选 2 后把卡写入玩家背包（不自动进卡组）
+- 用「订阅信号 + HasInitialized() 完成态补偿查询」解决抽卡界面晚于 RunStartInitializer 就绪、收不到同步广播的问题
+- scripts/card_scripts/skill_card.gd 的 _ready() 加父节点存在性守卫，使战斗卡面可安全复用到非战斗界面
+- Main.tscn 在 UI/HUDLayer/HUDRoot 下实例化抽卡界面；同步 docs/游戏机制与玩法内容.md 与 .trellis/spec/frontend 两条约束
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `710a618` | feat: 新增开局技能卡抽取 |
+| `66a30d2` | chore(task): archive 09-23-run-start-skill-card-draft |
+
+### Testing
+
+- [OK] 新增 tests/godot/test_run_start_skill_card_contract.gd（含顶层转发壳），11/11 通过
+- [OK] 全量 test_run：371 passed / 2 failed（均为既有红灯）/ 33 skipped，相对基线 360 无新增回归
+- [OK] project_run(custom res://scenes/Main.tscn) + game_eval：抽 5 张、卡面实例化并显示正确卡名、选 2 张入背包、未选不入包、界面收起、暂停正确归还
+- [OK] 第二次开局验证新局状态独立（drawn=5、selected=0），且 user:// 下无存档文件、跨局不残留
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 父任务 09-23-game-start-flow 的 5 条跨子任务集成验收（两项需求均已交付）
+- 可选：在背包 UI 补充「抽到的卡需手动放进出战卡组」的引导
