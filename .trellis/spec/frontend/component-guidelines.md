@@ -128,3 +128,67 @@ theme_override_styles/focus  = SubResource("StyleBoxTexture_yellow")
 theme_override_styles/normal = SubResource("StyleBoxTexture_yellow")
 theme_override_styles/focus  = SubResource("StyleBoxEmpty_focus")
 ```
+
+## 复用战斗卡面：组件默认状态也是接口的一部分
+
+### 1. Scope / Trigger
+
+在非战斗界面里复用 `scenes/skill_card_scenes/SkillCard.tscn`（开局技能卡抽取，以及未来的卡牌浏览 / 奖励展示界面等）时。
+
+### 2. Signatures
+
+```gdscript
+# core/gameflow/run_start_skill_card_draft.gd
+var card_view: Node2D = CardScenePrefab.instantiate() as Node2D
+slot.add_child(card_view)
+card_view.position = CARD_SLOT_SIZE * 0.5
+card_view.call("init_card_data", card)
+
+# 必须显式对齐锁定态：SkillCard.tscn 的 LockColor 默认 visible = true
+if card_view.has_method("unlock"):
+	card_view.call("unlock")
+```
+
+### 3. Contracts
+
+- `SkillCard.tscn` 里的 `LockColor`（`ColorRect`，210×150，黑色 alpha 0.31）在场景文件里**没有** `visible = false`，即新实例默认带着锁定遮罩。它由 `skill_card.gd` 的 `lock()` / `unlock()` 控制，而 `is_lock` 的默认值是 `false`——**场景默认状态与脚本默认语义并不一致**。
+- 战斗语境下这个不一致由控制层补齐：`scripts/card_scripts/card_manager.gd` 会按 `control_lock` 状态对每张卡调用 `lock()` 或 `unlock()`。非战斗复用点**没有**这层控制层，必须自己调用 `unlock()`。
+- 应调用公开协议 `unlock()`，**不要**直接写 `$LockColor.visible = false`：后者把卡面内部节点结构固化到调用方，卡面改结构时会静默失效。
+- 也不要把 `SkillCard.tscn` 的 `LockColor` 默认值改成隐藏来"顺手修好"——那会改动战斗侧首帧表现（锁定态卡牌在第一次 `lock()` 之前不显示遮罩）。
+- 用 `has_method("unlock")` 守卫：卡面场景由 `CardScenePrefab` 导出配置，可被替换成不含该协议的视图。
+
+### 4. Validation & Error Matrix
+
+| 现象 | 真实原因 | 处理 |
+|---|---|---|
+| 非战斗界面每张卡都被半透明黑块盖住，叠加背景遮罩后近乎全黑屏 | 漏调 `unlock()`，`LockColor` 保持场景默认的可见 | 挂载卡面后显式 `unlock()` |
+| 换自定义卡面视图后抛 `Invalid call` | 新视图没有 `unlock` 协议而守卫缺失 | 调 `unlock` 前先 `has_method` 判断 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`_attach_card_view()` 在 `init_card_data` 之后以 `has_method("unlock")` 守卫调用。
+- Base：卡面仅作展示、不需要任何交互时也要走同样的解锁步骤——`LockColor` 与交互无关，它是纯视觉状态。
+- Bad：断言"界面引用了 `SkillCard.tscn`"就认为复用正确——那只证明引对了文件，证明不了对齐了状态。
+
+### 6. Tests Required
+
+- 桩卡面必须**复刻 `LockColor` 结构**（同样的尺寸与默认可见性），否则"漏调 `unlock`"这类缺陷在测试里不可见；断言点应落在"遮罩已隐藏且 `unlock()` 恰好被调用一次"。
+- 运行期还需一次 `game_eval` 读真实卡面实例的 `LockColor.visible`——业务数据断言（抽了几张、进背包几张）**无法**发现全黑屏。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+slot.add_child(card_view)
+card_view.call("init_card_data", card)   # 5 张卡各带一块默认可见的 LockColor → 近乎黑屏
+```
+
+#### Correct
+
+```gdscript
+slot.add_child(card_view)
+card_view.call("init_card_data", card)
+if card_view.has_method("unlock"):
+	card_view.call("unlock")             # 对齐到「非锁定」状态
+```

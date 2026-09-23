@@ -407,6 +407,13 @@ func _attach_card_view(slot: Control, card: Resource) -> void:
 
 	card_view.call("init_card_data", card)
 
+	# 卡面场景自带一个 LockColor 锁定遮罩，且它在场景里的默认可见性是「显示」。
+	# 战斗侧靠 CardManager 按 control_lock 状态显式调用 lock()/unlock() 对齐状态，
+	# 而抽卡界面没有战斗锁定语义，必须在这里显式解除——否则每张卡都会被一块
+	# 210×150 的半透明黑盖住，叠加全屏遮罩后整屏近乎全黑。
+	if card_view.has_method("unlock"):
+		card_view.call("unlock")
+
 
 ## 把占位控件的缩放轴心移到中心。
 ##

@@ -52,11 +52,22 @@ class StubCardView extends Node2D:
 	## 收到的卡数据（按绑定顺序）。
 	var ReceivedCards: Array[Resource] = []
 
+	## unlock() 被调用的次数。
+	var UnlockCount: int = 0
+
 	## 模拟生产卡面的初始化协议。
 	## 参数 card_data：本卡槽要展示的技能卡。
 	## 返回值：无。
 	func init_card_data(card_data: Resource) -> void:
 		ReceivedCards.append(card_data)
+
+	## 模拟生产卡面的解除锁定协议（隐藏 LockColor 遮罩）。
+	## 返回值：无。
+	func unlock() -> void:
+		UnlockCount += 1
+		var lock_color: CanvasItem = get_node_or_null("LockColor") as CanvasItem
+		if lock_color != null:
+			lock_color.visible = false
 
 
 # ----- 夹具 -----
@@ -146,6 +157,14 @@ func _build_stub_card_scene() -> PackedScene:
 	var scene: PackedScene = PackedScene.new()
 	var view: StubCardView = StubCardView.new()
 	view.name = "StubSkillCardView"
+	# 复刻 SkillCard.tscn 的关键结构：一块**默认可见**的锁定遮罩。
+	# 生产卡面正是靠 unlock() 把它关掉，漏掉这一步会让每张卡都盖着黑块。
+	var lock_color: ColorRect = ColorRect.new()
+	lock_color.name = "LockColor"
+	lock_color.size = Vector2(210.0, 150.0)
+	lock_color.position = Vector2(-105.0, -75.0)
+	view.add_child(lock_color)
+	lock_color.owner = view
 	scene.pack(view)
 	view.free()
 	return scene
@@ -312,11 +331,21 @@ func test_drawn_cards_are_bound_to_card_views() -> void:
 	assert_eq(container.get_child_count(), 5, "卡面容器里必须恰好有 5 个卡槽。")
 
 	var unbound_count: int = 0
+	var locked_count: int = 0
 	for index in drawn.size():
 		var view: StubCardView = _card_view(screen, index)
 		if view == null or view.ReceivedCards.size() != 1 or view.ReceivedCards[0] != drawn[index]:
 			unbound_count += 1
+			continue
+		var lock_color: CanvasItem = view.get_node_or_null("LockColor") as CanvasItem
+		if view.UnlockCount != 1 or lock_color == null or lock_color.visible:
+			locked_count += 1
 	assert_eq(unbound_count, 0, "每个卡槽的卡面必须收到它自己那张卡。")
+	assert_eq(
+		locked_count,
+		0,
+		"每张卡面都必须被解除一次锁定遮罩；漏掉会让整屏近乎全黑（LockColor 在场景里默认可见）。"
+	)
 
 
 # ----- 选择 -----
