@@ -390,3 +390,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 13: 开局角色与背包初始化（子任务 1）
+<!-- trellis-session: v=2 fp=a149f01e7fa35d60 -->
+
+**Date**: 2026-09-23
+**Task**: 开局角色与背包初始化（子任务 1）
+**Branch**: `main`
+
+### Summary
+
+新增带入栏权威到 ItemsControl 与开局初始化节点 RunStartInitializer，实现带入即消耗；契约套件 9/9 通过，并在运行中的游戏里用 game_eval 验证背包内容、幂等、仓库视图镜像与写穿。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `001f89f` | feat: 新增开局角色与背包初始化 |
+
+### Status
+
+[OK] **Completed**
