@@ -18,6 +18,13 @@ extends Node2D
 const COLLISION_MASK_CARD = 1
 const COLLISION_MASK_CARD_SLOT = 2
 const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
+# 卡牌视觉数值的共享来源。
+# 【修订说明】卡牌的常态/悬停缩放与缩放时长原本硬编码在本脚本；开局抽卡界面需要
+# 同一套手感，因此提取到 CardVisualConfig 供两处共用。本脚本的 @export 默认值改为
+# 引用它，取值与改动前逐字相同（1.0 / 1.05 / 0.08），因此战斗表现不变。
+# 仍然保留 @export 而不直接用常量：契约测试会用 set("scale_tween_duration", 0.0)
+# 把动画时长置零以短路动画，导出名与可写性是既有接口的一部分。
+const CARD_VISUALS := preload("res://core/card_visual_config.gd")
 # 操作模式设置在通用本地配置中的分组名称。
 # 该分组只定义战斗偏好，修改会导致已保存模式无法被后续版本读取。
 const OPERATION_MODE_SETTINGS_SECTION: String = "battle"
@@ -32,14 +39,14 @@ const OPERATION_MODE_CLICK: String = "click"
 const OPERATION_MODE_DRAG: String = "drag"
 
 @export_group("视觉缩放参数")
-@export var card_normal_scale: Vector2 = Vector2(1.0, 1.0) ## 卡牌正常大小
-@export var card_hover_scale: Vector2 = Vector2(1.05, 1.05) ## 卡牌悬停放大
+@export var card_normal_scale: Vector2 = CARD_VISUALS.CARD_NORMAL_SCALE ## 卡牌正常大小
+@export var card_hover_scale: Vector2 = CARD_VISUALS.CARD_HOVER_SCALE ## 卡牌悬停放大
 @export var card_drag_scale: Vector2 = Vector2(0.95, 0.95) ## 卡牌拖拽时略微缩小
 # 拖拽虚影的固定不透明度；50% 能清楚区分目标预览与仍留在手牌区的真实卡牌。
 @export_range(0.0, 1.0, 0.05) var card_drag_ghost_opacity: float = 0.5
 @export var monster_normal_scale: Vector2 = Vector2(1.5, 1.5) ## 怪物正常大小
 @export var monster_hover_scale: Vector2 = Vector2(1.6, 1.6) ## 怪物被选中悬停时放大
-@export var scale_tween_duration: float = 0.08 ## 缩放动画过度时间
+@export var scale_tween_duration: float = CARD_VISUALS.SCALE_TWEEN_DURATION ## 缩放动画过度时间
 
 @export_group("目标选择视觉参数")
 # 可手动指定目标时呼吸动画的最小缩放，略大于正常卡面以提示可点击性。
@@ -66,10 +73,12 @@ const OPERATION_MODE_DRAG: String = "drag"
 @export_group("点击模式选中参数")
 # 点击模式选中卡牌向上移动的距离。
 # 该值独立于悬停缩放，确保玩家即使移开鼠标也能识别待确认卡牌。
-@export var click_selected_card_lift_distance: float = 36.0
+# 【修订说明】默认值改为引用 CardVisualConfig，与开局抽卡界面共用同一份来源，
+# 取值与改动前相同（36.0）。导出名与可写性保留，理由见文件顶部 CARD_VISUALS 注释。
+@export var click_selected_card_lift_distance: float = CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE
 # 点击模式选中卡牌上移所用的时间。
 # 时长集中在此处，避免交互流程中散落表现参数。
-@export var click_selected_card_lift_duration: float = 0.12
+@export var click_selected_card_lift_duration: float = CARD_VISUALS.CLICK_SELECTED_LIFT_DURATION
 
 @export_group("自我施放参数")
 @export var allow_self_cast_on_empty: bool = true ## 当卡牌为【对自己使用】时，允许拖到空白处直接施放
@@ -1054,13 +1063,13 @@ func highlight_card(card, hovered):
 	if hovered:
 		var tween = create_tween()
 		tween.tween_property(card, "scale", card_hover_scale, scale_tween_duration)
-		card.z_index = 2
+		card.z_index = CARD_VISUALS.CARD_Z_INDEX_HOVER
 		if tooltip_panel and card.data:
 			tooltip_panel.show_tooltip(card.data.CardName, card.data.Description)
 	else:
 		var tween = create_tween()
 		tween.tween_property(card, "scale", card_normal_scale, scale_tween_duration)
-		card.z_index = 1
+		card.z_index = CARD_VISUALS.CARD_Z_INDEX_NORMAL
 
 ## 光线投射检测（射线检测），用于检查并获取鼠标落点位置最上层的卡牌。
 func raycast_check_for_card():

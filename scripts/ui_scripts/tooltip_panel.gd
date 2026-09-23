@@ -38,6 +38,12 @@ var _current_tween: Tween
 var _request_id: int = 0
 
 func _ready() -> void:
+	# 【修订说明】本节点的 process_mode 在 TooltipPanel.tscn 里设为 ALWAYS。
+	# 原因是延迟显示（_pending_show 累计 _hover_time）与跟随鼠标都跑在 _process 里，
+	# 渐现又依赖 Tween，而暂停会把它们一并冻住——表现为"游戏暂停时悬停什么都不显示"。
+	# 开局抽卡界面正是暂停态，悬停必须能看到卡名与描述，因此这里必须无视暂停。
+	# 提示框是纯反馈层，不受游戏暂停影响本就是它的正确语义。
+
 	# 强制设置鼠标穿透，防止提示框挡住鼠标导致目标触发 mouse_exited 引起闪烁
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 

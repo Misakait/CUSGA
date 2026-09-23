@@ -21,6 +21,7 @@ offset_right = 250.0
 offset_bottom = 80.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+process_mode = 3
 script = ExtResource("1_abcde")
 title_label = NodePath("MarginContainer/VBoxContainer/TitleLabel")
 description_label = NodePath("MarginContainer/VBoxContainer/DescriptionLabel")

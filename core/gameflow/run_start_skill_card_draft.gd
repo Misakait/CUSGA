@@ -41,12 +41,11 @@ const TEST_ASSET_PREFIX: String = "test_card_"
 ## 单个卡槽占位的最小尺寸；卡面（Node2D）无法参与容器布局，因此由占位承担尺寸。
 const CARD_SLOT_SIZE: Vector2 = Vector2(200.0, 160.0)
 
-## 选中态与未选中态的着色，只影响表现，不参与任何判定。
-const SELECTED_TINT: Color = Color(1.0, 0.94, 0.62, 1.0)
-const UNSELECTED_TINT: Color = Color(0.72, 0.72, 0.72, 1.0)
-
-## 选中态的放大倍率；配合 `pivot_offset` 以中心为轴。
-const SELECTED_SCALE: Vector2 = Vector2(1.06, 1.06)
+## 卡牌视觉数值的共享来源，与战斗手牌（`card_manager.gd`）共用同一份定义。
+##
+## 悬停缩放、缩放时长、选中抬升距离与层级都从它读取，避免同一套手感在两个界面里
+## 各自演化。见 `core/card_visual_config.gd`。
+const CARD_VISUALS := preload("res://core/card_visual_config.gd")
 
 ## 开局初始化节点相对本节点的路径。
 ##
@@ -79,6 +78,12 @@ const SELECTED_SCALE: Vector2 = Vector2(1.06, 1.06)
 ## 选择进度提示标签相对本节点的路径。
 @export var HintLabelPath: NodePath = NodePath("Content/HintLabel")
 
+## 全局提示浮窗相对本节点的路径。
+##
+## 默认值指向 `HUDRoot` 下的共享浮窗，与 `inventory_ui.gd`、`warehouse_ui.gd`
+## 的 `TooltipPanelPath` 是同一范式。悬停卡面时用它显示卡名与描述。
+@export var TooltipPanelPath: NodePath = NodePath("../TooltipPanel")
+
 ## 是否输出抽取细节日志。
 @export var VerboseLog: bool = false
 
@@ -94,10 +99,27 @@ var _selected_cards: Array[Resource] = []
 ## 与 `_drawn_cards` 一一对应的卡槽占位控件。
 var _slot_views: Array[Control] = []
 
+## 与 `_slot_views` 一一对应的卡面节点。
+##
+## 悬停缩放与选中位移都作用在卡面上而不是占位控件上：这样缩放天然以卡面原点
+## （也就是卡槽中心）为轴，不必再维护 `pivot_offset`，也与战斗侧 `highlight_card()`
+## 缩放 `SkillCard` 本体保持一致。
+var _card_views: Array[Node2D] = []
+
+## 与 `_slot_views` 一一对应的卡面基准位置（即卡槽中心）。
+##
+## 选中位移以它为基准重新计算，而不是在当前 `position` 上累加：反复悬停、点击、
+## 取消都不会让卡面越飘越远。这与战斗侧 `_animate_click_mode_card_selection`
+## 以 `hand_position` 为基准是同一个考虑。
+var _card_view_base_positions: Array[Vector2] = []
+
 ## 界面节点引用；在 `_ready()` 里按导出路径解析一次并缓存。
 var _cards_container: HBoxContainer = null
 var _confirm_button: Button = null
 var _hint_label: Label = null
+
+## 全局提示浮窗；缺失时为 null（浮窗不是开局抽卡的必需依赖，缺了只降级不阻断）。
+var _tooltip_panel: Node = null
 
 ## 独立洗牌状态，避免改变项目其它随机序列。
 var _random := RandomNumberGenerator.new()
@@ -160,6 +182,15 @@ func _resolve_view_nodes() -> void:
 	_hint_label = get_node_or_null(HintLabelPath) as Label
 	if _hint_label == null:
 		push_error("RunStartSkillCardDraft: 未找到提示标签 %s。" % str(HintLabelPath))
+
+	# 悬停提示浮窗缺失只降级为警告：抽卡流程本身不依赖它，不该因为一个纯反馈节点
+	# 缺位就让开局报错。这里也不校验方法，调用点统一用 `has_method` 守卫。
+	_tooltip_panel = get_node_or_null(TooltipPanelPath)
+	if _tooltip_panel == null:
+		push_warning(
+			"RunStartSkillCardDraft: 未找到提示浮窗 %s，卡面悬停将不显示卡名与描述。"
+			% str(TooltipPanelPath)
+		)
 
 
 ## 订阅开局初始化信号，并在初始化已经发生时立刻补一次抽卡。
@@ -363,17 +394,23 @@ func _show_cards() -> void:
 	for child in _cards_container.get_children():
 		child.queue_free()
 	_slot_views.clear()
+	_card_views.clear()
+	_card_view_base_positions.clear()
 
-	for card: Resource in _drawn_cards:
+	for index in _drawn_cards.size():
+		var card: Resource = _drawn_cards[index]
 		var slot := Button.new()
 		slot.flat = true
 		slot.focus_mode = Control.FOCUS_NONE
 		slot.custom_minimum_size = CARD_SLOT_SIZE
-		slot.tooltip_text = _card_display_name(card)
+		# 卡面自己就显示卡名，不再用系统 tooltip 重复一遍；
+		# 悬停提示改由共享的 TooltipPanel 承担，与战斗侧一致。
 		_cards_container.add_child(slot)
 
-		# 选中态用 scale 表现，必须以中心为轴才自然。
-		slot.resized.connect(_on_slot_resized.bind(slot))
+		# 悬停表现由占位控件驱动：卡面被占位覆盖，卡面自己的 Area2D 收不到鼠标事件。
+		# 视觉效果与战斗侧 `highlight_card()` 逐项一致，只是触发来源不同。
+		slot.mouse_entered.connect(_on_card_slot_mouse_entered.bind(index))
+		slot.mouse_exited.connect(_on_card_slot_mouse_exited.bind(index))
 		slot.pressed.connect(_on_card_slot_pressed.bind(card))
 
 		_attach_card_view(slot, card)
@@ -386,8 +423,11 @@ func _show_cards() -> void:
 ## 参数 card：该卡槽要展示的技能卡。
 ## 返回值：无。
 func _attach_card_view(slot: Control, card: Resource) -> void:
+	# 无论成功与否都要登记一张卡面：`_card_views` 用下标与卡槽对应，
+	# 一次构造失败若跳过登记，后面所有卡槽的动效都会错位到邻居身上。
 	if CardScenePrefab == null:
 		push_error("RunStartSkillCardDraft: 未配置 CardScenePrefab，卡面无法显示。")
+		_register_card_view(null, CARD_SLOT_SIZE * 0.5)
 		return
 
 	var card_view: Node2D = CardScenePrefab.instantiate() as Node2D
@@ -395,11 +435,18 @@ func _attach_card_view(slot: Control, card: Resource) -> void:
 		push_error(
 			"RunStartSkillCardDraft: CardScenePrefab 的根节点不是 Node2D，无法作为卡面使用。"
 		)
+		_register_card_view(null, CARD_SLOT_SIZE * 0.5)
 		return
 
 	slot.add_child(card_view)
 	# 卡面的标签是按「相对根节点原点」的偏移排布的，因此把原点放到占位中心即可。
-	card_view.position = CARD_SLOT_SIZE * 0.5
+	# 这个位置同时是卡面的基准位置：悬停缩放以它为轴心，选中位移以它为起点。
+	var base_position: Vector2 = CARD_SLOT_SIZE * 0.5
+	card_view.position = base_position
+	# 显式对齐常驻层级，不依赖卡面场景自己的 z_index 默认值：卡面是可替换的导出项，
+	# 把「初始层级应该是几」这条状态契约留在调用方，换卡面场景时行为才不会漂。
+	card_view.z_index = CARD_VISUALS.CARD_Z_INDEX_NORMAL
+	_register_card_view(card_view, base_position)
 
 	if not card_view.has_method("init_card_data"):
 		push_error("RunStartSkillCardDraft: 卡面缺少 init_card_data 协议，无法绑定数据。")
@@ -415,12 +462,78 @@ func _attach_card_view(slot: Control, card: Resource) -> void:
 		card_view.call("unlock")
 
 
-## 把占位控件的缩放轴心移到中心。
+## 登记一张卡面及其基准位置，保持与卡槽下标一一对应。
 ##
-## 参数 slot：尺寸发生变化或首次完成布局的占位控件。
+## 参数 card_view：卡面节点；构造失败时传 null，但下标仍要占位。
+## 参数 base_position：卡面未抬升时的位置（即占位中心）。
 ## 返回值：无。
-func _on_slot_resized(slot: Control) -> void:
-	slot.pivot_offset = slot.size * 0.5
+func _register_card_view(card_view: Node2D, base_position: Vector2) -> void:
+	_card_views.append(card_view)
+	_card_view_base_positions.append(base_position)
+
+
+## 鼠标移入某个卡槽：按战斗侧的悬停表现放大卡面并置顶，同时显示提示浮窗。
+##
+## 参数 index：卡槽下标（与 `_drawn_cards` 同序）。
+## 返回值：无。
+func _on_card_slot_mouse_entered(index: int) -> void:
+	_apply_card_hover(index, true)
+
+
+## 鼠标移出某个卡槽：卡面缩放回常态并恢复层级，同时隐藏提示浮窗。
+##
+## 参数 index：卡槽下标（与 `_drawn_cards` 同序）。
+## 返回值：无。
+func _on_card_slot_mouse_exited(index: int) -> void:
+	_apply_card_hover(index, false)
+
+
+## 应用一次悬停表现。
+##
+## 数值与缓动全部取自 `CARD_VISUALS`，与战斗侧 `highlight_card()` 逐项一致：
+## Tween 缩放、`z_index` 立刻切换、**不改变颜色**。
+##
+## 悬停与选中是两种独立表现：悬停改缩放与层级，选中改位置（见
+## `_set_card_view_lifted`）。因此移开鼠标的已选卡会缩回常态，但仍保持抬升，
+## 玩家依然认得出自己选了哪张——这正是战斗侧把抬升距离与悬停缩放分开的理由。
+##
+## 参数 index：卡槽下标。
+## 参数 hovered：true 表示悬停，false 表示移出。
+## 返回值：无。
+func _apply_card_hover(index: int, hovered: bool) -> void:
+	var card_view: Node2D = _get_card_view(index)
+	if card_view == null:
+		return
+
+	var target_scale: Vector2 = CARD_VISUALS.CARD_HOVER_SCALE \
+			if hovered else CARD_VISUALS.CARD_NORMAL_SCALE
+	# 层级立刻切换（战斗侧同样是立刻赋值），缩放走补间。
+	card_view.z_index = CARD_VISUALS.CARD_Z_INDEX_HOVER \
+			if hovered else CARD_VISUALS.CARD_Z_INDEX_NORMAL
+	_tween_scale(card_view, target_scale)
+
+	if hovered:
+		_show_card_tooltip(index)
+	else:
+		_hide_card_tooltip()
+
+
+## 把卡面缩放到目标值：在场景树中走补间，否则直接落到终值。
+##
+## `Node.create_tween()` 在节点尚未入场景树时会报错并返回 null；而编辑器契约测试
+## 刻意让夹具不入树（理由见套件文件头）。因此这里显式分叉：生产路径得到补间动画，
+## 测试路径直接得到终态，两边都能被断言，也不会产生引擎级错误噪音。
+##
+## 参数 card_view：目标卡面。
+## 参数 target_scale：目标缩放。
+## 返回值：无。
+func _tween_scale(card_view: Node2D, target_scale: Vector2) -> void:
+	if not is_inside_tree():
+		card_view.scale = target_scale
+		return
+
+	var tween: Tween = create_tween()
+	tween.tween_property(card_view, "scale", target_scale, CARD_VISUALS.SCALE_TWEEN_DURATION)
 
 
 ## 处理一次卡面点击：切换该卡的选中状态。
@@ -438,21 +551,94 @@ func _on_card_slot_pressed(card: Resource) -> void:
 	_refresh_selection_view()
 
 
-## 按当前选中集合刷新卡槽表现、进度提示与确认按钮可用性。
+## 按当前选中集合刷新卡面位置、进度提示与确认按钮可用性。
 ## 返回值：无。
 func _refresh_selection_view() -> void:
 	for index in _slot_views.size():
-		var slot: Control = _slot_views[index]
 		var card: Resource = _drawn_cards[index] if index < _drawn_cards.size() else null
 		var is_selected: bool = card != null and _selected_cards.has(card)
-		slot.modulate = SELECTED_TINT if is_selected else UNSELECTED_TINT
-		slot.scale = SELECTED_SCALE if is_selected else Vector2.ONE
+		_set_card_view_lifted(index, is_selected)
 
 	if _hint_label != null:
 		_hint_label.text = "已选 %d/%d" % [_selected_cards.size(), PICK_COUNT]
 
 	if _confirm_button != null:
 		_confirm_button.disabled = _selected_cards.size() != PICK_COUNT
+
+
+## 把某张卡面抬升到选中位置或放回基准位置。
+##
+## 位置始终由「基准位置 + 偏移」算出，而不是在当前 `position` 上累加：反复悬停、
+## 点击、取消都不会让卡面越飘越远。缓动与时长照搬战斗侧
+## `_animate_click_mode_card_selection`（`TRANS_QUAD` + `EASE_OUT`）。
+##
+## 参数 index：卡槽下标。
+## 参数 lifted：true 表示上移 `CLICK_SELECTED_LIFT_DISTANCE`，false 表示回位。
+## 返回值：无。
+func _set_card_view_lifted(index: int, lifted: bool) -> void:
+	var card_view: Node2D = _get_card_view(index)
+	if card_view == null or index >= _card_view_base_positions.size():
+		return
+
+	var target_position: Vector2 = _card_view_base_positions[index]
+	if lifted:
+		target_position += Vector2(0.0, -CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE)
+
+	_tween_lift(card_view, target_position)
+
+
+## 把卡面移动到目标位置：在场景树中走补间，否则直接落到终值（理由同 `_tween_scale`）。
+##
+## 缓动与时长为照搬战斗侧 `_animate_click_mode_card_selection` 的
+## `TRANS_QUAD` + `EASE_OUT`。
+##
+## 参数 card_view：目标卡面。
+## 参数 target_position：目标位置。
+## 返回值：无。
+func _tween_lift(card_view: Node2D, target_position: Vector2) -> void:
+	if not is_inside_tree():
+		card_view.position = target_position
+		return
+
+	var tween: Tween = create_tween()
+	tween.tween_property(
+		card_view, "position", target_position, CARD_VISUALS.CLICK_SELECTED_LIFT_DURATION
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+## 取下标的卡面；下标越界或该卡面构造失败时返回 null。
+##
+## 参数 index：卡槽下标。
+## 返回值：对应的卡面节点；不可用时为 null。
+func _get_card_view(index: int) -> Node2D:
+	if index < 0 or index >= _card_views.size():
+		return null
+	return _card_views[index]
+
+
+## 显示某张卡的悬停提示。
+##
+## 文案取 `DisplayName` / `DisplayDescription`，与卡面自身显示的文字同源，
+## 避免浮窗文字与卡面文字不一致。浮窗缺失只降级不报错：它不是开局抽卡的必需依赖。
+##
+## 参数 index：卡槽下标。
+## 返回值：无。
+func _show_card_tooltip(index: int) -> void:
+	if _tooltip_panel == null or index < 0 or index >= _drawn_cards.size():
+		return
+
+	if not _tooltip_panel.has_method("show_tooltip"):
+		return
+
+	var card: Resource = _drawn_cards[index]
+	_tooltip_panel.call("show_tooltip", _card_display_name(card), _card_description(card))
+
+
+## 隐藏悬停提示。
+## 返回值：无。
+func _hide_card_tooltip() -> void:
+	if _tooltip_panel != null and _tooltip_panel.has_method("hide_tooltip"):
+		_tooltip_panel.call("hide_tooltip")
 
 
 ## 确认按钮回调：选满时发放选择的卡并收起界面。
@@ -534,6 +720,25 @@ func _card_display_name(card: Resource) -> String:
 		return str(display_name)
 
 	return str(card.get("CardName"))
+
+
+## 读取一张卡的描述文本，用于悬停提示。
+##
+## 取值优先级与 `_card_display_name` 保持一致：优先 `DisplayDescription`（卡面自己
+## 显示的那份文本），为空时回退 `Description`（战斗侧 tooltip 使用的原始字段）。
+## 这样浮窗里的文字与卡面文字必然同源，不会出现两处说法不一致。
+##
+## `get()` 对不存在的属性返回 null 而不是报错，因此卡数据结构变化时这里只会退化为
+## 空字符串，不会中断抽卡流程。
+##
+## 参数 card：技能卡 Resource。
+## 返回值：描述文本；两个字段都为空时返回空字符串。
+func _card_description(card: Resource) -> String:
+	var display_description: Variant = card.get("DisplayDescription")
+	if display_description != null and not str(display_description).strip_edges().is_empty():
+		return str(display_description)
+
+	return str(card.get("Description"))
 
 
 ## 读取当前场景树的暂停状态。

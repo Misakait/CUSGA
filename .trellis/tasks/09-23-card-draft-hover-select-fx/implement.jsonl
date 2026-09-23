@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "新增共享视觉配置脚本、复用战斗卡面的组件契约"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "编辑器测试夹具四条硬约束与验证手段"}

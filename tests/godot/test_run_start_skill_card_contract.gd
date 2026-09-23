@@ -24,6 +24,13 @@ const DRAFT_GD: String = "res://core/gameflow/run_start_skill_card_draft.gd"
 const DRAFT_SCENE_PATH: String = "res://scenes/ui_scenes/skill_card_draft_screen.tscn"
 const SKILL_CARD_GD: String = "res://scripts/card_scripts/skill_card.gd"
 const INVENTORY_SCRIPT: GDScript = preload("res://entities/components/inventory_component.gd")
+## 卡牌视觉数值的共享来源；悬停 / 选中的预期值都从它取，避免测试再抄一份字面量。
+const CARD_VISUALS: GDScript = preload("res://core/card_visual_config.gd")
+## 共享来源脚本与战斗卡牌脚本，用于锁定「数值只有一份来源」这条契约。
+const CARD_VISUAL_CONFIG_GD: String = "res://core/card_visual_config.gd"
+const CARD_MANAGER_GD: String = "res://scripts/card_scripts/card_manager.gd"
+## 提示浮窗场景，用于锁定「暂停下浮窗仍可用」这条契约。
+const TOOLTIP_PANEL_SCENE_PATH: String = "res://scenes/ui_scenes/TooltipPanel.tscn"
 const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
 ## 屏幕过渡场景（场景切换黑幕），用于锁定「过渡动画必须无视暂停」这条契约。
 const TRANSITIONS_SCENE_PATH: String = "res://scenes/ui_scenes/ScreenTransitions.tscn"
@@ -72,6 +79,34 @@ class StubCardView extends Node2D:
 			lock_color.visible = false
 
 
+## 提示浮窗桩：记录抽卡界面请求过的标题与描述。
+##
+## 真实 `TooltipPanel` 会延迟显示、跟随鼠标并做渐现，这些都与本套件要验证的
+## 「界面是否在正确的时机请求了正确的文案」无关，因此这里只记录调用参数。
+class StubTooltipPanel extends Node:
+	## 收到的标题（按调用顺序）。
+	var Titles: Array[String] = []
+
+	## 收到的描述（按调用顺序）。
+	var Descriptions: Array[String] = []
+
+	## hide_tooltip() 被调用的次数。
+	var HideCount: int = 0
+
+	## 模拟生产浮窗的显示协议。
+	## 参数 title_text：卡名。
+	## 参数 desc_text：卡牌描述。
+	## 返回值：无。
+	func show_tooltip(title_text: String, desc_text: String) -> void:
+		Titles.append(title_text)
+		Descriptions.append(desc_text)
+
+	## 模拟生产浮窗的隐藏协议。
+	## 返回值：无。
+	func hide_tooltip() -> void:
+		HideCount += 1
+
+
 # ----- 夹具 -----
 
 ## 搭建与生产一致的开局装配。
@@ -114,6 +149,12 @@ func _build_fixture(initializer_initialized: bool = false) -> Dictionary:
 	inventory.name = "InventoryComponent"
 	components.add_child(inventory)
 
+	# 悬停提示浮窗与抽卡界面同级挂在 HUDRoot 下，与生产 Main.tscn 的结构一致；
+	# 界面脚本的默认 TooltipPanelPath（"../TooltipPanel"）因此能被真实解析。
+	var tooltip_panel: StubTooltipPanel = StubTooltipPanel.new()
+	tooltip_panel.name = "TooltipPanel"
+	hud_root.add_child(tooltip_panel)
+
 	var screen: Control = DRAFT_SCRIPT.new() as Control
 	screen.name = "SkillCardDraftScreen"
 	_build_screen_children(screen)
@@ -128,6 +169,7 @@ func _build_fixture(initializer_initialized: bool = false) -> Dictionary:
 		"inventory": inventory,
 		"initializer": initializer,
 		"main": main,
+		"tooltip_panel": tooltip_panel,
 	}
 
 
@@ -566,4 +608,260 @@ func test_pause_safe_ui_and_screen_transition() -> void:
 		skill_card_text,
 		"$LockColor.visible = false",
 		"卡面的解锁协议必须隐藏 LockColor，抽卡界面正是依赖它清除遮罩。"
+	)
+
+
+# ----- 悬停与选中动效（照搬战斗卡牌视觉）-----
+#
+# 夹具刻意不入场景树，而 `Node.create_tween()` 要求节点在树内，因此这些用例断言的是
+# **终态**（界面在未入树时直接落终值，见 `_tween_scale` / `_tween_lift`）。
+# 补间动画的过程由运行期 `game_eval` 覆盖。
+
+## 模拟鼠标移入第 index 个卡槽。
+##
+## 生产里悬停由占位 Button 自己的 `mouse_entered` 驱动（卡面被占位覆盖，卡面自身的
+## `Area2D` 收不到事件），所以这里发同一个信号，走与生产完全相同的响应路径。
+##
+## 参数 screen：抽卡界面实例。
+## 参数 index：卡槽序号。
+## 返回值：无。
+func _hover_card(screen: Node, index: int) -> void:
+	var slot: Button = _card_slot(screen, index)
+	assert_true(slot != null, "卡槽 %d 必须存在。" % index)
+	if slot != null:
+		slot.mouse_entered.emit()
+
+
+## 模拟鼠标移出第 index 个卡槽。
+## 参数 screen：抽卡界面实例。
+## 参数 index：卡槽序号。
+## 返回值：无。
+func _unhover_card(screen: Node, index: int) -> void:
+	var slot: Button = _card_slot(screen, index)
+	assert_true(slot != null, "卡槽 %d 必须存在。" % index)
+	if slot != null:
+		slot.mouse_exited.emit()
+
+
+## 悬停必须把卡面放大到战斗的悬停值并置顶，移出必须回到战斗的常态值与层级。
+## 返回值：无。
+func test_hover_applies_battle_scale_and_layer() -> void:
+	var fixture: Dictionary = _build_fixture()
+	var screen: Control = fixture["screen"]
+	screen.call("StartDraft")
+
+	var view: StubCardView = _card_view(screen, 0)
+	assert_true(view != null, "卡槽 0 必须挂载卡面。")
+	assert_true(
+		view.scale == CARD_VISUALS.CARD_NORMAL_SCALE,
+		"初始卡面必须是战斗的常态缩放，实际 %s。" % str(view.scale)
+	)
+	assert_true(
+		view.z_index == CARD_VISUALS.CARD_Z_INDEX_NORMAL,
+		"初始卡面必须是战斗的常态层级，实际 %d。" % view.z_index
+	)
+
+	_hover_card(screen, 0)
+	assert_true(
+		view.scale == CARD_VISUALS.CARD_HOVER_SCALE,
+		"悬停必须放大到战斗的悬停缩放，实际 %s。" % str(view.scale)
+	)
+	assert_true(
+		view.z_index == CARD_VISUALS.CARD_Z_INDEX_HOVER,
+		"悬停必须置顶到战斗的悬停层级，实际 %d。" % view.z_index
+	)
+
+	_unhover_card(screen, 0)
+	assert_true(
+		view.scale == CARD_VISUALS.CARD_NORMAL_SCALE,
+		"移出必须回到战斗的常态缩放，实际 %s。" % str(view.scale)
+	)
+	assert_true(
+		view.z_index == CARD_VISUALS.CARD_Z_INDEX_NORMAL,
+		"移出必须回到战斗的常态层级，实际 %d。" % view.z_index
+	)
+
+
+## 悬停与选中都不得改变卡面颜色（战斗侧只用缩放与层级表达状态）。
+## 返回值：无。
+func test_hover_and_selection_never_tint_card_view() -> void:
+	var fixture: Dictionary = _build_fixture()
+	var screen: Control = fixture["screen"]
+	screen.call("StartDraft")
+
+	var view: StubCardView = _card_view(screen, 1)
+	assert_true(view != null, "卡槽 1 必须挂载卡面。")
+
+	_hover_card(screen, 1)
+	assert_true(view.modulate == Color.WHITE, "悬停不得给卡面染色，实际 %s。" % str(view.modulate))
+
+	_click_card(screen, 1)
+	assert_true(view.modulate == Color.WHITE, "选中不得给卡面染色，实际 %s。" % str(view.modulate))
+
+	_unhover_card(screen, 1)
+	assert_true(view.modulate == Color.WHITE, "移出后卡面也不得被染色。")
+
+
+## 选中必须把卡面抬升战斗的抬升距离，取消必须回到基准位置。
+##
+## 位置按「基准位置 + 偏移」计算而不是在当前值上累加，所以反复切换不会越飘越远。
+## 返回值：无。
+func test_selection_lifts_card_view_by_battle_distance() -> void:
+	var fixture: Dictionary = _build_fixture()
+	var screen: Control = fixture["screen"]
+	screen.call("StartDraft")
+
+	var view: StubCardView = _card_view(screen, 2)
+	assert_true(view != null, "卡槽 2 必须挂载卡面。")
+	var base_position: Vector2 = view.position
+
+	_click_card(screen, 2)
+	var expected_lifted: Vector2 = base_position \
+			+ Vector2(0.0, -CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE)
+	assert_true(
+		view.position == expected_lifted,
+		"选中必须按战斗的距离上移卡面：期望 %s，实际 %s。" % [str(expected_lifted), str(view.position)]
+	)
+
+	_click_card(screen, 2)
+	assert_true(
+		view.position == base_position,
+		"取消选中必须把卡面放回基准位置，实际 %s。" % str(view.position)
+	)
+
+
+## 反复选中 / 取消不得累积位移。
+## 返回值：无。
+func test_repeated_toggling_does_not_accumulate_offset() -> void:
+	var fixture: Dictionary = _build_fixture()
+	var screen: Control = fixture["screen"]
+	screen.call("StartDraft")
+
+	var view: StubCardView = _card_view(screen, 3)
+	assert_true(view != null, "卡槽 3 必须挂载卡面。")
+	var base_position: Vector2 = view.position
+
+	for _round in 3:
+		_click_card(screen, 3)
+		_click_card(screen, 3)
+
+	assert_true(
+		view.position == base_position,
+		"三轮反复切换后卡面必须仍在基准位置，实际 %s。" % str(view.position)
+	)
+
+
+## 悬停必须让共享浮窗显示该卡的卡名与描述，移出必须隐藏。
+## 返回值：无。
+func test_hover_shows_card_name_and_description_in_tooltip() -> void:
+	var fixture: Dictionary = _build_fixture()
+	var screen: Control = fixture["screen"]
+	var panel: StubTooltipPanel = fixture["tooltip_panel"]
+	screen.call("StartDraft")
+
+	var drawn: Array = screen.call("GetDrawnCards")
+	_hover_card(screen, 2)
+
+	# 卡数据的显示名自带回退语义：优先 DisplayName，缺失时用 CardName。
+	# 生产技能卡目前没有 DisplayName 字段，因此实际取到的是 CardName——这里复刻同一条
+	# 回退规则，避免断言把"字段恰好叫什么"写死成对实现的重复描述。
+	var expected_title: Variant = drawn[2].get("DisplayName")
+	if expected_title == null or str(expected_title).strip_edges().is_empty():
+		expected_title = drawn[2].get("CardName")
+
+	assert_true(panel.Titles.size() == 1, "悬停一次必须请求一次浮窗显示。")
+	assert_true(
+		panel.Titles[0] == str(expected_title),
+		"浮窗标题必须是该卡的显示名：期望 %s，实际 %s。" % [str(expected_title), panel.Titles[0]]
+	)
+	assert_true(panel.Descriptions.size() == 1, "浮窗请求必须同时带上描述。")
+	assert_true(
+		not panel.Descriptions[0].is_empty(),
+		"浮窗描述不应为空（卡数据自带 DisplayDescription）。"
+	)
+
+	_unhover_card(screen, 2)
+	assert_true(panel.HideCount == 1, "移出必须隐藏浮窗。")
+
+
+## 视觉数值必须只有一份来源：战斗卡牌脚本引用共享配置，而不是各写一份字面量。
+## 返回值：无。
+func test_card_visual_values_come_from_one_shared_source() -> void:
+	var manager_text: String = FileAccess.get_file_as_string(CARD_MANAGER_GD)
+
+	for export_name: String in [
+		"card_normal_scale",
+		"card_hover_scale",
+		"scale_tween_duration",
+		"click_selected_card_lift_distance",
+		"click_selected_card_lift_duration",
+	]:
+		assert_contains(
+			manager_text,
+			"@export var %s" % export_name,
+			"战斗卡牌的导出 %s 必须保留：既有测试会写它，场景也需要可覆盖入口。" % export_name
+		)
+
+	assert_contains(
+		manager_text,
+		'preload("res://core/card_visual_config.gd")',
+		"战斗卡牌脚本必须引用共享的视觉配置。"
+	)
+	assert_contains(
+		manager_text,
+		"= CARD_VISUALS.CARD_HOVER_SCALE",
+		"战斗卡牌的悬停缩放必须取自共享配置，而不是本地字面量。"
+	)
+	assert_contains(
+		manager_text,
+		"= CARD_VISUALS.SCALE_TWEEN_DURATION",
+		"战斗卡牌的缩放时长必须取自共享配置。"
+	)
+	assert_contains(
+		manager_text,
+		"= CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE",
+		"战斗卡牌的选中抬升距离必须取自共享配置。"
+	)
+
+	var draft_text: String = FileAccess.get_file_as_string(DRAFT_GD)
+	assert_contains(
+		draft_text,
+		'preload("res://core/card_visual_config.gd")',
+		"抽卡界面必须引用同一份共享视觉配置。"
+	)
+	assert_contains(
+		draft_text,
+		"CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE",
+		"抽卡界面的选中抬升必须取自共享配置。"
+	)
+
+
+## 共享配置里的数值必须等于战斗原有的手感取值（重构不得顺手改掉表现）。
+## 返回值：无。
+func test_shared_config_keeps_battle_feel_values() -> void:
+	assert_true(
+		CARD_VISUALS.CARD_NORMAL_SCALE == Vector2(1.0, 1.0), "常态缩放必须保持战斗原值。"
+	)
+	assert_true(
+		CARD_VISUALS.CARD_HOVER_SCALE == Vector2(1.05, 1.05), "悬停缩放必须保持战斗原值。"
+	)
+	assert_true(CARD_VISUALS.SCALE_TWEEN_DURATION == 0.08, "缩放时长必须保持战斗原值。")
+	assert_true(CARD_VISUALS.CARD_Z_INDEX_NORMAL == 1, "常态层级必须保持战斗原值。")
+	assert_true(CARD_VISUALS.CARD_Z_INDEX_HOVER == 2, "悬停层级必须保持战斗原值。")
+	assert_true(
+		CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE == 36.0, "选中抬升距离必须保持战斗原值。"
+	)
+	assert_true(
+		CARD_VISUALS.CLICK_SELECTED_LIFT_DURATION == 0.12, "选中抬升时长必须保持战斗原值。"
+	)
+
+
+## 提示浮窗必须在暂停下仍能工作，否则悬停提示永远不显示（抽卡界面正是暂停态）。
+## 返回值：无。
+func test_tooltip_panel_is_pause_safe() -> void:
+	var panel_text: String = FileAccess.get_file_as_string(TOOLTIP_PANEL_SCENE_PATH)
+	assert_contains(
+		panel_text,
+		"process_mode = 3",
+		"提示浮窗必须无视暂停：延迟显示与跟随鼠标都在 _process，渐现依赖 Tween。"
 	)

@@ -192,3 +192,82 @@ card_view.call("init_card_data", card)
 if card_view.has_method("unlock"):
 	card_view.call("unlock")             # 对齐到「非锁定」状态
 ```
+
+## 卡牌视觉参数必须只有一份来源
+
+### 1. Scope / Trigger
+
+需要让**第二个界面**复用战斗卡牌的手感（悬停缩放、置顶、选中抬升）时。触发原因是这类数值天然会被复制粘贴；两份副本一旦漂移，玩家就会在两个界面里感受到不同手感，而任何单侧改动都不会有人发现。
+
+### 2. Signatures
+
+```gdscript
+# core/card_visual_config.gd —— 唯一来源，只有常量
+class_name CardVisualConfig
+extends RefCounted
+
+const CARD_NORMAL_SCALE: Vector2 = Vector2(1.0, 1.0)
+const CARD_HOVER_SCALE: Vector2 = Vector2(1.05, 1.05)
+const SCALE_TWEEN_DURATION: float = 0.08
+const CARD_Z_INDEX_NORMAL: int = 1
+const CARD_Z_INDEX_HOVER: int = 2
+const CLICK_SELECTED_LIFT_DISTANCE: float = 36.0
+const CLICK_SELECTED_LIFT_DURATION: float = 0.12
+```
+
+```gdscript
+# 消费方用 preload 常量访问，不依赖全局 class_name 的注册时机
+const CARD_VISUALS := preload("res://core/card_visual_config.gd")
+
+@export var card_hover_scale: Vector2 = CARD_VISUALS.CARD_HOVER_SCALE
+```
+
+### 3. Contracts
+
+- 共享来源只放 `const`，且继承 `RefCounted` 而不是 `Node`：它不需要进场景树，也不该被实例化出状态。
+- 消费方**保留原有 `@export` 的名字与可写性**，只把默认值换成引用常量。移除导出是破坏性改动：既有测试会用 `set("scale_tween_duration", 0.0)` 把动画时长置零以短路动画。
+- GDScript **允许** `@export` 的默认值引用另一脚本的常量（已用探针验证解析无诊断）。因此不必退而使用"两边各写一份字面量 + 测试比对"的做法。
+- 依赖方向必须单向：配置脚本不得 `preload` 任何游戏脚本，否则形成循环。
+- 消费方用 `preload` 常量而不是 `class_name` 全局标识符：`class_name` 的注册依赖编辑器扫描时机，新建脚本后未 `scan` 时会在别的脚本里解析失败。
+- 悬停与选中是**两种独立表现**：悬停改缩放与 `z_index`，选中改位置。选中的卡在鼠标移开后缩回常态、但**保持抬升**——这是刻意的，正是为了让"已选"在移开鼠标后依然可辨认。
+- 悬停**不改颜色**：用 `modulate` 染色表达悬停会与"选中"抢语义，也与战斗侧不一致。
+
+### 4. Validation & Error Matrix
+
+| 现象 | 真实原因 | 处理 |
+|---|---|---|
+| 两个界面手感不一致 | 数值被复制成两份，其中一份被改过 | 提取到共享配置，两边 `preload` 同一份 |
+| 新建配置脚本后消费方报 `Identifier not found` | `class_name` 尚未注册（编辑器还没扫描） | 改用 `preload` 常量，或先 `filesystem_manage(op="scan")` |
+| 移除 `@export` 后既有测试报 `Invalid set index` | 测试依赖导出的可写性 | 保留导出名与类型，只换默认值的来源 |
+| 悬停时卡面变色、与选中分不清 | 用 `modulate` 表达悬停 | 悬停只改缩放与层级 |
+| 未入场景树的节点上创建 Tween 报错 | `Node.create_tween()` 要求节点在树内 | 显式分叉：树内走 Tween，树外直接落终值 |
+
+### 5. Good / Base / Bad Cases
+
+- Good：`card_manager.gd` 与 `run_start_skill_card_draft.gd` 都 `preload("res://core/card_visual_config.gd")`，改动只落在一处。
+- Base：只有一处使用这些数值时，留在原脚本的 `@export` 里即可，不必提前抽取。
+- Bad：在第二个界面里复制一份 `1.05 / 0.08 / 36.0` 并写注释"与战斗保持一致"——注释不会阻止漂移。
+
+### 6. Tests Required
+
+- 源码形状断言：两边都引用共享配置，且消费方仍保留原有 `@export` 名。
+- 数值快照断言：共享配置里的值等于既有的战斗取值（1.0 / 1.05 / 0.08 / 36.0 / 0.12），防止"重构顺手改了手感"。
+- 行为断言：悬停后卡面 `scale` 与 `z_index` 达到战斗的目标值、`modulate` 保持白色；选中后位置抬升恰好 `CLICK_SELECTED_LIFT_DISTANCE`，取消后回到基准。
+- 运行期还需验证 Tween 的动画过程——编辑器里未入树的夹具只能断言终态。
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```gdscript
+# 第二个界面：复制数值，靠注释维持一致
+const HOVER_SCALE: Vector2 = Vector2(1.05, 1.05)   # 与战斗保持一致（希望如此）
+```
+
+#### Correct
+
+```gdscript
+const CARD_VISUALS := preload("res://core/card_visual_config.gd")
+# 悬停与选中共用同一份数值来源
+_tween_scale(card_view, CARD_VISUALS.CARD_HOVER_SCALE)
+```
