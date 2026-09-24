@@ -16,16 +16,45 @@ const DEV_SEQUENCE_MATCHER_SCRIPT: GDScript = preload("res://core/ui/dev/dev_seq
 ## 生产场景路径，用于锁定「一个功能一行」的排版契约。
 const DEV_SETTINGS_SCENE_PATH: String = "res://scenes/ui_scenes/dev_settings_ui.tscn"
 
+## 局外入口（主菜单）场景路径。
+## 它必须复用同一份面板场景，而不是另建一套内容不同的开发者菜单。
+const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/main_menu.tscn"
+
+## 局内主场景路径。
+## 它保留全套功能，用来对照局外入口确实只关掉了局内专属的那部分。
+const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
+
+## 仓库场景路径。
+## 它同样属于局外，也必须复用同一份面板。
+const WAREHOUSE_SCENE_PATH: String = "res://scenes/Warehouse/Warehouse.tscn"
+
+## 局外入口场景清单（入口名 → 场景路径）。
+##
+## 局外的每一处入口都必须复用同一份面板场景，并且都必须关掉局内专属功能；把它写成清单
+## 而不是逐个写断言，是为了将来新增入口（例如商店）时只改一处。
+const OUT_OF_RUN_ENTRY_SCENES: Dictionary = {
+	"主菜单": MAIN_MENU_SCENE_PATH,
+	"仓库": WAREHOUSE_SCENE_PATH,
+}
+
 ## 必须各自独占一行的功能控件。
 ## 它们都直接挂在主纵向容器下，因此父路径本身就能证明「没有被并排分组」。
+##
+## GainGoldButton 刻意不在这份清单里：它是「获得金币」这一个功能的组成部分，与自己的
+## 输入框同处 GoldRow 一行，由 GOLD_BUTTON_ROW_PARENT 单独锁定。
 const REQUIRED_VBOX_ROWS: Array[String] = [
 	"DayLabel",
 	"CostRow",
 	"NextDayButton",
 	"LevelUpButton",
 	"ResetCostButton",
+	"GoldRow",
 	"CloseButton",
 ]
+
+## 「获得金币」按钮必须与数量输入框同处一行：按钮的声明行里必须出现指向 GoldRow 的父路径。
+## 只比对路径尾部，既够精确又不必把整条层级路径抄第二遍。
+const GOLD_ROW_PARENT_SUFFIX: String = "VBoxContainer/GoldRow\""
 
 ## 上述控件在生产场景中必须使用的直接父节点声明。
 const REQUIRED_ROW_PARENT: String = "parent=\"CenterOverlay/Panel/MarginContainer/VBoxContainer\""
@@ -102,6 +131,21 @@ class FakePlayerLevel extends Node:
 	func AddLevels(count: int) -> int:
 		add_levels_calls.append(count)
 		return count
+
+
+## 记录增发请求的伪钱包。
+##
+## 同样刻意只实现 Add 这一个公开接口：面板若绕过它去直接改写余额字段，本套件就会当场
+## 暴露出来——直接写字段会让余额显示与存档层都收不到这次变化。
+class FakeWallet extends Node:
+	## 每次 Add 的入参，用于断言面板确实按输入框当前值增发。
+	var add_calls: Array[int] = []
+
+	## 记录一次增发请求。
+	## 参数 amount：请求增发的金币数量。
+	## 返回值：无。
+	func Add(amount: int) -> void:
+		add_calls.append(amount)
 
 
 ## 验证序列匹配器的完整触发、错键容错与无效输入边界。
@@ -251,6 +295,140 @@ func test_cost_spin_box_writes_through_and_clamps() -> void:
 	_dispose(scene_tree, ui, time_system)
 
 
+## 验证「获得金币」按输入框当前值增发金币，且每次都走钱包的公开接口。
+## 返回值：无。
+func test_gain_gold_button_adds_the_entered_amount() -> void:
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	var time_system := _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+	var wallet := _install_fake_wallet(scene_tree)
+	if wallet == null:
+		_dispose(scene_tree, null, time_system)
+		return
+
+	var ui := _new_dev_settings_ui(scene_tree)
+	var gold_spin_box := ui.get_node("%GoldSpinBox") as SpinBox
+	var gain_button := ui.get_node("%GainGoldButton") as Button
+
+	assert_eq(int(gold_spin_box.value), 1000, "金币输入框必须默认显示 1000。")
+
+	gain_button.pressed.emit()
+	var add_calls: Array = wallet.get("add_calls")
+	assert_eq(add_calls.size(), 1, "点击必须且只能请求一次增发。")
+	assert_eq(int(add_calls[0]), 1000, "必须按输入框当前值增发。")
+
+	# 第二次换一个数量：证明面板读的是控件的实时值，而不是把默认值写死。
+	gold_spin_box.value = 250
+	gain_button.pressed.emit()
+	add_calls = wallet.get("add_calls")
+	assert_eq(add_calls.size(), 2, "第二次点击必须再请求一次增发。")
+	assert_eq(int(add_calls[1]), 250, "必须按新的输入值增发，而不是沿用默认值。")
+
+	# 这个按钮只负责给钱，不得顺带开关面板。
+	assert_false(ui.visible, "「获得金币」不得意外打开面板。")
+
+	_dispose(scene_tree, ui, time_system, null, wallet)
+
+
+## 验证金币输入框在控件层就把非法输入夹紧，而不是留给下游判断。
+## 返回值：无。
+func test_gold_spin_box_clamps_input_to_the_documented_range() -> void:
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	var time_system := _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+	var ui := _new_dev_settings_ui(scene_tree)
+	var gold_spin_box := ui.get_node("%GoldSpinBox") as SpinBox
+
+	assert_eq(int(gold_spin_box.min_value), 1, "金币下界必须是 1。")
+	assert_eq(int(gold_spin_box.max_value), 999999, "金币上界必须是 999999。")
+	assert_false(gold_spin_box.allow_greater, "必须关闭越界放行，否则上界形同虚设。")
+	assert_false(gold_spin_box.allow_lesser, "必须关闭越界放行，否则下界形同虚设。")
+
+	# 越界输入必须被控件自身夹紧：无论玩家手输还是脚本写入，非法值都不得留在控件里。
+	gold_spin_box.value = 0
+	assert_eq(int(gold_spin_box.value), 1, "低于下界的输入必须被夹紧到下界。")
+	gold_spin_box.value = 5000000
+	assert_eq(int(gold_spin_box.value), 999999, "高于上界的输入必须被夹紧到上界。")
+
+	_dispose(scene_tree, ui, time_system)
+
+
+## 验证钱包缺失时「获得金币」静默无效，且不拖累面板其余功能。
+##
+## 与「增加一级」缺少等级系统时同一套降级语义：装配问题不该让整个面板失效。
+## 返回值：无。
+func test_gain_gold_button_is_inert_without_wallet() -> void:
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	var missing := scene_tree.root.get_node_or_null("PlayerWallet")
+	assert_eq(missing, null, "本用例要求测试根节点没有 PlayerWallet。")
+	if missing != null:
+		return
+
+	var time_system := _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+	var ui := _new_dev_settings_ui(scene_tree)
+	var gain_button := ui.get_node("%GainGoldButton") as Button
+
+	gain_button.pressed.emit()
+	assert_true(is_instance_valid(ui), "缺少钱包时点击不得使面板失效。")
+	assert_false(ui.visible, "缺少钱包时点击不得意外打开面板。")
+
+	_dispose(scene_tree, ui, time_system)
+
+
+## 验证局内专属功能按导出开关整组显隐，而金币相关控件在两种模式下都保留。
+##
+## 这是「一套代码两处入口」的核心约束：局外只是关掉了一组控件，而不是换了一份面板。
+## 若有人改成「局外另建一套面板」，这条与入口场景契约都会失败。
+## 返回值：无。
+func test_run_features_visibility_follows_the_export_switch() -> void:
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	var time_system := _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+
+	var run_only_names: Array[String] = [
+		"%DayLabel",
+		"%CostRow",
+		"%ResetCostButton",
+		"%NextDayButton",
+		"%LevelUpButton",
+	]
+	var always_names: Array[String] = ["%GoldSpinBox", "%GainGoldButton", "%CloseButton"]
+
+	# 局内：整组功能都必须可见。
+	var in_run_ui := _new_dev_settings_ui(scene_tree, true)
+	for node_name: String in run_only_names:
+		assert_true(
+			(in_run_ui.get_node(node_name) as CanvasItem).visible,
+			"局内模式下 %s 必须可见。" % node_name
+		)
+	var in_run_gold := in_run_ui.get_node("%GoldSpinBox") as SpinBox
+	assert_eq(int(in_run_gold.value), 1000, "局内模式下金币输入框必须可用。")
+	# 只释放面板本身，伪时间系统留给下半段复用。
+	_dispose(scene_tree, in_run_ui, null)
+
+	# 局外：只剩金币相关控件。
+	var out_of_run_ui := _new_dev_settings_ui(scene_tree, false)
+	for node_name: String in run_only_names:
+		assert_false(
+			(out_of_run_ui.get_node(node_name) as CanvasItem).visible,
+			"局外模式下 %s 必须隐藏，它能起的作用都只存在于局内。" % node_name
+		)
+	for node_name: String in always_names:
+		assert_true(
+			(out_of_run_ui.get_node(node_name) as CanvasItem).visible,
+			"局外模式下 %s 必须保留。" % node_name
+		)
+	var out_of_run_gold := out_of_run_ui.get_node("%GoldSpinBox") as SpinBox
+	assert_eq(int(out_of_run_gold.value), 1000, "局外模式下金币输入框必须可用。")
+
+	_dispose(scene_tree, out_of_run_ui, time_system)
+
+
 ## 验证「增加一级」按钮通过等级系统的公开接口请求升级，且每次点击只提升一级。
 ## 返回值：无。
 func test_level_up_button_advances_player_level_once() -> void:
@@ -341,6 +519,68 @@ func test_production_scene_layout_places_each_feature_on_its_own_row() -> void:
 	)
 	assert_true(scene_text.contains("text = \"增加一级\""), "必须保留「增加一级」按钮。")
 
+	# 金币按钮与它的数量输入框刻意同处一行：这两个控件合起来才是「获得金币」一个功能，
+	# 拆成两行会被读成两个互不相干的东西。
+	var gold_button_declaration: String = _find_node_declaration(scene_text, "GainGoldButton")
+	assert_true(not gold_button_declaration.is_empty(), "场景必须包含「获得金币」按钮。")
+	assert_true(
+		gold_button_declaration.contains(GOLD_ROW_PARENT_SUFFIX),
+		"「获得金币」按钮必须与数量输入框同处 GoldRow 一行。"
+	)
+
+
+## 验证生产场景为「获得金币」提供了数字输入框与增发按钮，并写清了默认值与上界。
+##
+## 场景是编辑器里看得见的那一份，脚本常量是运行时权威的那一份。两者都断言，才能避免
+## 「改了一处忘了另一处」。
+## 返回值：无。
+func test_production_scene_exposes_the_gold_input_contract() -> void:
+	var scene_text: String = FileAccess.get_file_as_string(DEV_SETTINGS_SCENE_PATH)
+	assert_false(scene_text.is_empty(), "必须能读到开发者设置场景。")
+
+	assert_true(scene_text.contains("text = \"获得金币数量\""), "必须保留金币输入行的说明文字。")
+	assert_true(scene_text.contains("text = \"获得金币\""), "必须保留「获得金币」按钮。")
+	assert_true(scene_text.contains("value = 1000.0"), "金币输入框的默认值必须是 1000。")
+	assert_true(scene_text.contains("max_value = 999999.0"), "金币输入框的上界必须是 999999。")
+
+	var constants: Dictionary = DEV_SETTINGS_UI_SCRIPT.get_script_constant_map()
+	assert_eq(int(constants["DEFAULT_GOLD_AMOUNT"]), 1000, "脚本里的默认值常量必须与需求一致。")
+	assert_eq(int(constants["MAX_GOLD_AMOUNT"]), 999999, "脚本里的上界常量必须与需求一致。")
+
+
+## 验证每一个入口都复用同一份面板，且恰好只有局外那些入口关掉了局内专属功能。
+##
+## 这条断言就是「直接复用，不要分叉」这条需求的可执行形式：一旦有人为某个入口复制出
+## 一份内容不同的开发者菜单，或者新增入口时漏了设开关，这里都会立刻失败。
+## 返回值：无。
+func test_all_entry_points_share_one_panel_and_only_out_of_run_ones_hide_run_features() -> void:
+	for entry_name: String in OUT_OF_RUN_ENTRY_SCENES:
+		var entry_scene_path: String = str(OUT_OF_RUN_ENTRY_SCENES[entry_name])
+		var entry_text: String = FileAccess.get_file_as_string(entry_scene_path)
+		assert_false(
+			entry_text.is_empty(),
+			"必须能读到%s场景：%s。" % [entry_name, entry_scene_path]
+		)
+		assert_true(
+			entry_text.contains(DEV_SETTINGS_SCENE_PATH),
+			"%s必须复用同一份开发者设置场景，而不是另建一套。" % entry_name
+		)
+		assert_true(
+			entry_text.contains("ShowRunFeatures = false"),
+			"%s属于局外，必须关掉局内专属功能，只留「获得金币」。" % entry_name
+		)
+
+	var main_text: String = FileAccess.get_file_as_string(MAIN_SCENE_PATH)
+	assert_false(main_text.is_empty(), "必须能读到局内主场景。")
+	assert_true(
+		main_text.contains(DEV_SETTINGS_SCENE_PATH),
+		"局内主场景必须仍然挂着开发者设置面板。"
+	)
+	assert_false(
+		main_text.contains("ShowRunFeatures = false"),
+		"局内必须保留全套功能，不得跟着局外一起关掉。"
+	)
+
 
 ## 验证 TimeChanged 快照刷新天数标签，且退出场景树时解除连接。
 ## 返回值：无。
@@ -361,6 +601,43 @@ func test_time_changed_refreshes_day_label_and_disconnects() -> void:
 
 	scene_tree.root.remove_child(ui)
 	assert_false(time_system.is_connected(&"TimeChanged", callback), "退出场景树时必须解除 TimeChanged。")
+
+	_dispose(scene_tree, ui, time_system)
+
+
+## 验证面板被「摘下来再挂回去」后能自行恢复时间系统订阅与显示同步。
+##
+## 主菜单与仓库由 SceneManager 缓存复用，场景切换走的正是这条 remove_child → add_child
+## 路径：_ready 不会重跑，而 _exit_tree 已经把 _time_system 置空。若不在这里恢复，
+## 「下一天」「行动值消耗」会在第二次进入同一个缓存实例时静默失效且不报任何错。
+## 返回值：无。
+func test_panel_restores_time_system_subscription_after_being_readded() -> void:
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	var time_system := _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+	var ui := _new_dev_settings_ui(scene_tree)
+	var callback := Callable(ui, "_on_time_changed")
+	var day_label := ui.get_node("%DayLabel") as Label
+	var cost_spin_box := ui.get_node("%CostSpinBox") as SpinBox
+
+	assert_true(time_system.is_connected(&"TimeChanged", callback), "首次进入必须订阅 TimeChanged。")
+
+	# 模拟 SceneManager 的缓存切换：只摘不释放，再原样挂回。
+	# 不在这里手动置空 _time_system：那正是 _exit_tree 的职责，交给它做才算真的验证了恢复。
+	scene_tree.root.remove_child(ui)
+	scene_tree.root.add_child(ui)
+
+	assert_true(
+		time_system.is_connected(&"TimeChanged", callback),
+		"重新挂回后必须恢复订阅，否则缓存复用的入口会静默失效。"
+	)
+	assert_eq(day_label.text, "当前天数：1", "重新挂回后必须重新同步一次天数显示。")
+	assert_eq(int(cost_spin_box.value), 10, "重新挂回后必须重新回填行动值消耗。")
+
+	# 恢复必须是双向的：挂回后再推进时间，显示仍要跟着走。
+	time_system.call("PassTime", 240)
+	assert_eq(day_label.text, "当前天数：2", "重新挂回后 TimeChanged 必须仍然刷新天数标签。")
 
 	_dispose(scene_tree, ui, time_system)
 
@@ -414,6 +691,25 @@ func _install_fake_player_level(scene_tree: SceneTree) -> Node:
 	return player_level
 
 
+## 安装伪钱包到测试根节点。
+##
+## 与伪 TimeSystem 同理：编辑器测试根节点不应已有 PlayerWallet；若已存在则直接失败，
+## 避免覆盖真实 Autoload 而让断言失去意义。
+##
+## 参数 scene_tree：当前测试的主循环。
+## 返回值：已进入场景树的伪钱包；前置条件不满足时返回 null。
+func _install_fake_wallet(scene_tree: SceneTree) -> Node:
+	var existing := scene_tree.root.get_node_or_null("PlayerWallet")
+	assert_eq(existing, null, "编辑器测试根节点不应已有 PlayerWallet，以免覆盖真实 Autoload。")
+	if existing != null:
+		return null
+
+	var wallet := FakeWallet.new()
+	wallet.name = "PlayerWallet"
+	scene_tree.root.add_child(wallet)
+	return wallet
+
+
 ## 在场景文件全文里定位某个节点的声明行。
 ## 参数 scene_text：场景文件全文。
 ## 参数 node_name：节点名。
@@ -428,17 +724,26 @@ func _find_node_declaration(scene_text: String, node_name: String) -> String:
 
 
 ## 用最小节点树构造面板，避免复刻整棵场景层级。
+##
+## 必须在进树之前就设好 ShowRunFeatures：面板在 _ready 里按它决定整组局内控件的可见性，
+## 进树之后再改只会得到一个已经定型的显示状态，断言就失去意义。
+##
 ## 参数 scene_tree：当前测试的主循环。
+## 参数 show_run_features：是否显示局内专属功能；默认 true，即局内模式。
 ## 返回值：已进入场景树并完成初始同步的面板。
-func _new_dev_settings_ui(scene_tree: SceneTree) -> Control:
+func _new_dev_settings_ui(scene_tree: SceneTree, show_run_features: bool = true) -> Control:
 	var ui := DEV_SETTINGS_UI_SCRIPT.new() as Control
 	ui.name = "DevSettingsUIContractProbe"
+	ui.set("ShowRunFeatures", show_run_features)
+	_add_unique_child(ui, "CostRow", HBoxContainer.new())
 	_add_unique_child(ui, "DayLabel", Label.new())
 	_add_unique_child(ui, "CostSpinBox", SpinBox.new())
 	_add_unique_child(ui, "NextDayButton", Button.new())
 	_add_unique_child(ui, "LevelUpButton", Button.new())
 	_add_unique_child(ui, "ResetCostButton", Button.new())
 	_add_unique_child(ui, "CloseButton", Button.new())
+	_add_unique_child(ui, "GoldSpinBox", SpinBox.new())
+	_add_unique_child(ui, "GainGoldButton", Button.new())
 	scene_tree.root.add_child(ui)
 	return ui
 
@@ -466,13 +771,20 @@ func _make_key_event(letter: String) -> InputEventKey:
 	return event
 
 
-## 释放测试期间创建的面板、伪 TimeSystem 与伪等级系统。
+## 释放测试期间创建的面板、伪 TimeSystem、伪等级系统与伪钱包。
 ## 参数 scene_tree：当前测试的主循环。
 ## 参数 ui：本用例创建的面板；可为 null。
-## 参数 time_system：本用例创建的伪 TimeSystem。
+## 参数 time_system：本用例创建的伪 TimeSystem；只想释放面板时传 null。
 ## 参数 player_level：本用例创建的伪等级系统；未安装时传 null。
+## 参数 player_wallet：本用例创建的伪钱包；未安装时传 null。
 ## 返回值：无。
-func _dispose(scene_tree: SceneTree, ui: Control, time_system: Node, player_level: Node = null) -> void:
+func _dispose(
+	scene_tree: SceneTree,
+	ui: Control,
+	time_system: Node,
+	player_level: Node = null,
+	player_wallet: Node = null
+) -> void:
 	if is_instance_valid(ui):
 		if ui.get_parent() != null:
 			scene_tree.root.remove_child(ui)
@@ -485,3 +797,7 @@ func _dispose(scene_tree: SceneTree, ui: Control, time_system: Node, player_leve
 		if player_level.get_parent() != null:
 			scene_tree.root.remove_child(player_level)
 		player_level.free()
+	if is_instance_valid(player_wallet):
+		if player_wallet.get_parent() != null:
+			scene_tree.root.remove_child(player_wallet)
+		player_wallet.free()

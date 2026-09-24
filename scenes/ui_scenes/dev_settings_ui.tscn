@@ -8,6 +8,8 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dp4f3"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_c24di"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a1uw1"]
 
 [node name="DevSettingsUI" type="Control" unique_id=149711311]
@@ -50,6 +52,7 @@ layout_mode = 2
 text = "当前天数：1"
 
 [node name="CostRow" type="HBoxContainer" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=691536275]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -81,6 +84,27 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_dp4f3")
 text = "恢复默认"
+
+[node name="GoldRow" type="HBoxContainer" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=397064376]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GoldLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/GoldRow" unique_id=1259716861]
+layout_mode = 2
+text = "获得金币数量"
+
+[node name="GoldSpinBox" type="SpinBox" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/GoldRow" unique_id=1524943428]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 999999.0
+value = 1000.0
+
+[node name="GainGoldButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/GoldRow" unique_id=729123381]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_c24di")
+text = "获得金币"
 
 [node name="CloseButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1265758638]
 unique_name_in_owner = true

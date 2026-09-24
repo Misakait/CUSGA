@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://dbp5tkd216qhu" path="res://tests/huhu9/test_fish.gd" id="3_70npq"]
 [ext_resource type="Resource" uid="uid://cpm5luho4crhu" path="res://items/items/fish.tres" id="4_nyrtq"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="5_88770"]
+[ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="6_hh660"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nyrtq"]
 texture = ExtResource("2_button")
@@ -402,6 +403,10 @@ theme_override_font_sizes/font_size = 19
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+
+[node name="DevSettingsUI" parent="UILayer/Root" unique_id=149711311 instance=ExtResource("6_hh660")]
+layout_mode = 1
+ShowRunFeatures = false
 
 [connection signal="pressed" from="UILayer/Root/WarehousePrev" to="." method="_on_warehouse_prev_pressed"]
 [connection signal="pressed" from="UILayer/Root/WarehouseNext" to="." method="_on_warehouse_next_pressed"]

@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://0wfyybb2allh" path="res://res/UI/设置.png" id="11_8ljqf"]
 [ext_resource type="Texture2D" uid="uid://ct3j5esperemx" path="res://res/UI/仓库2.png" id="12_3flcn"]
 [ext_resource type="Texture2D" uid="uid://nqcqgfagxafs" path="res://res/UI/退出 2.png" id="13_f27sh"]
+[ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="14_8ljqf"]
 
 [sub_resource type="Resource" id="Resource_v5kme"]
 script = ExtResource("7_r5auf")
@@ -108,6 +109,9 @@ offset_top = 135.0
 offset_right = 1009.0
 offset_bottom = 277.0
 text = "debug：显示信息"
+
+[node name="DevSettingsUI" parent="." unique_id=149711311 instance=ExtResource("14_8ljqf")]
+ShowRunFeatures = false
 
 [connection signal="card_be_snapper" from="MainMenuCardManager" to="." method="_on_card_be_snapper"]
 [connection signal="pressed" from="Button" to="MainMenuCardManager" method="_on_button_pressed"]

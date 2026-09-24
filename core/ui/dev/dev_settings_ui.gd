@@ -29,15 +29,44 @@ const FALLBACK_PHASE_LENGTH: int = 100
 ## 「增加一级」按钮靠它定位等级系统；面板不自持任何等级数值，避免与等级系统分叉。
 const PLAYER_LEVEL_PATH: NodePath = ^"/root/PlayerLevel"
 
+## 钱包 Autoload 的节点路径。
+##
+## 「获得金币」按钮靠它定位钱包，面板同样不自持任何金币数值。金币是存档参与者
+## （key = player_wallet），加完金币由存档层按防抖自动落盘，面板不需要也不应该关心保存。
+const PLAYER_WALLET_PATH: NodePath = ^"/root/PlayerWallet"
+
+## 金币输入框的默认值。
+const DEFAULT_GOLD_AMOUNT: int = 1000
+
+## 金币输入框的合法上界。
+##
+## 刻意不等于钱包的 `MaxGold`（int 上限）：这是开发者调试入口而不是玩家输入，
+## 一个够用又能一眼看出量级的上界比允许填 21 亿更好用。
+const MAX_GOLD_AMOUNT: int = 999999
+
+## 是否显示只对局内有意义的功能。
+##
+## 受它控制的是一组控件：当前天数、行动值消耗、恢复默认、下一天、增加一级。它们都作用于
+## 局内状态——等级每局重建、行动值消耗只影响地图移动、天数属于本局时钟——摆在局外只会
+## 给出无效效果。
+##
+## 由宿主场景决定：`Main.tscn` 保持默认 true（局内全套功能）；主菜单把它设为 false，
+## 只留「获得金币」。刻意用导出开关，而不是让面板去嗅探自己挂在哪棵场景树上：面板不该
+## 知道场景拓扑，而且这样能在测试里直接构造出两种模式。
+@export var ShowRunFeatures: bool = true
+
 ## 承载本面板各控件的稳定子节点。
 ## 用唯一名而不是固定层级路径访问：既与 TimePanelUI 的既有惯例一致，
 ## 也让面板可以在测试里用最小节点树构造，不必复刻整棵场景层级。
+@onready var _cost_row: HBoxContainer = %CostRow
 @onready var _day_label: Label = %DayLabel
 @onready var _cost_spin_box: SpinBox = %CostSpinBox
 @onready var _next_day_button: Button = %NextDayButton
 @onready var _reset_cost_button: Button = %ResetCostButton
 @onready var _close_button: Button = %CloseButton
 @onready var _level_up_button: Button = %LevelUpButton
+@onready var _gold_spin_box: SpinBox = %GoldSpinBox
+@onready var _gain_gold_button: Button = %GainGoldButton
 
 ## 时间系统 Autoload 的动态引用；缺失时面板功能整体禁用。
 var _time_system: Node = null
@@ -46,6 +75,10 @@ var _time_system: Node = null
 ## 它只是「增加一级」按钮的依赖，缺失时只让该按钮静默无效，不拖累面板其余功能。
 var _player_level: Node = null
 
+## 钱包 Autoload 的动态引用。
+## 与等级系统同理：缺失时只让「获得金币」静默无效，不拖累面板其余功能。
+var _player_wallet: Node = null
+
 ## 序列匹配器实例。
 ## 匹配规则被拆到无场景依赖的 DevSequenceMatcher 中，因此可以在 tests 下独立断言。
 var _matcher: DevSequenceMatcher = DevSequenceMatcher.new()
@@ -53,29 +86,76 @@ var _matcher: DevSequenceMatcher = DevSequenceMatcher.new()
 ## 最近一次时间快照携带的阶段长度，用于在协议读取失败时保持可用。
 var _phase_length: int = FALLBACK_PHASE_LENGTH
 
+## 首次初始化是否已经完成。
+##
+## 用来区分两种「进入场景树」：首次进入时 `_enter_tree` 先于 `_ready` 触发，唯一名子节点
+## 还没就绪，初始化必须留给 `_ready`；而被缓存复用的场景重新挂回时 `_ready` 不再触发，
+## 只能由 `_enter_tree` 补做恢复。没有这个标记就无法区分二者。
+var _is_initialized: bool = false
+
 
 ## 解析时间系统依赖，连接控件与信号，并同步一次当前状态。
 ## 返回值：无。
 func _ready() -> void:
 	hide()
 	_configure_cost_spin_box()
+	_configure_gold_spin_box()
 	_connect_buttons()
 
-	# 等级系统是可选依赖：面板其余功能在它缺失时都能正常工作，因此这里不报错、
-	# 也不提前返回，只在点击「增加一级」时静默跳过。
+	# 等级系统与钱包都是可选依赖：面板其余功能在它们缺失时都能正常工作，因此这里不报错、
+	# 也不提前返回，只在对应按钮被点击时静默跳过。
 	_player_level = get_node_or_null(PLAYER_LEVEL_PATH)
+	_player_wallet = get_node_or_null(PLAYER_WALLET_PATH)
 
-	_time_system = get_node_or_null("/root/TimeSystem") as Node
-	if _time_system == null:
+	# 可见性必须先于 TimeSystem 的提前返回：局外模式（ShowRunFeatures = false）下
+	# 面板本来就不依赖时间系统的任何控件，不该因为时间系统缺失而整组不生效。
+	_apply_feature_visibility()
+
+	# 标记首次初始化已完成：只有走到这里，唯一名子节点才保证可用，此后 _enter_tree 才有
+	# 资格补做「缓存场景被重新挂回」时的恢复。
+	_is_initialized = true
+
+	if not _bind_time_system():
 		push_error("DevSettingsUI 未找到 TimeSystem Autoload，开发者设置已禁用。")
 		# 没有时间系统时序列入口没有任何可执行效果，直接停止监听未处理输入，
 		# 避免面板成为只吞按键不办事的空壳。
 		set_process_unhandled_input(false)
+
+
+## 缓存场景被重新挂回时恢复时间系统绑定。
+##
+## 主菜单与仓库这两个宿主由 `SceneManager` 缓存复用：切走时只做 `remove_child`、切回时
+## 直接 `add_child`，因此 `_ready` 不会再次执行，而 `_exit_tree` 已经断开订阅并把
+## `_time_system` 置空。没有这一层恢复，第二次进入同一个缓存实例时「下一天」与
+## 「行动值消耗」会静默失效（两个回调都靠 `_time_system != null` 提前返回），且不报错。
+##
+## 首次进入时必须让路：此时 `_ready` 还没跑，唯一名子节点尚未就绪，初始化只能由
+## `_ready` 完成，所以用 `_is_initialized` 把这两种时机区分开。
+## 返回值：无。
+func _enter_tree() -> void:
+	if not _is_initialized:
 		return
+
+	# 必须重新解析引用，而不只是重连信号：_exit_tree 已经把 _time_system 置空，
+	# 只恢复订阅会让面板一直停在一个空引用上。失败时保持失效即可，装配错误已由
+	# _ready 报过一次，这里不再重复刷屏。
+	_bind_time_system()
+
+
+## 解析时间系统，并立刻订阅快照信号、同步一次显示。
+##
+## 抽成独立方法是为了让 `_ready`（首次进入）与 `_enter_tree`（缓存挂回）共用同一条
+## 「解析 → 订阅 → 同步」路径，避免两处实现漂移。
+## 返回值：绑定成功时为 true；时间系统缺失时为 false。
+func _bind_time_system() -> bool:
+	_time_system = get_node_or_null("/root/TimeSystem") as Node
+	if _time_system == null:
+		return false
 
 	_phase_length = _read_phase_length()
 	_connect_time_system()
 	_sync_from_time_system()
+	return true
 
 
 ## 退出场景树时解除 TimeSystem 信号，避免面板释放后仍保留回调。
@@ -163,6 +243,7 @@ func _open_panel() -> void:
 func _on_close_button_pressed() -> void:
 	hide()
 	_cost_spin_box.release_focus()
+	_gold_spin_box.release_focus()
 
 
 ## 把时间推进到下一个天数边界的起点（第二天白天）。
@@ -191,6 +272,20 @@ func _on_level_up_button_pressed() -> void:
 		return
 
 	_player_level.call("AddLevels", 1)
+
+
+## 把输入框里的数量加进钱包。
+##
+## 走钱包的公开接口 Add，而不是直接改写余额字段：Add 负责夹紧到 int 上限并发出
+## GoldChanged，直接写字段会让余额显示与存档层都收不到这次变化。
+##
+## 加完金币的落盘由存档层按防抖统一决定（钱包是存档参与者），面板不触发也不关心保存。
+## 返回值：无。
+func _on_gain_gold_button_pressed() -> void:
+	if _player_wallet == null or not _player_wallet.has_method("Add"):
+		return
+
+	_player_wallet.call("Add", int(_gold_spin_box.value))
 
 
 ## 把行动值消耗控件恢复为默认值。
@@ -294,6 +389,40 @@ func _configure_cost_spin_box() -> void:
 	_cost_spin_box.allow_lesser = false
 
 
+## 把金币输入框限制在既定范围内并填入默认数量。
+##
+## 与行动值消耗控件同一套做法：范围在场景里也写了一遍（供编辑器预览），这里再收口一次，
+## 避免改场景时只改了一半；越界放行同样关闭，让非法输入在控件层就被夹紧。
+##
+## 与消耗控件不同的是，这里连初始值也由脚本写死：金币输入框是「要加多少」的一次性数量，
+## 不镜像任何外部状态（消耗控件会从时间系统回填），因此常量必须是唯一的权威来源。
+## 返回值：无。
+func _configure_gold_spin_box() -> void:
+	_gold_spin_box.min_value = 1
+	_gold_spin_box.max_value = MAX_GOLD_AMOUNT
+	_gold_spin_box.step = 1
+	_gold_spin_box.value = DEFAULT_GOLD_AMOUNT
+	_gold_spin_box.allow_greater = false
+	_gold_spin_box.allow_lesser = false
+
+
+## 按 ShowRunFeatures 决定局内专属控件的可见性。
+##
+## 隐藏的是整行而不是单个输入框：行动值消耗那一行的说明文字与输入框分属两个节点，
+## 只藏输入框会留下一句没有对应控件的标签。
+## 返回值：无。
+func _apply_feature_visibility() -> void:
+	var run_only_rows: Array[CanvasItem] = [
+		_day_label,
+		_cost_row,
+		_reset_cost_button,
+		_next_day_button,
+		_level_up_button,
+	]
+	for row: CanvasItem in run_only_rows:
+		row.visible = ShowRunFeatures
+
+
 ## 连接面板自有控件的信号。
 ## 返回值：无。
 func _connect_buttons() -> void:
@@ -301,6 +430,7 @@ func _connect_buttons() -> void:
 	_level_up_button.pressed.connect(_on_level_up_button_pressed)
 	_reset_cost_button.pressed.connect(_on_reset_cost_button_pressed)
 	_close_button.pressed.connect(_on_close_button_pressed)
+	_gain_gold_button.pressed.connect(_on_gain_gold_button_pressed)
 	_cost_spin_box.value_changed.connect(_on_cost_spin_box_value_changed)
 
 
