@@ -111,6 +111,9 @@ func _apply_init() -> void:
 
 	_resolve_nodes()
 	_resolve_dependencies()
+	# 依赖解析完就立刻订阅：本场景被 SceneManager 缓存复用，_ready 只在首次触发，
+	# 而 init() 每次进入都会被调用，订阅必须挂在这条「每次进入」的路径上。
+	_connect_wallet()
 	_build_slot_views()
 	_absorb_items_brought_back()
 	_set_status("", false)
@@ -127,6 +130,46 @@ func _apply_init() -> void:
 ## 退出时再导出一份只会产生第二份必须同步维护的状态。仓库库存依旧不需要任何回写。
 func exit() -> void:
 	_selected = {}
+	# 订阅是本脚本建立的，离开时必须由本脚本解除：仓库实例被 SceneManager 缓存复用、
+	# 长期驻留内存，不断开就会让一个已经不在前台的界面继续接收钱包信号。
+	_disconnect_wallet()
+
+
+## 订阅钱包的余额变化。
+##
+## 界面上的金币数字与两个升级按钮的可用性都由余额决定。不订阅就只能等下一次主动刷新
+## （进出场景、升级、整理）才同步，实际表现是「金币变了但界面不动」。
+##
+## 先判断再连接是必要的：SceneManager 每次进入场景都会调用 init()，重复连接会让一次
+## 余额变化触发多次刷新。
+## 返回值：无。
+func _connect_wallet() -> void:
+	if _wallet == null or not _wallet.has_signal("GoldChanged"):
+		return
+	if _wallet.is_connected("GoldChanged", _on_gold_changed):
+		return
+
+	_wallet.connect("GoldChanged", _on_gold_changed)
+
+
+## 断开钱包订阅。
+## 返回值：无。
+func _disconnect_wallet() -> void:
+	if _wallet == null or not _wallet.has_signal("GoldChanged"):
+		return
+	if _wallet.is_connected("GoldChanged", _on_gold_changed):
+		_wallet.disconnect("GoldChanged", _on_gold_changed)
+
+
+## 金币变化的回调。
+## @param _new_gold 变化后的余额。这里刻意不使用它，统一经 _current_gold() 读取，
+## 避免「信号携带的值」与「界面自己读到的值」形成两套口径。
+## @remarks
+## 除了金币数字，升级按钮的可用性也由余额决定（见 _refresh_upgrade_buttons），
+## 因此必须一并刷新，否则会出现「钱够了但按钮还是灰的」这种半刷新状态。
+func _on_gold_changed(_new_gold: int) -> void:
+	_refresh_gold_label()
+	_refresh_upgrade_buttons()
 
 
 # ── 初始化 ─────────────────────────────────────────────────────────────────
@@ -251,6 +294,16 @@ func _refresh_header() -> void:
 		"仓库 %d/%d　带入 %d/%d"
 		% [_used_slot_count(), _warehouse_capacity(), _active_carry_count(), CARRY_MAX_POSITIONS]
 	)
+	_refresh_gold_label()
+
+
+## 只刷新金币数字。
+##
+## 与 _refresh_header() 分开是因为两者的变化频率差了几个量级：余额随时会变，容量只在升级
+## 时才变。把金币刷新从标题刷新里拆出来，_on_gold_changed 就不必为了改一个数字去重算
+## 仓库占用与带入栏数量。
+## 返回值：无。
+func _refresh_gold_label() -> void:
 	_gold_label.text = "金币：%d" % _current_gold()
 
 
