@@ -8,6 +8,14 @@ extends Node
 @export var map_position_create_path: NodePath = ^"../MapPositionCreate"
 
 const MAP_SCENE_RESOURCE_SCRIPT := preload("res://resources/map/map_scene_resource.gd")
+const ROOM_CONTEXT_SCRIPT := preload("res://core/map/room_context.gd")
+const DIRECTION_OFFSETS: Array[Vector2i] = [
+	Vector2i(-1, 0),
+	Vector2i(0, 1),
+	Vector2i(1, 0),
+	Vector2i(0, -1),
+]
+const OPPOSITE_DIRECTIONS: Array[int] = [2, 3, 0, 1]
 
 ## 当前房间坐标发生变化时广播；View 监听后刷新显示。
 signal current_room_changed(position: Vector2i)
@@ -87,6 +95,58 @@ func get_scene_resource(position: Vector2i) -> Resource:
 	emit_signal("map_resource_created", position, resource)
 	return resource
 
+
+## 返回房间四个方向上经过双向连接校验的掩码。
+##
+## @param position 要查询的房间坐标。
+## @return 按上、右、下、左分别映射到低四位的方向掩码。
+func get_connection_mask(position: Vector2i) -> int:
+	if not has_room(position):
+		return 0
+
+	var mask: int = 0
+	for direction in range(DIRECTION_OFFSETS.size()):
+		var neighbor: Vector2i = position + DIRECTION_OFFSETS[direction]
+		if are_rooms_connected(position, neighbor):
+			mask |= 1 << direction
+	return mask
+
+
+## 返回房间的纯数据上下文；不把场景节点放入 Model/View 边界。
+##
+## @param position 要查询的房间坐标。
+## @return 房间和场景资源都有效时返回 RoomContext，否则返回 null。
+func get_room_context(position: Vector2i) -> RoomContext:
+	var scene_resource: MapSceneResource = get_scene_resource(position) as MapSceneResource
+	if scene_resource == null:
+		return null
+
+	var context: RoomContext = ROOM_CONTEXT_SCRIPT.new() as RoomContext
+	context.room_position = position
+	context.connection_mask = get_connection_mask(position)
+	context.room_size = room_size
+	context.scene_resource = scene_resource
+	return context
+
+
+## 检查两个房间是否在生成数据中以双向连接相连。
+##
+## @param from_position 起始房间坐标。
+## @param to_position 目标房间坐标。
+## @return 两个坐标正好相邻且双方都声明对应连接时返回 true。
+func are_rooms_connected(from_position: Vector2i, to_position: Vector2i) -> bool:
+	if not has_room(from_position) or not has_room(to_position):
+		return false
+
+	var direction: int = _direction_between(from_position, to_position)
+	if direction < 0:
+		return false
+	var opposite_direction: int = OPPOSITE_DIRECTIONS[direction]
+	return (
+		_has_declared_connection(from_position, direction)
+		and _has_declared_connection(to_position, opposite_direction)
+	)
+
 ## 返回同一路径共享的 PackedScene，避免重复加载完整房间资源。
 ##
 ## @param scene_path 完整房间场景路径。
@@ -94,6 +154,8 @@ func get_scene_resource(position: Vector2i) -> Resource:
 func _get_packed_scene(scene_path: String) -> PackedScene:
 	if packed_scene_cache.has(scene_path):
 		return packed_scene_cache[scene_path] as PackedScene
+	if scene_path.is_empty() or not ResourceLoader.exists(scene_path, "PackedScene"):
+		return null
 	var packed_scene := load(scene_path) as PackedScene
 	if packed_scene == null:
 		push_error("MapWorldModel 无法加载房间场景资源：%s" % scene_path)
@@ -121,11 +183,31 @@ func get_window_positions(center: Vector2i) -> Array[Vector2i]:
 func try_enter_room(position: Vector2i) -> bool:
 	if not has_room(position):
 		return false
+	if current_position != position and not are_rooms_connected(current_position, position):
+		return false
+	if get_scene_resource(position) == null:
+		return false
 	if current_position == position:
 		return true
 	current_position = position
 	emit_signal("current_room_changed", position)
 	return true
+
+
+func _direction_between(from_position: Vector2i, to_position: Vector2i) -> int:
+	var offset: Vector2i = to_position - from_position
+	return DIRECTION_OFFSETS.find(offset)
+
+
+func _has_declared_connection(position: Vector2i, direction: int) -> bool:
+	var connection_value: Variant = scene_to_scene.get(position, null)
+	if not connection_value is Array:
+		return false
+
+	var connections: Array = connection_value
+	if direction < 0 or direction >= connections.size():
+		return false
+	return int(connections[direction]) == 1
 
 ## 返回地图坐标对应的世界原点。
 ##
@@ -139,7 +221,7 @@ func world_origin_for(position: Vector2i) -> Vector2:
 
 ## 将玩家世界坐标换算为所在的地图坐标。
 ##
-## @param world_position 玩家在 MapControl 世界根节点下的全局坐标。
+## @param world_position 玩家在地图 View 节点下的本地坐标，调用方负责转换全局坐标。
 ## @return 对应的地图网格坐标；负坐标使用向下取整，保证跨越左/上边界时连续。
 func map_position_for_world(world_position: Vector2) -> Vector2i:
 	if room_size.x <= 0.0 or room_size.y <= 0.0:

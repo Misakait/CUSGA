@@ -12,6 +12,7 @@ var _map_world_model: Node = null
 var _map_world_view: Node = null
 var _player: Node2D = null
 var _last_valid_position: Vector2i = Vector2i(-999999, -999999)
+var _last_observed_position: Vector2i = Vector2i(-999999, -999999)
 
 func _ready() -> void:
 	_map_control = get_parent()
@@ -22,6 +23,7 @@ func _ready() -> void:
 	_resolve_player()
 	if _map_world_model != null:
 		_last_valid_position = _map_world_model.get(&"current_position")
+		_last_observed_position = _last_valid_position
 
 func _process(_delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
@@ -30,11 +32,17 @@ func _process(_delta: float) -> void:
 	if _map_world_model == null:
 		return
 
-	var candidate: Vector2i = _map_world_model.call(&"map_position_for_world", _player.global_position)
-	if candidate == _last_valid_position:
+	# 房间原点属于 View 的本地坐标系，父节点移动或缩放后仍须按同一坐标系判断跨房。
+	var map_world_position := _player.global_position
+	if _map_world_view is Node2D:
+		map_world_position = (_map_world_view as Node2D).to_local(_player.global_position)
+	var candidate: Vector2i = _map_world_model.call(&"map_position_for_world", map_world_position)
+	if candidate == _last_observed_position:
 		return
+	# 无效坐标也记录观察结果，避免玩家停在边界时每帧重复加载和校验。
+	_last_observed_position = candidate
 	if not bool(_map_world_model.call(&"has_room", candidate)):
-		# 当前阶段不阻挡玩家；void 坐标不更新当前房间，后续边界规则在文件末尾接入。
+		# 物理阻挡由场景瓦片负责；非法坐标不能改变当前房间，也不能触发传送修正。
 		return
 
 	request_room_transition(candidate)
@@ -63,7 +71,7 @@ func _resolve_player() -> void:
 	_player = player_value as Node2D
 
 ## 未来接口：根据当前房间 TileMap 的限制区域判断是否允许跨界。
-## 当前阶段不启用边界限制，始终允许玩家继续自由移动。
+## 保留额外移动规则接口；当前由瓦片碰撞阻挡，跨房流程不调用本接口。
 ##
 ## @param from_position 离开的地图坐标。
 ## @param to_position 进入的地图坐标。
@@ -84,4 +92,3 @@ func can_enter_room_with_boundaries(
 ## @return 当前阶段返回 false，表示未请求战斗。
 func request_passage_guard_encounter(_from_position: Vector2i, _to_position: Vector2i) -> bool:
 	return false
-

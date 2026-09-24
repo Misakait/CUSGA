@@ -94,11 +94,12 @@ func ensure_scene_at(room_position: Vector2i) -> Node2D:
 			return cached
 		active_instances.erase(room_position)
 
-	var resource := map_world_model.call(&"get_scene_resource", room_position) as Resource
-	if resource == null:
+	var context := map_world_model.call(&"get_room_context", room_position) as RoomContext
+	if context == null or context.scene_resource == null:
 		push_warning("UIMapWorldView 收到没有资源配置的房间坐标：%s。" % str(room_position))
 		return null
-	var packed_scene := resource.get("packed_scene") as PackedScene
+	var resource: MapSceneResource = context.scene_resource
+	var packed_scene := resource.packed_scene
 	if packed_scene == null:
 		push_error("UIMapWorldView 的房间资源缺少 PackedScene：%s" % str(room_position))
 		return null
@@ -108,9 +109,19 @@ func ensure_scene_at(room_position: Vector2i) -> Node2D:
 		push_error("UIMapWorldView 加载的房间根节点不是 Node2D：%s" % resource.get("scene_path"))
 		return null
 
+	room_scene.position = map_world_model.call(&"world_origin_for", room_position)
+	if not room_scene.has_method(&"configure_room_context"):
+		push_error("房间根节点缺少 configure_room_context(context)：%s" % resource.scene_path)
+		room_scene.free()
+		return null
+	# 子模块先收到统一连接数据，旧初始化与观察者才会看到一致的桥口状态。
+	# 配置失败的实例不能进入场景树，避免残缺桥口产生一帧可穿透空隙。
+	if not bool(room_scene.call(&"configure_room_context", context)):
+		push_error("房间模块配置失败：%s" % resource.scene_path)
+		room_scene.free()
+		return null
 	active_instances[room_position] = room_scene
 	add_child(room_scene)
-	room_scene.position = map_world_model.call(&"world_origin_for", room_position)
 	if room_scene.has_method(&"initialize_scene"):
 		room_scene.call(&"initialize_scene")
 	_apply_background_time_tint(room_scene)

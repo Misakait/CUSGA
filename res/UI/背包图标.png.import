@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://sj1f7gqqidkh"
-path="res://.godot/imported/仓库.png-e943a424c2ac277cb051a3fce46adfd3.ctex"
+uid="uid://dedji3tu27f8k"
+path="res://.godot/imported/背包图标.png-0057cf061d6c58ac33dc78c22350c9e4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/仓库.png"
-dest_files=["res://.godot/imported/仓库.png-e943a424c2ac277cb051a3fce46adfd3.ctex"]
+source_file="res://res/UI/背包图标.png"
+dest_files=["res://.godot/imported/背包图标.png-0057cf061d6c58ac33dc78c22350c9e4.ctex"]
 
 [params]
 
