@@ -1,39 +1,15 @@
 # Directory Structure
 
-CUSGA is a Godot 4.7.1 C# project, not a web backend. Treat `backend` specs as the C# gameplay/runtime layer.
+`backend` 是 Trellis 的目录名称，在本项目中指 GDScript 的数据与玩法规则层，不表示 Web 后端。
 
-## Top-Level Ownership
+- `core/application/`：运行时应用节点和玩法入口。
+- `core/gameflow/`：世界交互、开局初始化、战斗/场景流程协调。
+- `core/combat/`：战斗规则、技能、效果和战斗状态。
+- `core/crafting/`、`core/map/`、`core/inventory/`、`core/shop/`：领域规则和服务脚本。
+- `entities/`：玩家、怪物和场景实体。
+- `entities/components/`：库存、装备、属性、生命、能量、状态、标签等可复用节点组件。
+- `resources/`：可由编辑器配置的 `Resource` 脚本与 `.tres` 资产。
+- `core/ui/`：与 Model 信号绑定的界面 View 和 Presenter。
+- `tests/godot/`：Godot 运行时契约测试。
 
-- `core/application/` owns runtime ports and application-level managers, such as `GameplayPort` and `EncounterManager`.
-- `core/gameflow/` owns world-to-combat flow and interaction orchestration, such as `WorldInteractionCoordinator` and `TerrainInteractionExecutor`.
-- `core/combat/` owns combat formulas, skill execution, card effects, status hooks, and combat enums.
-- `core/crafting/`, `core/map/`, and `core/inventory/` own focused gameplay rules that are reused by components and UI.
-- `entities/` owns scene-backed entity nodes. `Player.cs` and `Monster.cs` cache child components from stable `Components/...` paths.
-- `entities/components/` owns reusable Godot `Node` components such as inventory, equipment, attributes, status, health, energy, tags, and damage receiving.
-- `resources/` owns Godot `Resource` data classes. These classes are usually `[GlobalClass]` and configured through `.tres` files.
-- `core/ui/` owns C# `Control` UI classes that bind to gameplay components.
-- `tests/CUSGA.Tests/` owns the current C# console-style test runner.
-
-## Placement Rules
-
-Put pure or mostly pure rules in `core/<system>/` when they can be tested without a scene tree. `CraftingService` is the current example: it depends on `ICraftingInventory` instead of directly coupling to `InventoryComponent`.
-
-Put scene lifecycle and signal wiring in `Node`/`Control` classes. Examples include `GameplayPort`, `WorldInteractionCoordinator`, `InventoryUI`, and entity components.
-
-Put editable game data in `resources/**` as Godot `Resource` classes, then reference those resources from scenes or `.tres` assets. Do not encode new content tables into manager classes when an existing resource type can own the data.
-
-Put test-only stubs and helper classes inside the relevant test file unless there is already a reusable production abstraction. `tests/CUSGA.Tests/Program.cs` keeps `TestCraftingInventory`, resource stub factories, and `Assert` local to the runner.
-
-## Naming Patterns
-
-- Entity runtime state classes end with `Component` when they are Godot child nodes under `Components/`.
-- Editable data classes usually end with `Data`, `Rule`, `Settings`, `Profile`, `Entry`, or `Recipe`.
-- Terrain interaction steps end with `Op` and inherit `TerrainOp`.
-- UI classes end with `UI` or describe a concrete UI control, such as `SlotUI` and `EquipmentSlotUI`.
-- C# namespaces mirror folders under `CUSGA`, for example `CUSGA.core.gameflow` and `CUSGA.resources.interaction`.
-
-## Avoid
-
-- Do not add web/server folders such as `controllers`, `routes`, `repositories`, or `migrations`; no such layer exists.
-- Do not put GDScript files under C# `core/**` unless the current directory already contains GDScript autoloads.
-- Do not bypass the `Components/...` child-node convention for new entity components without changing the scene and tests together.
+纯计算或资源规则尽量放在领域脚本中，通过参数协议测试；场景生命周期、信号连接和节点生成放在 Node/Control 脚本中。

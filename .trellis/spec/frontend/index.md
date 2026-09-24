@@ -1,21 +1,23 @@
 # Godot Scene And UI Specs
 
-This layer covers Godot scenes, GDScript, C# UI controls, autoload-facing scripts, editor plugins, and cross-language UI/combat glue. It is called `frontend` by Trellis scaffolding, but this is not a web frontend.
+本层覆盖 Godot 场景、GDScript UI、autoload、编辑器插件以及场景与核心玩法之间的连接。`frontend` 是 Trellis 的目录名称，不表示 Web 前端。
 
-## Guides
+当前生产代码使用 GDScript。旧规范或历史记录中提到的跨语言桥接只用于理解迁移背景，不是新增功能的实现方式。
 
-| Guide | Use when |
+## 指南
+
+| 指南 | 使用场景 |
 |---|---|
-| [Directory Structure](./directory-structure.md) | Choosing where scenes, GDScript, UI controls, generated scripts, and plugins belong. |
-| [Component Guidelines](./component-guidelines.md) | Adding C# `Control`/UI classes, GDScript scene scripts, or reusable UI helper components. |
-| [State Management](./state-management.md) | Working with Godot autoloads, exported paths, signals, local node state, and scene flow. |
-| [Type Safety](./type-safety.md) | Crossing between C#, GDScript, generated enums, wrapper nodes, and resource types. |
-| [Quality Guidelines](./quality-guidelines.md) | Validating GDScript, scenes, UI, generated files, and runtime integration. |
+| [目录结构](./directory-structure.md) | 选择场景、GDScript、UI 控件和插件的位置。 |
+| [组件规范](./component-guidelines.md) | 添加 GDScript UI、场景脚本或可复用视图组件。 |
+| [状态管理](./state-management.md) | 使用 autoload、导出路径、信号、本地节点状态和场景流转。 |
+| [类型安全](./type-safety.md) | 处理类型数组、动态资源字段、节点协议和 Variant 边界。 |
+| [质量规范](./quality-guidelines.md) | 验证 GDScript、场景、UI、资源和运行时集成。 |
 
-## Current Evidence Base
+## 当前代码依据
 
-- Godot project config: `project.godot`.
-- C# UI examples: `core/ui/InventoryUI.cs`, `core/ui/crafting/CraftingUI.cs`, `core/ui/SlotUI.cs`, `core/ui/EquipmentSlotUI.cs`.
-- GDScript examples: `scripts/map_scripts/passage_guard_controller.gd`, `scripts/map_scripts/map_button/map_button.gd`, `scripts/battle_scripts/battle_manager.gd`, `scripts/card_scripts/card_manager.gd`.
-- Cross-language generation: `addons/skill_targeting_type_codegen/skill_targeting_type_codegen.gd`, `scripts/generated/SkillTargetingType.gd`.
-- Runtime tests: `tests/godot/*.gd`.
+- Godot 配置：`project.godot`。
+- UI：`core/ui/**/*.gd`、`scripts/ui_scripts/*.gd`。
+- 场景逻辑：`scripts/**/*.gd`、`core/gameflow/*.gd`、`core/map/*.gd`。
+- 资源：`resources/**/*.gd` 与 `.tres`。
+- 运行时测试：`tests/godot/test_*.gd`。

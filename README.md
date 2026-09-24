@@ -1,95 +1,64 @@
 # CUSGA
 
-CUSGA 是一个基于 **Godot 4.7.1 + C#（.NET 8）** 的 2D 游戏项目，当前包含地图探索、地形交互、遭遇战斗、背包/仓库、装备与词条、制作系统等核心玩法模块。
+CUSGA 是一个基于 **Godot 4.7.1 + GDScript** 的 2D 游戏项目，当前包含地图探索、地形交互、遭遇战斗、背包/仓库、装备与词条、制作系统等核心玩法模块。
 
 ## 技术栈
 
-- Godot 4.7.1（启用 C#）
-- .NET 8.0（`Godot.NET.Sdk/4.7.1`）
-- C# + GDScript 混合开发
+- Godot 4.7.1
+- GDScript
+- Godot 场景（`.tscn`）与资源（`.tres`）
+
+当前仓库没有 C# 工程文件，不需要 .NET SDK，也不需要执行 `dotnet` 构建。
 
 ## 当前功能概览
 
-- **地图与场景流转**：地图间移动、房间加载、昼夜切换。
-- **通道驻守怪物**：夜晚通道可被怪物驻守，击败后才能通过。
-- **战斗接入**：世界场景与战斗场景切换，支持按地形/天数缩放怪物。
-- **地形交互**：地形卡点击交互、采集与遭遇逻辑。
+- **地图与场景流转**：地图生成、房间加载与昼夜切换。
+- **战斗接入**：世界场景与战斗场景切换，支持按地形和天数调整怪物。
+- **地形交互**：地形卡点击、采集与遭遇逻辑。
 - **背包与仓库**：背包 UI、全局仓库、物品增减与堆叠。
-- **装备与标签**：装备槽位、装备标签校验、夜间遭遇概率修正。
-- **制作系统**：材料校验、空间校验、制作失败原因返回。
+- **装备与标签**：装备槽位、装备标签校验和属性修正。
+- **制作系统**：材料校验、空间校验与制作结果反馈。
 
-## 目录结构（核心）
+## 目录结构
 
 ```text
-core/                  核心系统（application/combat/crafting/map/ui 等）
-entities/              实体与组件（Player、Monster、各类 Component）
-resources/             游戏资源定义（怪物、道具、配方、交互、天气等）
-scenes/                Godot 场景（Main、地图、战斗、UI、背包、制作等）
-scripts/               GDScript 脚本（地图按钮、动画、UI、代码生成输出等）
-tests/CUSGA.Tests/     C# 测试工程（控制台测试入口）
-tests/godot/           Godot 运行时脚本测试
-addons/                编辑器插件（如技能目标类型代码生成）
+core/                  核心玩法、地图、战斗、制作和 UI 脚本
+entities/              玩家、怪物与可复用组件
+resources/             怪物、道具、配方、交互和天气等资源定义
+scenes/                主菜单、主场景、地图、战斗和 UI 场景
+scripts/               地图、战斗、卡牌、动画和 UI 脚本
+tests/godot/           Godot 编辑器运行时测试
+addons/                Godot 编辑器插件
 ```
 
 ## 环境要求
 
-- **Godot 4.7.1（Mono/C# 版本）** — 当前 `project.godot` 的 `config/features` 为 `("4.7", "C#", "Forward Plus")`
-- .NET SDK 8.0+
+- Godot 4.7.1
+- 打开项目根目录中的 `project.godot`
 
-> **注意目录名会误导人**：本仓库所在文件夹叫 `Godot_v4.6.3-stable_mono_win64`，同级还有一个 `Godot_v4.6.3-stable_mono_win64_console.exe`，这些都是**遗留物，不是项目用的引擎**。
-> 项目实际使用 **4.7.1**：编辑器会话报 `4.7.1-stable`，`CUSGA.csproj` 引用 `Godot.NET.Sdk/4.7.1`，且 `addons/godot_ai` 要求 Godot ≥ 4.7。
-> 判断版本请以这三处为准，不要看文件夹名。
+`project.godot` 的当前功能标记为 `("4.7", "Forward Plus")`，项目使用 GDScript，不启用 C# 功能。
 
-## 快速开始
+## 启动项目
 
-1. 进入项目目录：
+1. 使用 Godot 4.7.1 打开 `project.godot`。
+2. 运行项目。主场景由 `project.godot` 的 `run/main_scene` 指定，当前对应 `scenes/main_menu_scenes/main_menu.tscn`。
 
-   ```bash
-   cd /path/to/CUSGA
-   ```
+项目启用了 `addons/godot_ai` 编辑器插件。自动化验证需要保持 Godot 编辑器打开，通过编辑器 MCP 运行；不要使用旧版命令行 Godot，也不要在测试结束时关闭编辑器。
 
-2. 用 Godot 打开 `project.godot`。
+## 验证方式
 
-   项目通过编辑器内的 `addons/godot_ai` 插件对外提供 MCP 接口：AI 可据此读写场景与脚本、运行游戏、抓取运行日志、执行 Godot 运行时测试，甚至直接在运行中的游戏里执行 GDScript 并取回返回值。
+项目没有独立编译步骤。按改动范围使用 Godot 编辑器 MCP：
 
-   > **不使用 `godot-mono` 命令行。**
-   > 本机虽已安装 Godot Mono（`E:\Godot\` 下有 4.5.1 / 4.6.1 / 4.6.3 / 4.7.1），但未加入 PATH，也不在验证流程内。
-   > 需要 Godot 侧验证时，请保持**编辑器处于打开状态**，由 AI 通过编辑器 MCP 完成；编辑器未打开时请先打开 Godot，不要改用命令行。
-
-## 构建与验证
-
-> 本项目启用了 Husky 钩子。命令行构建建议显式加 `CI=true`，避免本地钩子写入限制导致失败。
-
-### 1) 构建主工程
-
-```bash
-env CI=true dotnet build CUSGA.sln
-```
-
-### 2) 构建 C# 测试工程
-
-```bash
-env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj
-```
-
-### 3) 运行 Godot 运行时测试
-
-统一通过**编辑器 MCP**执行，不再使用 `godot-mono --headless`：
-
-- `test_run` — 执行 `tests/godot/` 下的全部运行时脚本测试（等价于原先逐条 `--script` 调用），可用 `suite` / `test_name` 过滤单个用例
-- `game_eval` — 在运行中的游戏里执行 GDScript 并取回返回值
-- `logs_read(source="game")` — 读取游戏运行日志，捕获 `SCRIPT ERROR` / `push_error`
-- `project_run` — 启动游戏（`mode="custom"` 可指定场景），结束用 `project_manage(op="stop")`
-
-### 4) （可选）格式化 C# 代码
-
-```bash
-dotnet format CUSGA.sln
-```
+- `filesystem_manage(op="scan")`：刷新文件系统并检查新脚本错误。
+- `test_run(suite=..., test_name=...)`：运行 `tests/godot/` 下的聚焦测试。
+- `project_run(mode="custom", scene="res://X.tscn")`：运行指定场景。
+- `logs_read(source="game")`：检查运行日志中的脚本、解析和资源加载错误。
+- `game_eval(code=...)`：在运行中的游戏里检查状态。
+- `editor_screenshot(source="game")`：验证 UI 画面。
+- `project_manage(op="stop")`：测试结束后停止游戏，但保留编辑器。
 
 ## 开发说明
 
-- 主场景配置在 `project.godot` 的 `run/main_scene`（Godot 使用 UID 引用；当前为 `uid://qwckbjjp11ca`，对应场景文件 `scenes/main_menu_scenes/main_menu.tscn`）。
-- 自动加载节点（Autoload）包括：`GlobalEventBus`、`TimeSystem`、`WeatherManager`、`ItemsControl`、`GlobalWarehouse`、`SceneManager`、`ScreenTransitions`。
-- `addons/skill_targeting_type_codegen` 会将 C# 枚举同步生成到 `scripts/generated/SkillTargetingType.gd`。
-
+- 自动加载节点（Autoload）以 `project.godot` 的 `[autoload]` 配置为准。
+- 修改脚本、节点名称或资源字段时，需要同时检查 `.gd`、`.tscn`、`.tres` 和 `project.godot` 中的引用。
+- GDScript 不使用 GitNexus 或 CodeGraph 做依赖分析；使用 `rg` 查找引用，并通过 Godot 编辑器运行验证动态调用和场景连接。

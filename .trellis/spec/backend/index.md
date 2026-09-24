@@ -1,24 +1,25 @@
-# C# Gameplay Runtime Specs
+# Gameplay And Data Specs
 
-This layer covers the C# side of the Godot project: gameplay services, entity components, Godot `Resource` data, combat effects, map/crafting systems, and the C# console-style test runner.
+本层描述 CUSGA 的 GDScript 核心玩法、实体组件、Godot `Resource` 数据、地图、战斗、制作和物品系统。这里的 `backend` 是 Trellis 的目录名称，不表示网络服务器。
 
-Only use these specs for patterns already demonstrated in the current repository. Do not infer web backend, database, API route, ORM, or server logging conventions for this project.
+当前仓库已完成 GDScript 迁移，没有 C# 工程或 .NET 测试工程。若旧的长篇设计记录仍提到迁移前类型，只能把它们当作历史兼容背景；实现与验证必须以当前 `.gd`、`.tscn`、`.tres` 和 `tests/godot/` 为准。
 
-## Guides
+## 指南
 
-| Guide | Use when |
+| 指南 | 使用场景 |
 |---|---|
-| [Directory Structure](./directory-structure.md) | Choosing where C# gameplay, component, resource, UI, and test files belong. |
-| [Gameplay System Patterns](./gameplay-system-patterns.md) | Adding or changing combat, crafting, interaction, map, inventory, encounter, or time systems. |
-| [Resource Data Guidelines](./resource-data-guidelines.md) | Creating or changing Godot `Resource` data classes and `.tres`-backed configuration. |
-| [Error Handling](./error-handling.md) | Choosing between `Try*`, failure enums, warnings, errors, and hard configuration exceptions. |
-| [Testing Guidelines](./testing-guidelines.md) | Adding C# console runner coverage or choosing Godot runtime runners. |
-| [Quality Guidelines](./quality-guidelines.md) | Applying local C# style, docs, comments, impact checks, and validation commands. |
+| [目录结构](./directory-structure.md) | 选择核心玩法、组件、资源、UI 和测试文件的位置。 |
+| [玩法系统模式](./gameplay-system-patterns.md) | 修改战斗、制作、交互、地图、背包、遭遇或时间系统。 |
+| [资源数据规范](./resource-data-guidelines.md) | 新增或修改 GDScript `Resource` 与 `.tres` 配置。 |
+| [错误处理](./error-handling.md) | 选择返回值、失败枚举、警告、错误或配置失败处理。 |
+| [测试规范](./testing-guidelines.md) | 选择 Godot 编辑器测试或场景冒烟测试。 |
+| [质量规范](./quality-guidelines.md) | 执行 GDScript 风格、文档、依赖检查和验证要求。 |
 
-## Current Evidence Base
+## 当前代码依据
 
-- Godot/.NET setup: `CUSGA.csproj`, `CUSGA.sln`, `project.godot`.
-- Core C# examples: `core/application/GameplayPort.cs`, `core/gameflow/WorldInteractionCoordinator.cs`, `core/gameflow/TerrainInteractionExecutor.cs`.
-- Component examples: `entities/components/InventoryComponent.cs`, `entities/components/EquipmentComponent.cs`, `entities/components/AttributeComponent.cs`, `entities/components/StatusComponent.cs`.
-- Data examples: `resources/item/ItemData.cs`, `resources/item/card/SkillCardData.cs`, `resources/monster/MonsterData.cs`, `resources/interaction/TerrainInteraction.cs`.
-- Tests: `tests/CUSGA.Tests/Program.cs`.
+- 项目配置：`project.godot`。
+- 核心流程：`core/gameflow/*.gd`、`core/map/*.gd`、`core/crafting/*.gd`、`core/shop/*.gd`。
+- 实体组件：`entities/components/*.gd`。
+- 数据资源：`resources/**/*.gd` 与 `resources/**/*.tres`。
+- 场景脚本：`scripts/**/*.gd`。
+- 运行时测试：`tests/godot/test_*.gd`。

@@ -1,55 +1,36 @@
 # Quality Guidelines
 
-These rules are limited to patterns already visible in the current C# codebase and project instructions.
+本规范适用于当前 GDScript 代码库。
 
-## Style
+## 风格
 
-- C# uses spaces, four-space indentation, LF line endings, and Allman braces per `.editorconfig`.
-- Keep namespaces aligned to folders under `CUSGA`.
-- Prefer explicit access modifiers for new C# members.
-- Use braces for control flow.
-- Use `partial` on Godot C# classes that derive from `Node`, `Control`, or `Resource`.
-- Add `[GlobalClass]` only when the class must be available in Godot editor/resource creation.
+- GDScript 使用制表符缩进、LF 换行，并保留文件末尾换行。
+- 类名、脚本路径、节点名和序列化字段沿用所在模块的现有命名方式；修改公开名称前先检查场景与资源引用。
+- 能明确类型时使用类型标注；从 `Dictionary`、动态属性或 `Array` 取得 `Variant` 时，不要用可能触发不安全推断的 `:=`。
+- 可选节点使用 `get_node_or_null`，跨动态边界调用前使用 `has_method`、`has_signal`、`is_instance_valid` 等守卫。
+- Model 只保存数据和业务规则，不直接操作 UI 节点；View 根据 Model 状态显示，Controller 解释输入并调度两者。
 
-## Documentation And Comments
+## 文档与注释
 
-Project instructions require XML docs for public classes, methods, and functions, including parameters and return values. Existing code is not fully consistent, but new or changed public C# APIs should follow the requirement.
+- 公共类、公共方法和公共函数使用 `##` 文档注释。
+- 文档注释必须说明参数、返回值和重要前置条件。
+- 复杂算法、信号顺序、缓存生命周期和兼容协议需要中文行内注释，说明为什么需要该设计。
+- 不添加只复述下一行代码的注释。
 
-Write code comments in Chinese. Comments should explain why a guard, ordering rule, or cross-language bridge exists. Good examples include:
+## 依赖与状态安全
 
-- `battle_manager.gd` comments explaining wrapper-node unwrapping before C# skill execution.
-- `passage_guard_controller.gd` comments explaining why the result signal is connected before requesting combat.
-- `AttributeComponent` comments explaining recalculation queues and status-driven recalculation.
+- 修改前使用 `rg` 搜索脚本路径、`class_name`、方法、信号、节点路径和资源字段在 `.gd`、`.tscn`、`.tres`、`project.godot` 中的引用。
+- GitNexus 和 CodeGraph 不支持本项目的 GDScript，不能用于本项目的影响分析，也不要重新安装或建立索引。
+- 修改状态前先完成合法性检查。涉及背包、装备、生命、能量或缓存时，保持现有对象身份和信号顺序。
+- 动态调用和场景连接不能只靠文本搜索证明安全，必须通过相应测试或真实场景运行验证。
+- 自动生成文件只允许由对应生成流程修改；如果其源文件已经退役，应先确认生成器的当前兼容行为。
 
-Avoid comments that only restate the next line of code.
+## 验证
 
-## Impact Checks
-
-Before editing any C# symbol, run GitNexus impact analysis for that symbol and report the blast radius. If GitNexus says the index is stale, run `npx gitnexus analyze` first.
-
-**GitNexus** indexes this repository (as `CUSGA`). Use it for C# symbol lookup, callers, callees, impact analysis, and execution flows. If it reports a stale index, run `npx gitnexus analyze` first.
-
-**CodeGraph is configured but not operational.** `.codegraph/` contains only `config.json` and `.gitignore` — no index has ever been built, the `codegraph` CLI is not on `PATH`, and no `codegraph_*` MCP tools are registered. Do not plan work around it and do not cite it as a source of truth. `AGENTS.md` mentions it, but treat GitNexus plus native search as the actual toolset. Building the index is an open decision for the project owner.
-
-Neither tool supports GDScript. Use native search/read tools for `.gd`, `.tscn`, `.tres`, and generated GDScript files.
-
-## Data And State Safety
-
-- Validate before mutating gameplay state.
-- Duplicate or copy `ItemStack` when moving between inventory and equipment boundaries.
-- Preserve current health/energy when recalculating maxima unless the feature explicitly changes that behavior.
-- Keep generated files marked as generated and update the generator or source enum instead of hand-editing generated output.
-
-## Verification
-
-For C# changes, build the solution with:
-
-```bash
-env CI=true dotnet build CUSGA.sln --no-restore
-```
-
-For Godot runtime integration, use the **Godot editor MCP** as described in [Testing Guidelines](./testing-guidelines.md) — `test_run` for `tests/godot/` runners, `project_run` + `logs_read(source="game")` for scene smoke tests. Treat `SCRIPT ERROR`, parse errors, failed script loading, and C# build failures as blockers.
-
-The `godot-mono --headless` command line is **not usable on this machine**: the installed CLI is Godot 4.6.3 while the project and `addons/godot_ai` require 4.7.1. The editor must be open for MCP validation to work.
-
-Do not run plain `dotnet build` or `dotnet test` in this repo because the project has Husky setup hooks that must be bypassed with `CI=true`.
+- 验证前确认 Godot 4.7.1 编辑器已打开并加载 CUSGA。
+- 新增或修改脚本后执行 `filesystem_manage(op="scan")`。
+- 有对应测试时运行聚焦的 `test_run(suite=..., test_name=...)`。
+- 场景、autoload 或运行流程改动使用 `project_run`、`logs_read(source="game")` 和 `project_manage(op="stop")` 冒烟测试。
+- UI 改动还要使用 `editor_screenshot(source="game")` 检查画面。
+- `SCRIPT ERROR`、`Parse Error`、`Failed to load script` 和本次改动引入的资源加载错误必须处理。
+- 测试结束后停止游戏，但不得关闭 Godot 编辑器。

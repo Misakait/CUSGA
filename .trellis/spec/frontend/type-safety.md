@@ -1,152 +1,23 @@
-# Type Safety And Cross-Language Boundaries
+# Type Safety
 
-CUSGA crosses between C#, GDScript, Godot resources, and wrapper nodes. Keep those boundaries explicit.
+本项目使用 GDScript。类型安全的重点是 `Variant`、字典、动态节点协议、资源字段和场景序列化边界，不依赖跨语言类型转换。
 
-## Generated Enum Bridge
+## 显式类型
 
-`SkillTargetingType` is the current cross-language enum pattern:
+- 从 `Array`、`Dictionary`、`Object.get` 或 `call` 取得值时，使用显式临时变量和类型检查，再收敛到具体类型。
+- 不要从 `Variant` 使用 `:=` 推断需要稳定接口的变量；这会把真实错误变成解析或运行时错误。
+- `Array[T]` 可能保存已释放实例。遍历可能失效的数组时使用 `Variant`，倒序 `remove_at(index)` 清理，不对无效实例调用 `erase`。
+- 取 `get_node_or_null` 结果后先判断 `null` 和 `is_instance_valid`，再访问属性或方法。
 
-- Source of truth: `core/combat/skills/SkillTargetingType.cs`.
-- Generator: `addons/skill_targeting_type_codegen/skill_targeting_type_codegen.gd`.
-- Output: `scripts/generated/SkillTargetingType.gd`.
-- Test: `tests/godot/skill_targeting_type_codegen_tests.gd`.
+## 动态协议
 
-GDScript battle/card code should preload `scripts/generated/SkillTargetingType.gd` and use `SkillTargetingType.Value.*`. Do not parse C# source at runtime inside battle flow.
+- 使用 `has_method`、`has_signal` 和 `has_meta` 守卫动态协议；方法名和信号名集中定义为 `StringName` 常量。
+- `call` 只传递稳定、可序列化的基础值或节点引用；复杂回调优先使用 Godot 信号，避免在多个层之间传递难以追踪的 `Callable`。
+- 动态资源读取失败时返回安全默认值并记录上下文，不把缺字段当成有效的零值业务结果。
 
-When changing `SkillTargetingType.cs`, regenerate the GDScript file and run the codegen test.
+## 资源与场景
 
-## C# Resource Types
-
-GDScript often reads C# resource properties dynamically, for example `card_data.Skill.TargetingType` or `monster.MonsterName`. Guard dynamic reads with null checks where the current code already does so.
-
-For new C# data used by GDScript:
-
-- Use `[GlobalClass]` if the type must be created/assigned in Godot.
-- Use exported properties for editor-visible fields.
-- Prefer `StringName`, enums, `Array`, and `Dictionary` types that Godot serializes cleanly.
-- Add a generated bridge or explicit wrapper if GDScript needs stable enum names or integer values.
-
-## Wrapper Node Unwrapping
-
-Battle GDScript may deal with wrapper nodes such as `PlayerManager` while C# effects need the real entity with `Components/...` children. `battle_manager.gd` uses `_unwrap_combat_entity` and comments why this is required before building `SkillExecutionContext`.
-
-When adding combat behavior in GDScript, pass real C# entity nodes into C# contexts and effects. Do not pass UI wrappers unless the C# API explicitly expects wrappers.
-
-## Dynamic Boundary Guards
-
-Use `has_method`, `has_signal`, `get_node_or_null`, `is_instance_valid`, and null checks at C#/GDScript boundaries. Existing examples:
-
-- `passage_guard_controller.gd` checks methods and signals before requesting passage guard combat.
-- `card_manager.gd` checks whether cards have `Skill` and `TargetingType`.
-- `battle_manager.gd` checks component availability before reading speed.
-- `DamageEffect` validates damage candidates and handles missing `DamageReceiverComponent` with a warning.
-
-Do not turn these dynamic boundaries into unchecked calls unless tests prove the path is always present.
-
-Typed `Array[T]` calls such as `pop_back()` and `pop_front()` still cross a `Variant` return boundary in GDScript's static analyser. Declare the receiving variable explicitly as `T`; do not use `:=` for those results when warnings are treated as errors.
-
-When calling a method whose parameter is `Array[T]` through `Object.call`, an array literal is an untyped `Array` and fails Godot's runtime element-type validation. Build a local `Array[T]` explicitly and pass that value instead.
-
-`Object.get()`、可空三元表达式和 `Callable.bind()` 同样可能跨越 `Variant` 推断边界。读取跨语言结果时应显式声明 `Variant`，可空节点路径应声明为 `Node`，绑定回调应声明为 `Callable`；不要依赖 `:=` 让严格警告配置猜测类型。
-
-## C# 伤害结果到 GDScript 战斗表现契约
-
-### 1. Scope / Trigger
-
-当 C# `DamageReceiverComponent` 的权威伤害结算需要驱动 GDScript 浮字、受力或 Hit Stop 时，必须通过只读结算结果信号跨语言传递事实。触发原因是表现层不能从卡牌飞行、血条差值或预估伤害反推闪避、暴击、护盾破裂和致死结果。
-
-### 2. Signatures
-
-```csharp
-public DamageResolutionResult ReceiveDamage(DamagePayload payload);
-[Signal] public delegate void DamageResolvedEventHandler(DamageResolutionResult result);
-
-public int GetFeedbackInt(string propertyName);
-public bool GetFeedbackBool(string propertyName);
-public Node GetFeedbackNode(string propertyName);
-```
-
-```gdscript
-func _on_damage_resolved(result: RefCounted) -> void
-func _read_result_int(result: RefCounted, property_name: StringName) -> int
-func _read_result_bool(result: RefCounted, property_name: StringName) -> bool
-func _read_result_node(result: RefCounted, property_name: StringName) -> Node
-func CombatFeedbackProfile.resolve_feedback_intensity(amount: float) -> float
-func CombatScreenImpulse.enqueue_impulse(shake_pixels: float, shake_duration: float, hit_stop_seconds: float, time_scale: float, max_continuous_screen_shake_count: int = 3) -> void
-```
-
-### 3. Contracts
-
-- `DamageResolutionResult` 是 `RefCounted` 的不可变快照。至少包含 `Target`、`ActualDamage`、`IsEvaded`、`IsCritical`、`IsLethal`、`ShieldAbsorbedDamage`、`ShieldWasBroken`、`HitIndex`、`HitCount` 和 `TargetRoleId`。
-- `DamagePayload.ResolutionTrace` 只由状态 Hook 记录护盾吸收、破盾和伤害上限削减；`DamageReceiverComponent` 在 `HealthComponent.TakeDamage()` 后读取 trace 并创建结果，表现脚本不得写回 trace、生命、状态或行动队列。
-- GDScript 必须优先调用 `GetFeedbackInt`、`GetFeedbackBool`、`GetFeedbackNode` 等公开桥接方法，而非假定 C# 自动属性一定能被 `Object.get()` 反射。兼容旧对象时可在 `has_method` 为 false 后安全回退到 `get()`。
-- `DamageEffect` 必须为每段填入 `HitIndex`（从 0 开始）和有效 `HitCount`（至少 1）；这些字段绝不改变伤害公式或目标选择，但用于浮字空间布局、按序入场与非权威表现节流。浮字时长按 `HitCount` 加速后以 `HitIndex` 作为延迟倍数；局部受击与连续震屏最多次数由 `CombatFeedbackProfile.multi_hit_feedback_max_count` 限制。
-- `CombatFeedbackDirector` 只消费 `DamageResolved` 和 `ValueChanged`；它只在生命值增加时从 `ValueChanged` 创建治疗浮字，不订阅 `StatusChanged` 或显示状态浮字。缺少节点或桥接方法时跳过该表现项，不中断同步伤害结算。
-- `CombatFeedbackProfile.resolve_feedback_intensity` 只能接收结算后的绝对显示数值，并以连续饱和曲线返回 `0..1`；所有浮字、受力、震屏和 Hit Stop 参数都必须通过该强度与各自导出上限生成，不能在调用方重新引入固定高额阈值。
-- `CombatScreenImpulse.enqueue_impulse` 的数值参数由导演完成映射后提供，最大连续震屏次数由 Profile 传入。控制器必须按入队顺序消费请求、在每条结束时恢复 `Engine.time_scale`，并在退出场景时清空队列；高频批次超过震屏上限的请求必须以零震屏、零停顿完成其队列生命周期，不能覆盖旧 Tween 或阻塞战斗。
-
-### 4. Validation & Error Matrix
-
-| 条件 | C# 结算层 | GDScript 表现层 |
-| --- | --- | --- |
-| `payload` 为 null | 返回零伤害结果并记录错误 | 不生成浮字或冲击 |
-| 闪避成功 | 发射 `IsEvaded=true`、`ActualDamage=0` 的结果 | 显示 `MISS`，不显示伤害数 |
-| 护盾完全吸收 | trace 写入吸收值，结果实际伤害为 0 | 仅显示灰色吸收数值，不额外显示文字标签 |
-| 同帧多段或范围伤害 | 每条伤害均发射独立结果 | 浮字按段号顺序入场；局部受击与连续屏幕震动仅保留 Profile 上限内的前几次，后续结果仍保留数字 |
-| 超高显示数值 | 权威伤害不受表现层影响 | 曲线趋近 Profile 上限，浮字、受力、震屏与 Hit Stop 均不得越界 |
-| 冲击节点离开场景 | 不影响已完成的同步结算 | 清空未播放请求、恢复根节点位置与先前时间缩放 |
-| C# 字段没有稳定桥接方法 | 不能由表现层假定反射可用 | 仅在兼容回退安全时调用 `get()`，否则静默跳过 |
-| 目标节点已无效 | 结果仍可返回给 C# 调用方 | `is_instance_valid` 失败时跳过反馈 |
-
-### 5. Good / Base / Bad Cases
-
-- Good：暴击使目标实际扣除生命后，`DamageResolved` 发送 `IsCritical=true` 和真实 `ActualDamage`；导演以绝对数值的饱和曲线播放加粗、加大的深红数字、受力、震屏和一次短 Hit Stop，并由硬上限保护高数值。
-- Base：普通多段的每一段都有独立、等强度的数值配方；段号决定浮字的顺序入场，局部受击与全局震屏按 Profile 上限节流，同一连续批次只触发一次 Hit Stop。
-- Bad：`BattleManager` 在飞卡结束后直接调用怪物抖动/闪白，并假定该卡必然命中；这会错误覆盖闪避、范围、敌方伤害和护盾结果。
-
-### 6. Tests Required
-
-- 在 `tests/CUSGA.Tests/Program.cs` 覆盖闪避、暴击致死、护盾吸收/破裂、实际扣血以及 `GetFeedbackInt`、`GetFeedbackBool`、`GetFeedbackNode` 的值。
-- 覆盖 `DamageEffect` 多段执行时每段各发射一个结果，并断言段号为 `0..HitCount-1`、总段数一致。
-- 有可用 Godot 运行时后，加载 `battle.tscn`，验证导演能连接玩家与新刷怪物；高频批次只实际播放 Profile 上限内的震屏、只触发一次 Hit Stop，且 `reduced` 模式的每条冲击请求都不写 `Engine.time_scale`。
-
-### 7. Wrong vs Correct
-
-#### Wrong
-
-```gdscript
-# 预结算表现既不知道闪避，也无法知道实际护盾吸收量。
-await deck_manager.play_enemy_hit_feedback(monster_target)
-combat_skill.Execute(context)
-```
-
-#### Correct
-
-```gdscript
-# 施放动画与命中结果分离；C# 完成结算后由 DamageResolved 驱动表现。
-await deck_manager.play_card_to_enemy(action.presentation_card, monster_target)
-combat_skill.Execute(context)
-```
-
-#### Wrong
-
-```gdscript
-# 段号被用来缩减或跳过反馈，会让真实命中在范围和多段中丢失。
-if result.GetFeedbackInt("HitIndex") > 0:
-	return
-screen_impulse.request_impulse(12.0, 0.12, 0.04, 0.05)
-```
-
-#### Correct
-
-```gdscript
-# 每条权威结果先映射为自身数值配方，再完整加入各自 FIFO。
-var recipe: Dictionary = _build_impact_recipe(impact_amount, is_critical, is_lethal, shield_broken)
-_enqueue_target_impact(target, impact_color, recipe)
-_screen_impulse.enqueue_impulse(
-	float(recipe["screen_shake_pixels"]),
-	float(recipe["screen_shake_duration"]),
-	float(recipe["hit_stop_seconds"]),
-	profile.hit_stop_time_scale
-)
-```
+- 可编辑数据使用 GDScript `Resource`，字段名和默认值要与现有 `.tres` 保持兼容。
+- 资源数组优先使用 `Array[Resource]`；只有确实需要混合协议时才使用无类型数组，并在消费点过滤元素。
+- 场景中的节点名、唯一名、导出路径和脚本路径都是运行时接口，重命名必须同步检查所有 `.tscn` 与脚本。
+- 生成的脚本只通过生成器更新；源资源和输出文件的同步要有 `test_run` 回归测试。

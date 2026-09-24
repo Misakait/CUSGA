@@ -1,156 +1,46 @@
-# CUSGA Project - AI Agent Core Directives
+# CUSGA 项目 AI 核心规则
 
-> **CRITICAL: READ BEFORE EXECUTING ANY COMMANDS OR WRITING CODE.**
-> The following project-specific rules take absolute precedence over your default behaviors.
-> Check if agent.local.md exists in the root directory. If yes, read it and let its rules override the ones below.
+> **执行任何命令或修改代码前必须阅读本文件。**
+> 如果项目根目录存在 `agent.local.md`，还必须读取该文件；其中的本地协作约束优先于本文件。
 
-## 1. Compilation & Validation Rules (CRITICAL SANDBOX CONSTRAINT)
+## 1. 项目技术基线
 
-- **The Trap**: Running standard `dotnet test` or `dotnet build` triggers local Husky hooks that attempt to write to `.git/config`. Your sandbox lacks these permissions and will fatally crash.
-- **NEVER DO**: You must NEVER trigger or attempt to modify `.git/config` hooks under any circumstances.
-- **ALWAYS DO (Dynamic Evaluation)**: When you need to verify compilation, you **MUST** prepend `env CI=true` to bypass hooks. However, you must dynamically determine the correct target based on the project structure:
-  - First, survey the workspace. Are there `.sln` files or multiple `.csproj` files?
-  - If it's a simple project, build the specific project (e.g., `env CI=true dotnet build [TargetProject].csproj --no-restore`).
-  - If it's a complex solution and the change spans multiple areas, build the solution (e.g., `env CI=true dotnet build [SolutionName].sln --no-restore`).
-  - _Do NOT blindly copy these examples; adapt the target file to the actual context._
-- **Godot Runtime Validation**: When a change touches GDScript, `.tscn` scenes, Godot resources, C# `[GlobalClass]` types, autoload access, or scene/runtime integration, validate through the **Godot editor MCP** (`addons/godot_ai`) in addition to `dotnet build`.
-  - **Do NOT use the `godot-mono` command line.** This machine's CLI is Godot 4.6.3 while the project and `addons/godot_ai` require 4.7.1, so `--build-solutions` aborts outright. See "Superseded practices" below for the full list of what no longer works.
-  - **Precondition**: the Godot editor must be **open** with the CUSGA project loaded. Verify with `editor_state` / `session_manage(op="list")` before validating. If no session is connected, ask the user to open Godot rather than falling back to the command line.
-  - The MCP tool set that replaces the old CLI flags:
+- 本项目使用 **Godot 4.7.1 + GDScript**。
+- 当前仓库没有 `.cs`、`.csproj` 或 `.sln` 文件，不需要 .NET SDK，也没有 C# 编译步骤。
+- 不运行 `dotnet build`、`dotnet test`、`dotnet run`、`dotnet format` 或 `godot-mono`。
+- 不安装、运行或重新建立 GitNexus / CodeGraph 索引。这两类工具不支持本项目使用的 GDScript，不能作为依赖与影响分析依据。
+- 查找 GDScript、场景和资源引用时，使用 `rg`、文件读取工具以及 Godot 编辑器运行验证。
 
-    | Old CLI flag | Replacement (editor MCP) | What it covers |
-    |---|---|---|
-    | `--build-solutions --quit` | `env CI=true dotnet build CUSGA.sln --no-restore` | C# compile; the editor reloads `CUSGA.dll` itself |
-    | `--scene res://X.tscn --quit-after N` | `project_run(mode="custom", scene="res://X.tscn")` + `logs_read(source="game")`, then `project_manage(op="stop")` | scene loads, scripts compile, node paths, autoload wiring |
-    | `--script res://tests/godot/x.gd` | `test_run(suite=..., test_name=...)` | focused runtime test runners under `tests/godot/` |
-    | `--check-only --script` | *(no replacement — do not use)* | see below; it never worked for autoload-referencing scripts |
-    | manual screenshot | `editor_screenshot` (`source` = `game` or `viewport`) | visual confirmation for UI changes |
-    | debug prints | `game_eval(code=...)` / `game_command` | interactive assertions inside the running game |
+## 2. Godot 验证规则
 
-  - Smoke-test the changed scene path, and usually the main scene too, via `project_run(mode="custom", scene=...)` followed by `logs_read(source="game")`. Stop the game with `project_manage(op="stop")`.
-  - Treat `SCRIPT ERROR`, `Parse Error`, `Failed to load script`, and C# build failures as blockers. Resource UID warnings may be pre-existing; only treat them as blockers when they involve files touched by the current change.
-  - Do not rely on plain `dotnet run` for Godot-dependent test runners; it can fail to locate `GodotSharp` outside the Godot runtime. Use `test_run` (editor MCP) for runtime/script/scene validation and `env CI=true dotnet build ... --no-restore` for compile validation.
-  - Running the Godot editor rewrites version-controlled files: it reformats `.cs` indentation from spaces to Tab (violating `.editorconfig`) and rewrites `CUSGA.csproj`'s `Godot.NET.Sdk` version. Always `git status` afterwards and revert unintended changes.
+- 涉及 `.gd`、`.tscn`、`.tres`、autoload 或运行时集成的改动，必须通过已打开的 **Godot 4.7.1 编辑器 MCP**（`addons/godot_ai`）验证。
+- 验证前先用 `editor_state` 或 `session_manage(op="list")` 确认编辑器已打开并加载 CUSGA。没有连接时，要求用户打开编辑器；不得改用旧版命令行 Godot。
+- 测试结束后只调用 `project_manage(op="stop")` 停止运行中的游戏，**不得关闭 Godot 编辑器**。
 
-### Superseded practices (do not follow older docs that still list them)
+| 验证目标 | 编辑器 MCP 操作 |
+|---|---|
+| 刷新新增或修改的 GDScript | `filesystem_manage(op="scan")` |
+| 运行 `tests/godot/` 下的测试 | `test_run(suite=..., test_name=...)` |
+| 冒烟测试指定场景 | `project_run(mode="custom", scene="res://X.tscn")`，读取 `logs_read(source="game")`，最后 `project_manage(op="stop")` |
+| 检查运行时状态 | `game_eval(code=...)` 或 `game_command` |
+| 检查 UI 画面 | `editor_screenshot(source="game")` |
 
-Older project docs — including parts of `.trellis/spec/frontend/quality-guidelines.md`, `.trellis/spec/backend/testing-guidelines.md`, and `.trellis/spec/guides/minimal-feature-start.md` — still describe `godot-mono --headless` validation. Those instructions are **obsolete** and this section overrides them:
+- 修改场景或运行流程时，优先冒烟测试被修改的场景，通常还要测试主场景。
+- `SCRIPT ERROR`、`Parse Error`、`Failed to load script` 和本次改动引入的资源加载错误都是阻塞问题。
+- 资源 UID 警告只有在涉及本次修改文件时才视为阻塞问题。
+- `--check-only --script` 和直接 `--script` 不能正确加载项目 autoload，不得作为通过或失败的判断依据。
+- Godot 编辑器可能改写版本控制文件。验证结束后必须重新运行 `git status`，只保留本次任务需要的改动，不得覆盖用户已有改动。
 
-- `--build-solutions` **fails on this machine** — the 4.6.3 CLI conflicts with `addons/godot_ai`, which requires Godot ≥ 4.7.
-- `--check-only --script` is **not usable as a gate** — it only parses and does not compile, so any script referencing an autoload fails with `Identifier not found: <AutoloadName>`. Pre-existing scripts behave the same way; do not treat that failure as a regression, and do not use the flag as a pass/fail criterion.
-- `--script` mode **does not load autoloads**, so C# autoloads (`PlayerWallet`, `PlayerProgression`, …) resolve to `null` there. Scenes depending on them must be validated in a real running game.
-- The correct compile command is always `env CI=true dotnet build CUSGA.sln --no-restore`; the correct runtime validation path is the editor MCP.
+## 3. 文档与注释规则
 
-## 2. Documentation & Commenting Standards
+- 公共类、公共方法和公共函数必须使用 GDScript 文档注释 `##`，并明确说明参数和返回值。
+- 复杂、非直观或有顺序要求的逻辑必须添加行内注释。
+- 注释必须解释“为什么这样做”，不要重复代码表面行为。
+- 所有代码注释使用中文。
+- 不为了缩短代码而删除保障理解所必需的说明。
 
-- **XML/Standard Docs**: Always include standard XML docs (or equivalent docstrings) for all public classes, methods, and functions. You must explicitly explain parameters and return values.
-- **Inline Complexity**: Add inline comments for any complex, non-obvious, or algorithmic logic (e.g., Crafting settlement, combat state transitions).
-- **Explain the "Why"**: Comments must focus on explaining WHY a specific approach was taken, not merely narrating WHAT the code is doing.
-- **Zero-Sacrifice Clarity**: Keep the code clean, but NEVER sacrifice necessary explanatory comments for the sake of brevity.
-- **Native Comment Language**: Write all code comments in Chinese language.
+## 4. GDScript 依赖检查
 
----
-
-<!-- CODEGRAPH_START -->
-
-## CodeGraph
-
-> **STATUS: CONFIGURED BUT NOT OPERATIONAL — DO NOT RELY ON IT.**
-> `.codegraph/` contains only `config.json` and `.gitignore`. No index has ever been built, the CLI is not reachable (the npm package name `codegraph` has no runnable executable; `npx codegraph` fails with "could not determine executable to run"), and **no `codegraph_*` MCP tools are registered in this session**. Every call would fail with "not initialized".
-> **Use GitNexus instead** (it is the tool actually installed here — see the section below) plus native `rg` / read tools.
-> The guidance below is kept so the section is ready if the owner decides to build the index. Until then, treat it as inactive.
-
-### GDScript is not covered, and cannot be (verified 2026-09-19)
-
-This is **not** a missing-index problem — it is a language-support limit, so building the index would not fix it:
-
-- `.codegraph/config.json` has an explicit `include` list of file extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.go`, `.rs`, `.java`, `.c`, `.h`, `.cpp`, `.hpp`, `.cc`, `.cxx`, `.cs`, `.php`, `.rb`, `.swift`, `.kt`, `.kts`, `.dart`, `.svelte`, `.liquid`, `.pas`, `.dpr`, `.dpk`, `.lpr`, `.dfm`, `.fmx`). **`.gd` is absent.** The tool walks the files it is configured for, so adding GDScript is not a config toggle.
-- GitNexus does not cover GDScript either, and it is the same class of tool (parser-based symbol graph).
-
-**Consequence — this is the agreed workflow, not a gap to fill:**
-
-- C# symbols, callers, callees, and impact analysis → **GitNexus**.
-- GDScript symbols, scene scripts, and Godot runtime behaviour → **native `rg` / read tools, then runtime validation through the editor MCP** (`test_run` / `project_run` + `logs_read(source="game")`), as described in section 1.
-- Never hand-edit or hand-extend `.codegraph/config.json` to try to add `.gd`; that would produce a silently incomplete graph, which is worse than having no graph.
-
-This item was previously listed as an open improvement ("make CodeGraph / GitNexus cover `.gd`"). It is now **closed as not achievable**; do not re-raise it.
-
-This project has a CodeGraph MCP server (`codegraph_*` tools) configured. CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file. Reads are sub-millisecond and return structural information grep cannot.
-
-### When to prefer codegraph over native search
-
-Use codegraph for **structural** questions — what calls what, what would break, where is X defined, what is X's signature. Use native grep/read only for **literal text** queries (string contents, comments, log messages) or after you already have a specific file open.
-
-| Question                                      | Tool                |
-| --------------------------------------------- | ------------------- |
-| "Where is X defined?" / "Find symbol named X" | `codegraph_search`  |
-| "What calls function Y?"                      | `codegraph_callers` |
-| "What does Y call?"                           | `codegraph_callees` |
-| "What would break if I changed Z?"            | `codegraph_impact`  |
-| "Show me Y's signature / source / docstring"  | `codegraph_node`    |
-| "Give me focused context for a task/area"     | `codegraph_context` |
-| "Survey an unfamiliar module/topic"           | `codegraph_explore` |
-| "What files exist under path/"                | `codegraph_files`   |
-| "Is the index healthy?"                       | `codegraph_status`  |
-
-### Rules of thumb (hypothetical — CodeGraph cannot actually be enabled here; see the STATUS note)
-
-- **Trust codegraph results.** They come from a full AST parse. Do NOT re-verify them with grep — that's slower, less accurate, and wastes context.
-- **GDScript caveat:** CodeGraph and GitNexus do not index `.gd` files in this project. For GDScript symbols, scene scripts, and Godot runtime behavior, use native search/read tools such as `rg` and validate through the editor MCP (`test_run` / `project_run` + `logs_read(source="game")`) as described in section 1.
-- **Don't grep first** when looking up a symbol by name. `codegraph_search` is faster and returns kind + location + signature in one call.
-- **Don't chain `codegraph_search` + `codegraph_node`** when you just want context — `codegraph_context` is one call.
-- **`codegraph_explore` is the heavy hitter** for unfamiliar areas — it returns full source from all relevant files in one call, but is token-heavy. If your harness supports parallel subagents (e.g., Claude Code's Task tool), spawn one for explore-class questions to keep main session context clean.
-- **Index lag**: the file watcher debounces ~500ms behind writes; don't re-query immediately after editing a file in the same turn.
-
-### If `.codegraph/` doesn't exist
-
-`.codegraph/` **does** exist here, but it holds only `config.json` and `.gitignore` — there is no index, so the MCP server answers "not initialized." That is the current expected state; see the STATUS note at the top of this section.
-
-Do **not** silently run `codegraph init -i`. The CLI is not obtainable on this machine (the npm package `codegraph` has no runnable executable), and building an index would still not give GDScript coverage — see the note above. Treat CodeGraph as unavailable and use GitNexus plus native search.
-
-<!-- CODEGRAPH_END -->
-
-<!-- gitnexus:start -->
-# GitNexus — Code Intelligence
-
-This project is indexed by GitNexus as **CUSGA** (2076 symbols, 2490 relationships, 56 execution flows).
-
-> Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
-
-## Always Do
-
-- **MUST run impact before editing.** Use `impact({target: "symbolName", direction: "upstream"})` or `node .gitnexus/run.cjs impact "symbolName" --direction upstream --repo .`; report callers, processes, and risk. Never substitute grep for graph analysis.
-- **MUST analyze graph changes before committing.** Use `detect_changes({scope: "all"})` (MCP) or `node .gitnexus/run.cjs detect-changes --scope all --repo .` (CLI fallback). `partial: true` or `truncated: true` is not a clean check — a zero means unseen, not unaffected; re-run it. For regression review: `detect_changes({scope: "compare", base_ref: "main"})` or `node .gitnexus/run.cjs detect-changes --scope compare --base-ref "main" --repo .`.
-- MUST warn on HIGH/CRITICAL `risk` pre-edit; never use `riskSharedAxes` to waive a HIGH/CRITICAL `risk` warning. Compare File/symbol: MCP File omits axes; Graph-RAG expands File.
-- **MUST treat `risk: UNKNOWN` as unresolved, not as low.** An empty caller set is not evidence the symbol is unused — it can also mean the callers are not resolvable by the index (plain-object property access, dynamic dispatch, cross-language calls). `impact` pairs `UNKNOWN` with a `riskNote` saying so. Confirm with a text search before treating the symbol as safe to change or delete; do not proceed on the strength of a zero.
-- **MUST use `query({search_query: "concept"})` for concepts/flows, `context({name: "symbolName"})` for a named symbol, or `impact` for blast radius, on read-only callers, dependencies, imports, or execution flow.** Graph first; text search only for empty/`UNKNOWN`/literals.
-- For security review, `explain({target: "fileOrSymbol"})` lists taint findings (source→sink flows; needs `analyze --pdg`).
-
-## Never Do
-
-- NEVER edit a function, class, or method before MCP/CLI impact analysis.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis, and never read `UNKNOWN` as an all-clear — it means the walk could not answer, which is the one verdict that requires confirming by other means.
-- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
-- NEVER commit before MCP/CLI graph change analysis.
-
-## Resources
-
-| Resource | Use for |
-| --- | --- |
-| `gitnexus://repo/CUSGA/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/CUSGA/clusters` | All functional areas |
-| `gitnexus://repo/CUSGA/processes` | All execution flows |
-| `gitnexus://repo/CUSGA/process/{name}` | Step-by-step execution trace |
-
-## CLI
-
-| Task | Read this skill file |
-| --- | --- |
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus-cli/SKILL.md` |
-
-<!-- gitnexus:end -->
+- 修改脚本前，使用 `rg` 查找脚本路径、`class_name`、方法名、信号名和节点路径在 `.gd`、`.tscn`、`.tres`、`project.godot` 中的引用。
+- 动态调用（`call`、`has_method`、信号名字符串）无法靠静态搜索完整证明安全，必须补充对应的 Godot 运行时验证。
+- 重命名脚本、节点、方法、信号或资源字段时，必须同时检查场景序列化字段和资源引用，不能只修改脚本中的文本。
