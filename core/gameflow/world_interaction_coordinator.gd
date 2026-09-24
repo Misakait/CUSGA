@@ -31,7 +31,7 @@ const BATTLE_SCENE_PATH: String = "res://scenes/battle_scenes/battle.tscn"
 ## 战斗场景的结束信号名。
 const BATTLE_ENDED_SIGNAL: StringName = &"battle_ended"
 ## 生产 GDScript 战斗背景解析器脚本路径。
-const MAP_BACKGROUND_RESOLVER_SCRIPT_PATH: String = "res://core/gameflow/current_map_background_resolver.gd"
+const MAP_BACKGROUND_RESOLVER_SCRIPT_PATH: String = "res://core/gameflow/UICurrentMapBackgroundResolver.gd"
 ## 怪物数据的跨语言字段协议：C# MonsterData 为 [Export]，GDScript monster_data.gd 为 @export。
 ## 判定只看字段面，不看类型名或脚本路径，避免把语言身份写进生产逻辑。
 const MONSTER_DATA_REQUIRED_FIELDS: Array[StringName] = [
