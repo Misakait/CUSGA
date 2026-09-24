@@ -454,3 +454,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 
 - 父任务 09-23-game-start-flow 的 5 条跨子任务集成验收（两项需求均已交付）
 - 可选：在背包 UI 补充「抽到的卡需手动放进出战卡组」的引导
+
+
+## Session 15: 每七天弹出天赋选择并交付十张测试天赋卡
+<!-- trellis-session: v=2 fp=4fb0729dfca99ad1 -->
+
+**Date**: 2026-09-24
+**Task**: 每七天弹出天赋选择并交付十张测试天赋卡
+**Branch**: `main`
+
+### Summary
+
+实装每七天弹出的天赋选择：可选池改为扫描 resources/talents 目录实时装配，新增 10 张属性天赋卡；界面补齐遮罩/标题/提示并对齐开局技能卡抽取。顺带修复属性天赋静默失效（组件路径写成玩家根下的 AttributeComponent，实际在 Components/ 下）、卡面描述被固定像素矩形截断、悬停详情浮窗被遮罩盖住三处缺陷。编辑器 MCP 实测：第 7/14 天自动弹出并暂停、点击后属性 100→105、暂停归还、池 10→9、已学卡不再出现；全量 424 项 389 通过 2 失败（均为既有问题）。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `aae82e6` | 每七天弹出天赋选择并交付十张测试天赋卡 |
+
+### Status
+
+[OK] **Completed**
