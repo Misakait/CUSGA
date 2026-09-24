@@ -47,8 +47,9 @@ region_rect = Rect2(0, 0, 100, 140)
 texture = ExtResource("2_xn0hb")
 region_rect = Rect2(0, 0, 99, 139)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_sl4ay"]
-size = Vector2(100, 140)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fp2jx"]
+radius = 33.0
+height = 108.0
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_p4rea"]
 animation = &"hover"
@@ -218,7 +219,9 @@ scale = Vector2(2, 2)
 texture = ExtResource("3_uw8mp")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1694452917]
-shape = SubResource("RectangleShape2D_sl4ay")
+position = Vector2(0, 42)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_fp2jx")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=751446765]
 
