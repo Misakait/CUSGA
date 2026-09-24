@@ -1,64 +1,45 @@
 # Minimal Feature Start
 
-Use this before starting the next feature task in CUSGA. The goal is to start small and load only the specs supported by current code examples.
+在 CUSGA 开始新功能前使用本指南。目标是只加载当前 GDScript 代码能够证明的规则，并保持改动范围最小。
 
-## Task Creation
+## 创建任务
 
-Do not create a Trellis task silently. Ask for consent first.
+不要静默创建 Trellis 任务，先取得用户同意。
 
-For a small feature touching one system, create a PRD-only task unless the user asks for deeper planning. For a feature touching multiple systems, write `prd.md`, `design.md`, and `implement.md` before starting implementation.
+- 只影响单个系统的小功能通常只需要 `prd.md`。
+- 跨多个系统或涉及架构调整的功能需要 `prd.md`、`design.md` 和 `implement.md`。
 
-## First Scan
+## 第一次扫描
 
-Identify the feature slice:
+先判断功能范围：
 
-- C# gameplay/runtime: read backend directory, gameplay system, resource data, testing, and quality specs.
-- Godot UI/GDScript/scene flow: read frontend directory, component, state, type safety, and quality specs.
-- Cross-language combat or enum work: read both backend gameplay specs and frontend type-safety specs.
+- 核心玩法、组件或资源：读取 `backend` 的目录、玩法、资源、测试和质量规范。
+- UI、场景或输入：读取 `frontend` 的目录、组件、状态、类型安全和质量规范。
+- 跨层流程：同时读取相关 backend/frontend 规范，并从实际场景入口追踪到 Model、Controller 和 View。
 
-Use GitNexus for C# symbols (CodeGraph is configured in `AGENTS.md` but has no index built and no registered MCP tools — do not rely on it). Use native search/read for `.gd`, `.tscn`, `.tres`, and generated GDScript because neither tool indexes GDScript.
+本项目是纯 GDScript。使用 `rg` 和文件读取工具查找 `.gd`、`.tscn`、`.tres` 与 `project.godot` 的引用；不要安装或使用 GitNexus / CodeGraph。
 
-If GitNexus reports stale data, run:
+## 修改前
 
-```bash
-npx gitnexus analyze
-```
+- 搜索目标脚本路径、`class_name`、方法、信号、节点路径和序列化字段的全部引用。
+- 查看相关场景和资源，确认动态调用与节点连接不能仅靠静态搜索判断。
+- 选择能够覆盖真实调用链的最小 Godot 编辑器测试：有对应测试时用 `test_run`，否则用 `project_run` 冒烟测试。
+- 保留协作者已有改动。若用户只要求检查或规划，不修改文件。
 
-## Before Editing
+## 最小实现形状
 
-Before changing any C# symbol, run GitNexus impact analysis for the target symbol and report risk if it is HIGH or CRITICAL.
+- 新数据配置：复用现有 GDScript `Resource` 和 `.tres` 结构。
+- 新核心规则：放在已有 `core/<system>/` 或 `entities/components/` 所属模块。
+- 新 UI 流程：View 只显示状态与上报意图，Controller 调用 Model 修改数据。
+- 新地图或战斗行为：沿用现有状态机、信号顺序和资源协议。
+- 除非任务明确要求并说明现有扩展点无法承载，否则不新增框架、数据库、全局单例、测试框架或通用架构层。
 
-Before changing GDScript or scenes, find the script's scene/runtime callers with `rg` and pick the smallest editor-MCP check that exercises that path (`test_run` for a matching runner, otherwise a `project_run` smoke test).
-Do not use GitNexus or CodeGraph to look up symbols in GDScript, as neither tool supports the GDScript language.
+## 最小验证
 
-Keep collaborator-owned GDScript changes narrow. If the task is mainly diagnosis or the user says not to change friend-authored `.gd` code, report findings instead of editing those files.
+- 新增或修改脚本：`filesystem_manage(op="scan")`。
+- 数据、组件或算法：对应的 `test_run(suite=..., test_name=...)`。
+- 场景或运行时集成：`project_run` + `logs_read(source="game")`，最后 `project_manage(op="stop")`。
+- UI：在运行时验证交互，并使用 `editor_screenshot(source="game")` 检查画面。
+- 主流程：从主菜单进入游戏，确认没有新的脚本或资源加载错误。
 
-## Minimal Implementation Shape
-
-Prefer the existing local extension point:
-
-- New terrain interaction: `TerrainInteraction.BuildOps` plus small `TerrainOp` classes.
-- New combat card effect: `CardEffect` subclass and `CombatSkillData` resource wiring.
-- New status/buff: `StatusEffectData` plus `StatusEffectInstance` hook override.
-- New item/equipment data: `Resource` class or `.tres` content using existing tags, slots, and display fallbacks.
-- New UI flow: bind UI to an existing component or `GameplayPort` signal.
-- New map/battle GDScript behavior: preserve existing state-machine and signal-ordering patterns.
-
-Do not introduce a new framework, database, global singleton, test framework, or generic architecture layer unless the current task explicitly requires it and the design explains why existing patterns cannot support it.
-
-## Minimal Verification
-
-Always build with `CI=true`:
-
-```bash
-env CI=true dotnet build CUSGA.sln --no-restore
-```
-
-Add focused validation based on changed files:
-
-- C# runner build: `env CI=true dotnet build tests/CUSGA.Tests/CUSGA.Tests.csproj --no-restore`
-- C# runner execution when GodotSharp resolves: `env CI=true dotnet run --no-restore --project tests/CUSGA.Tests/CUSGA.Tests.csproj`
-- GDScript or scene runtime: the Godot **editor MCP**, not the command line (`test_run` for `tests/godot/` runners; `project_run` + `logs_read(source="game")` for a scene smoke test, then `project_manage(op="stop")`). The editor must be open.
-- Passage/map flow: `test_run(suite="passage_guard")`
-- Combat multi-hit/status bridge: `test_run(suite="multi_hit_damage")`
-- Skill targeting enum bridge: `test_run(suite="skill_targeting_type_codegen")`
+测试只停止正在运行的游戏，不关闭 Godot 编辑器。

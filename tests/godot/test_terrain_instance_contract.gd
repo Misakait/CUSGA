@@ -205,7 +205,7 @@ func test_csharp_consumers_use_cross_language_protocol() -> void:
 	)
 
 	var presenter: String = FileAccess.get_file_as_string(
-		"res://core/map/room_board_presenter.gd"
+		"res://core/map/UIRoomBoardPresenter.gd"
 	)
 	assert_true(
 		presenter.contains('terrain.get("TerrainData")'),

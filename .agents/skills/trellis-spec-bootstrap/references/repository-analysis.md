@@ -6,9 +6,9 @@ The goal is to discover the project's real architecture before writing rules. Do
 
 1. Read the existing `.trellis/spec/` tree and note which files are templates, outdated, or already project-specific.
 2. Inspect package manifests, build scripts, workspace config, and top-level documentation to identify packages and runtime layers.
-3. Use GitNexus for execution flows, module clusters, dependency hubs, and impact-sensitive areas.
-4. Use ABCoder or language-native tooling for exact signatures, types, class boundaries, and implementation examples.
-5. Read representative source and test files directly before turning any finding into a spec rule.
+3. Use `rg` to trace script, scene, resource, signal, node-path, and autoload references.
+4. Use the Godot editor MCP to inspect the running scene and validate dynamic node wiring.
+5. Read representative GDScript, scene, resource, and test files directly before turning any finding into a spec rule.
 
 ## What To Capture
 
@@ -22,31 +22,15 @@ The goal is to discover the project's real architecture before writing rules. Do
 | Configuration | Where do defaults, environment config, generated files, and templates live? |
 | Tests | Which test styles are trusted examples for new work? |
 
-## GitNexus Usage
+## Godot GDScript Analysis
 
-Start broad, then inspect specific symbols:
-
-```text
-gitnexus_query({query: "CLI command execution flow"})
-gitnexus_query({query: "template generation and migration"})
-gitnexus_context({name: "SymbolName"})
-gitnexus_cypher({query: "MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name LIMIT 30"})
-```
-
-Use GitNexus results to find important files and flows. Do not quote graph output as the final authority until you have checked the relevant source files.
-
-## ABCoder Usage
-
-Use ABCoder when the spec needs exact code shapes:
+Use native repository search for static relationships:
 
 ```text
-list_repos()
-get_repo_structure({repo_name: "package-name"})
-get_file_structure({repo_name: "package-name", file_path: "src/example.ts"})
-get_ast_node({repo_name: "package-name", node_ids: [{mod_path: "...", pkg_path: "...", name: "SymbolName"}]})
+rg -n "class_name|signal|\.instantiate\(|get_node\(|preload\(|load\(" --glob "*.gd" --glob "*.tscn" --glob "*.tres"
 ```
 
-ABCoder is most valuable for documenting constructor patterns, function signatures, type contracts, and reference chains.
+Use the Godot editor MCP for runtime relationships: start the affected scene, read game logs, evaluate focused assertions, and stop only the game process. Keep the editor open.
 
 ## Analysis Notes
 

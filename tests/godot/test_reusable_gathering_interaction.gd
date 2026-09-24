@@ -2051,7 +2051,7 @@ func test_time_system_production_contract() -> void:
 		"res://core/gameflow/world_interaction_coordinator.gd",
 		"res://core/gameflow/TerrainInteractionExecutor.cs",
 		"res://core/map/RoomBoardPresenter.cs",
-		"res://core/map/room_board_presenter.gd",
+		"res://core/map/UIRoomBoardPresenter.gd",
 		"res://core/application/EncounterManager.cs",
 		"res://core/application/encounter_manager.gd",
 		"res://resources/interaction/ReusableGatheringInteraction.cs",

@@ -39,7 +39,7 @@ const BATTLE_DECK_COMPONENT_GD: String = "res://entities/components/battle_deck_
 const EQUIPMENT_COMPONENT_GD: String = "res://entities/components/equipment_component.gd"
 const DRAGGABLE_DATA_GD: String = "res://core/ui/draggable/draggable_data.gd"
 const EQUIPMENT_SLOT_UI_GD: String = "res://core/ui/equipment_slot_ui.gd"
-const MAP_INSTANTIATOR_GD: String = "res://scripts/map_scripts/map_instantiator.gd"
+const MAP_INSTANTIATOR_GD: String = "res://scripts/map_scripts/UIMapWorldView.gd"
 
 ## 五行属性逐条对照：[枚举成员, 枚举值, GDScript 常量后缀]。
 const ELEMENT_ROWS: Array = [
