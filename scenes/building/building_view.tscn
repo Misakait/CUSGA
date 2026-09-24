@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://core/building/building_view.gd" id="1_view"]
+
+[node name="Building" type="Node2D"]
+script = ExtResource("1_view")
+
+[node name="Icon" type="Sprite2D" parent="."]
+
+[node name="Body" type="StaticBody2D" parent="."]
+collision_layer = 0
+collision_mask = 16
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]

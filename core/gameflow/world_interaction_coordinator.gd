@@ -124,6 +124,13 @@ var _battle_result_ready: bool = false
 var _battle_result: bool = false
 
 
+## 返回局外操作是否可用；无参数，战斗、过场或暂停时返回 false。
+## 建筑等扩展系统通过该接口查询，不读取协调器内部过场字段。
+func CanUseWorld() -> bool:
+	return is_inside_tree() and not get_tree().paused and not _is_transitioning \
+		and is_instance_valid(_board_controller) and (_board_controller as CanvasItem).is_visible_in_tree()
+
+
 ## 进入场景树时解析导出路径、连接棋盘与遭遇/时间信号。
 ##
 ## @return 无返回值。

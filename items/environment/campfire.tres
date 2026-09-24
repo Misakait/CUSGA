@@ -1,15 +1,27 @@
 [gd_resource type="Resource" format=3 uid="uid://dulobelggwfpt"]
 
 [ext_resource type="Texture2D" uid="uid://8pvxktoxr0jq" path="res://res/environment/campfire.png" id="1_xoi1m"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="2_an6yf"]
+[ext_resource type="Script" uid="uid://cb1yix1tlrwu" path="res://resources/buildings/building_data.gd" id="2_an6yf"]
+[ext_resource type="Resource" path="res://resources/buildings/campfire_rest.tres" id="3_rest"]
+[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="4_loot"]
+[ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="5_drop"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="6_branch"]
+
+[sub_resource type="Resource" id="Drop_branch"]
+script = ExtResource("5_drop")
+Item = ExtResource("6_branch")
+
+[sub_resource type="Resource" id="Loot_demolition"]
+script = ExtResource("4_loot")
+Drops = Array[Resource]([SubResource("Drop_branch")])
 
 [resource]
 script = ExtResource("2_an6yf")
+Interaction = ExtResource("3_rest")
+DestructionLoot = SubResource("Loot_demolition")
 MaxStackSize = 1
-ItemTags = Array[StringName]([&"campfire"])
+ItemTags = Array[StringName]([&"campfire", &"building"])
 CardId = &"campfire"
 CardName = "篝火"
 CardIcon = ExtResource("1_xoi1m")
-Description = "一个篝火，可以烤食物，给你温暖，加速你回血
-"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+Description = "左键点击建筑牌，在菜单中选择放置，再左键确认落点；右键或 Esc 取消。靠近后按 F 休息：消耗 50 行动值，恢复最多 200 生命值，满血也可休息并正常消耗。靠近后长按地面篝火 1 秒可拆除，掉落 1 个树枝。"

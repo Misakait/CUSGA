@@ -24,6 +24,10 @@ var _item_stack_in_this_slot: RefCounted = null
 var _inventory_component: Node = null
 var _tooltip_presenter: RefCounted = ITEM_TOOLTIP_PRESENTER_SCRIPT.call("Empty") as RefCounted
 var _shortcut_handler: Callable = Callable()
+## 可选左键菜单回调，由拥有槽位的 UI 决定可用操作。
+var _use_handler: Callable = Callable()
+## 仅在普通左键按下后等待松开，避免菜单抢占拖拽和快捷键。
+var _item_click_pending: bool = false
 var _is_pointer_inside: bool = false
 var _icon: TextureRect = null
 var _amount_label: Label = null
@@ -92,6 +96,11 @@ func SetShortcutHandler(shortcut_handler: Callable) -> void:
 	_shortcut_handler = shortcut_handler
 
 
+## 设置左键菜单处理器；handler 接收当前 SlotUI 并返回是否处理，无返回值。
+func SetUseHandler(handler: Callable) -> void:
+	_use_handler = handler
+
+
 ## 解除本视图建立的信号连接并隐藏提示框。
 ## 返回值：无。
 func _exit_tree() -> void:
@@ -110,6 +119,20 @@ func _exit_tree() -> void:
 ## 返回值：无。
 func _gui_input(event: InputEvent) -> void:
 	if _handle_shortcut_input(event):
+		_item_click_pending = false
+		accept_event()
+		return
+	if not (event is InputEventMouseButton) or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if event.pressed:
+		_item_click_pending = not event.ctrl_pressed and not event.meta_pressed
+		return
+	# 松开才打开菜单；拖拽开始时会撤销标记，避免拖动结束误弹菜单。
+	var open_menu: bool = _item_click_pending and not get_viewport().gui_is_dragging() \
+		and Rect2(Vector2.ZERO, size).has_point(event.position)
+	_item_click_pending = false
+	if open_menu and _use_handler.is_valid() and bool(_use_handler.call(self)):
+		_tooltip_presenter.call("Hide")
 		accept_event()
 
 
@@ -117,6 +140,7 @@ func _gui_input(event: InputEvent) -> void:
 ## 参数 _at_position：Godot 提供的局部鼠标坐标。
 ## 返回值：DraggableData；空槽返回 null。
 func _get_drag_data(_at_position: Vector2) -> Variant:
+	_item_click_pending = false
 	var payload: Variant = _build_drag_data()
 	if payload == null:
 		return null
@@ -162,6 +186,8 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 ## 拖拽结束后恢复图标透明度和当前内容。
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_BEGIN:
+		_item_click_pending = false
 	if what == NOTIFICATION_DRAG_END:
 		_update_visuals(_item_stack_in_this_slot)
 
@@ -241,6 +267,7 @@ func _on_mouse_entered() -> void:
 ## 鼠标离开时隐藏提示框。
 func _on_mouse_exited() -> void:
 	_is_pointer_inside = false
+	_item_click_pending = false
 	_tooltip_presenter.call("Hide")
 
 

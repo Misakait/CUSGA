@@ -40,6 +40,9 @@
 [ext_resource type="Script" uid="uid://b2lp47dlipf3j" path="res://resources/talents/talent_manager.gd" id="36_cmqll"]
 [ext_resource type="PackedScene" uid="uid://dmywehu7v1ws0" path="res://scenes/talents/talent_card.tscn" id="37_8cp6k"]
 
+[ext_resource type="Script" path="res://core/building/room_building_store.gd" id="38_building_store"]
+[ext_resource type="Script" path="res://core/building/building_controller.gd" id="39_building_controller"]
+
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
 TriggerTag = &"wood"
@@ -65,6 +68,9 @@ metadata/_custom_type_script = "uid://bcy1h38m7fs2c"
 [node name="RoomTerrainStore" type="Node" parent="RuntimeState" unique_id=229807555]
 script = ExtResource("1_rarhs")
 
+[node name="RoomBuildingStore" type="Node" parent="RuntimeState"]
+script = ExtResource("38_building_store")
+
 [node name="BoardSystem" type="Node" parent="." unique_id=1325131807]
 
 [node name="RoomBoardPresenter" type="Node" parent="BoardSystem" unique_id=2092396437]
@@ -80,11 +86,16 @@ CardsRootPath = NodePath("CardsRoot")
 
 [node name="CardsRoot" type="Node2D" parent="BoardSystem/BoardController" unique_id=1226399754]
 
+[node name="BuildingsRoot" type="Node2D" parent="BoardSystem/BoardController"]
+
 [node name="Gameplay" type="Node" parent="." unique_id=1348944482]
 
 [node name="GameplayPort" type="Node" parent="Gameplay" unique_id=1810929418]
 script = ExtResource("6_c01mt")
 PlayerPath = NodePath("../../Player")
+
+[node name="BuildingController" type="Node" parent="Gameplay"]
+script = ExtResource("39_building_controller")
 
 [node name="WorldInteractionCoordinator" type="Node" parent="Gameplay" unique_id=33340727]
 script = ExtResource("7_nxtc6")
@@ -137,6 +148,25 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20_hold_indicator")
+
+[node name="BuildingHint" type="Label" parent="UI/HUDLayer/HUDRoot"]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BackpackButton" type="Button" parent="UI/HUDLayer/HUDRoot" unique_id=1417693561]
 layout_mode = 1

@@ -16,13 +16,14 @@
 [ext_resource type="Resource" uid="uid://od88ns7dhkmj" path="res://resources/recipe/res/torch_recipe_gd.tres" id="13_recipe_gd"]
 [ext_resource type="Script" uid="uid://c7prbcvmav1b" path="res://resources/recipe/recipe_book_data.gd" id="14_book_gd"]
 [ext_resource type="Resource" uid="uid://biacbm6kh04c4" path="res://resources/recipe/res/stone_axe_recipe_gd.tres" id="14_recipe_gd"]
+[ext_resource type="Resource" path="res://resources/recipe/res/campfire_recipe.tres" id="15_campfire"]
 
 [sub_resource type="Resource" id="Resource_whhsb"]
 script = ExtResource("6_5ro12")
 
 [sub_resource type="Resource" id="Resource_oyr7h"]
 script = ExtResource("14_book_gd")
-Recipes = Array[Resource]([ExtResource("13_recipe_gd"), ExtResource("14_recipe_gd")])
+Recipes = Array[Resource]([ExtResource("13_recipe_gd"), ExtResource("14_recipe_gd"), ExtResource("15_campfire")])
 
 [node name="Player" type="Node" unique_id=1931166684]
 script = ExtResource("1_d8qmr")

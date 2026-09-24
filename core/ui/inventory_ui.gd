@@ -14,6 +14,8 @@ const EQUIPMENT_TYPES: GDScript = preload("res://core/constants/equipment_types.
 const SHORTCUT_SHIFT_CLICK: int = 0
 ## Alt 单击快捷类型；数值保持 C# SlotShortcutKind.AltClick。
 const SHORTCUT_ALT_CLICK: int = 1
+## 建筑放置菜单项的稳定标识，后续物品操作可分配独立标识。
+const ACTION_PLACE_BUILDING: int = 1
 
 ## 普通库存槽位场景；字段名保持现有 .tscn 序列化键。
 @export var SlotPrefab: PackedScene
@@ -56,6 +58,12 @@ var _slot_views: Array[Control] = []
 var _equipment_slot_views: Array[Control] = []
 ## 出战卡组的普通槽位视图。
 var _deck_slot_views: Array[Control] = []
+## 复用的物品操作弹窗；随背包生命周期释放。
+var _item_action_menu: PopupMenu
+## 打开菜单时的物品身份，确认操作时须与当前槽位再次比对。
+var _menu_item: Resource
+## 打开菜单时的玩家库存槽位索引；负数表示无选择。
+var _menu_slot_index: int = -1
 
 
 ## 解析场景依赖、连接请求和按钮并保持面板初始隐藏。
@@ -73,6 +81,11 @@ func _ready() -> void:
 	_deck_slot_grid = get_node("%DeckSlotGrid") as GridContainer
 	_gameplay_port = get_node(GameplayPortPath) as Node
 	_tooltip_presenter = ITEM_TOOLTIP_PRESENTER_SCRIPT.new(get_node_or_null(TooltipPanelPath))
+	_item_action_menu = PopupMenu.new()
+	_item_action_menu.name = "ItemActionMenu"
+	add_child(_item_action_menu)
+	_item_action_menu.id_pressed.connect(_on_item_action_selected)
+	visibility_changed.connect(_on_panel_visibility_changed)
 	_connect_signal(_gameplay_port, &"InventoryToggleRequested", Callable(self, "_handle_inventory_toggle_request"))
 	_connect_signal(_gameplay_port, &"InventoryNodeToggleRequested", Callable(self, "_handle_inventory_toggle_request"))
 	hide()
@@ -130,6 +143,7 @@ func Open(inventory: Node) -> void:
 ## 隐藏背包面板。
 ## 返回值：无。
 func Close() -> void:
+	_clear_item_menu()
 	hide()
 
 
@@ -200,6 +214,8 @@ func _generate_slots(slot_grid: GridContainer, slot_views: Array[Control], inven
 		slot_grid.add_child(slot_ui)
 		slot_ui.call("SetTooltipPresenter", _tooltip_presenter)
 		slot_ui.call("SetShortcutHandler", Callable(self, "_handle_slot_shortcut"))
+		if slot_ui.has_method("SetUseHandler"):
+			slot_ui.call("SetUseHandler", Callable(self, "_handle_slot_use"))
 		slot_views.append(slot_ui)
 
 
@@ -236,6 +252,8 @@ func _rebind_slots(slot_grid: GridContainer, slot_views: Array[Control], invento
 
 ## 玩家背包变化后重绑排序或替换后的堆叠引用。
 func _on_inventory_changed() -> void:
+	# 库存移动或排序会使弹窗中的槽位快照失效，关闭后要求重新选择。
+	_clear_item_menu()
 	_rebind_inventory_slots()
 
 
@@ -260,6 +278,72 @@ func _handle_slot_shortcut(slot_ui: Variant, shortcut_kind: int) -> void:
 		_handle_alt_click_shortcut(slot_ui, source_inventory)
 		return
 	_handle_shift_click_shortcut(slot_ui, source_inventory)
+
+
+## 打开玩家背包物品操作菜单；slot_ui 为当前槽位，返回是否显示菜单。
+func _handle_slot_use(slot_ui: Object) -> bool:
+	if not is_visible_in_tree() or not is_instance_valid(_player_inventory) \
+		or slot_ui.get("Inventory") != _player_inventory:
+		return false
+	# 重新按槽位读取库存，防止排序或移动后的旧视图使用失效堆叠。
+	var stack: Variant = _player_inventory.call("GetStackAt", int(slot_ui.get("SlotIndex")))
+	# 保留原物品资源身份，以便最终放置从同一种库存物品中扣牌。
+	var item: Resource = _stack_item(stack)
+	if item == null or _stack_is_empty(stack):
+		return false
+	_clear_item_menu()
+	_menu_item = item
+	_menu_slot_index = int(slot_ui.get("SlotIndex"))
+	_item_action_menu.clear()
+	_item_action_menu.add_separator(String(item.get("CardName")))
+	if item.has_method("IsBuildingCard") and bool(item.call("IsBuildingCard")):
+		_item_action_menu.add_item("放置", ACTION_PLACE_BUILDING)
+	else:
+		_item_action_menu.add_item("暂无可用操作")
+		_item_action_menu.set_item_disabled(1, true)
+	_item_action_menu.add_item("取消", 0)
+	_tooltip_presenter.call("Hide")
+	# PopupMenu 使用窗口坐标；嵌入弹窗需扣除宿主窗口屏幕原点。
+	var popup_position: Vector2 = get_screen_transform() * get_local_mouse_position()
+	if get_viewport().gui_embed_subwindows:
+		popup_position -= Vector2(get_window().position)
+	_item_action_menu.popup(Rect2i(Vector2i(popup_position), Vector2i.ZERO))
+	return true
+
+
+## 执行所选操作；action_id 为菜单标识，无返回值。
+func _on_item_action_selected(action_id: int) -> void:
+	# 捕获后立即清理，防止关闭弹窗或库存信号再次提交旧操作。
+	var item: Resource = _menu_item
+	# 固定原槽位索引，清理菜单快照后仍能检查当前库存身份。
+	var slot_index: int = _menu_slot_index
+	_clear_item_menu()
+	if action_id != ACTION_PLACE_BUILDING or not is_visible_in_tree() \
+		or not is_instance_valid(_player_inventory) or item == null or slot_index < 0:
+		return
+	# 不允许菜单打开后的移动、消耗或资源替换产生错误放置意图。
+	var stack: Variant = _player_inventory.call("GetStackAt", slot_index)
+	if _stack_is_empty(stack) or _stack_item(stack) != item:
+		return
+	if not item.has_method("IsBuildingCard") or not bool(item.call("IsBuildingCard")):
+		return
+	# 关闭 UI 后才请求放置，确保建筑模态门禁已解除。
+	Close()
+	_gameplay_port.call("RequestPlaceBuilding", item)
+
+
+## 清理菜单快照并关闭弹窗，不触碰库存。
+func _clear_item_menu() -> void:
+	_menu_item = null
+	_menu_slot_index = -1
+	if is_instance_valid(_item_action_menu):
+		_item_action_menu.hide()
+
+
+## 外部隐藏背包时同步关闭独立弹窗。
+func _on_panel_visibility_changed() -> void:
+	if not is_visible_in_tree():
+		_clear_item_menu()
 
 
 ## Alt 单击在玩家背包与出战卡组之间批量移动所有技能卡。

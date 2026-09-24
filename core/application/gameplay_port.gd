@@ -39,6 +39,8 @@ signal WarehouseRequested(player_inventory, warehouse_inventory)
 signal WarehouseNodeRequested(player_inventory, warehouse_inventory)
 ## 遭遇请求信号，参数为地形、技能卡数组、怪物数组和提示文本。
 signal EncounterRequested(terrain, battle_deck, monsters, message)
+## 背包使用建筑牌时发出，item 为实际库存持有的资源。
+signal BuildingPlacementRequested(item: Resource)
 
 ## 怪物数据的跨语言字段协议：C# MonsterData 为 [Export]，GDScript monster_data.gd 为 @export。
 ## 判定只看字段面，不看类型名或脚本路径，避免把语言身份写进生产逻辑。
@@ -101,6 +103,19 @@ func RequestToggleCrafting() -> void:
 ## 请求打开合成界面；该请求是幂等打开而不是切换。
 func RequestOpenCrafting() -> void:
 	CraftingNodeOpenRequested.emit(PlayerCraftingNode)
+
+
+## 转发建筑牌使用意图；item 为库存建筑资源，返回是否接受请求。
+## 只检查持有关系，落点校验与扣牌由建筑系统处理。
+func RequestPlaceBuilding(item: Resource) -> bool:
+	if item == null or not item.has_method("IsBuildingCard") or not bool(item.call("IsBuildingCard")):
+		return false
+	if PlayerInventory == null or not bool(PlayerInventory.call("HasItem", item, 1)):
+		return false
+	if get_signal_connection_list("BuildingPlacementRequested").is_empty():
+		return false
+	BuildingPlacementRequested.emit(item)
+	return true
 
 ## 将堆叠交给玩家库存。
 ## @param stack 要加入的 ItemStack 或兼容对象。

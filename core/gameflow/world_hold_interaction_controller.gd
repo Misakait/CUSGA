@@ -44,13 +44,21 @@ func _exit_tree() -> void:
 ## 参数 progress_target：用于绘制圆环的可见目标节点。
 ## 返回值：无；零或负行动值会立即调用回调。
 func begin_hold(hold_owner: Node, action_point_cost: int, on_completed: Callable, progress_target: Node) -> void:
+	begin_timed_hold(hold_owner, WorldInteractionTiming.get_hold_duration_seconds(action_point_cost),
+		on_completed, progress_target)
+
+
+## 开始按真实秒数计时的长按，供拆除等不消耗行动值的操作复用圆环。
+## 参数 hold_owner 为拥有者，duration_seconds 为时长，on_completed 为完成回调，progress_target 为圆环锚点。
+## 返回值：无；仅管理等待与取消，不负责业务扣费，零时长保持即时回调。
+func begin_timed_hold(hold_owner: Node, duration_seconds: float, on_completed: Callable, progress_target: Node) -> void:
 	if hold_owner == null:
 		return
 
 	cancel_active_hold()
 
-	# 零消耗交互保留原有的即时点击体验，不创建无意义的 Tween。
-	if action_point_cost <= 0:
+	# 零消耗交互转换为零时长，保留原有即时点击体验，不创建无意义的 Tween。
+	if duration_seconds <= 0.0:
 		if on_completed.is_valid():
 			on_completed.call()
 		return
@@ -64,7 +72,6 @@ func begin_hold(hold_owner: Node, action_point_cost: int, on_completed: Callable
 	_progress_indicator.set_hold_progress_target(progress_target)
 	_progress_indicator.set_hold_progress(0.0)
 
-	var duration_seconds := WorldInteractionTiming.get_hold_duration_seconds(action_point_cost)
 	_hold_tween = create_tween()
 	_hold_tween.tween_method(_progress_indicator.set_hold_progress, 0.0, 1.0, duration_seconds)
 	_hold_tween.finished.connect(_complete_active_hold, CONNECT_ONE_SHOT)

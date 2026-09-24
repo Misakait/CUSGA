@@ -1,0 +1,22 @@
+[gd_resource type="Resource" format=3 uid="uid://bl3jgi7wd0qgb"]
+
+[ext_resource type="Script" uid="uid://dvv333pndfbmm" path="res://resources/recipe/crafting_ingredient.gd" id="1_ingredient"]
+[ext_resource type="Script" uid="uid://cunxbq7v4rf68" path="res://resources/recipe/crafting_recipe.gd" id="2_recipe"]
+[ext_resource type="Resource" uid="uid://bnhd0g54vqry3" path="res://resources/item/card/res_cards/branch.tres" id="3_branch"]
+[ext_resource type="Resource" uid="uid://div8partbugai" path="res://items/element/fire.tres" id="4_fire"]
+[ext_resource type="Resource" uid="uid://dulobelggwfpt" path="res://items/environment/campfire.tres" id="5_campfire"]
+
+[sub_resource type="Resource" id="Ingredient_branch"]
+script = ExtResource("1_ingredient")
+RequiredItem = ExtResource("3_branch")
+Amount = 3
+
+[sub_resource type="Resource" id="Ingredient_fire"]
+script = ExtResource("1_ingredient")
+RequiredItem = ExtResource("4_fire")
+
+[resource]
+script = ExtResource("2_recipe")
+RecipeName = "篝火"
+Inputs = Array[Resource]([SubResource("Ingredient_branch"), SubResource("Ingredient_fire")])
+OutputItem = ExtResource("5_campfire")
