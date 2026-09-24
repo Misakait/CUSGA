@@ -5,7 +5,8 @@ extends McpTestSuite
 ##
 ## 锁定 5 个旧 C# 类型的 GDScript 等价关系：
 ## 1）UpgradeService -> core/progression/player_progression.gd 的升级规则常量与 _get_value / _get_cost；
-## 2）PlayerDataPolicy -> player_wallet.gd 与 player_progression.gd 的 PersistAcrossRuns 开关；
+## 2）PlayerDataPolicy -> player_wallet.gd 与 player_progression.gd：旧 `PersistAcrossRuns`
+##    开关已由存档系统（core/save/save_manager.gd）接管，生产脚本改为实现存档参与者协议；
 ## 3）MonsterStatMultiplier -> encounter_manager.gd 的六字段字典协议与 _identity_multiplier；
 ## 4）EncounterMonsterScaler -> encounter_manager.gd 的 _build_day_multiplier / _scale_stats / _scale_float；
 ## 5）PassageGuardEdge -> core/map/passage_guard_state.gd 的 _edge_key 无向边规范化。
@@ -300,13 +301,18 @@ func test_upgrade_rule_runtime_behaviour_parity() -> void:
 
 # ----- 玩家数据策略（旧 C# PlayerDataPolicy） -----
 
-## 持久化开关必须三处同值（C# 垫片 + 钱包 + 升级）。
+## 持久化职责必须已经移交给存档系统，且旧开关与 SettingsManager 直连彻底退场。
+##
+## 变化说明（2026-09-24，存档系统任务）：旧策略是「三处同值 false，谁都不跨运行保存」。
+## 需求变更后金币、升级等级、仓库、带入栏都要跨运行保存，因此**这一条断言被反转**：
+## 现在要锁的是「开关已删除」与「不再直连 SettingsManager」——否则会出现两套互相打架的
+## 持久化机制（开关说别存、存档层照存），而 SettingsManager 的定位是「可丢弃偏好」。
 func test_player_data_policy_switch_parity() -> void:
 	var cs: String = _read(PLAYER_DATA_POLICY_CS)
 	if not cs.is_empty():
 		assert_true(
 			cs.contains("public const bool PersistAcrossRuns = false;"),
-			"旧 C# PlayerDataPolicy 的开关必须保持 false。"
+			"旧 C# PlayerDataPolicy 垫片必须原样保留，它只是迁移期对照输入。"
 		)
 	for entry: Array in [
 		[PLAYER_WALLET_GD, "钱包"],
@@ -315,18 +321,24 @@ func test_player_data_policy_switch_parity() -> void:
 		var path: String = entry[0]
 		var label: String = entry[1]
 		var code: String = _strip_gd_comments(_read(path))
-		assert_true(
-			code.contains("const PersistAcrossRuns: bool = false"),
-			"%s 生产脚本必须保留 PersistAcrossRuns = false。" % label
+		assert_false(
+			code.contains("PersistAcrossRuns"),
+			"%s 生产脚本不得再保留 PersistAcrossRuns 开关：跨运行持久化已由存档系统接管。" % label
 		)
-		assert_true(
-			code.contains("if not PersistAcrossRuns"),
-			"%s 生产脚本必须按开关跳过读档或写档。" % label
+		assert_false(
+			code.contains("SettingsManager"),
+			"%s 生产脚本不得再直连 SettingsManager：它只负责可丢弃偏好，读坏了应无痛回退。" % label
 		)
-		assert_eq(
-			(load(path) as GDScript).get_script_constant_map().get("PersistAcrossRuns", true),
-			false,
-			"%s 生产脚本开关的运行时取值必须为 false。" % label
+		for method_name: String in [
+			"save_key",
+			"save_scope",
+			"save_change_signals",
+			"capture_save_data",
+			"apply_save_data",
+		]:
+			assert_true(
+				code.contains("func %s(" % method_name),
+				"%s 生产脚本必须实现存档协议方法 %s。" % [label, method_name]
 			)
 
 # ----- 怪物倍率协议（旧 C# MonsterStatMultiplier） -----

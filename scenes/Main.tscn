@@ -37,6 +37,8 @@
 [ext_resource type="PackedScene" uid="uid://dwwq74s2nxwtj" path="res://scenes/ui_scenes/skill_card_draft_screen.tscn" id="28_gsxep"]
 [ext_resource type="PackedScene" uid="uid://ddyp7h04g6e3l" path="res://scenes/talents/talent_screen.tscn" id="29_talent"]
 [ext_resource type="Script" uid="uid://vi5jdr3nuixj" path="res://core/ui/warehouse/warehouse_ui.gd" id="30_pdwbg"]
+[ext_resource type="Script" uid="uid://b2lp47dlipf3j" path="res://resources/talents/talent_manager.gd" id="36_cmqll"]
+[ext_resource type="PackedScene" uid="uid://dmywehu7v1ws0" path="res://scenes/talents/talent_card.tscn" id="37_8cp6k"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -250,6 +252,9 @@ script = ExtResource("30_pdwbg")
 SlotPrefab = ExtResource("25_cmqll")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
+[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
+layout_mode = 0
+
 [node name="DevSettingsUI" parent="UI/HUDLayer/HUDRoot" unique_id=149711311 instance=ExtResource("25_36rkl")]
 layout_mode = 1
 
@@ -261,13 +266,17 @@ layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TalentScreen" parent="UI/HUDLayer/HUDRoot" unique_id=729571503 instance=ExtResource("29_talent")]
+[node name="TalentScreen" type="Control" parent="UI/HUDLayer/HUDRoot" unique_id=729571503 node_paths=PackedStringArray("CardsContainer") instance=ExtResource("29_talent")]
+process_mode = 3
 layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
-layout_mode = 0
+script = ExtResource("36_cmqll")
+CardScenePrefab = ExtResource("37_8cp6k")
+CardsContainer = NodePath("Content/CardsContainer")
 
 [node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player", "player_char") instance=ExtResource("2_rvslj")]
 player = NodePath("../Player")

@@ -30,6 +30,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+SaveManager="*res://core/save/save_manager.gd"
 GlobalEventBus="*uid://f4acdsbh24f4"
 ItemsControl="*uid://b1nat1ps6dux8"
 GlobalWarehouse="*res://core/autoloads/global_warehouse.tscn"

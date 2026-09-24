@@ -13,6 +13,27 @@ const ITEM_DATA_COMPAT: GDScript = preload("res://resources/item/item_data_compa
 ## （界面必须按这个数量铺格子），两者由契约测试断言相等——只改一处会被测试拦下。
 const CARRY_SLOT_CAPACITY: int = 10
 
+## 存档层 Autoload 路径。
+##
+## 用 `NodePath` + `get_node_or_null` 而不是直接写 `SaveManager.xxx`：`test_run` 环境没有
+## autoload，直接引用标识符会让本脚本连同测试一起解析失败。
+const SAVE_MANAGER_PATH: NodePath = ^"/root/SaveManager"
+
+## 槽位编解码工具。
+const SAVE_SLOT_CODEC: GDScript = preload("res://core/save/save_slot_codec.gd")
+
+## 本参与者的存档键；发布后不可修改（改了等于玩家准备好的带入栏清零）。
+const SAVE_KEY: String = "carry"
+
+## 本参与者的作用域字面量，与 `SaveManager.SCOPE_GLOBAL` 同值（由契约套件断言）。
+const SAVE_SCOPE: String = "global"
+
+## 带入栏内容变化信号。
+##
+## 三个权威入口（SetCarryEntry / ClearCarryEntry / TakeCarryItems）在真正改变内容时发出它。
+## 存档层订阅它做自动存档，界面也可以用它刷新，避免各自去轮询 carry_items。
+signal carry_items_changed
+
 #存放cardid对应的item -- {cardID：itemdata}
 var items: Dictionary = {}
 
@@ -36,10 +57,25 @@ var carry_items: Array = []
 var player_to_warehouse: Array[Resource] = []
 var player_to_warehouse_cnt: Array[int] = []
 
-## 节点就绪时建立 CardId 到原始物品 Resource 的索引，并把带入栏复位为全空。
+## 节点就绪时建立 CardId 到原始物品 Resource 的索引，把带入栏复位为全空，再注册进存档层。
+##
+## 注册必须是最后一步：注册会**同步**应用存档，而应用要靠 `items` 反查 CardId，
+## 索引还没建好时所有栏位都会被跳过，玩家的带入栏会静默变空。
 func _ready() -> void:
 	items = load_all_items_from_items_folder()
 	_reset_carry_items()
+	_register_with_save_manager()
+
+
+## 向存档层注册自身。
+## 返回值：无。
+func _register_with_save_manager() -> void:
+	var save_manager: Node = get_node_or_null(SAVE_MANAGER_PATH)
+	if save_manager == null or not save_manager.has_method("register_participant"):
+		push_error("ItemsControl: 未找到 SaveManager，带入栏将不会跨运行保存。")
+		return
+
+	save_manager.call("register_participant", self)
 
 ## 递归加载生产物品目录。
 ## 返回值：以稳定 CardId 为键、原始 Resource 为值的字典。
@@ -136,6 +172,7 @@ func SetCarryEntry(index: int, item: Resource, count: int) -> bool:
 		return ClearCarryEntry(index)
 
 	carry_items[index] = {"item": item, "count": count}
+	carry_items_changed.emit()
 	return true
 
 ## 清空指定带入栏位。
@@ -148,6 +185,7 @@ func ClearCarryEntry(index: int) -> bool:
 		return false
 
 	carry_items[index] = _empty_carry_entry()
+	carry_items_changed.emit()
 	return true
 
 ## 判断带入栏是否还有待带入物品。
@@ -180,4 +218,88 @@ func TakeCarryItems() -> Array:
 	# 取出即消耗：无论调用方是否成功装入背包，权威都必须清空，
 	# 否则「放不下」会退化成「下一局还能再拿一次」。
 	_reset_carry_items()
+	# 只在真的有东西被取走时才广播：本来就空时清空不算变化，也不必惊动存档层。
+	if not taken.is_empty():
+		carry_items_changed.emit()
 	return taken
+
+
+# ── 存档参与者协议 ─────────────────────────────────────────────────────────
+# 带入栏为什么属于局外存档：它是玩家**进入一局之前**做的准备，与「这一局打到哪儿」无关，
+# 因此跨运行保留。开局带入会经由 TakeCarryItems 清空带入栏，这次清空同样会被采集，
+# 于是「已经带进去了」也跨运行生效，同一批物品不会在下一局被重复带入。
+
+## 返回稳定的存档键。
+## 返回值："carry"。
+func save_key() -> String:
+	return SAVE_KEY
+
+## 返回本参与者的作用域。
+## 返回值："global"。
+func save_scope() -> String:
+	return SAVE_SCOPE
+
+## 返回需要触发自动存档的信号名。
+## 返回值：信号名数组。
+func save_change_signals() -> Array:
+	return ["carry_items_changed"]
+
+## 采集当前带入栏。
+##
+## 只落 CardId 与数量。带入栏条目的结构里本来就没有洗炼属性（见 `carry_items` 的说明），
+## 因此显式补一个空 `rolled`，让编码器走与仓库完全相同的路径，而不是另开一套格式。
+##
+## 返回值：{"slots": Array}，长度等于 CARRY_SLOT_CAPACITY，空栏位为 null。
+func capture_save_data() -> Dictionary:
+	_ensure_carry_capacity()
+	var entries: Array = []
+	for index: int in carry_items.size():
+		var entry: Dictionary = carry_items[index]
+		entries.append({
+			"item": entry.get("item"),
+			"amount": int(entry.get("count", 0)),
+			"rolled": {},
+		})
+	return {"slots": SAVE_SLOT_CODEC.call("encode_slots", entries)}
+
+## 用存档内容覆盖带入栏。
+##
+## 语义是**先整体复位再写入**：带入栏是一份「准备清单」，叠加会让玩家已经移走的物品
+## 重新冒出来。结构损坏时按「没有存档」处理（空带入栏）并告警——带入栏不是资产本体，
+## 让整次读档失败会连带毁掉仓库与金币的恢复。
+##
+## 参数 data：本参与者的存档载荷；空字典表示「没有存档」。
+## 返回值：是否成功应用。
+func apply_save_data(data: Dictionary) -> bool:
+	_ensure_carry_capacity()
+	var decode_result: Dictionary = SAVE_SLOT_CODEC.call(
+		"decode_slots", data.get("slots", []), CARRY_SLOT_CAPACITY, Callable(self, "get_item")
+	)
+
+	if not bool(decode_result.get("ok")):
+		push_warning(
+			"ItemsControl: 带入栏存档结构不可用（%s），本次以空带入栏启动。"
+			% str(decode_result.get("reasons", []))
+		)
+		_reset_carry_items()
+		carry_items_changed.emit()
+		return true
+
+	var entries: Array = decode_result.get("entries", []) as Array
+	var ok_status: String = String(SAVE_SLOT_CODEC.get_script_constant_map()["STATUS_OK"])
+	_reset_carry_items()
+	for index: int in mini(entries.size(), CARRY_SLOT_CAPACITY):
+		var entry: Dictionary = entries[index]
+		if String(entry.get("status", "")) != ok_status:
+			continue
+		carry_items[index] = {"item": entry.get("item"), "count": int(entry.get("amount"))}
+
+	var skipped: int = int(decode_result.get("skipped", 0))
+	if skipped > 0:
+		push_warning(
+			"ItemsControl: 带入栏存档中有 %d 个栏位无法水合，已跳过：%s"
+			% [skipped, str(decode_result.get("reasons", []))]
+		)
+	# 这次广播发生在存档分发期间，存档层会丢弃由此产生的落盘请求，不会造成回声写入。
+	carry_items_changed.emit()
+	return true
