@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 15
+- **Total Sessions**: 16
 - **Last Active**: 2026-09-24
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~478 | Active |
+| `journal-1.md` | ~501 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 16 | 2026-09-24 | 跨运行存档系统：局外仓库与玩家进度持久化 | `0e46bf4`, `5cd8886` | `main` |
 | 15 | 2026-09-24 | 每七天弹出天赋选择并交付十张测试天赋卡 | `aae82e6` | `main` |
 | 14 | 2026-09-23 | 开局技能卡抽取（抽 5 选 2） | `710a618`, `66a30d2` | `main` |
 | 13 | 2026-09-23 | 开局角色与背包初始化（子任务 1） | `001f89f` | `main` |

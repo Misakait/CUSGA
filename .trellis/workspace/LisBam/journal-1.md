@@ -476,3 +476,26 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 16: 跨运行存档系统：局外仓库与玩家进度持久化
+<!-- trellis-session: v=2 fp=cd504659e1c62b6a -->
+
+**Date**: 2026-09-24
+**Task**: 跨运行存档系统：局外仓库与玩家进度持久化
+**Branch**: `main`
+
+### Summary
+
+新增 SaveManager 存档层（参与者协议 + 版本化 JSON + global/run 作用域分流 + 0.5s 防抖）与 4 个局外参与者（仓库物品/带入栏/金币/容量升级等级），29 个契约用例全绿；记录并修正两处实现期决策：损坏档保留 .corrupt 后从 .bak 恢复（而非把损坏内容写回 .bak），洗炼属性白名单仅在物品确实声明 AttributeBonuses 时求交集；把「进度走 SaveManager、偏好走 SettingsManager」的分层写入 spec。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0e46bf4` | 新增存档系统 |
+| `5cd8886` | 补充存档系统的 spec 契约与进度/偏好分层 |
+
+### Status
+
+[OK] **Completed**
