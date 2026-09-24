@@ -3,7 +3,7 @@
   "name": "seamless-map-world",
   "title": "无缝地图房间衔接",
   "description": "将 MapControl 从传送切房改造成复用瓦片地图节点的无缝世界，并保留后续边界与驻守扩展接口。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": null,
@@ -11,7 +11,7 @@
   "creator": "huhu9",
   "assignee": "huhu9",
   "createdAt": "2026-09-23",
-  "completedAt": null,
+  "completedAt": "2026-09-24",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "已通过 Godot 4.7.1 编辑器 MCP 运行验收；宿主本地日期 2026-09-25（Asia/Shanghai）。12 个契约用例、30,725 断言及 Main 连续往返通过，详情见 runtime-validation.md。未截图、未提交。",
   "meta": {}
 }

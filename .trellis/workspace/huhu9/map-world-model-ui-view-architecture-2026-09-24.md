@@ -1,4 +1,8 @@
-# 地图 Model / UI View 两层架构
+# 历史方案：地图 Model / UI View 两层架构
+
+> 本文只保留早期讨论记录，不再是当前实施依据。后续需求明确采用 Model、View、Controller 分工，并将 BridgeContainer、Ground、Obstack 和 Boundary 按单一职责拆分控制器。当前方案见 [地图 MVC 与房间模块化架构](./map-world-mvc-architecture-2026-09-24.md)。
+
+本文下方“Controller 并入 UIMapWorldView”等决定已被新 MVC 方案取代。
 
 日期：2026-09-24
 
@@ -187,4 +191,3 @@ UIMapControl ──转发──> UIMapLittle / RoomBoardPresenter / 背景解析
 ## 当前状态
 
 本文件只记录架构设计，尚未修改任何游戏源码。等待架构确认后再实施文件重命名、节点重接线和运行时测试。
-

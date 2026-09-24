@@ -1,324 +1,337 @@
-# 地图系统 MVC 架构设计
+# 无缝地图 MVC 与房间模块化架构
 
-日期：2026-09-24
+初稿日期：2026-09-24
 
-## 设计依据
+最后修订：2026-09-25
 
-本设计遵循用户提供的 MVC 分工：
+状态：本文件是地图系统当前架构的唯一设计依据。无缝地图的 3×3 房间实例窗口已完成并运行验证；房间内的桥、地面、障碍和三类边界控制器及瓦片碰撞现已接入代码；新增回归测试已编写。当前编辑器 MCP 被权限策略拦截，本轮运行验收尚未执行。
 
-- **Model** 保存核心数据、资源和业务规则，不依赖 View，不创建显示节点。
-- **View** 是数据的镜子，读取 Model 状态并负责可视化显示，同时只感知 UI/输入意图，不直接决定数据规则。
-- **Controller** 解释玩家移动或 UI 交互意图，调用 Model 的接口，并协调 Model 与 View 的初始化和信号链路。
+## 1. 目标与约束
 
-本功能的 UI/View 代码统一以 `UI` 开头；Model 代码不加 `UI`；Controller 由于属于地图 UI 交互桥梁，也使用 `UI` 前缀。
+- 保持 MapPositionCreate 当前地图生成算法、坐标和邻接结果不变。
+- 当前只启用 normal 生态群系；每个房间仍是一个完整的 TileMap 场景，尺寸按 1280×720 拼接，不按瓦片实例化。
+- 以完整 PackedScene 作为房间显示资源；Model 缓存 MapSceneResource 和共享 PackedScene，View 只保留当前房间周围 3×3 的运行时节点。
+- 玩家通过现有 WASD 连续移动。相邻房间之间只有 Map Model 中存在连接的方向才允许通过；该方向的桥口边界关闭以保持桥面通行，桥两侧仍由 BridgeBoundary 阻挡。
+- Boundary 承载 Ground 常设地形边界，不随桥连接状态切换；BridgeWithBoundary 负责各方向桥口的开闭，BridgeBoundary 负责各方向桥本身的边缘。
+- 玩家跨房只更新世界状态和显示窗口，不传送、不扣地图行动值、不调用通道驻守战斗。
+- 复杂房间功能按容器拆成多个小控制器。房间根脚本和 MapContainerController 都不能重新成为包含所有地图行为的“上帝脚本”。
+- 所有表现层和控制器脚本文件以 UI 开头；Model 脚本不加 UI 前缀。
 
-## 总体结构
+## 2. MVC 职责与依赖方向
 
-```text
-玩家移动 / UI 交互
+### Model：地图事实、业务校验与资源配置
+
+- 保存生成结果、房间连接、当前地图坐标、房间尺寸和地图场景资源缓存。
+- 根据坐标返回房间资源与纯数据 RoomContext。
+- 校验房间存在性、相邻关系和连接方向，并通过信号广播状态变化。
+- 可依赖地图生成器、MapTypes 和纯数据 Resource；不得依赖场景树中的 View、玩家节点或输入事件。
+- 不实例化 Node，不调用 add_child 或 queue_free，不绘制、不读取 UI。
+
+### View：场景树、视觉呈现与输入感知
+
+- 房间 .tscn、TileMapLayer、碰撞节点和 UI 节点构成 View。
+- View 从 Model 取得资源和状态，把完整 PackedScene 实例化为场景树节点，并监听 Model 信号刷新显示。
+- View 可以报告交互意图，但不能自行通过规则校验或修改 Model 状态。
+- TileMapLayer 保留场景作者配置的瓦片和 TileSet 碰撞；运行时不逐瓦片创建节点。
+
+### Controller：解释意图并协调 Model 与 View
+
+- 世界 Controller 读取玩家移动结果，识别候选房间，调用 Model 校验跨房请求。
+- 房间模块 Controller 只管理挂载节点的直接子节点，并消费同一份 RoomContext。
+- Controller 可以协调 Model 与 View，但不得持有或修改不属于自身模块的子节点内部细节。
+
+依赖原则：
+
+    玩家移动意图 → UIMapWorldController → MapWorldModel → 状态信号 → UIMapWorldView
+    UIMapWorldView → 房间根节点公开入口 → UIMapContainerController → 各房间子模块 Controller
+
+Model 不依赖 View；View 读取 Model；Controller 依赖 Model 的公开接口，并通过 View 的稳定公开接口进行协调。
+
+## 3. Model 层设计
+
+### core/map/map_world_model.gd
+
+唯一的地图运行状态入口，负责：
+
+- 从 MapPositionCreate 读取 map、scene_to_scene 和 start_position。
+- 从 MapTypes 查询场景路径，维护地图坐标到 MapSceneResource 的缓存。
+- 按场景路径共享 PackedScene 缓存；缓存里不保存实例化后的 Node。
+- 保存 current_position、room_size，并提供地图坐标与世界坐标换算。
+- 查询 3×3 窗口中的有效坐标、方向连接和房间上下文。
+- 只允许从当前房间沿生成结果中存在的相邻连接进入下一房间。
+- 成功更新当前坐标后发出 current_room_changed(position)。
+
+建议公开的稳定协议：
+
+- get_scene_resource(position)：返回坐标对应的 MapSceneResource；无效坐标或资源加载失败时返回 null。
+- get_room_context(position)：返回 RoomContext；坐标无效时返回 null。
+- has_room(position)：判断生成网格中是否存在房间。
+- is_connected(from_position, to_position)：只对相邻坐标检查生成器记录的双向连接。
+- try_enter_room(to_position)：校验目标房间有效，且它与 current_position 直接相连；成功后更新状态并广播信号。
+- get_window_positions(center)：返回当前中心周围有效的 3×3 坐标。
+- world_origin_for(position) 与 map_position_for_world(world_position)：使用统一的 1280×720 房间步长。
+
+方向索引继续服从 MapPositionCreate：0=上，1=右，2=下，3=左。地图网格坐标为 row/column；世界 X 对应 column，世界 Y 对应 row。
+
+### 资源配置
+
+- resources/map/map_scene_resource.gd：描述一个地图坐标使用的场景名、场景路径、共享 PackedScene 和房间尺寸。该资源不持有 Node2D 实例。
+- core/map/room_context.gd：只读数据传输对象，包含房间坐标、连接方向掩码、尺寸和场景资源；不保存任何场景节点或玩家引用。
+- 本架构不使用 RoomTraversalProfile 推算碰撞开口。桥口和边缘由完整房间场景中已布置的 TileMapLayer 表达，运行时只按连接掩码切换对应方向模块。
+
+资源缓存生命周期：
+
+    MapWorldModel：position → MapSceneResource；scene_path → PackedScene
+    UIMapWorldView：position → 当前 3×3 内的 Node2D 实例
+
+窗口外释放 Node2D，但保留 Model 的资源缓存。重新进入时用原 PackedScene 再实例化，不重新生成地图，不缓存整棵场景树。
+
+### 继续使用的现有 Model/配置
+
+- scripts/map_scripts/map_position_create.gd：地图生成算法与邻接数据来源，本次不改生成规则。
+- scripts/map_scripts/map_types.gd：场景名、群系配置与场景路径查询。
+- resources/map/biomes/normal_biome.tres、resources/map/map_attribute.gd、resources/map/biome_definition.gd：normal 群系与场景配置。
+- core/map/room_terrain_profile.gd、core/map/room_terrain_store.gd：地形棋盘数据，不负责房间跨界碰撞。
+
+## 4. View 层设计
+
+### scripts/map_scripts/UIMapWorldView.gd
+
+- 监听 MapWorldModel.current_room_changed。
+- 从 Model 读取资源并通过 PackedScene.instantiate() 创建整个房间。
+- 按 MapWorldModel.world_origin_for() 放置房间；固定房间步长为 Vector2(1280, 720)。
+- 维护当前房间与八邻域的完整场景实例；新窗口准备完成后释放窗口外节点。
+- 实例化后只调用房间根节点的 configure_room_context(context) 稳定入口，不直接访问 MapContainer 下各模块的内部节点。
+- 保留 current_scene、current_position、map_scene 与 on_entered_room(position, scene) 兼容协议，供现有消费者使用。
+- 昼夜背景变化属于 View 表现，不进入 Model。
+
+### 房间场景本身
+
+房间 .tscn 是一份可整体实例化的 View 资源。TileMapLayer 是场景中的批量瓦片表现，不是每个瓦片一个 Node。
+
+以 clear_creek.tscn 为例，MapContainer 下已有 BridgeWithBoundary、BridgeBoundary、Boundary、BridgeContainer、Ground 和 Obstack。目标结构如下：
+
+    ClearCreek (Node2D，保留 map_env_base.gd 的场景元数据/兼容入口)
+    ├── MapContainer (Node2D，挂 UIMapContainerController.gd)
+    │   ├── BridgeWithBoundary (Node2D，挂 UIBridgeWithBoundaryController.gd)
+    │   │   ├── LeftBridgeWithBoundary (TileMapLayer)
+    │   │   ├── RightBridgeWithBoundary (TileMapLayer)
+    │   │   ├── UpBridgeWithBoundary (TileMapLayer)
+    │   │   └── DownBridgeWithBoundary (TileMapLayer)
+    │   ├── BridgeBoundary (Node2D，挂 UIBridgeBoundaryController.gd)
+    │   │   ├── LeftBridgeBoundary (TileMapLayer)
+    │   │   ├── RightBridgeBoundary (TileMapLayer)
+    │   │   ├── UpBridgeBoundary (TileMapLayer)
+    │   │   └── DownBridgeBoundary (TileMapLayer)
+    │   ├── Boundary (Node2D，挂 UIBoundaryController.gd)
+    │   │   └── 场景原有固定地形边界 TileMapLayer 子节点
+    │   ├── BridgeContainer (Node2D，挂 UIBridgeContainerController.gd)
+    │   │   ├── LeftBridge (TileMapLayer)
+    │   │   ├── RightBridge (TileMapLayer)
+    │   │   ├── UpBridge (TileMapLayer)
+    │   │   └── DownBridge (TileMapLayer)
+    │   ├── Ground (Node2D，挂 UIGroundController.gd)
+    │   │   └── 场景原有 Ground TileMapLayer 子节点
+    │   ├── Obstack (Node2D，挂 UIObstacleController.gd)
+    │   │   └── 场景原有障碍 TileMapLayer 子节点
+    └── Label 等房间表现节点
+
+节点名 Obstack 是当前场景序列化中的历史拼写。第一轮实现保留节点名，仅把控制器文件命名为 UIObstacleController.gd；只有完成所有场景、脚本、资源和 NodePath 搜索后，才可另行决定是否改名。
+
+### 其他 UI View
+
+- UIMapLittle.gd：小地图格子、连接线和当前坐标高亮。
+- UIRoomBoardPresenter.gd：监听 MapControl.on_entered_room，读取房间根节点 terrain_profile 并刷新地形棋盘。
+- UICurrentMapBackgroundResolver.gd：从 MapInstantiator.current_scene 解析当前房间背景。
+- 房间根节点 map_env_base.gd 保留 scene_type、terrain_profile、initialize_scene() 等已有兼容功能；只提供转发 configure_room_context() 的薄入口，不承担地面、障碍、桥或边界行为。
+
+## 5. Controller 层与房间单一职责模块
+
+### scripts/map_scripts/UIMapWorldController.gd：世界级跨房 Controller
+
+- 只读取玩家 global_position，不拥有或重写玩家移动逻辑。
+- 将世界坐标转换为候选房间坐标；与当前坐标不同才请求 Model。
+- 由 Model 验证目标房间有效并且连接方向真实存在；非法目标不改变地图状态。
+- 不实例化房间，不移动/重置玩家位置，不调用传送、过场、地图行动值或驻守战斗。
+- 文件最后保留 can_enter_room_with_boundaries(...) 和 request_passage_guard_encounter(...) 两个后续接口；当前不从跨房路径调用它们。
+
+Bridge 是场景内真实可通行的连接表现，不是传送点。玩家穿过已开放的边缘时，世界 Controller 从连续世界坐标观察到新房间；桥模块本身不直接修改 Model。
+
+### scripts/map_scripts/UIMapContainerController.gd：房间组合 Controller
+
+挂载于 MapContainer。它存在的原因是四个局部模块需要消费同一份上下文并以一致顺序配置，但不应由世界 View 逐一耦合各模块。
+
+- 接收 configure_room_context(context)，校验上下文并保存当前房间绑定。
+- 通过 Inspector 导出 NodePath 或明确的直接子节点引用取得六个模块 Controller。
+- 按固定顺序把同一 RoomContext 下发给 Ground、Obstacle、Bridge、BridgeWithBoundary、BridgeBoundary、Boundary 控制器。
+- 重复绑定同一上下文必须幂等，不重复创建场景子节点。
+- 不访问 TileMap 数据，不计算玩家位置，不调用 MapWorldModel，不做跨房规则判断。
+
+### scripts/map_scripts/UIGroundController.gd：地面模块
+
+挂载于 Ground，只管理自己的直接 TileMapLayer 子节点。
+
+- 保持地面图层顺序、可见性和场景作者设置的 TileSet 数据。
+- 保留 TileSet 已配置的碰撞，不逐瓦片实例化或改写地图内容。
+- 不管理障碍物、桥、房间外围墙或世界坐标。
+
+### scripts/map_scripts/UIObstacleController.gd：障碍模块
+
+挂载于 Obstack，只管理自己的直接障碍 TileMapLayer 子节点。
+
+- 保持障碍显示和场景作者配置的 TileSet 碰撞。
+- 若后续有动态障碍状态，只在本模块处理。
+- 不改地面、桥面、边界或玩家坐标。
+
+### scripts/map_scripts/UIBridgeContainerController.gd：方向桥模块
+
+挂载于 BridgeContainer，只管理四个直接方向子节点。
+
+- 将 RoomContext 的连接方向映射到 LeftBridge、RightBridge、UpBridge、DownBridge。
+- 连接方向保留对应桥面；无连接方向隐藏并关闭对应的桥层碰撞/通行。
+- 只报告/配置本房间桥面，不调用 Model.try_enter_room，不扣行动值，不触发战斗，不移动玩家。
+- 不依据玩家输入自行决定目标坐标；边界跨房校验归 UIMapWorldController 与 MapWorldModel。
+
+### scripts/map_scripts/UIBridgeWithBoundaryController.gd：方向桥口开闭模块
+
+挂载于 MapContainer/BridgeWithBoundary，只管理四个方向的直接 TileMapLayer 子节点。
+
+- 以 RoomContext 的连接方向为唯一输入，逐方向配置 Left/Right/Up/DownBridgeWithBoundary。
+- 该方向有桥时，关闭阻挡该桥口的 Boundary 碰撞，使窄桥中心保持可通行；该方向无桥时，保留桥口阻挡。
+- 只操作自己的 TileMapLayer，不访问 BridgeContainer、BridgeBoundary 或 Boundary 的内部节点。
+- 这里的“关闭”指关闭桥口阻挡，不是关闭桥面通行；实际瓦片碰撞配置必须给桥中心留出连续无碰撞通道。
+
+### scripts/map_scripts/UIBridgeBoundaryController.gd：桥边缘碰撞模块
+
+挂载于 MapContainer/BridgeBoundary，只管理四个方向的直接 TileMapLayer 子节点。
+
+- 仅在对应方向存在真实桥时启用该方向的桥边界。
+- 碰撞覆盖窄桥两侧，不覆盖桥面中心，也不代替桥口开闭模块。
+- 不修改桥面瓦片，不访问 BridgeContainer 或 Boundary 内部节点。
+
+### scripts/map_scripts/UIBoundaryController.gd：固定地形边界模块
+
+挂载于 MapContainer/Boundary，只管理 Boundary 下的直接 TileMapLayer 子节点。
+
+- 保留场景作者布置的 Ground 常设边界与 TileSet 碰撞。
+- 其可见性和碰撞不随连接掩码或桥是否存在而切换。
+- 不把 Boundary 扩展成按 1280×720 矩形推算的动态外围墙；固定边界的位置以场景瓦片为准。
+
+### TileSet 碰撞职责
+
+- Ground 中实际构成地形边沿的边界瓦片、Obstack 中阻挡玩家的障碍瓦片、BridgeBoundary 中桥两侧边界瓦片配置碰撞。
+- Bridge 的可走中心、BridgeWithBoundary 在有效桥向的桥口、普通可行走地面不得配置阻挡玩家的碰撞。
+- `Boundary` 是固定层；`BridgeWithBoundary` 是随方向连接状态切换的桥口阻挡；`BridgeBoundary` 是随方向桥状态出现的桥侧边界。三者不可互相替代。
+- 玩家碰撞层与瓦片物理层必须在资源盘点后统一核对；不得对整张 Ground TileSet 盲目添加碰撞。
+
+| Map Model 方向连接 | BridgeContainer | BridgeWithBoundary | BridgeBoundary | Boundary 常设地形边界 |
+|---|---|---|---|---|
+| 无连接 | 隐藏该方向桥 | 保留桥口阻挡 | 关闭该方向桥侧边界 | 保持场景配置，不切换 |
+| 有连接 | 显示该方向桥 | 关闭阻挡桥口的边界 | 启用桥两侧边界，桥中心不阻挡 | 保持场景配置，不切换 |
+
+本架构中的“关闭桥口边界”指禁用会挡住桥面中心的那段阻挡；它不表示关闭桥本身。这样有效桥向才能连续跨房，同时桥两侧仍由 BridgeBoundary 约束。
+
+## 6. 运行时数据流
+
+    MapPositionCreate 生成 map / scene_to_scene
         ↓
-UIMapWorldController
-        ↓ 调用业务接口
-MapWorldModel
-        ↓ 发射状态变化信号
-UIMapWorldView
-        ↓ 更新显示实例
-UIMapControl / UIMapLittle / UIRoomBoardPresenter / 背景 View
-```
-
-单向职责边界：
-
-```text
-Controller → Model → View
-```
-
-View 不直接修改地图资源和核心状态；Model 不引用 View；Controller 不负责绘制房间和 UI 控件。
-
-## 一、Model 层
-
-### 1. `core/map/map_world_model.gd`
-
-职责：
-
-- 保存 `MapPositionCreate` 生成的 `map`、`scene_to_scene` 和 `start_position`。
-- 管理当前地图坐标。
-- 管理地图坐标到场景资源的映射。
-- 为每个有效地图坐标提供唯一的 `MapSceneResource`。
-- 缓存每条场景路径对应的 `PackedScene`。
-- 提供地图坐标和世界坐标之间的转换。
-- 返回指定坐标周围 3×3 的有效地图坐标。
-- 校验目标地图坐标是否是生成结果中的有效房间。
-- 通过信号广播当前地图状态变化。
-
-禁止：
-
-- 实例化 `Node2D` 房间。
-- 调用 `add_child`、`queue_free` 或操作场景树。
-- 引用 `CanvasLayer`、`Control`、`SubViewport`、`Camera2D`。
-- 读取玩家输入。
-- 调用通道驻守战斗、行动值或过场系统。
-
-### 2. `resources/map/map_scene_resource.gd`
-
-这是地图房间的资源配置对象，不是房间节点。
-
-字段建议：
-
-```text
-scene_name       场景名称
-scene_path       .tscn 路径
-packed_scene     已缓存的 PackedScene
-terrain_profile  房间地形配置
-room_size        默认 Vector2(1280, 720)
-```
-
-同一地图坐标只创建一份 `MapSceneResource`。同一 `scene_path` 只加载一份 `PackedScene`，不同坐标可以共享该 `PackedScene`，但坐标资源对象仍然独立，便于保存坐标相关状态。
-
-### 3. Model 信号
-
-建议提供：
-
-```gdscript
-signal current_room_changed(position: Vector2i)
-signal map_resource_created(position: Vector2i, resource: Resource)
-```
-
-Model 只广播事实，不关心谁监听、如何显示。
-
-### 4. 其他 Model 资源
-
-以下现有脚本继续属于 Model 或数据层：
-
-- `scripts/map_scripts/map_position_create.gd`
-- `scripts/map_scripts/map_types.gd`
-- `resources/map/biome_definition.gd`
-- `resources/map/map_attribute.gd`
-- `core/map/room_terrain_store.gd`
-
-它们不负责 UI。`MapPositionCreate` 的地图生成算法和 normal 群系配置不修改。
-
-## 二、View 层
-
-### 1. `scripts/map_scripts/UIMapWorldView.gd`
-
-替代原 `map_instantiator.gd`，只负责房间的视觉实例。
-
-职责：
-
-- 监听 `MapWorldModel.current_room_changed`。
-- 从 Model 获取目标坐标的 `MapSceneResource`。
-- 通过 `PackedScene.instantiate()` 创建完整房间场景。
-- 按地图坐标使用固定 `1280×720` 设置世界位置。
-- 维护 3×3 活跃实例窗口。
-- 将窗口外的 `Node2D` 从场景树移除并释放。
-- 保留 `current_scene`、`current_position` 和 `on_entered_room` 兼容接口。
-- 根据 `TimeSystem` 的状态更新已显示房间的背景颜色。
-
-View 内部缓存：
-
-```text
-active_instances[position] -> Node2D
-```
-
-这个缓存只保存当前显示节点，不保存资源配置。
-
-### 2. `scripts/map_scripts/UIMapControl.gd`
-
-作为地图 UI 的组合根节点：
-
-- 注入 Model、View、Controller 和玩家节点。
-- 连接 Model 和 View 的信号。
-- 将 View 的 `on_entered_room` 转发给棋盘、背景和其他观察者。
-- 保持主场景 `MapSystem` 的兼容入口。
-
-### 3. `scripts/map_scripts/UIMapLittle.gd`
-
-替代原 `map_little.gd`，只负责：
-
-- 创建小地图格子。
-- 绘制小地图连接线。
-- 高亮当前地图坐标。
-- 调整小地图摄像机中心。
-
-它不实例化真实房间，也不读取场景资源缓存。
-
-### 4. 其他 View
-
-以下脚本属于 View/Presenter，需要在迁移时统一 `UI` 命名或提供兼容包装：
-
-- `core/map/room_board_presenter.gd` → `UIRoomBoardPresenter.gd`
-- `core/gameflow/current_map_background_resolver.gd` → `UICurrentMapBackgroundResolver.gd`
-
-它们只读取 Model/房间 View 提供的数据并更新棋盘或背景，不修改地图生成规则。
-
-## 三、Controller 层
-
-### `scripts/map_scripts/UIMapWorldController.gd`
-
-替代原 `map_world_controller.gd`，作为 Model 与 View 的桥梁。
-
-职责：
-
-- 读取玩家世界坐标变化。
-- 将玩家位置解释为目标地图坐标。
-- 调用 `MapWorldModel.try_enter_room()`。
-- 处理 Model 返回的有效/无效坐标结果。
-- 接收旧门、按钮或其他 UI 的进入房间意图，并统一转给 Model。
-- 负责启动时的依赖注入和信号连接。
-
-Controller 不负责：
-
-- 实例化场景。
-- 移动玩家。
-- 修改玩家位置。
-- 绘制小地图。
-- 扣地图行动值。
-- 触发通道驻守战斗。
-
-文件最末尾保留两个未来接口：
-
-```gdscript
-can_enter_room_with_boundaries(...)
-request_passage_guard_encounter(...)
-```
-
-当前跨房间流程不调用这两个接口。
-
-## 四、两级缓存设计
-
-```text
-Model：资源缓存
-├── scene_resource_cache[position] -> MapSceneResource
-└── packed_scene_cache[scene_path] -> PackedScene
-
-View：显示缓存
-└── active_instances[position] -> Node2D
-```
-
-生命周期：
-
-1. Model 首次遇到地图坐标时创建 `MapSceneResource`。
-2. Model 首次遇到场景路径时加载并缓存 `PackedScene`。
-3. View 只实例化当前房间和周围八个有效房间。
-4. 玩家进入新房间后，View 先补齐新的 3×3 窗口。
-5. View 更新当前显示指针并发送进入房间通知。
-6. View 释放新窗口以外的 `Node2D`。
-7. Model 的资源缓存不受 View 节点释放影响。
-8. 玩家返回旧坐标时，View 复用原来的资源重新实例化。
-
-## 五、完整数据流
-
-```text
-玩家 WASD 移动
+    MapWorldModel 取得配置与资源，建立 RoomContext
         ↓
-UIMapWorldController 观察玩家世界坐标
+    UIMapWorldView 实例化完整 PackedScene 并按 1280×720 摆放
         ↓
-MapWorldModel.try_enter_room(position)
+    房间根节点 configure_room_context(context)
         ↓
-Model 校验地图坐标并更新 current_position
+    UIMapContainerController 将上下文分发给 Ground / Obstacle / Bridge / BridgeWithBoundary / BridgeBoundary / Boundary
         ↓
-Model 发出 current_room_changed
+    玩家 WASD 连续移动；Ground / Obstacle 碰撞处理地形，BridgeWithBoundary 封住无桥桥口，BridgeBoundary 阻止玩家走离窄桥，固定 Boundary 不随桥状态改变
         ↓
-UIMapWorldView 获取 MapSceneResource
+    玩家实际通过开放 Bridge 跨到相邻世界坐标
         ↓
-View 实例化当前房间周围 3×3 完整场景
+    UIMapWorldController 请求 MapWorldModel.try_enter_room(target)
         ↓
-UIMapControl 转发 on_entered_room
+    Model 校验连接并更新 current_position，发出 current_room_changed
         ↓
-UIMapLittle / UIRoomBoardPresenter / UICurrentMapBackgroundResolver 更新显示
-```
+    UIMapWorldView 先补齐新 3×3 窗口，再释放窗口外 Node2D
+        ↓
+    on_entered_room 通知小地图、地形棋盘和背景解析器
 
-玩家跨界时：
+跨房前后玩家 global_position 必须连续。RoomBoardPresenter 仍可依据 on_entered_room 更新地形棋盘；这个显示更新不等于传送。
 
-- 不传送。
-- 不改变玩家坐标。
-- 不扣地图移动行动值。
-- 不触发通道驻守战斗。
-- 不播放场景切换过场。
+## 7. 依赖与引用审计
 
-## 六、节点和文件迁移方案
+| 入口/资源 | 当前消费者或引用 | 架构约束 |
+|---|---|---|
+| normal_biome.tres / BiomeDefinition / MapAttribute | MapTypes；MapPositionCreate 使用 MapTypes 取得群系与生成规则 | 继续提供 normal 场景和生成规则，不把瓦片节点写入 Model |
+| MapPositionCreate.map、scene_to_scene、start_position | MapWorldModel | 生成器保持原职责；连接掩码以其上/右/下/左顺序解释 |
+| MapTypes.from_name_get_road(scene_name) | 当前 UIMapWorldView.create_map_road() 调用 | 目标架构将坐标到资源路径解析责任移入 MapWorldModel；View 不再写 Model 缓存 |
+| MapWorldModel.current_room_changed | UIMapWorldView | Model 只广播坐标事实；不查找或创建显示节点 |
+| MapWorldModel.get_scene_resource(position) | UIMapWorldView.ensure_scene_at() | 返回资源配置，不返回/缓存 Node2D |
+| MapInstantiator 节点路径和 UIMapWorldView 的兼容字段/信号 | UIMapControl、UICurrentMapBackgroundResolver、旧 MapButton/DoorController 代码 | 暂时保留节点名与兼容接口；新自由跨房流程不接入旧门 |
+| UIMapWorldController 玩家绑定 | MapControl.player_char；Main.tscn 提供 PlayerChar | 只读玩家世界坐标；不写玩家位置 |
+| UIMapControl.on_entered_room(position, scene) | UIRoomBoardPresenter 与其他观察者 | 保持参数和信号语义兼容 |
+| room_scene.terrain_profile / initialize_scene() | UIRoomBoardPresenter、map_env_base.gd/map_base.gd | 保留房间地形配置与既有初始化行为，不并入 MapContainerController |
+| UIMapLittle | UIMapControl | 只更新小地图，不实例化真实房间 |
+| DoorController、Door、Transpoint、MapButton | 旧场景/脚本/测试仍含静态路径引用 | 保留兼容，不连接新 Bridge 跨房链路，不在本次架构实施中顺手删除 |
+| passage_guard_controller.gd | 旧通道战斗流程和测试 | 保留旧系统；新的世界跨房链路不得调用 |
 
-计划新增或迁移：
+normal 生态有 12 个唯一房间场景，且当前工作树中的 normal 场景已开始加入三类边界节点。实施前仍须逐场景确认各方向 TileMapLayer、TileSet 与 Obstack 容器，不沿用旧文档中“ordinary_wetland 缺少 Obstack”的结论。所有群系场景也引用 map_env_base.gd，因此只扩展 normal 房间时不能破坏根脚本兼容行为。
 
-```text
-resources/map/map_scene_resource.gd
-scripts/map_scripts/UIMapControl.gd
-scripts/map_scripts/UIMapWorldView.gd
-scripts/map_scripts/UIMapWorldController.gd
-scripts/map_scripts/UIMapLittle.gd
-core/map/UIRoomBoardPresenter.gd
-core/gameflow/UICurrentMapBackgroundResolver.gd
-```
+## 8. 计划文件
 
-计划更新：
+### 新增
 
-```text
-core/map/map_world_model.gd
-scenes/map_scenes/map_control.tscn
-scenes/Main.tscn 的地图节点引用
-tests/test_seamless_map_world.gd
-scenes/map_scenes/map_env/normal/**/*.tscn
-```
+- core/map/room_context.gd：纯数据上下文。
+- scripts/map_scripts/UIMapContainerController.gd。
+- scripts/map_scripts/UIBridgeContainerController.gd。
+- scripts/map_scripts/UIBridgeWithBoundaryController.gd。
+- scripts/map_scripts/UIBridgeBoundaryController.gd。
+- scripts/map_scripts/UIGroundController.gd。
+- scripts/map_scripts/UIObstacleController.gd。
+- scripts/map_scripts/UIBoundaryController.gd。
+- tests/godot/test_room_module_controller_contract.gd。
 
-旧脚本不会直接删除。迁移顺序是：
+### 修改
 
-1. 新建 `UI` 前缀脚本。
-2. 更新场景引用和节点名称。
-3. 运行引用审计和 Godot 测试。
-4. 为旧调用者保留最小兼容包装。
-5. 确认所有调用方迁移后，再决定是否删除旧文件。
+- core/map/map_world_model.gd：由 Model 解析资源路径；增加连接校验、RoomContext 查询和配置缓存。
+- resources/map/map_scene_resource.gd：保存场景资源路径和房间尺寸，不保存运行时节点或 TileMap 碰撞开口配置。
+- scripts/map_scripts/UIMapWorldView.gd：将上下文经房间根节点公开接口交给场景；保持 3×3 资源/节点缓存边界。
+- scripts/map_scripts/UIMapWorldController.gd：验证相邻连接后更新 Model；保留兼容 API 和文件末尾扩展接口。
+- scripts/map_scripts/map_env_base.gd：仅增加稳定上下文转发入口，保留现有场景类型、地形配置和初始化。
+- scenes/map_scenes/map_control.tscn：保持玩家和兼容节点入口；RoomContext 只传连接方向等纯数据。
+- scenes/map_scenes/map_env/normal/**/*.tscn：为 BridgeWithBoundary、BridgeBoundary、Boundary、BridgeContainer、Ground、Obstack 挂载单一职责 Controller；按 TileSet 分类配置碰撞，不改房间生成与瓦片布局规则。
 
-## 七、依赖关系
+### 保持不改
 
-```text
-MapPositionCreate ──生成地图──> MapWorldModel
-MapTypes ──提供场景路径──> MapWorldModel
-MapWorldModel ──发出状态信号──> UIMapWorldView
-玩家位置 ──被观察──> UIMapWorldController
-UIMapWorldController ──调用──> MapWorldModel
-UIMapWorldView ──发出显示事件──> UIMapControl
-UIMapControl ──转发──> UIMapLittle / UIRoomBoardPresenter / UICurrentMapBackgroundResolver
-```
+- MapPositionCreate 的生成算法和 normal_biome.tres 的场景选择规则。
+- 玩家 WASD 移动脚本。
+- 旧门、传送点、MapButton 与 PassageGuardController 的实现；新流程只是不接入它们。
+- Main.tscn 的业务流程，除非实际引用审计证明必须调整。
 
-Model 不依赖 View；View 依赖 Model；Controller 同时依赖 Model 和 View 的稳定接口，但不持有显示节点内部细节。
+## 9. 验收合同
 
-## 八、验证标准
+- 无效坐标、void 坐标、非相邻坐标或没有真实连接的目标均不得更新 Model.current_position。
+- 有效相邻方向的 Bridge 层显示且桥中心可通行；无连接方向隐藏桥且 BridgeWithBoundary 封住桥口。
+- BridgeBoundary 只阻挡窄桥两侧；玩家不能从桥侧掉入空白世界，但能沿桥中心跨房。
+- Boundary 中的 Ground 常设地形边界始终使用场景作者配置，不因桥连接状态被启停或改写。
+- Ground、Obstacle、Bridge、BridgeWithBoundary、BridgeBoundary、Boundary 各自只管理直接子节点；模块之间不通过 NodePath 修改彼此内部节点。
+- 同一 RoomContext 可被重复配置而不生成重复节点或重复连接信号。
+- 3×3 之外不保留房间 Node2D；对应 MapSceneResource 与 PackedScene 仍可复用。
+- 玩家跨房时位置连续，且不出现传送、地图行动值扣除或驻守战斗。
+- UIRoomBoardPresenter、UICurrentMapBackgroundResolver、UIMapLittle 继续接收正确的当前房间。
+- 编辑器运行测试覆盖 clear_creek、ordinary_wetland 和 Main.tscn；Godot 4.7.1 中不得出现本次引入的解析、资源或运行时错误。
 
-- Model 文件没有 UI 节点和渲染逻辑。
-- UI/View/Controller 新文件以 `UI` 开头。
-- Controller 通过 Model 接口更新地图状态。
-- View 通过 Model 资源刷新显示。
-- 当前房间周围最多九个完整场景实例。
-- 3×3 外没有运行时房间节点，但资源缓存仍存在。
-- 返回旧房间时复用原 `MapSceneResource` 和 `PackedScene`。
-- `current_scene`、小地图、棋盘和背景显示保持兼容。
-- 玩家位置连续，不传送、不扣行动值、不触发驻守战斗。
+## 10. 当前实现边界
 
-## 当前状态
+本节原有三条记录保留为本轮实施前的历史快照；本轮模块、碰撞和跨房的最新结果见文末补充及任务 runtime-validation.md。MapTypes 路径表的原有建立方式没有在本轮重构。
 
-## 实施状态
+- 已实现并由 Godot 4.7.1 编辑器验证：MapWorldModel 的资源缓存、共享 PackedScene、1280×720 坐标换算、UIMapWorldView 的 3×3 实例窗口、玩家连续跨越房间以及现有棋盘/背景兼容链路。
+- 本次提出但尚未实现：MapTypes 场景路径解析迁入 Model、MapWorldModel 连接强校验、RoomContext、六类房间子模块 Controller、TileSet 碰撞配置和 normal 房间场景接线。
+- 本文件描述目标架构，不表示上述待实施项已写入源码或通过运行验证。
 
-编辑器初始检查通过：Godot 4.7.1、CUSGA 项目、MCP ready、游戏 stopped。随后已开始按本架构实施，已完成以下源码迁移：
+## 本轮落地补充
 
-- 新增 `resources/map/map_scene_resource.gd`。
-- 扩展 `core/map/map_world_model.gd`，加入资源缓存、PackedScene 缓存、3×3 坐标查询和状态信号。
-- 新增 `scripts/map_scripts/UIMapWorldView.gd`、`UIMapWorldController.gd`、`UIMapControl.gd`、`UIMapLittle.gd`。
-- 将旧地图脚本改为兼容包装，保留旧路径和旧节点名。
-- 将房间棋盘和背景解析器迁移为 `UIRoomBoardPresenter.gd`、`UICurrentMapBackgroundResolver.gd`，旧路径保留兼容包装。
-- 更新 `map_control.tscn` 和 `Main.tscn` 的新 UI 脚本引用。
-- 增加无缝地图资源缓存和 MVC 边界契约测试。
-
-Godot 4.7.1 编辑器重新连接后，已改用真实场景运行验证，不再调用会导致编辑器断开的 `test_run(suite="seamless_map_world")`：
-
-- `map_control.tscn` 成功启动，生成 22 个 normal 房间配置，无新增脚本解析、资源加载或运行时错误。
-- 初始坐标的有效 3×3 窗口包含 9 个完整房间实例，房间世界步长为 `1280×720`。
-- 运行时断言确认初始窗口包含 9 个实例，房间根节点和所有活跃 TileMap 的位置误差均为 0。
-- 移动到 `(7, 8)` 后，3×3 窗口外节点被释放，活跃实例降为 7 个；被释放坐标的 `MapSceneResource` 和共享 `PackedScene` 仍在缓存中。
-- 返回 `(7, 6)` 后，活跃实例恢复为 9 个；原 `MapSceneResource`、`PackedScene` 被复用，运行时房间节点重新实例化。
-- `Main.tscn` 成功启动，`MapSystem` 正确注入并由 Controller 观察 `Main/PlayerChar`。
-- 玩家从 `x=1200` 连续向右移动到约 `x=1346.7`，实际跨过 `1280` 边界；Model 与 View 自动从 `(7, 6)` 更新到 `(7, 7)`，玩家坐标未被传送或重置，活跃实例仍不超过 9 个。
-- 画面验证发现 normal 房间的 `MapContainer` 原为普通 `Node`，导致 TileMap 不继承房间根节点位移；现已统一改为 `Node2D`，并移除标题的 `top_level`。复测中所有活跃 TileMap 的全局坐标均与各自房间根节点一致，边界两侧场景同时可见。
-- 最终游戏日志没有新增脚本解析、资源加载或运行时错误，编辑器日志没有新增错误。编辑器中已有的 `shop_trade_tests.gd` 与 `test_gold.gd` 的 `ItemData` 错误属于本任务前已存在的问题，本次未修改。
-- `seamless_map_world` 是 `tests/test_seamless_map_world.gd` 返回的契约测试套件名，不是场景名或新功能名；本次按项目约束不再调用该测试套件，改用 Godot 4.7.1 编辑器中的真实场景运行、`game_eval`、输入注入、日志和截图完成验收。
-- 最终已停止游戏，Godot 编辑器保持打开并回到 `ready/stopped` 状态。
-- 仓库中不存在 `.sln`、`.csproj` 或 `.cs` 文件，因此没有可执行的 C# 编译目标。
+- 模块的 validate_room_context(context) -> bool 只做直接子节点预检。MapContainer 先检查所有模块，再依次 configure_room_context，防止模块缺失时留下已经开放的桥口。
+- 房间根 configure_room_context(context) -> bool 薄转发模块配置结果。UIMapWorldView 仅在成功后将实例加入场景树和活跃窗口；不读取子模块的瓦片。
+- 三类边界和障碍使用 TileSet 物理层 32、掩码 16，匹配玩家层 16、掩码 32。32 像素桥边瓦片只在外侧半格阻挡，让 100×140 的玩家矩形能通过中心。
+- 用户已明确允许 Main.tscn 的初始出生点为 (640,360)；这只是场景加载时的初值。Controller 跨房时仍不修改玩家位置、不传送。
+- 用户已开放编辑器 MCP 权限。两个新套件在新启动的 Godot 4.7.1 游戏进程完整通过：12 个用例、30,725 个断言；五个目标场景完成冒烟，Main 连续往返、节点回收和资源复用通过。依据见 .trellis/tasks/09-23-seamless-map-world/runtime-validation.md。没有截图，也没有把编辑器跳过项算作运行通过。
