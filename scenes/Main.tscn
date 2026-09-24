@@ -20,16 +20,23 @@
 [ext_resource type="Script" uid="uid://b2cjlfygx2goy" path="res://core/ui/hud/health_bar_ui.gd" id="12_mwfav"]
 [ext_resource type="Script" uid="uid://bshlhmrbxfyv2" path="res://core/debug/debug_loadout_seeder.gd" id="13_debug"]
 [ext_resource type="Script" uid="uid://k13qj2wv8e41" path="res://core/gameflow/run_start_initializer.gd" id="14_e2s0e"]
+[ext_resource type="Script" uid="uid://chi5xxdxm0amm" path="res://entities/player.gd" id="14_kxyth"]
 [ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
 [ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
 [ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/Warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
 [ext_resource type="Script" uid="uid://dggoia15cpbun" path="res://core/gameflow/world_hold_interaction_controller.gd" id="19_world_hold"]
 [ext_resource type="Script" uid="uid://btikxiw5fhx4d" path="res://core/ui/hud/world_hold_progress_indicator.gd" id="20_hold_indicator"]
+[ext_resource type="Script" uid="uid://bjqryvynmmecp" path="res://core/ui/inventory_ui.gd" id="24_cobve"]
 [ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="25_36rkl"]
+[ext_resource type="PackedScene" uid="uid://rukl64pxxdie" path="res://scenes/inventory/SlotUI.tscn" id="25_cmqll"]
+[ext_resource type="PackedScene" uid="uid://cx6d0836hkgj0" path="res://scenes/inventory/EquipmentSlotUI.tscn" id="26_8cp6k"]
 [ext_resource type="PackedScene" uid="uid://dwahsdi12ru61" path="res://scenes/ui_scenes/pause_menu.tscn" id="26_ma7h6"]
 [ext_resource type="PackedScene" uid="uid://bupnf6pmnnrxp" path="res://scenes/player_scenes/PlayerChar.tscn" id="27_fs0b5"]
+[ext_resource type="Script" uid="uid://vsnuxjq0vnej" path="res://core/ui/crafting/crafting_ui.gd" id="28_8b871"]
 [ext_resource type="PackedScene" uid="uid://dwwq74s2nxwtj" path="res://scenes/ui_scenes/skill_card_draft_screen.tscn" id="28_gsxep"]
+[ext_resource type="PackedScene" uid="uid://ddyp7h04g6e3l" path="res://scenes/talents/talent_screen.tscn" id="29_talent"]
+[ext_resource type="Script" uid="uid://vi5jdr3nuixj" path="res://core/ui/warehouse/warehouse_ui.gd" id="30_pdwbg"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -91,7 +98,8 @@ script = ExtResource("19_world_hold")
 script = ExtResource("8_ft6cd")
 GatheringRules = Array[Resource]([SubResource("Resource_nfivy"), SubResource("Resource_1iba3"), SubResource("Resource_2ofn6")])
 
-[node name="Player" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
+[node name="Player" type="Node" parent="." unique_id=1931166684 instance=ExtResource("8_jlsqs")]
+script = ExtResource("14_kxyth")
 
 [node name="RunStartInitializer" type="Node" parent="." unique_id=1307156547]
 script = ExtResource("14_e2s0e")
@@ -221,20 +229,26 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="InventoryUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+[node name="InventoryUI" type="Control" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1703104203 instance=ExtResource("9_q8u5g")]
+custom_minimum_size = Vector2(960, 360)
 layout_mode = 2
+script = ExtResource("24_cobve")
+SlotPrefab = ExtResource("25_cmqll")
+EquipmentSlotPrefab = ExtResource("26_8cp6k")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
-[node name="CraftingUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
+[node name="CraftingUI" type="Control" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=596998972 instance=ExtResource("15_crafting")]
+custom_minimum_size = Vector2(820, 460)
 layout_mode = 2
+script = ExtResource("28_8b871")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
-[node name="WarehouseUI" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1206096657 instance=ExtResource("18_warehouse_ui")]
+[node name="WarehouseUI" type="Control" parent="UI/HUDLayer/HUDRoot/CenterOverlay" unique_id=1206096657 instance=ExtResource("18_warehouse_ui")]
+custom_minimum_size = Vector2(800, 430)
 layout_mode = 2
+script = ExtResource("30_pdwbg")
+SlotPrefab = ExtResource("25_cmqll")
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
-
-[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
-layout_mode = 0
 
 [node name="DevSettingsUI" parent="UI/HUDLayer/HUDRoot" unique_id=149711311 instance=ExtResource("25_36rkl")]
 layout_mode = 1
@@ -246,6 +260,14 @@ layout_mode = 1
 layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="TalentScreen" parent="UI/HUDLayer/HUDRoot" unique_id=729571503 instance=ExtResource("29_talent")]
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
+layout_mode = 0
 
 [node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player", "player_char") instance=ExtResource("2_rvslj")]
 player = NodePath("../Player")

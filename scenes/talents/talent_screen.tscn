@@ -3,15 +3,45 @@
 [ext_resource type="Script" path="res://resources/talents/talent_manager.gd" id="1_wtvrj"]
 [ext_resource type="PackedScene" uid="uid://dmywehu7v1ws0" path="res://scenes/talents/talent_card.tscn" id="2_tcet3"]
 
-[node name="TalentScreen" type="CanvasLayer" unique_id=729571503 node_paths=PackedStringArray("CardsContainer")]
+[node name="TalentScreen" type="Control" unique_id=729571503 node_paths=PackedStringArray("CardsContainer")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 process_mode = 3
 script = ExtResource("1_wtvrj")
 AllTalentsPool = Array[Resource]([])
 CardScenePrefab = ExtResource("2_tcet3")
-CardsContainer = NodePath("HBoxContainer")
+CardsContainer = NodePath("Content/CardsContainer")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1951482409]
-offset_left = 114.0
-offset_top = 95.0
-offset_right = 733.0
-offset_bottom = 390.0
+[node name="Overlay" type="ColorRect" parent="." unique_id=704113268]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.65)
+
+[node name="Content" type="VBoxContainer" parent="." unique_id=704113269]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Content" unique_id=704113270]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "天赋觉醒"
+horizontal_alignment = 1
+
+[node name="CardsContainer" type="HBoxContainer" parent="Content" unique_id=1951482409]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="HintLabel" type="Label" parent="Content" unique_id=704113271]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "选择一项天赋"
+horizontal_alignment = 1

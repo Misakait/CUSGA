@@ -1539,7 +1539,7 @@ func test_talent_card_production_scenes_use_gdscript() -> void:
 	assert_true(screen_scene != null, "天赋选择场景必须能够加载。")
 	if screen_scene == null:
 		return
-	var screen := screen_scene.instantiate() as CanvasLayer
+	var screen := screen_scene.instantiate() as Control
 	var configured_card_scene: PackedScene = screen.get("CardScenePrefab") as PackedScene
 	assert_true(configured_card_scene != null, "TalentManager 必须保留天赋卡预制体。")
 	if configured_card_scene != null:
@@ -1582,9 +1582,14 @@ func test_talent_manager_production_scene_contract() -> void:
 	assert_true(packed_scene != null, "天赋选择生产场景必须能够加载。")
 	if packed_scene == null:
 		return
-	var screen := packed_scene.instantiate() as CanvasLayer
+	# 根节点是 Control（与开局技能卡抽取界面同范式），这样它与共享浮窗 TooltipPanel
+	# 同处一个 canvas，绘制顺序由兄弟次序决定；浮窗排在它之后即可盖在遮罩之上。
+	var screen := packed_scene.instantiate() as Control
 	var manager_script := screen.get_script() as Script
-	var cards_container := screen.get_node("HBoxContainer") as HBoxContainer
+	# 界面结构在 09-24 的任务中被有意重构为「遮罩 + 标题 + 卡片容器 + 提示」，
+	# 与开局技能卡抽取界面（scenes/ui_scenes/skill_card_draft_screen.tscn）对齐。
+	# 这里只更新路径，不断言数量与语义：契约仍是「CardsContainer 必须指向那个卡面容器」。
+	var cards_container := screen.get_node("Content/CardsContainer") as HBoxContainer
 	var all_talents: Array = screen.get("AllTalentsPool")
 	var card_scene := screen.get("CardScenePrefab") as PackedScene
 	assert_true(manager_script != null, "天赋选择根节点必须保留脚本。")
@@ -1594,7 +1599,10 @@ func test_talent_manager_production_scene_contract() -> void:
 	assert_true(card_scene != null, "CardScenePrefab 必须继续引用天赋卡场景。")
 	if card_scene != null:
 		assert_eq(card_scene.resource_path, TALENT_CARD_SCENE_PATH, "CardScenePrefab 路径必须保持不变。")
-	assert_true(screen.get("CardsContainer") == cards_container, "CardsContainer 必须继续引用 HBoxContainer。")
+	assert_true(screen.get("CardsContainer") == cards_container, "CardsContainer 必须继续引用 Content 下的卡面容器。")
+	assert_true(screen.get_node_or_null("Overlay") != null, "天赋界面必须保留整屏遮罩层。")
+	assert_true(screen.get_node_or_null("Content/TitleLabel") != null, "天赋界面必须保留标题标签。")
+	assert_true(screen.get_node_or_null("Content/HintLabel") != null, "天赋界面必须保留提示标签。")
 	assert_true(screen.has_method("OnTalentSelected"), "卡片点击必须仍可调用公开选择入口。")
 	assert_eq(screen.process_mode, Node.PROCESS_MODE_ALWAYS, "暂停期间天赋界面必须继续处理输入。")
 	screen.free()

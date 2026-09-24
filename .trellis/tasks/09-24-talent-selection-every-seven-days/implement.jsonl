@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "UI 组件与卡面视觉规范：卡牌视觉参数必须只有一份来源（preload card_visual_config）、悬停只改 scale/z_index 不改颜色、Tween 需在树内"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "GDScript 风格与验证边界：Variant 推断是硬错误、test_run 只扫描 tests/ 顶层且只认 test_*.gd、编辑器改动后必须 git status"}

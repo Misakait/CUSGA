@@ -1,0 +1,17 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" uid="uid://bb22vtin03ntv" path="res://resources/talents/talent_data.gd" id="1_talentdata"]
+[ext_resource type="Script" uid="uid://bopo8uyh7ijeo" path="res://resources/talents/attribute_talent_effect.gd" id="2_attreffect"]
+[ext_resource type="Texture2D" path="res://res/items/ice.png" id="3_texture"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_attreffect")
+TargetAttribute = 3
+BonusValue = 5.0
+
+[resource]
+script = ExtResource("1_talentdata")
+TalentName = "魔抗屏障"
+Description = "法术抗性永久 +5。恶意在体表滑落。"
+TalentTexture = ExtResource("3_texture")
+Effects = Array[Resource]([SubResource("Resource_effect")])

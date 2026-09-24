@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "质量检查依据：运行期验证走编辑器 MCP、验证手段能力矩阵、测试夹具的四条硬约束"}
+{"file": ".trellis/spec/guides/minimal-feature-start.md", "reason": "最小特性起步与聚焦验证选择：按改动面挑最小可验证路径"}
