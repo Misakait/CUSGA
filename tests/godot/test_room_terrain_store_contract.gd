@@ -157,7 +157,7 @@ func test_production_scene_and_compat_shims() -> void:
 ## 验证 C# 表现层只依赖稳定方法协议，不再编译期引用具体类型。
 func test_presenter_uses_dynamic_protocol() -> void:
 	# 生产表现层已切换为 GDScript，只依赖稳定方法协议；旧 C# 垫片继续保留同一套协议作为对照。
-	var presenter_source: String = FileAccess.get_file_as_string("res://core/map/room_board_presenter.gd")
+	var presenter_source: String = FileAccess.get_file_as_string("res://core/map/UIRoomBoardPresenter.gd")
 	assert_false(
 		presenter_source.contains("RoomTerrainStore"),
 		"表现层不得继续引用具体 RoomTerrainStore 类型。"

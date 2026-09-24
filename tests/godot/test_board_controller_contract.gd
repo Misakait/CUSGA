@@ -40,7 +40,7 @@ const CONSUMER_CS: Array[String] = [
 const CS_OPTIONAL := preload("res://tests/godot/csharp_optional.gd")
 
 ## 房间棋盘表现层已切换为 GDScript，同样只经 Node 方法协议访问棋盘控制器。
-const PRESENTER_GD: String = "res://core/map/room_board_presenter.gd"
+const PRESENTER_GD: String = "res://core/map/UIRoomBoardPresenter.gd"
 
 ## 必须逐字保留在 GDScript 生产脚本里的 7 个信号声明。
 const GD_SIGNALS: Array[String] = [

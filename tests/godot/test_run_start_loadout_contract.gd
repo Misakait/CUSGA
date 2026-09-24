@@ -38,6 +38,8 @@ const SKILL_CARD_SCRIPT: GDScript = preload("res://resources/item/card/skill_car
 const ITEM_DATA_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
 ## 地图控制器脚本路径，用于验证旧带入实现已被移除。
 const MAP_CONTROL_GD: String = "res://scripts/map_scripts/map_control.gd"
+## 无缝地图生产控制器脚本路径；兼容包装与实际实现都必须遵守同一职责边界。
+const UI_MAP_CONTROL_GD: String = "res://scripts/map_scripts/UIMapControl.gd"
 ## 主场景路径。
 const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
 
@@ -379,6 +381,20 @@ func test_production_wiring_shape() -> void:
 	assert_false(
 		map_control_text.contains("player._inventory"),
 		"地图控制器不得再直接访问玩家私有背包字段。"
+	)
+
+	var ui_map_control_text: String = FileAccess.get_file_as_string(UI_MAP_CONTROL_GD)
+	assert_false(
+		ui_map_control_text.contains("warehouse_to_player"),
+		"无缝地图生产控制器不得再消费旧导出数组。"
+	)
+	assert_false(
+		ui_map_control_text.contains("player._inventory"),
+		"无缝地图生产控制器不得再直接访问玩家私有背包字段。"
+	)
+	assert_false(
+		ui_map_control_text.contains("TakeCarryItems"),
+		"开局带入只能由 RunStartInitializer 消费，地图生产控制器不得接管。"
 	)
 
 	var warehouse_text: String = FileAccess.get_file_as_string(WAREHOUSE_CONTROL_GD)

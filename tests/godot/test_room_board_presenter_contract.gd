@@ -9,8 +9,8 @@ extends McpTestSuite
 ## C# 物理退役后，依赖垫片的对照断言经 CS_OPTIONAL 自动退场（见 tests/godot/csharp_optional.gd）。
 
 ## 本批生产脚本与旁车 UID。
-const PRESENTER_GD: String = "res://core/map/room_board_presenter.gd"
-const PRESENTER_GD_UID: String = "res://core/map/room_board_presenter.gd.uid"
+const PRESENTER_GD: String = "res://core/map/UIRoomBoardPresenter.gd"
+const PRESENTER_GD_UID: String = "res://core/map/UIRoomBoardPresenter.gd.uid"
 ## 旧 C# 垫片；全量迁移完成前必须保留完整实现，不能掏空。
 const PRESENTER_CS: String = "res://core/map/RoomBoardPresenter.cs"
 
