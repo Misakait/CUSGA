@@ -1,0 +1,4 @@
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"检查 GDScript 公开协议、资源配置和依赖引用"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"检查 Item 场景节点、交互信号与编辑器验证"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"核对测试覆盖、主场景冒烟和错误日志"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"检查九房生命周期与局内存档模式切换时序"}

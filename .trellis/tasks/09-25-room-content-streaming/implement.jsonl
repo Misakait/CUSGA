@@ -1,0 +1,6 @@
+{"file":".trellis/spec/backend/index.md","reason":"定位地图、资源、存档与测试规范入口"}
+{"file":".trellis/spec/backend/gameplay-system-patterns.md","reason":"保持地图 3×3、交互、掉落和领域状态的既有分工"}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"新增可编辑 Resource 和 tres 时遵守资产兼容规则"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"核对房间节点生命周期、信号和 SaveManager 参与者协议"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"接入 Item 场景与可复用表现组件"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"使用 Godot 编辑器执行聚焦测试和场景冒烟"}
