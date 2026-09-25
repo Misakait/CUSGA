@@ -789,6 +789,8 @@ func test_scopes_are_split_and_run_scope_can_be_cleared() -> void:
 	var manager: Node = _new_manager()
 	var global_stub: Node = _register_stub(manager, "global_stub", "global", {"value": 1})
 	var run_stub: Node = _register_stub(manager, "run_stub", "run", {"value": 2})
+	# 生产默认是 SESSION_ONLY；本契约测试要验证作用域能写入磁盘，显式切换到 DISK。
+	manager.call("set_run_mode", 1)
 
 	assert_true(bool(manager.call("save_now")), "写入必须成功。")
 	var document: Dictionary = _read_document(TEST_SAVE_PATH)
