@@ -70,21 +70,18 @@ func _ready() -> void:
 	refresh_hp(true)
 	reset_action_value()
 
-## 初始化玩家实体，将战斗系统与全局玩家实体解耦/耦合
+## 优先绑定局内数值玩家，独立运行战斗时使用场景自带玩家。
+## @return 无返回值。
 func _initialize_player_entity() -> void:
-	# 尝试从全局或根节点获取真实的玩家实体
-	var players = get_tree().get_nodes_in_group("Player")
-	if players.size() > 0:
-		player_entity = players[0]
-	else:
-		# 尝试从常见路径寻找
-		var gameplay_port = get_tree().root.get_node_or_null("Main/Gameplay/GameplayPort")
-		if gameplay_port and gameplay_port.Player:
-			player_entity = gameplay_port.Player
-		else:
-			var main_player = get_tree().root.get_node_or_null("Main/Player")
-			if main_player:
-				player_entity = main_player
+	# Player 分组也包含只有移动与表现的 PlayerChar，不能按分组顺序选择第一个节点。
+	var gameplay_port: Node = get_tree().root.get_node_or_null("Main/Gameplay/GameplayPort")
+	if gameplay_port != null:
+		player_entity = gameplay_port.get("Player") as Node
+	if player_entity == null:
+		for candidate: Node in get_tree().get_nodes_in_group("Player"):
+			if candidate.has_node("Components/HealthComponent") and candidate.has_node("Components/AttributeComponent"):
+				player_entity = candidate
+				break
 
 	if not player_entity:
 		# 如果还是没找到，为了允许独立测试战斗场景，寻找挂载在 PlayerManager 下的本地 Player 节点

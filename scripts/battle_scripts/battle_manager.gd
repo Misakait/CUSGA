@@ -225,6 +225,9 @@ func _build_combat_skill_display_name_map() -> void:
 	dir.list_dir_end()
 
 func _ready():
+	# 战斗布局以屏幕左上角为原点；独立相机接管探索相机，避免跨房坐标挤走战斗内容。
+	# 相机的 top_level 保持固定，战斗根节点震屏时不会把相机一起移动而抵消震动。
+	$BattleCamera.make_current()
 	#初始化摸牌堆
 	deck_manager.initialize_deck(starting_deck_data)
 

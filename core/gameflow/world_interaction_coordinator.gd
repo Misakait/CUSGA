@@ -3,7 +3,7 @@ extends Node
 ## 局外世界交互协调器 GDScript 生产实现，等价迁移自 core/gameflow/WorldInteractionCoordinator.cs。
 ##
 ## 职责：集中处理棋盘卡牌的点击/长按/生成信号、局外地图长按、遭遇请求转发，以及进入战斗时的
-## 过场、背景复制与世界视图显隐。四个只被本协调器使用的辅助类（战斗场景表现层、过场适配器、
+## 过场与世界视图显隐。四个只被本协调器使用的辅助类（战斗场景表现层、过场适配器、
 ## 世界视图控制器、地形交互执行器）按“同名协议内联”的方式在本脚本内实现，避免为复用仅 C#
 ## 可见的普通类而新增跨语言桥接层。
 ## 不声明 class_name，避免与仍在使用的 C# 全局类型重名。
@@ -30,8 +30,6 @@ const TIME_SYSTEM_PATH: NodePath = ^"/root/TimeSystem"
 const BATTLE_SCENE_PATH: String = "res://scenes/battle_scenes/battle.tscn"
 ## 战斗场景的结束信号名。
 const BATTLE_ENDED_SIGNAL: StringName = &"battle_ended"
-## 生产 GDScript 战斗背景解析器脚本路径。
-const MAP_BACKGROUND_RESOLVER_SCRIPT_PATH: String = "res://core/gameflow/UICurrentMapBackgroundResolver.gd"
 ## 怪物数据的跨语言字段协议：C# MonsterData 为 [Export]，GDScript monster_data.gd 为 @export。
 ## 判定只看字段面，不看类型名或脚本路径，避免把语言身份写进生产逻辑。
 const MONSTER_DATA_REQUIRED_FIELDS: Array[StringName] = [
@@ -87,6 +85,8 @@ var ScreenTransitionsPath: NodePath = ^"/root/ScreenTransitions"
 @export var MapCanvasLayerPath: NodePath = NodePath("../../MapSystem/CanvasLayer")
 ## HUD CanvasLayer 路径。
 @export var HudLayerPath: NodePath = NodePath("../../UI/HUDLayer")
+## 战斗中隐藏的探索状态区；背包、合成、暂停等共用界面保持可用。
+@export var WorldStatusPath: NodePath = ^"../../UI/HUDLayer/HUDRoot/TopLeftPanel"
 
 ## 棋盘控制器；只保留 Node 与信号/方法协议，兼容 C# 垫片与生产 GDScript。
 var _board_controller: Node = null
@@ -104,8 +104,12 @@ var _time_system: Node = null
 var _screen_transitions: Node = null
 ## 世界根节点。
 var _world_root: Node = null
-## 地图系统节点，用于复制当前房间背景。
-var _map_system: Node = null
+## 进入战斗前的探索相机；返回时恢复同一实例，不改变玩家世界坐标。
+var _world_camera: Camera2D = null
+var _active_battle: Node = null
+var _player_process_mode: ProcessMode = Node.PROCESS_MODE_INHERIT
+var _player_was_visible: bool = true
+var _world_status_was_visible: bool = true
 ## 统一处理地图按钮与棋盘地形之间互斥的长按状态。
 var _hold_interaction_controller: Node = null
 
@@ -150,7 +154,6 @@ func _ready() -> void:
 	_time_system = get_node_or_null(TIME_SYSTEM_PATH)
 	_screen_transitions = get_node_or_null(ScreenTransitionsPath)
 	_world_root = get_node(WorldRootPath)
-	_map_system = get_node_or_null(MapSystemPath)
 	_hold_interaction_controller = get_node(HoldInteractionControllerPath)
 
 	_board_card_clicked_callable = Callable(self, "_on_board_card_clicked")
@@ -837,7 +840,7 @@ func _get_night_encounter_chance_multiplier(equipment: Node) -> float:
 ## @param monsters 本场战斗生成的怪物数组。
 ## @return 成功进入战斗返回 true；已处于过场中时返回 false 且不产生任何变化。
 func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> bool:
-	if _is_transitioning:
+	if _is_transitioning or is_instance_valid(_active_battle):
 		return false
 	var save_manager: Node = get_node_or_null("/root/SaveManager")
 	if save_manager != null and not bool(save_manager.call("freeze_run_before_battle")):
@@ -845,15 +848,16 @@ func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> b
 		return false
 
 	_is_transitioning = true
+	_cancel_active_hold()
 	print("[WorldCombatScenePresenter] Entering Combat!")
 	await _fade_out()
 
+	# 背景由战斗场景自身配置，避免探索房间的外观覆盖战斗画面。
 	var battle_instance: Node = _create_battle_instance(battle_deck, monsters)
-	var battle_background: Sprite2D = _duplicate_current_background()
-	if battle_background != null:
-		battle_instance.add_child(battle_background)
 
 	battle_instance.connect(BATTLE_ENDED_SIGNAL, Callable(self, "_on_battle_ended").bind(battle_instance))
+	_world_camera = get_viewport().get_camera_2d()
+	_active_battle = battle_instance
 	_world_root.add_child(battle_instance)
 	_set_world_view_visible(false)
 
@@ -876,7 +880,8 @@ func _enter_combat_and_wait_for_result(
 
 	# 清空上一次的结果标记，避免把上一场战斗的结果当作本场结果返回。
 	_battle_result_ready = false
-	await _enter_combat(battle_deck, monsters)
+	if not await _enter_combat(battle_deck, monsters):
+		return false
 	while not _battle_result_ready:
 		await get_tree().process_frame
 
@@ -899,6 +904,12 @@ func _on_battle_ended(is_victory: bool, battle_instance: Node) -> void:
 
 	if is_instance_valid(battle_instance):
 		battle_instance.queue_free()
+	_active_battle = null
+	if is_instance_valid(_world_camera):
+		_world_camera.make_current()
+		_world_camera.reset_smoothing()
+		_world_camera.force_update_scroll()
+	_world_camera = null
 
 	_set_world_view_visible(true)
 	await _fade_in()
@@ -926,28 +937,7 @@ func _create_battle_instance(battle_deck: Array[Resource], monsters: Array[Resou
 	return battle_instance
 
 
-## 通过稳定方法协议调用生产 GDScript 背景解析器复制当前房间背景。
-##
-## @return 复制出的战斗背景；脚本或协议不可用时返回 null。
-func _duplicate_current_background() -> Sprite2D:
-	var resolver_script: GDScript = load(MAP_BACKGROUND_RESOLVER_SCRIPT_PATH) as GDScript
-	if resolver_script == null:
-		push_error("无法加载战斗背景解析器：%s" % MAP_BACKGROUND_RESOLVER_SCRIPT_PATH)
-		return null
-
-	var resolver: RefCounted = resolver_script.new() as RefCounted
-	if resolver == null or not resolver.has_method("DuplicateCurrentBackground"):
-		push_error("战斗背景解析器缺少 DuplicateCurrentBackground 协议。")
-		return null
-
-	var background: Variant = resolver.call("DuplicateCurrentBackground", _map_system)
-	if background is Sprite2D:
-		return background
-
-	return null
-
-
-## 等价旧 C# WorldViewVisibilityController：同时切换棋盘、地图、地图 CanvasLayer 与 HUD。
+## 切换探索画面和角色控制，保留背包、合成和暂停菜单所在的共用 HUD。
 ##
 ## @param visible 是否显示世界视图。
 ## @return 无返回值。
@@ -955,7 +945,21 @@ func _set_world_view_visible(visible: bool) -> void:
 	_set_canvas_item_visible(BoardControllerPath, visible)
 	_set_canvas_item_visible(MapSystemPath, visible)
 	_set_canvas_layer_visible(MapCanvasLayerPath, visible)
-	_set_canvas_layer_visible(HudLayerPath, visible)
+	# 隐藏角色并停止移动状态机；只藏精灵会让键盘输入继续推动角色和探索相机。
+	if is_instance_valid(_player_char):
+		if not visible:
+			_player_process_mode = _player_char.process_mode
+			_player_was_visible = _player_char.visible
+			_player_char.process_mode = Node.PROCESS_MODE_DISABLED
+			_player_char.hide()
+		else:
+			_player_char.process_mode = _player_process_mode
+			_player_char.visible = _player_was_visible
+	var world_status: CanvasItem = get_node_or_null(WorldStatusPath) as CanvasItem
+	if world_status != null:
+		if not visible:
+			_world_status_was_visible = world_status.visible
+		world_status.visible = _world_status_was_visible if visible else false
 
 
 ## 切换一个 CanvasItem 节点的可见性。
@@ -984,11 +988,11 @@ func _set_canvas_layer_visible(path: NodePath, visible: bool) -> void:
 	node.visible = visible
 
 
-## 播放一次过场淡出并等待完成信号。
+## 播放一次过场淡出并保持全黑，直到战斗或探索画面完成装配后再淡入。
 ##
 ## @return 无返回值。
 func _fade_out() -> void:
-	await _run_screen_transition("fade_out", &"fade_complete")
+	await _run_screen_transition("fade_out", &"fade_complete", [true])
 
 
 ## 播放一次过场淡入并等待完成信号。
@@ -1002,8 +1006,9 @@ func _fade_in() -> void:
 ##
 ## @param method_name 过场方法名，例如 fade_out。
 ## @param completed_signal 对应的完成信号名。
+## @param arguments 传给过场方法的参数；淡出时传入保持黑幕标记。
 ## @return 无返回值；过场缺失或未实现该方法时立即返回。
-func _run_screen_transition(method_name: String, completed_signal: StringName) -> void:
+func _run_screen_transition(method_name: String, completed_signal: StringName, arguments: Array = []) -> void:
 	if _screen_transitions == null or not is_instance_valid(_screen_transitions):
 		return
 	if not _screen_transitions.has_method(method_name):
@@ -1014,7 +1019,7 @@ func _run_screen_transition(method_name: String, completed_signal: StringName) -
 	var on_completed: Callable = func() -> void:
 		state["done"] = true
 	_screen_transitions.connect(completed_signal, on_completed, CONNECT_ONE_SHOT)
-	_screen_transitions.call(method_name)
+	_screen_transitions.callv(method_name, arguments)
 	while not bool(state["done"]):
 		await get_tree().process_frame
 

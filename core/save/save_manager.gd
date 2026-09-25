@@ -289,8 +289,9 @@ func get_last_load_error() -> String:
 ## @return 键名数组，供测试与运行期排查使用。
 func get_registered_keys() -> Array[String]:
 	var keys: Array[String] = []
-	for key: Variant in _participants:
-		keys.append(String(key))
+	for key: Variant in _participants.keys():
+		if _get_live_participant(String(key)) != null:
+			keys.append(String(key))
 	return keys
 
 
@@ -299,7 +300,7 @@ func get_registered_keys() -> Array[String]:
 ## @param key 参与者键名。
 ## @return 已注册时为 true。
 func is_registered(key: String) -> bool:
-	return _participants.has(key)
+	return _get_live_participant(key) != null
 
 
 ## 返回内存中的存档内容副本。
@@ -362,20 +363,60 @@ func register_participant(participant: Node) -> bool:
 		)
 		return false
 
-	if _participants.has(key):
+	var previous: Node = _get_live_participant(key)
+	if previous != null:
 		# 重复注册是允许的：将来每局重建的 run 参与者需要在新实例上重新注册。
 		# 但必须留下痕迹，否则「两个 autoload 抢同一个 key」这种配置错误会静默互相覆盖。
 		push_warning("SaveManager: 键 %s 已被注册，本次注册将替换原参与者。" % key)
-		_unsubscribe_participant(_participants[key])
+		_unsubscribe_participant(previous)
 
 	_participants[key] = participant
 	_subscribe_participant(participant)
+	# 存档层比 Main 活得久；离树时移除登记，回调只绑定 ID，避免持有失效节点。
+	var exiting: Callable = _on_participant_tree_exiting.bind(key, participant.get_instance_id())
+	if not participant.tree_exiting.is_connected(exiting):
+		participant.tree_exiting.connect(exiting, CONNECT_ONE_SHOT)
 
 	# 注册即应用：存档已加载时同步补发，避免错过调用方的初始化时机。
 	if _loaded:
 		_apply_to_participant(participant, key)
+	if scope == SCOPE_RUN:
+		# 战斗中退回主菜单不会经过战斗结束回调；新局注册后必须解除旧局冻结。
+		_run_frozen = false
+		_frozen_run_data.clear()
 
 	return true
+
+
+## 在类型转换前验证登记对象，并清理已释放的节点。
+## @param key 参与者存档键。
+## @return 有效节点；不存在或已释放时返回 null。
+func _get_live_participant(key: String) -> Node:
+	# 已释放的 Variant 直接赋给 Node 会先报错，不能在赋值后才检查有效性。
+	var raw: Variant = _participants.get(key)
+	if not is_instance_valid(raw):
+		_participants.erase(key)
+		return null
+	return raw as Node
+
+
+## 节点离树时解除登记，同键替换后的旧实例不能移除新实例。
+## @param key 注册时的存档键。
+## @param instance_id 注册时的实例 ID。
+## @return 无返回值。
+func _on_participant_tree_exiting(key: String, instance_id: int) -> void:
+	var participant: Node = _get_live_participant(key)
+	if participant == null or participant.get_instance_id() != instance_id:
+		return
+	if String(participant.call("save_scope")) == SCOPE_GLOBAL:
+		# 退出时 Autoload 按反序离树；保存仍存活的局外数据供 SaveManager 最后兜底落盘。
+		var captured: Variant = participant.call("capture_save_data")
+		if captured is Dictionary:
+			var global_data: Dictionary = _loaded_data.get(SCOPE_GLOBAL, {})
+			global_data[key] = captured
+			_loaded_data[SCOPE_GLOBAL] = global_data
+	_unsubscribe_participant(participant)
+	_participants.erase(key)
 
 
 ## 订阅参与者声明的变更信号，用于自动存档。
@@ -443,11 +484,12 @@ func _on_participant_changed(_first: Variant = null, _second: Variant = null) ->
 ## @return {"global": {key: Dictionary}, "run": {key: Dictionary}}；参与者返回值不是字典时
 ##   跳过该参与者并报错（协议被破坏，不应静默写进存档）。
 func capture() -> Dictionary:
-	var data: Dictionary = {SCOPE_GLOBAL: {}, SCOPE_RUN: {}}
+	# 场景卸载后保留上次成功保存的数据，仓库自动保存不能把缺席的局内快照抹掉。
+	var data: Dictionary = _normalize_scopes(_loaded_data)
 
-	for key: Variant in _participants:
-		var participant: Node = _participants[key]
-		if not is_instance_valid(participant):
+	for key: Variant in _participants.keys():
+		var participant: Node = _get_live_participant(String(key))
+		if participant == null:
 			continue
 
 		var scope: String = String(participant.call("save_scope"))
@@ -591,8 +633,7 @@ func erase_save() -> bool:
 
 ## 清空局内作用域并把 run 参与者复位为默认值。
 ##
-## 本次没有 run 参与者，因此它是为后续「每局进度存档」预留的收口点：新一局开始时调用它，
-## 就能保证上一局的残留不会漏进新局。
+## 显式开始新局时可调用本方法，保证上一局的快照不会漏进新局。
 ##
 ## @return 无返回值。
 func clear_run_scope() -> void:
@@ -602,9 +643,9 @@ func clear_run_scope() -> void:
 	run_data.clear()
 	_loaded_data[SCOPE_RUN] = run_data
 
-	for key: Variant in _participants:
-		var participant: Node = _participants[key]
-		if not is_instance_valid(participant):
+	for key: Variant in _participants.keys():
+		var participant: Node = _get_live_participant(String(key))
+		if participant == null:
 			continue
 		if String(participant.call("save_scope")) == SCOPE_RUN:
 			_apply_to_participant(participant, String(key))
@@ -615,8 +656,9 @@ func clear_run_scope() -> void:
 ## @return 全部参与者都成功应用时为 true。
 func _distribute_to_participants() -> bool:
 	var all_applied: bool = true
-	for key: Variant in _participants:
-		if not _apply_to_participant(_participants[key], String(key)):
+	for key: Variant in _participants.keys():
+		var participant: Node = _get_live_participant(String(key))
+		if participant != null and not _apply_to_participant(participant, String(key)):
 			all_applied = false
 	return all_applied
 
