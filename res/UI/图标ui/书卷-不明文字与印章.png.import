@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nqcqgfagxafs"
-path="res://.godot/imported/退出 2.png-0bcad60a99351593c155b7a72b954081.ctex"
+uid="uid://cm8b5y4rw1mst"
+path="res://.godot/imported/书卷-不明文字与印章.png-c8f676e75de38d9b18dd68d6541424a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/退出 2.png"
-dest_files=["res://.godot/imported/退出 2.png-0bcad60a99351593c155b7a72b954081.ctex"]
+source_file="res://res/UI/图标ui/书卷-不明文字与印章.png"
+dest_files=["res://.godot/imported/书卷-不明文字与印章.png-c8f676e75de38d9b18dd68d6541424a9.ctex"]
 
 [params]
 

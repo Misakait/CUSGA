@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dedji3tu27f8k"
-path="res://.godot/imported/背包图标.png-0057cf061d6c58ac33dc78c22350c9e4.ctex"
+uid="uid://jnd5h01v1g8w"
+path="res://.godot/imported/技能卡模板-蓝.png-7efa48eb40c67cca1b4e6fd5c75e3da9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/背包图标.png"
-dest_files=["res://.godot/imported/背包图标.png-0057cf061d6c58ac33dc78c22350c9e4.ctex"]
+source_file="res://res/Card/skillcardboard/技能卡模板-蓝.png"
+dest_files=["res://.godot/imported/技能卡模板-蓝.png-7efa48eb40c67cca1b4e6fd5c75e3da9.ctex"]
 
 [params]
 
