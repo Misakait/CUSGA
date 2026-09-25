@@ -53,6 +53,11 @@ const SCOPE_GLOBAL: String = "global"
 
 ## 局内（单局）作用域：写进主存档的 `data.run`，不跨运行保留。
 const SCOPE_RUN: String = "run"
+## 局内快照默认只在本次运行保存；跨重启模式由设置偏好覆盖。
+const SESSION_ONLY: int = 0
+const DISK: int = 1
+const SETTINGS_SECTION: String = "run"
+const SETTINGS_MODE_KEY: String = "persistence_mode"
 
 ## 变更后延迟落盘的秒数。
 ##
@@ -72,6 +77,8 @@ const PARTICIPANT_METHODS: Array[String] = [
 
 ## 存档文件路径。测试可覆写为临时路径（如 `user://test_save/save.json`）。
 @export var SaveFilePath: String = DEFAULT_SAVE_FILE_PATH
+## 新安装时的默认保存模式，运行时设置优先于此资源。
+@export var RunConfig: Resource = preload("res://resources/save/run_persistence_config.tres")
 
 ## key → 参与者节点。
 var _participants: Dictionary = {}
@@ -107,6 +114,9 @@ var _warned_unknown_keys: Dictionary = {}
 ## 而在同一次运行内比较文件内容无法区分「写了一次相同内容」与「压根没写」。运行期也能
 ## 用它确认自动存档确实发生过。
 var _successful_writes: int = 0
+var _run_mode: int = SESSION_ONLY
+var _run_frozen: bool = false
+var _frozen_run_data: Dictionary = {}
 
 
 ## 设置进程模式、读取存档。
@@ -117,7 +127,78 @@ var _successful_writes: int = 0
 ## @return 无返回值。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	var settings: Node = get_node_or_null("/root/SettingsManager")
+	var default_mode: int = int(RunConfig.get("DefaultMode")) if RunConfig != null else SESSION_ONLY
+	_run_mode = default_mode
+	if settings != null:
+		var saved_mode: Variant = settings.call("get_setting", SETTINGS_SECTION, SETTINGS_MODE_KEY, default_mode)
+		if saved_mode is int and int(saved_mode) in [SESSION_ONLY, DISK]:
+			_run_mode = int(saved_mode)
 	load_from_disk()
+
+
+## 查询当前局内保存模式。
+## @return 0 为仅本次运行，1 为跨重启。
+func get_run_mode() -> int:
+	_refresh_run_mode_from_settings()
+	return _run_mode
+
+
+## 在本局运行中切换保存模式，不重新应用旧磁盘快照。
+## @param mode 0 为仅本次运行，1 为跨重启。
+## @return 模式有效且本地偏好成功保存时为 true。
+func set_run_mode(mode: int) -> bool:
+	if mode not in [SESSION_ONLY, DISK]:
+		return false
+	_run_mode = mode
+	var settings: Node = get_node_or_null("/root/SettingsManager")
+	var saved: bool = settings != null and bool(settings.call("set_setting", SETTINGS_SECTION, SETTINGS_MODE_KEY, mode))
+	if mode == DISK:
+		# 以玩家眼前的本局覆盖旧局快照，避免切回磁盘模式时发生回滚。
+		save_now()
+	return saved
+
+
+## 战斗开始前强制写入一次世界快照，并冻结局内作用域。
+## @return 跨重启模式下落盘成功才返回 true；内存模式始终返回 true。
+func freeze_run_before_battle() -> bool:
+	if _run_frozen:
+		return true
+	if _run_mode == DISK and not save_now():
+		return false
+	_frozen_run_data = (capture().get(SCOPE_RUN, {}) as Dictionary).duplicate(true)
+	_run_frozen = true
+	return true
+
+
+## 战斗结算回到世界后重新允许采集局内快照。
+## @return 无返回值。
+func resume_run_after_battle() -> void:
+	_run_frozen = false
+	_frozen_run_data.clear()
+	request_save()
+
+
+## 读取已加载的局内参与者数据，默认内存模式不向新局暴露旧磁盘快照。
+## @param key 参与者稳定键。
+## @return 对应快照字典或空字典。
+func get_loaded_run_data(key: String) -> Dictionary:
+	_refresh_run_mode_from_settings()
+	if _run_mode != DISK:
+		return {}
+	var run_data: Dictionary = _loaded_data.get(SCOPE_RUN, {})
+	return run_data.get(key, {}) as Dictionary
+
+
+## 在参与者注册前读取已就绪的设置 Autoload；SaveManager 必须保持第一个启动顺序。
+## @return 无返回值。
+func _refresh_run_mode_from_settings() -> void:
+	var settings: Node = get_node_or_null("/root/SettingsManager")
+	if settings == null or not settings.has_method("get_setting"):
+		return
+	var saved_mode: Variant = settings.call("get_setting", SETTINGS_SECTION, SETTINGS_MODE_KEY, _run_mode)
+	if saved_mode is int and int(saved_mode) in [SESSION_ONLY, DISK]:
+		_run_mode = int(saved_mode)
 
 
 ## 结算待落盘的变更，并在退出时兜底写档。
@@ -458,6 +539,11 @@ func save_now() -> bool:
 	_dirty_elapsed = 0.0
 
 	var data: Dictionary = capture()
+	if _run_mode == SESSION_ONLY:
+		# 仅写局外进度，磁盘上的旧 run 快照原样保留供后续显式切换。
+		data[SCOPE_RUN] = (_loaded_data.get(SCOPE_RUN, {}) as Dictionary).duplicate(true)
+	elif _run_frozen:
+		data[SCOPE_RUN] = _frozen_run_data.duplicate(true)
 	_warn_unknown_keys(data)
 
 	var document: Dictionary = {
@@ -550,6 +636,8 @@ func _apply_to_participant(participant: Node, key: String) -> bool:
 		scope_data = {}
 
 	var payload: Dictionary = {}
+	if scope == SCOPE_RUN and _run_mode == SESSION_ONLY:
+		scope_data = {}
 	if scope_data.has(key) and scope_data[key] is Dictionary:
 		payload = scope_data[key]
 

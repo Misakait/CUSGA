@@ -4,7 +4,8 @@
 [ext_resource type="Script" uid="uid://cvc18jht88wtv" path="res://core/map/room_terrain_store.gd" id="1_rarhs"]
 [ext_resource type="Script" uid="uid://b8oardc7t2mqk" path="res://core/board/board_controller.gd" id="2_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://55q6p6bk1ll7" path="res://scenes/map_scenes/map_control.tscn" id="2_rvslj"]
-[ext_resource type="PackedScene" uid="uid://bti37y31fdnfr" path="res://scenes/board_card_scene/BoardCardView.tscn" id="4_vcsgt"]
+[ext_resource type="PackedScene" path="res://scenes/Loot/Loot.tscn" id="4_loot"]
+[ext_resource type="PackedScene" uid="uid://xkui1sasq866" path="res://scenes/ItemTerrian/Item.tscn" id="4_vcsgt"]
 [ext_resource type="Script" uid="uid://b70fsdh5gper6" path="res://core/application/gameplay_port.gd" id="6_c01mt"]
 [ext_resource type="Script" uid="uid://b1wldintrcuak" path="res://core/gameflow/world_interaction_coordinator.gd" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://b5jifnh8rghij" path="res://core/application/encounter_manager.gd" id="8_ft6cd"]
@@ -31,9 +32,10 @@
 [ext_resource type="PackedScene" uid="uid://bupnf6pmnnrxp" path="res://scenes/player_scenes/PlayerChar.tscn" id="27_fs0b5"]
 [ext_resource type="PackedScene" uid="uid://dwwq74s2nxwtj" path="res://scenes/ui_scenes/skill_card_draft_screen.tscn" id="28_gsxep"]
 [ext_resource type="PackedScene" uid="uid://ddyp7h04g6e3l" path="res://scenes/talents/talent_screen.tscn" id="29_talent"]
-
-[ext_resource type="Script" path="res://core/building/room_building_store.gd" id="38_building_store"]
-[ext_resource type="Script" path="res://core/building/building_controller.gd" id="39_building_controller"]
+[ext_resource type="Script" uid="uid://btuvuh0y7s2dn" path="res://core/building/room_building_store.gd" id="38_building_store"]
+[ext_resource type="Script" uid="uid://cftmlmpl83akc" path="res://core/building/building_controller.gd" id="39_building_controller"]
+[ext_resource type="Script" uid="uid://cutc6r3yse8o2" path="res://core/map/room_loot_store.gd" id="40_loot_store"]
+[ext_resource type="Script" uid="uid://b4rqfaefga4gv" path="res://core/gameflow/run_snapshot.gd" id="41_run_snapshot"]
 
 [sub_resource type="Resource" id="Resource_nfivy"]
 script = ExtResource("9_bb450")
@@ -60,8 +62,14 @@ metadata/_custom_type_script = "uid://bcy1h38m7fs2c"
 [node name="RoomTerrainStore" type="Node" parent="RuntimeState" unique_id=229807555]
 script = ExtResource("1_rarhs")
 
-[node name="RoomBuildingStore" type="Node" parent="RuntimeState"]
+[node name="RoomBuildingStore" type="Node" parent="RuntimeState" unique_id=1037209430]
 script = ExtResource("38_building_store")
+
+[node name="RoomLootStore" type="Node" parent="RuntimeState" unique_id=1919985233]
+script = ExtResource("40_loot_store")
+
+[node name="RunSnapshot" type="Node" parent="RuntimeState" unique_id=1690415593]
+script = ExtResource("41_run_snapshot")
 
 [node name="BoardSystem" type="Node" parent="." unique_id=1325131807]
 
@@ -70,15 +78,21 @@ script = ExtResource("1_elqb8")
 MapSystemPath = NodePath("../../MapSystem")
 BoardControllerPath = NodePath("../BoardController")
 TerrainStorePath = NodePath("../../RuntimeState/RoomTerrainStore")
+MapViewPath = NodePath("../../MapSystem/MapInstantiator")
+LootStorePath = NodePath("../../RuntimeState/RoomLootStore")
 
 [node name="BoardController" type="Node2D" parent="BoardSystem" unique_id=1414781764]
 script = ExtResource("2_0bbpv")
+TerrainViewScene = ExtResource("4_vcsgt")
+LootViewScene = ExtResource("4_loot")
 CardViewScene = ExtResource("4_vcsgt")
 CardsRootPath = NodePath("CardsRoot")
+MapViewPath = NodePath("../../MapSystem/MapInstantiator")
+LootStorePath = NodePath("../../RuntimeState/RoomLootStore")
 
 [node name="CardsRoot" type="Node2D" parent="BoardSystem/BoardController" unique_id=1226399754]
 
-[node name="BuildingsRoot" type="Node2D" parent="BoardSystem/BoardController"]
+[node name="BuildingsRoot" type="Node2D" parent="BoardSystem/BoardController" unique_id=1297962895]
 
 [node name="Gameplay" type="Node" parent="." unique_id=1348944482]
 
@@ -86,7 +100,7 @@ CardsRootPath = NodePath("CardsRoot")
 script = ExtResource("6_c01mt")
 PlayerPath = NodePath("../../Player")
 
-[node name="BuildingController" type="Node" parent="Gameplay"]
+[node name="BuildingController" type="Node" parent="Gameplay" unique_id=75452386]
 script = ExtResource("39_building_controller")
 
 [node name="WorldInteractionCoordinator" type="Node" parent="Gameplay" unique_id=33340727]
@@ -140,7 +154,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20_hold_indicator")
 
-[node name="BuildingHint" type="Label" parent="UI/HUDLayer/HUDRoot"]
+[node name="BuildingHint" type="Label" parent="UI/HUDLayer/HUDRoot" unique_id=261226559]
 visible = false
 layout_mode = 1
 anchors_preset = 12
@@ -151,7 +165,6 @@ offset_top = -100.0
 offset_bottom = -30.0
 grow_horizontal = 2
 grow_vertical = 0
-mouse_filter = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
@@ -264,9 +277,6 @@ GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 layout_mode = 2
 GameplayPortPath = NodePath("../../../../../Gameplay/GameplayPort")
 
-[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
-layout_mode = 0
-
 [node name="DevSettingsUI" parent="UI/HUDLayer/HUDRoot" unique_id=149711311 instance=ExtResource("25_36rkl")]
 layout_mode = 1
 
@@ -280,6 +290,9 @@ grow_vertical = 2
 
 [node name="TalentScreen" parent="UI/HUDLayer/HUDRoot" unique_id=729571503 instance=ExtResource("29_talent")]
 layout_mode = 1
+
+[node name="TooltipPanel" parent="UI/HUDLayer/HUDRoot" unique_id=975095068 instance=ExtResource("16_tooltip")]
+layout_mode = 0
 
 [node name="MapSystem" parent="." unique_id=223958387 node_paths=PackedStringArray("player", "player_char") instance=ExtResource("2_rvslj")]
 player = NodePath("../Player")

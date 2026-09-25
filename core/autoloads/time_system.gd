@@ -64,6 +64,18 @@ func SetMapMoveTimeCost(amount: int) -> void:
 func PassMapMoveTime() -> void:
 	PassTime(MapMoveTimeCost)
 
+
+## 应用局内快照时间，保持昼夜状态与累计点数一致。
+## @param total_time_passed 累计时间点数。
+## @param current_day 当前天数。
+## @param is_night 当前昼夜状态。
+## @return 无返回值。
+func RestoreSnapshot(total_time_passed: int, current_day: int, is_night: bool) -> void:
+	_total_time_passed = maxi(total_time_passed, 0)
+	_current_day = maxi(current_day, 1)
+	IsNight = is_night
+	_emit_time_changed()
+
 ## 对外提供 C# PascalCase 属性的动态读取协议。
 func _get(property: StringName) -> Variant:
 	match property:

@@ -16,4 +16,3 @@ var packed_scene: PackedScene = null
 var terrain_profile: Resource = null
 ## 单个完整房间的世界尺寸。
 @export var room_size: Vector2 = Vector2(1280.0, 720.0)
-

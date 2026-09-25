@@ -49,6 +49,9 @@ var _pos_biome: Dictionary = {}  ## {Vector2i: String}
 
 func _ready() -> void:
 	randomize()
+	var run_snapshot: Node = get_node_or_null("../../RuntimeState/RunSnapshot")
+	if run_snapshot != null and bool(run_snapshot.call("ApplyMapToGenerator", self)):
+		return
 	_build_world()
 
 

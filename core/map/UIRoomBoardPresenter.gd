@@ -19,6 +19,10 @@ const TIME_SYSTEM_PATH: NodePath = ^"/root/TimeSystem"
 @export var BoardControllerPath: NodePath = NodePath("")
 ## 地形仓库节点路径。
 @export var TerrainStorePath: NodePath = NodePath("")
+## 九宫格地图视图，按完整房间的激活与退出管理内容。
+@export var MapViewPath: NodePath = NodePath("")
+## 掉落状态仓库；未配置时保持旧测试场景的地形功能。
+@export var LootStorePath: NodePath = NodePath("")
 ## 是否隐藏已采集完成的地形。
 @export var HideHarvestedTerrain: bool = true
 
@@ -32,6 +36,8 @@ var _board_controller: Node = null
 var _terrain_store: Node = null
 ## 房间地形布局生成器；旧 C# 只持有 RefCounted 引用并按 Generate 协议取值。
 var _layout_generator: RefCounted = null
+var _map_view: Node = null
+var _loot_store: Node = null
 
 
 ## 进入场景树时校验导出路径、解析节点并连接进入房间信号。
@@ -55,6 +61,8 @@ func _ready() -> void:
 	_time_system = get_node_or_null(TIME_SYSTEM_PATH)
 	_board_controller = get_node(BoardControllerPath)
 	_terrain_store = get_node(TerrainStorePath)
+	_map_view = get_node_or_null(MapViewPath) if not MapViewPath.is_empty() else null
+	_loot_store = get_node_or_null(LootStorePath) if not LootStorePath.is_empty() else null
 	_layout_generator = _create_layout_generator()
 	if _layout_generator == null:
 		return
@@ -68,6 +76,16 @@ func _ready() -> void:
 
 	if not _map_system.is_connected(ON_ENTERED_ROOM_SIGNAL, _on_room_entered):
 		_map_system.connect(ON_ENTERED_ROOM_SIGNAL, _on_room_entered)
+	if _map_view != null:
+		_map_view.connect("room_activated", _on_room_activated)
+		_map_view.connect("room_deactivating", _on_room_deactivating)
+		# 视图可能已经完成初始窗口；补偿读取使场景顺序不影响内容。
+		for room_value: Variant in (_map_view.get("active_instances") as Dictionary).keys():
+			var room: Vector2i = room_value
+			_on_room_activated(room, (_map_view.get("active_instances") as Dictionary)[room] as Node2D)
+	if _loot_store != null:
+		_loot_store.connect("LootAdded", _on_loot_added)
+		_loot_store.connect("LootRemoved", _on_loot_removed)
 
 
 ## 退出场景树时断开进入房间信号，避免跨场景残留回调。
@@ -78,6 +96,16 @@ func _exit_tree() -> void:
 		return
 	if _map_system.is_connected(ON_ENTERED_ROOM_SIGNAL, _on_room_entered):
 		_map_system.disconnect(ON_ENTERED_ROOM_SIGNAL, _on_room_entered)
+	if _map_view != null and is_instance_valid(_map_view):
+		if _map_view.is_connected("room_activated", _on_room_activated):
+			_map_view.disconnect("room_activated", _on_room_activated)
+		if _map_view.is_connected("room_deactivating", _on_room_deactivating):
+			_map_view.disconnect("room_deactivating", _on_room_deactivating)
+	if _loot_store != null and is_instance_valid(_loot_store):
+		if _loot_store.is_connected("LootAdded", _on_loot_added):
+			_loot_store.disconnect("LootAdded", _on_loot_added)
+		if _loot_store.is_connected("LootRemoved", _on_loot_removed):
+			_loot_store.disconnect("LootRemoved", _on_loot_removed)
 
 
 ## 进入房间：清空旧卡牌、必要时创建初始布局，再逐块地形刷新并生成棋盘卡。
@@ -88,8 +116,26 @@ func _exit_tree() -> void:
 func _on_room_entered(room_pos: Vector2i, room_scene: Node2D) -> void:
 	if room_scene == null or not is_instance_valid(room_scene):
 		return
-
+	if _map_view != null:
+		# 当前房间变化不重建邻房；首次激活信号已经在此之前完成内容装配。
+		return
 	_board_controller.call("ClearAllCards")
+	_on_room_activated(room_pos, room_scene)
+
+
+## 首次进入活动窗口时建立房间内容根节点，再从仓库恢复地形与掉落。
+## @param room_pos 房间坐标。
+## @param room_scene 完整房间场景。
+## @return 无返回值。
+func _on_room_activated(room_pos: Vector2i, room_scene: Node2D) -> void:
+	if room_scene == null or not is_instance_valid(room_scene):
+		return
+	var root: Node2D = room_scene.get_node_or_null("RoomContentRoot") as Node2D
+	if root != null:
+		return
+	root = Node2D.new()
+	root.name = "RoomContentRoot"
+	room_scene.add_child(root)
 	print("[RoomBoardPresenter] Enter room %s, scene=%s" % [str(room_pos), str(room_scene.name)])
 
 	if not bool(_terrain_store.call("HasRoom", room_pos)):
@@ -125,7 +171,44 @@ func _on_room_entered(room_pos: Vector2i, room_scene: Node2D) -> void:
 			continue
 
 		# 棋盘显示位置直接决定卡牌落点；缺失时退回原点，保持旧实现的零值语义。
-		_board_controller.call("SpawnTerrainCard", terrain, _read_board_position(terrain))
+		if _map_view != null:
+			_board_controller.call("SpawnTerrainCardForRoom", room_pos, terrain, _read_board_position(terrain), root)
+		else:
+			_board_controller.call("SpawnTerrainCard", terrain, _read_board_position(terrain))
+	if _loot_store != null:
+		for record: Dictionary in _loot_store.call("GetLoot", room_pos):
+			_board_controller.call("SpawnLootRecord", room_pos, record, root)
+
+
+## 房间退出活动窗口时清理输入和视图，仓库状态不变。
+## @param room_pos 房间坐标。
+## @param _room_scene 即将释放的房间场景。
+## @return 无返回值。
+func _on_room_deactivating(room_pos: Vector2i, _room_scene: Node2D) -> void:
+	_board_controller.call("ReleaseRoomCards", room_pos)
+
+
+## 新掉落已由仓库登记后，在活动房间补出视图。
+## @param room_pos 所属房间。
+## @param record 仓库记录。
+## @return 无返回值。
+func _on_loot_added(room_pos: Vector2i, record: Dictionary) -> void:
+	if _map_view == null:
+		return
+	var scene: Node2D = (_map_view.get("active_instances") as Dictionary).get(room_pos) as Node2D
+	if scene == null:
+		return
+	var root: Node2D = scene.get_node_or_null("RoomContentRoot") as Node2D
+	if root != null:
+		_board_controller.call("SpawnLootRecord", room_pos, record, root)
+
+
+## 掉落领取后，视图的关闭与飞行动画由交互协调器处理。
+## @param _room_pos 所属房间。
+## @param _id 本局掉落 ID。
+## @return 无返回值。
+func _on_loot_removed(_room_pos: Vector2i, _id: int) -> void:
+	pass
 
 
 ## 读取时间系统累计时间；缺失或类型不符时返回 0。

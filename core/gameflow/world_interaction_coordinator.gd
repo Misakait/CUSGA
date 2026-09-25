@@ -67,6 +67,10 @@ signal WorldHoldCompleted(owner: Node)
 @export var GameplayPortPath: NodePath = NodePath("")
 ## 背包飞入目标节点路径。
 @export var BackpackFlyTargetPath: NodePath = NodePath("")
+## 掉落物拾取后的移动目标；使用世界角色节点，飞行中每帧跟随。
+@export var PlayerCharPath: NodePath = ^"../../PlayerChar"
+## 掉落仓库路径；成功入包后先删除记录再启动表现动画。
+@export var LootStorePath: NodePath = ^"../../RuntimeState/RoomLootStore"
 ## 遭遇管理器节点路径。
 @export var EncounterManagerPath: NodePath = NodePath("")
 ## 统一管理局外长按输入与圆环反馈的子组件路径。
@@ -90,6 +94,8 @@ var _board_controller: Node = null
 var _gameplay_port: Node = null
 ## 背包飞入目标；缺失时掉落卡直接移除。
 var _backpack_fly_target: Control = null
+var _player_char: Node2D = null
+var _loot_store: Node = null
 ## 遭遇管理器；只依赖稳定的 Node 方法协议。
 var _encounter_manager: Node = null
 ## 时间 Autoload；以稳定 Node 协议持有，兼容旧 C# 与生产 GDScript 实现。
@@ -138,6 +144,8 @@ func _ready() -> void:
 	_board_controller = get_node(BoardControllerPath)
 	_gameplay_port = get_node(GameplayPortPath)
 	_backpack_fly_target = get_node_or_null(BackpackFlyTargetPath) as Control
+	_player_char = get_node_or_null(PlayerCharPath) as Node2D
+	_loot_store = get_node_or_null(LootStorePath)
 	_encounter_manager = get_node(EncounterManagerPath)
 	_time_system = get_node_or_null(TIME_SYSTEM_PATH)
 	_screen_transitions = get_node_or_null(ScreenTransitionsPath)
@@ -340,7 +348,7 @@ func _on_board_card_clicked(card: Node2D) -> void:
 		_handle_terrain_card_clicked(card, terrain)
 
 
-## 拾取掉落卡：先尝试放进背包，成功后按原动画飞入背包或直接移除。
+## 拾取掉落卡：库存成功后立即删除房间记录并关闭命中，视觉追随角色。
 ##
 ## @param card 被点击的掉落卡。
 ## @param stack 卡牌携带的物品堆叠。
@@ -350,13 +358,21 @@ func _handle_loot_card_clicked(card: Node2D, stack: RefCounted) -> void:
 	var success: bool = add_result is bool and bool(add_result)
 	if not success:
 		return
-
-	if _backpack_fly_target == null:
+	var loot_id: int = int(card.get("LootId")) if card.has_method("SetRoomIdentity") else -1
+	if loot_id >= 0 and _loot_store != null:
+		var room: Vector2i = card.get("RoomPosition")
+		_loot_store.call("RemoveLoot", room, loot_id)
+	if card.has_method("DisableForPickup"):
+		card.call("DisableForPickup")
+	if _player_char == null or not is_instance_valid(_player_char):
 		_board_controller.call("RemoveCard", card)
 		return
-
-	# 飞入结束后才移除源卡，保持旧实现的“先动画再清卡”顺序。
-	var target: Vector2 = _backpack_fly_target.get_global_rect().get_center()
+	# 飞行中的视图脱离房间，跨房卸载不再中断已完成的拾取结算。
+	if _board_controller.has_method("DetachForFlight"):
+		_board_controller.call("DetachForFlight", card)
+	var target: Variant = _player_char
+	if not card.has_method("SetRoomIdentity"):
+		target = _player_char.global_position
 	card.call("PlayFlyTo", target, Callable(self, "_on_loot_fly_finished").bind(card))
 
 
@@ -396,7 +412,7 @@ func _on_board_card_pressed(card: Node2D) -> void:
 	var interaction: Resource = holdable["interaction"]
 	var action_point_cost: int = int(holdable["action_point_cost"])
 	# 圆环锚定在地形图标上；图标缺失时退回卡片自身，保持旧 C# 的兜底目标。
-	var icon: Node = card.get_node_or_null("Icon") as Node
+	var icon: Node = card.call("GetProgressAnchor") as Node if card.has_method("GetProgressAnchor") else card.get_node_or_null("Icon") as Node
 	var progress_target: Node = card if icon == null else icon
 	_hold_interaction_controller.call(
 		"begin_hold",
@@ -823,6 +839,10 @@ func _get_night_encounter_chance_multiplier(equipment: Node) -> float:
 func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> bool:
 	if _is_transitioning:
 		return false
+	var save_manager: Node = get_node_or_null("/root/SaveManager")
+	if save_manager != null and not bool(save_manager.call("freeze_run_before_battle")):
+		push_error("进入战斗前的世界快照未能保存，已阻止本次战斗。")
+		return false
 
 	_is_transitioning = true
 	print("[WorldCombatScenePresenter] Entering Combat!")
@@ -882,6 +902,9 @@ func _on_battle_ended(is_victory: bool, battle_instance: Node) -> void:
 
 	_set_world_view_visible(true)
 	await _fade_in()
+	var save_manager: Node = get_node_or_null("/root/SaveManager")
+	if save_manager != null:
+		save_manager.call("resume_run_after_battle")
 	_is_transitioning = false
 	_battle_result = is_victory
 	_battle_result_ready = true

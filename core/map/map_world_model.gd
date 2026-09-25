@@ -56,6 +56,11 @@ func _refresh_from_generator() -> void:
 	scene_to_scene = _map_position_create.get(&"scene_to_scene")
 	start_position = _map_position_create.get(&"start_position")
 	current_position = start_position
+	var run_snapshot: Node = get_node_or_null("../../RuntimeState/RunSnapshot")
+	if run_snapshot != null:
+		var restored: Variant = run_snapshot.call("GetCurrentRoomOrNull")
+		if restored is Vector2i and has_room(restored):
+			current_position = restored
 	scene_resource_cache.clear()
 	packed_scene_cache.clear()
 

@@ -47,6 +47,7 @@ signal RunStartInitialized
 ## 就会把同一份带入内容装第二遍，而带入栏已经清空、第二次只会拿到空数组——
 ## 表面上「没出错」，实际上掩盖了流程被重复触发的事实。
 var _has_initialized: bool = false
+var _restored_run: bool = false
 
 
 ## 节点就绪时执行一次开局初始化。
@@ -77,6 +78,12 @@ func Initialize() -> bool:
 		return false
 
 	_has_initialized = true
+	var run_snapshot: Node = get_node_or_null("../RuntimeState/RunSnapshot")
+	if run_snapshot != null and bool(run_snapshot.call("HasPendingRun")):
+		_restored_run = bool(run_snapshot.call("RestorePlayer", player, inventory, get_node_or_null("../PlayerChar")))
+		if _restored_run:
+			RunStartInitialized.emit()
+			return true
 
 	# 先清空背包再装入：新一局的玩家是全新实例（默认背包为空，见 player.tscn），
 	# 清空让「初始化」的语义与调用次数无关——任何重复触发都不会累积内容。
@@ -106,6 +113,12 @@ func Initialize() -> bool:
 ## 返回值：true 表示本次开局已经执行过初始化（含幂等重入后的状态）。
 func HasInitialized() -> bool:
 	return _has_initialized
+
+
+## 查询本次启动是否接续磁盘上的局内快照。
+## @return 接续成功时为 true。
+func IsContinuingRun() -> bool:
+	return _restored_run
 
 
 ## 取出带入栏权威里的全部待带入条目，并让其清空。

@@ -232,6 +232,9 @@ func _on_run_start_initialized() -> void:
 ##
 ## 返回值：true 表示本次调用真的发起了抽卡；false 表示已抽过或卡池不足（两种情况都不弹界面）。
 func StartDraft() -> bool:
+	var initializer: Node = get_node_or_null(InitializerPath)
+	if initializer != null and initializer.has_method("IsContinuingRun") and bool(initializer.call("IsContinuingRun")):
+		return false
 	# 幂等：订阅路径与补偿路径都可能到达这里，必须保证每局只抽一次。
 	if _has_drafted:
 		return false

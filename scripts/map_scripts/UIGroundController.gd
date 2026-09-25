@@ -19,4 +19,3 @@ func validate_room_context(context: RoomContext) -> bool:
 		if child is TileMapLayer and (child as TileMapLayer).tile_set == null:
 			return false
 	return true
-

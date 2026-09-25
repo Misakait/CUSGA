@@ -66,6 +66,8 @@ var _placing_data: Resource
 var _preview: Node2D
 ## 建筑实例 id 到表现节点的映射。
 var _views: Dictionary = {}
+## 活动房间各自持有建筑视图索引；交互仍只读取当前房间的 _views。
+var _views_by_room: Dictionary = {}
 ## 最近一次反馈文本。
 var _feedback: String = ""
 ## 反馈剩余真实秒数。
@@ -87,6 +89,8 @@ func _ready() -> void:
 	_overlay = get_node(OverlayPath) as Control
 	_port.connect("BuildingPlacementRequested", BeginPlacement)
 	_map_view.connect("on_entered_room", _on_room_entered)
+	_map_view.connect("room_activated", _on_room_activated)
+	_map_view.connect("room_deactivating", _on_room_deactivating)
 	_store.connect("BuildingsChanged", _on_buildings_changed)
 	get_window().focus_exited.connect(_cancel_demolition)
 	# Gameplay 先于 MapSystem 初始化，延后一帧才能读取初始房间。
@@ -99,12 +103,38 @@ func _on_room_entered(room: Vector2i, scene: Node2D) -> void:
 	CancelPlacement()
 	_room = room
 	_room_scene = scene
-	_rebuild_views()
+	if not _views_by_room.has(room):
+		_rebuild_room_views(room)
+	_views = _views_by_room.get(room, {})
 
 
 ## 首帧绑定当前房间，避免依赖首次进入信号的节点顺序。
 func _bind_initial_room() -> void:
+	for room_value: Variant in (_map_view.get("active_instances") as Dictionary).keys():
+		var room: Vector2i = room_value
+		if not _views_by_room.has(room):
+			_rebuild_room_views(room)
 	_on_room_entered(_map_view.get("current_position"), _map_view.get("current_scene") as Node2D)
+
+
+## 新房间就绪后立即建立建筑视图，邻房也可实时运行。
+## @param room 房间坐标。
+## @param _scene 房间场景。
+## @return 无返回值。
+func _on_room_activated(room: Vector2i, _scene: Node2D) -> void:
+	_rebuild_room_views(room)
+
+
+## 释放窗口外建筑视图与索引，不动建筑仓库。
+## @param room 房间坐标。
+## @param _scene 即将释放的房间场景。
+## @return 无返回值。
+func _on_room_deactivating(room: Vector2i, _scene: Node2D) -> void:
+	if room == _room:
+		_cancel_demolition()
+	_views_by_room.erase(room)
+	if room == _room:
+		_views = {}
 
 
 ## 请求进入放置模式；data 为玩家背包建筑牌，无返回值。
@@ -143,6 +173,10 @@ func _notification(what: int) -> void:
 ## 离开场景时取消本节点拥有的长按，避免残留回调；无参数，无返回值。
 func _exit_tree() -> void:
 	_cancel_demolition()
+	if _map_view != null and is_instance_valid(_map_view):
+		for pair: Array in [["room_activated", _on_room_activated], ["room_deactivating", _on_room_deactivating]]:
+			if _map_view.is_connected(pair[0], pair[1]):
+				_map_view.disconnect(pair[0], pair[1])
 
 
 ## 提前消费建造期间的退出与鼠标输入，避免同时触发暂停或地形采集。
@@ -458,28 +492,45 @@ func _is_demolition_button_pressed() -> bool:
 
 ## 当前房间有增删时刷新，其他房间保持纯数据状态。
 func _on_buildings_changed(room: Vector2i) -> void:
-	if room == _room:
-		_rebuild_views()
+	if (_map_view.get("active_instances") as Dictionary).has(room):
+		_rebuild_room_views(room)
 
 
 ## 从仓库重建当前房间建筑；节点释放不影响实例状态。
 func _rebuild_views() -> void:
-	_cancel_demolition()
-	for view: Node2D in _views.values():
-		_buildings_root.remove_child(view)
-		view.queue_free()
-	_views.clear()
-	if not is_instance_valid(_room_scene):
+	_rebuild_room_views(_room)
+
+
+## 只重建指定活动房间，保留其它八房的实体与状态。
+## @param room 房间坐标。
+## @return 无返回值。
+func _rebuild_room_views(room: Vector2i) -> void:
+	if room == _room:
+		_cancel_demolition()
+	var old_views: Dictionary = _views_by_room.get(room, {})
+	for view: Node2D in old_views.values():
+		if is_instance_valid(view):
+			view.queue_free()
+	_views_by_room.erase(room)
+	var room_scene: Node2D = (_map_view.get("active_instances") as Dictionary).get(room) as Node2D
+	if room_scene == null or not is_instance_valid(room_scene):
 		return
-	for record: Dictionary in _store.call("GetBuildings", _room):
+	var root: Node2D = room_scene.get_node_or_null("RoomContentRoot") as Node2D
+	if root == null:
+		return
+	var room_views: Dictionary = {}
+	for record: Dictionary in _store.call("GetBuildings", room):
 		# 该建筑的独立表现节点，生命周期不影响仓库状态。
 		var view: Node2D = _create_view(record["data"])
 		if view == null:
 			continue
-		_buildings_root.add_child(view)
-		view.global_position = _room_scene.to_global(record["position"])
+		root.add_child(view)
+		view.position = record["position"]
 		view.call("Configure", record["data"], false)
-		_views[int(record["id"])] = view
+		room_views[int(record["id"])] = view
+	_views_by_room[room] = room_views
+	if room == _room:
+		_views = room_views
 
 
 ## 创建并校验可扩展表现；data 为配置，返回未挂树的节点或 null。

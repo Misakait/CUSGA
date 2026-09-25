@@ -2,8 +2,8 @@ extends Node2D
 
 ## 棋盘卡牌控制器的 GDScript 生产实现，等价迁移自 core/board/BoardController.cs。
 ##
-## 控制器只负责卡牌视图生命周期：创建地形/掉落卡状态、挂到 CardsRoot、连接并转发视图信号，
-## 以及按局部网格维护地形卡索引。卡状态由 board_card_state.gd 承载、视图由 BoardCardView.tscn 承载，
+## 控制器只负责卡牌视图生命周期：创建地形/掉落卡状态、挂到房间内容根、连接并转发视图信号，
+## 以及按局部网格维护地形卡索引。卡状态由 board_card_state.gd 承载，地形与掉落分别由独立视图场景承载，
 ## 两者都可能来自任一语言，因此统一走方法协议访问。
 ## 不声明 class_name，避免与仍在使用的 C# 全局类型重名。
 
@@ -40,10 +40,18 @@ const VIEW_RELEASED_SIGNAL: StringName = &"Released"
 const VIEW_HOVER_STARTED_SIGNAL: StringName = &"HoverStarted"
 const VIEW_HOVER_ENDED_SIGNAL: StringName = &"HoverEnded"
 
-## 卡牌视图预制体。
+## 地形卡视图预制体；主场景绑定 Item.tscn。
+@export var TerrainViewScene: PackedScene = null
+## 掉落物视图预制体；掉落物不再复用地形卡场景。
+@export var LootViewScene: PackedScene = null
+## 旧的统一卡牌预制体入口，仅用于未迁移的独立场景回退。
 @export var CardViewScene: PackedScene = null
 ## 卡牌父节点路径；留空时直接挂到控制器自身。
 @export var CardsRootPath: NodePath = NodePath("")
+## 地图视图路径；用于旧掉落入口确定当前房间。
+@export var MapViewPath: NodePath = NodePath("")
+## 本局掉落仓库路径；留空时保持独立测试的旧生成行为。
+@export var LootStorePath: NodePath = NodePath("")
 ## 掉落散射的最小半径。
 @export var ScatterRadiusMin: float = 40.0
 ## 掉落散射的最大半径。
@@ -57,18 +65,30 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _active_cards: Array[Node2D] = []
 ## 局部网格坐标到地形卡的索引。
 var _terrain_cards_by_local_grid: Dictionary = {}
+## 房间坐标到局部格子索引，避免九房的同名格子互相覆盖。
+var _terrain_cards_by_room: Dictionary = {}
+var _room_by_card: Dictionary = {}
+var _loot_cards_by_id: Dictionary = {}
+var _map_view: Node = null
+var _loot_store: Node = null
 
 
 ## 进入场景树时校验视图预制体并解析卡牌根节点。
 ##
 ## @return 无返回值。
 func _ready() -> void:
-	if CardViewScene == null:
-		# 旧 C# 在缺预制体时抛异常；GDScript 侧以同文本的硬错误表达同一契约。
-		push_error("BoardController.CardViewScene 未设置。")
+	# 保留旧入口是为了让旧测试场景继续可运行，但生产 Main 必须分别绑定两类视图。
+	if TerrainViewScene == null:
+		TerrainViewScene = CardViewScene
+	if LootViewScene == null:
+		LootViewScene = CardViewScene
+	if TerrainViewScene == null or LootViewScene == null:
+		push_error("BoardController 需要同时设置 TerrainViewScene 与 LootViewScene。")
 		return
 
 	_cards_root = self if CardsRootPath.is_empty() else get_node(CardsRootPath) as Node2D
+	_map_view = get_node_or_null(MapViewPath) if not MapViewPath.is_empty() else null
+	_loot_store = get_node_or_null(LootStorePath) if not LootStorePath.is_empty() else null
 
 
 ## 退出场景树时断开全部卡牌信号并清空索引，避免跨场景残留回调。
@@ -81,6 +101,9 @@ func _exit_tree() -> void:
 
 	_active_cards.clear()
 	_terrain_cards_by_local_grid.clear()
+	_terrain_cards_by_room.clear()
+	_room_by_card.clear()
+	_loot_cards_by_id.clear()
 
 
 ## 在指定全局坐标生成一张地形卡，并按局部网格登记索引。
@@ -112,6 +135,60 @@ func SpawnTerrainCard(terrain_instance: RefCounted, global_position: Vector2) ->
 	return card
 
 
+## 在指定房间的内容根节点上生成地形；局部坐标由房间仓库提供。
+## @param room 房间坐标。
+## @param terrain_instance 地形实例。
+## @param local_position 房间局部坐标。
+## @param root 房间内容根节点。
+## @return 地形卡视图；重复格子返回 null。
+func SpawnTerrainCardForRoom(room: Vector2i, terrain_instance: RefCounted, local_position: Vector2, root: Node2D) -> Node2D:
+	if terrain_instance == null or root == null:
+		return null
+	var grid: Vector2i = _read_local_grid_pos(terrain_instance)
+	var room_cards: Dictionary = _terrain_cards_by_room.get(room, {})
+	if room_cards.has(grid):
+		return null
+	var state: RefCounted = _create_terrain_state(terrain_instance)
+	if state == null:
+		return null
+	var card: Node2D = _spawn_card(state, root.to_global(local_position), root)
+	if card == null:
+		return null
+	card.call("SetRoomIdentity", room)
+	room_cards[grid] = card
+	_terrain_cards_by_room[room] = room_cards
+	_room_by_card[card] = room
+	return card
+
+
+## 根据仓库记录重建一张掉落卡，可选择播放首次散射。
+## @param room 房间坐标。
+## @param record 含 id、stack、position 的仓库记录。
+## @param root 房间内容根节点。
+## @param scatter_origin 散射世界起点；不传时直接显示最终落点。
+## @return 掉落卡视图或 null。
+func SpawnLootRecord(room: Vector2i, record: Dictionary, root: Node2D, scatter_origin: Variant = null) -> Node2D:
+	if root == null:
+		return null
+	var id: int = int(record.get("id", -1))
+	if _loot_cards_by_id.has(id):
+		return _loot_cards_by_id[id] as Node2D
+	var stack: RefCounted = record.get("stack") as RefCounted
+	var state: RefCounted = _create_loot_state(stack)
+	if state == null:
+		return null
+	var target: Vector2 = root.to_global(record.get("position", Vector2.ZERO))
+	var card: Node2D = _spawn_card(state, target, root)
+	if card == null:
+		return null
+	card.call("SetRoomIdentity", room, id)
+	_room_by_card[card] = room
+	_loot_cards_by_id[id] = card
+	if scatter_origin is Vector2:
+		card.call("PlayScatterFrom", scatter_origin, target)
+	return card
+
+
 ## 在指定位置生成一张掉落卡，并保留原物品堆叠引用。
 ##
 ## @param stack 旧 C# 或 GDScript ItemStack。
@@ -135,6 +212,22 @@ func SpawnLootCard(stack: RefCounted, global_position: Vector2) -> Node2D:
 ## @param spawn_origin 散射动画的全局起点。
 ## @return 无返回值。
 func SpawnLootCards(stacks: Array, spawn_origin: Vector2) -> void:
+	if _loot_store != null and _map_view != null:
+		var room: Vector2i = _map_view.get("current_position")
+		var scene: Node2D = (_map_view.get("active_instances") as Dictionary).get(room) as Node2D
+		if scene != null:
+			var root: Node2D = scene.get_node_or_null("RoomContentRoot") as Node2D
+			if root != null:
+				for value: Variant in stacks:
+					var stack: RefCounted = value as RefCounted
+					if stack == null or not _is_readable_item_stack(stack):
+						continue
+					var local_origin: Vector2 = root.to_local(spawn_origin)
+					var local_target: Vector2 = _safe_loot_position(local_origin)
+					var record: Dictionary = _loot_store.call("AddLoot", room, stack, local_target)
+					if not record.is_empty():
+						SpawnLootRecord(room, record, root, spawn_origin)
+				return
 	# Godot 的 Array 是值类型，跨语言传入 null 会被封送成空数组，因此这里只需遍历。
 	for value: Variant in stacks:
 		# 非泛型数组是跨语言封送边界；这里只接纳两种实现共同继承的 RefCounted。
@@ -155,6 +248,13 @@ func RemoveCard(card: Node2D) -> void:
 	var terrain: RefCounted = card.call("GetTerrainInstanceOrNull") as RefCounted
 	if terrain != null:
 		_terrain_cards_by_local_grid.erase(_read_local_grid_pos(terrain))
+		var room: Vector2i = _room_by_card.get(card, Vector2i.ZERO)
+		var room_cards: Dictionary = _terrain_cards_by_room.get(room, {})
+		room_cards.erase(_read_local_grid_pos(terrain))
+	if card.has_method("GetLootStackOrNull"):
+		var id: int = int(card.get("LootId")) if _room_by_card.has(card) else -1
+		_loot_cards_by_id.erase(id)
+	_room_by_card.erase(card)
 
 	_disconnect_card_signals(card)
 	_active_cards.erase(card)
@@ -176,6 +276,37 @@ func ClearAllCards() -> void:
 	for card: Node2D in snapshot:
 		RemoveCard(card)
 	_terrain_cards_by_local_grid.clear()
+	_terrain_cards_by_room.clear()
+	_room_by_card.clear()
+	_loot_cards_by_id.clear()
+
+
+## 仅释放退出九宫格的房间卡牌，仓库状态保持不变。
+## @param room 要卸载的房间坐标。
+## @return 无返回值。
+func ReleaseRoomCards(room: Vector2i) -> void:
+	for card: Node2D in _active_cards.duplicate():
+		if _room_by_card.get(card, null) == room:
+			RemoveCard(card)
+	_terrain_cards_by_room.erase(room)
+
+
+## 让已领取物的飞行动画脱离即将卸载的房间。
+## @param card 已完成业务结算的掉落卡。
+## @return 无返回值。
+func DetachForFlight(card: Node2D) -> void:
+	if card == null or not is_instance_valid(card):
+		return
+	_room_by_card.erase(card)
+	_loot_cards_by_id.erase(int(card.get("LootId")))
+	card.reparent(_cards_root, true)
+
+
+## 按房间与稳定 ID 获取活动掉落视图。
+## @param id 本局掉落 ID。
+## @return 对应视图或 null。
+func GetLootCardById(id: int) -> Node2D:
+	return _loot_cards_by_id.get(id) as Node2D
 
 
 ## 按局部网格坐标查询地形卡。
@@ -191,7 +322,19 @@ func TryGetTerrainCardByLocalGrid(grid_pos: Vector2i) -> Node2D:
 ## @param grid_pos 地形卡的局部网格坐标。
 ## @return 对应地形卡；不存在时返回 null。
 func GetTerrainCardByLocalGridOrNull(grid_pos: Vector2i) -> Node2D:
+	if _map_view != null:
+		var room: Vector2i = _map_view.get("current_position")
+		return GetTerrainCardInRoom(room, grid_pos)
 	return _terrain_cards_by_local_grid.get(grid_pos, null) as Node2D
+
+
+## 查询指定房间格子的活动地形视图。
+## @param room 房间坐标。
+## @param grid_pos 局部格子坐标。
+## @return 对应视图或 null。
+func GetTerrainCardInRoom(room: Vector2i, grid_pos: Vector2i) -> Node2D:
+	var room_cards: Dictionary = _terrain_cards_by_room.get(room, {})
+	return room_cards.get(grid_pos) as Node2D
 
 
 ## 判断指定局部网格上是否已有地形卡。
@@ -199,6 +342,8 @@ func GetTerrainCardByLocalGridOrNull(grid_pos: Vector2i) -> Node2D:
 ## @param grid_pos 地形卡的局部网格坐标。
 ## @return 已存在地形卡时返回 true。
 func HasTerrainCardAtLocalGrid(grid_pos: Vector2i) -> bool:
+	if _map_view != null:
+		return GetTerrainCardByLocalGridOrNull(grid_pos) != null
 	return _terrain_cards_by_local_grid.has(grid_pos)
 
 
@@ -234,27 +379,30 @@ func _spawn_single_loot_with_scatter(stack: RefCounted, spawn_origin: Vector2) -
 ## @param state 旧 C# 或 GDScript 棋盘卡状态。
 ## @param global_position 卡牌的目标全局坐标。
 ## @return 新生成的卡牌视图；状态未知时返回 null。
-func _spawn_card(state: RefCounted, global_position: Vector2) -> Node2D:
-	if state == null or CardViewScene == null:
+func _spawn_card(state: RefCounted, global_position: Vector2, parent_root: Node2D = null) -> Node2D:
+	if state == null:
 		return null
 
-	var card: Node2D = CardViewScene.instantiate() as Node2D
+	var is_terrain: bool = bool(state.call("IsTerrain"))
+	var is_loot: bool = bool(state.call("IsLoot"))
+	var view_scene: PackedScene = TerrainViewScene if is_terrain else LootViewScene if is_loot else null
+	if view_scene == null:
+		push_error("未知棋盘卡状态，无法选择视图预制体。")
+		return null
+
+	var card: Node2D = view_scene.instantiate() as Node2D
 	if card == null:
-		push_error("BoardController.CardViewScene 不是 Node2D。")
+		push_error("BoardController 选择的卡牌视图预制体不是 Node2D。")
 		return null
 
-	var cards_root: Node2D = _cards_root if _cards_root != null else self
+	var cards_root: Node2D = parent_root if parent_root != null else (_cards_root if _cards_root != null else self)
 	cards_root.add_child(card)
 
 	card.global_position = global_position
-	if bool(state.call("IsTerrain")):
+	if is_terrain:
 		card.call("InitializeTerrain", state.call("GetTerrainInstanceOrNull"))
-	elif bool(state.call("IsLoot")):
+	elif is_loot:
 		card.call("InitializeLoot", state.call("GetLootStackOrNull"))
-	else:
-		push_error("未知棋盘卡状态，无法初始化视图。")
-		card.queue_free()
-		return null
 
 	_connect_card_signals(card)
 	_active_cards.append(card)
@@ -375,6 +523,14 @@ func _on_card_hover_ended(card: Node2D) -> void:
 func _random_direction() -> Vector2:
 	var angle: float = _rng.randf_range(0.0, TAU)
 	return Vector2(cos(angle), sin(angle))
+
+
+## 在房间内部留出边缘和桥口安全带，避免掉落卡生成在不可点击的边界上。
+## @param origin 掉落的房间局部起点。
+## @return 经房间矩形约束的局部落点。
+func _safe_loot_position(origin: Vector2) -> Vector2:
+	var candidate: Vector2 = origin + _random_direction() * _rng.randf_range(ScatterRadiusMin, ScatterRadiusMax)
+	return Vector2(clampf(candidate.x, 90.0, 1190.0), clampf(candidate.y, 90.0, 630.0))
 
 
 ## 精确断开卡牌视图上的指定信号连接。

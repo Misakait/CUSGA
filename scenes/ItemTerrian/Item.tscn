@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://xkui1sasq866"]
+
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="1_4st0y"]
+[ext_resource type="Texture2D" uid="uid://cime5163xllty" path="res://res/UI/卡牌模板.png" id="2_rjja6"]
+[ext_resource type="Script" path="res://scripts/item_scripts/item_view.gd" id="3_item_view"]
+[ext_resource type="Resource" path="res://resources/interaction/item_motion_config.tres" id="4_motion"]
+
+[sub_resource type="Shader" id="Shader_s04oc"]
+code = "// 玩家角色的闪白效果（供 AnimationPlayer 驱动）。
+//
+// 为什么用 shader 而不是 modulate：
+//   modulate 是整体乘一个颜色，暗色像素会变灰，达不到「被打亮」的纯白效果。
+//   本 shader 把每个像素朝纯白插值，flash_amount = 1.0 时完全变白。
+//
+// AnimationPlayer 的轨道路径写法（已实测）：
+//   Visuals:material:shader_parameter/flash_amount
+//   注意必须写 material 而不是 material_override；后者不是 CanvasItem 的基类属性，会解析失败。
+shader_type canvas_item;
+
+// 闪白强度。0 = 原图，1 = 全白。
+uniform float flash_amount : hint_range(0.0, 1.0) = 0.0;
+
+void fragment() {
+	vec4 tex = texture(TEXTURE, UV);
+	tex.rgb = mix(tex.rgb, vec3(1.0), flash_amount);
+	COLOR = tex;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_78iq1"]
+shader = SubResource("Shader_s04oc")
+shader_parameter/flash_amount = 0.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tcy2c"]
+texture = ExtResource("2_rjja6")
+region_rect = Rect2(0, 0, 100, 140)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wwonk"]
+texture = ExtResource("2_rjja6")
+region_rect = Rect2(0, 0, 100, 140)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7gw0y"]
+texture = ExtResource("2_rjja6")
+region_rect = Rect2(0, 0, 99, 139)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kvmcx"]
+radius = 32.0
+height = 116.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_35b51"]
+size = Vector2(93, 137)
+
+[sub_resource type="Animation" id="Animation_s3fvj"]
+resource_name = "Idle"
+length = 1.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.9, 1.8), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.03, 1.03), Vector2(1, 1)]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.9, 1.8), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 1), Color(1, 0.97, 0.9, 1), Color(1, 1, 1, 1)]}
+
+[sub_resource type="Animation" id="Animation_hover"]
+resource_name = "Hover"
+length = 0.25
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.07, 0.16, 0.25), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.92, 1.08), Vector2(1.08, 0.95), Vector2(1.04, 1.04)]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.07, 0.16, 0.25), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 1), Color(1, 1, 0.82, 1), Color(1, 1, 1, 1), Color(1, 1, 0.82, 1)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_3rina"]
+_data = {
+&"Hover": SubResource("Animation_hover"),
+&"Idle": SubResource("Animation_s3fvj")
+}
+
+[node name="Item" type="CharacterBody2D" unique_id=1944886847]
+script = ExtResource("3_item_view")
+MotionConfig = ExtResource("4_motion")
+
+[node name="Visuals" type="Sprite2D" parent="." unique_id=1812628364]
+material = SubResource("ShaderMaterial_78iq1")
+
+[node name="PlayerView" type="Button" parent="Visuals" unique_id=2076499481]
+mouse_filter = 2
+custom_minimum_size = Vector2(100, 140)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.5
+offset_top = -70.5
+offset_right = 49.5
+offset_bottom = 69.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_fonts/font = ExtResource("1_4st0y")
+theme_override_styles/normal = SubResource("StyleBoxTexture_tcy2c")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_wwonk")
+theme_override_styles/hover = SubResource("StyleBoxTexture_7gw0y")
+
+[node name="Label" type="Label" parent="Visuals/PlayerView" unique_id=509037851]
+layout_mode = 0
+offset_right = 99.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("1_4st0y")
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Icon" type="Sprite2D" parent="Visuals/PlayerView" unique_id=89804512]
+position = Vector2(50, 83)
+scale = Vector2(2, 2)
+
+[node name="Amount" type="Label" parent="Visuals/PlayerView"]
+visible = false
+offset_left = 70.0
+offset_top = 108.0
+offset_right = 98.0
+offset_bottom = 136.0
+theme_override_fonts/font = ExtResource("1_4st0y")
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 2
+
+[node name="Collision" type="CollisionShape2D" parent="." unique_id=124351762]
+position = Vector2(1, 45)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_kvmcx")
+
+[node name="Interaction" type="Area2D" parent="." unique_id=1413291763]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interaction" unique_id=1829662465]
+shape = SubResource("RectangleShape2D_35b51")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=770209852]
+libraries/ = SubResource("AnimationLibrary_3rina")

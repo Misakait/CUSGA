@@ -16,6 +16,19 @@ const TERRAIN_INSTANCE_SCRIPT: Script = preload("res://resources/interaction/ter
 var _terrainByRoom: Dictionary = {}
 
 
+## 用已解码的房间状态替换本局地形仓库。
+## @param rooms 房间坐标到地形实例字典的映射。
+## @return 无返回值。
+func Restore(rooms: Dictionary) -> void:
+	_terrainByRoom = rooms.duplicate(true)
+
+
+## 读取房间仓库的引用隔离快照，供局内序列化遍历。
+## @return 房间坐标到地形实例字典的映射。
+func Snapshot() -> Dictionary:
+	return _terrainByRoom.duplicate(true)
+
+
 ## 获取或创建指定房间格子上的地形实例。
 ##
 ## @param room_pos 房间坐标。

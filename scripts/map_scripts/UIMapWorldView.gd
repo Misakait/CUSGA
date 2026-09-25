@@ -10,6 +10,10 @@ const ORIGINAL_BACKGROUND_SELF_MODULATE_META := &"original_background_self_modul
 const DEFAULT_ROOM_SIZE := Vector2(1280.0, 720.0)
 
 signal on_entered_room(position: Vector2i, scene: Node2D)
+## 新房间完成实例化后发出，供内容层补齐该房间的运行节点。
+signal room_activated(position: Vector2i, scene: Node2D)
+## 房间离开窗口、节点释放前发出，供内容层清理索引与输入。
+signal room_deactivating(position: Vector2i, scene: Node2D)
 
 @export var night_background_tint: Color = Color(0.45, 0.45, 0.55, 1.0)
 
@@ -40,7 +44,7 @@ func _ready() -> void:
 	create_map_road()
 	map_world_model.call(&"set_room_size", DEFAULT_ROOM_SIZE)
 
-	var start_position: Vector2i = map_position.get(&"start_position")
+	var start_position: Vector2i = map_world_model.get(&"current_position")
 	_activate_window(start_position)
 	_set_current_scene(start_position, false)
 
@@ -125,6 +129,7 @@ func ensure_scene_at(room_position: Vector2i) -> Node2D:
 	if room_scene.has_method(&"initialize_scene"):
 		room_scene.call(&"initialize_scene")
 	_apply_background_time_tint(room_scene)
+	room_activated.emit(room_position, room_scene)
 	return room_scene
 
 ## 兼容旧门和按钮的进入房间入口；真正的状态修改交给 Controller/Model。
@@ -166,6 +171,7 @@ func _activate_window(center: Vector2i) -> void:
 		var room_scene := active_instances[room_position] as Node2D
 		active_instances.erase(room_position)
 		if room_scene != null and is_instance_valid(room_scene):
+			room_deactivating.emit(room_position, room_scene)
 			room_scene.queue_free()
 
 func _set_current_scene(room_position: Vector2i, emit_room_signal: bool) -> void:
