@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "验收需覆盖 GDScript、场景、资源与运行时集成检查"}
+{"file": ".trellis/spec/guides/index.md", "reason": "跨场景/跨层改动的边界检查清单"}

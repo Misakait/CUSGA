@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "新增可复用滤镜组件，需遵守场景/组件与脚本编写规范"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "组件需从 /root/TimeSystem autoload 读取状态并容错"}
