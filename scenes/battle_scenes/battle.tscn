@@ -28,6 +28,7 @@
 [ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="31_2op3e"]
 [ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="32_jxr1f"]
 [ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="37_3juot"]
+[ext_resource type="PackedScene" uid="uid://kc58owl7vjuq" path="res://scenes/ui_scenes/day_night_filter.tscn" id="43_lbcxr"]
 [ext_resource type="Script" uid="uid://cfcj8kansah88" path="res://scripts/battle_scripts/battle_settings_panel.gd" id="battle_settings_panel_script"]
 [ext_resource type="Script" uid="uid://c4gauakj31i5k" path="res://scripts/battle_scripts/click_mode_action_bar.gd" id="click_mode_action_bar_script"]
 [ext_resource type="Script" uid="uid://be77luvd8k25j" path="res://scripts/battle_scripts/combat_feedback_director.gd" id="combat_feedback_director_script"]
@@ -180,6 +181,7 @@ player_feedback_anchor_path = NodePath("../UI/PlayerFeedbackAnchor")
 screen_impulse_path = NodePath("../CombatScreenImpulse")
 
 [node name="Button" type="Marker2D" parent="." unique_id=194508577]
+z_index = 2000
 
 [node name="TurnEnd" type="Button" parent="Button" unique_id=438840299]
 offset_left = 1112.0
@@ -199,6 +201,7 @@ theme = ExtResource("24_317fs")
 text = "摸牌"
 
 [node name="UI" type="Marker2D" parent="." unique_id=1635819477]
+z_index = 2000
 
 [node name="HpBar" type="ProgressBar" parent="UI" unique_id=1277872820]
 offset_left = 340.0
@@ -480,6 +483,8 @@ script = ExtResource("11_to08p")
 z_index = -1000
 position = Vector2(640, 360)
 texture = ExtResource("37_3juot")
+
+[node name="DayNightFilter" parent="." unique_id=1523666417 instance=ExtResource("43_lbcxr")]
 
 [connection signal="pressed" from="Button/TurnEnd" to="." method="_on_turn_end_pressed"]
 [connection signal="pressed" from="Button/DrawCard" to="." method="_on_draw_card_pressed"]

@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://kc58owl7vjuq"]
+
+[ext_resource type="Script" uid="uid://dyqyaeppiraml" path="res://core/ui/filters/day_night_filter.gd" id="1_qgif4"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_7t5wk"]
+blend_mode = 3
+
+[node name="DayNightFilter" type="ColorRect" unique_id=1523666417]
+z_index = 1500
+material = SubResource("CanvasItemMaterial_7t5wk")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_qgif4")

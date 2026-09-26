@@ -139,7 +139,7 @@ func _run() -> void:
 	_test_map_move_hold_routes_through_world_interaction_coordinator()
 	await _test_map_move_hold_completion_signal_starts_move()
 	await _test_map_move_time_is_settled_before_loading_target_room()
-	_test_map_instantiator_dims_loaded_backgrounds_without_touching_other_sprites()
+	_test_map_instantiator_keeps_room_sprite_colors_untouched()
 	await _test_background_resolver_uses_map_instantiator_current_scene()
 	await _test_shop_room_background_uses_standard_background_contract()
 	_test_passage_guard_state_treats_edges_as_undirected()
@@ -288,7 +288,7 @@ func _test_background_resolver_uses_map_instantiator_current_scene() -> void:
 	map_system.add_child(map_instantiator)
 	var desert := _create_room_with_background("Desert", Color(1, 0, 0, 1))
 	var forest := _create_room_with_background("Forest", Color(0, 1, 0, 1))
-	forest.get_node("Background").self_modulate = Color(0.45, 0.45, 0.55, 1.0)
+	forest.get_node("Background").self_modulate = Color(0.8, 0.8, 0.8, 1.0)
 	map_instantiator.add_child(desert)
 	map_instantiator.add_child(forest)
 	map_instantiator.current_scene = forest
@@ -299,14 +299,17 @@ func _test_background_resolver_uses_map_instantiator_current_scene() -> void:
 	_assert(duplicated != null, "战斗背景解析器应当能复制当前地图背景。")
 	_assert(duplicated.name == "MapBackground", "复制到战斗场景的背景节点应当使用稳定名称。")
 	_assert(duplicated.modulate == Color(0, 1, 0, 1), "战斗背景必须来自 MapInstantiator.current_scene，而不是第一个缓存子节点。")
-	_assert(duplicated.self_modulate == Color(0.45, 0.45, 0.55, 1.0), "夜晚战斗背景应当保留地图背景的变暗效果。")
+	_assert(duplicated.self_modulate == Color(0.8, 0.8, 0.8, 1.0), "复制背景必须原样保留源背景的 self_modulate，昼夜压暗由屏幕滤镜另行承担。")
 
 	duplicated.free()
 	map_system.queue_free()
 	await process_frame
 
 
-func _test_map_instantiator_dims_loaded_backgrounds_without_touching_other_sprites() -> void:
+func _test_map_instantiator_keeps_room_sprite_colors_untouched() -> void:
+	# 昼夜表现已统一交给 core/ui/filters/day_night_filter.gd 的屏幕滤镜；
+	# 地图层若再自行改写 self_modulate，会和滤镜叠成双重变暗，因此这条测试守住
+	# 「地图实例化器不碰任何 Sprite 颜色」的边界。
 	var map_instantiator: Node = MapInstantiatorScript.new()
 	var room := _create_room_with_background("Forest", Color.WHITE)
 	var foreground := Sprite2D.new()
@@ -315,15 +318,11 @@ func _test_map_instantiator_dims_loaded_backgrounds_without_touching_other_sprit
 	room.add_child(foreground)
 	map_instantiator.map_scene[Vector2i(0, 0)] = room
 
-	map_instantiator._on_day_night_toggled(true)
-
 	var background: Sprite2D = room.get_node("Background")
-	_assert(background.self_modulate == Color(0.45, 0.45, 0.55, 1.0), "夜晚只应让地图背景图片变暗。")
-	_assert(foreground.self_modulate == Color.WHITE, "夜晚背景变暗不应影响同房间的其它 Sprite。")
-
-	map_instantiator._on_day_night_toggled(false)
-
-	_assert(background.self_modulate == Color.WHITE, "切回白天时背景应恢复原始颜色。")
+	_assert(background.self_modulate == Color.WHITE, "地图实例化器不应改写房间背景颜色，屏幕滤镜才是唯一的昼夜压暗来源。")
+	_assert(foreground.self_modulate == Color.WHITE, "地图实例化器不应改写同房间其它 Sprite 的颜色。")
+	_assert(not map_instantiator.has_method("_on_day_night_toggled"), "昼夜染色入口已移除，不应再按昼夜状态改写房间颜色。")
+	_assert(not map_instantiator.has_method("_apply_background_time_tint"), "房间背景染色实现已移除，不应残留可被误用的私有方法。")
 	map_instantiator.free()
 	room.free()
 

@@ -32,6 +32,7 @@
 [ext_resource type="PackedScene" uid="uid://bupnf6pmnnrxp" path="res://scenes/player_scenes/PlayerChar.tscn" id="27_fs0b5"]
 [ext_resource type="PackedScene" uid="uid://dwwq74s2nxwtj" path="res://scenes/ui_scenes/skill_card_draft_screen.tscn" id="28_gsxep"]
 [ext_resource type="PackedScene" uid="uid://ddyp7h04g6e3l" path="res://scenes/talents/talent_screen.tscn" id="29_talent"]
+[ext_resource type="PackedScene" uid="uid://kc58owl7vjuq" path="res://scenes/ui_scenes/day_night_filter.tscn" id="37_kxyth"]
 [ext_resource type="Script" uid="uid://btuvuh0y7s2dn" path="res://core/building/room_building_store.gd" id="38_building_store"]
 [ext_resource type="Script" uid="uid://cftmlmpl83akc" path="res://core/building/building_controller.gd" id="39_building_controller"]
 [ext_resource type="Script" uid="uid://cutc6r3yse8o2" path="res://core/map/room_loot_store.gd" id="40_loot_store"]
@@ -300,3 +301,5 @@ player_char = NodePath("../PlayerChar")
 
 [node name="PlayerChar" parent="." unique_id=761419866 groups=["tooltip_panel"] instance=ExtResource("27_fs0b5")]
 position = Vector2(640, 360)
+
+[node name="DayNightFilter" parent="." unique_id=1523666417 instance=ExtResource("37_kxyth")]

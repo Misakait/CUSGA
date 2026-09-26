@@ -5,8 +5,11 @@ extends Node2D
 ## View 只把 MapWorldModel 提供的资源配置转换为场景树中的显示节点。
 ## Model 长期缓存 MapSceneResource/PackedScene，View 只保留当前房间周围
 ## 3×3 范围内的 Node2D，避免窗口外的完整瓦片地图长期占用场景树。
+##
+## 昼夜表现不在这里处理：本 View 曾按 IsNight 直接改写房间背景的 self_modulate，
+## 那种做法只会压暗背景、且与战斗场景各写一份；现已统一交给
+## core/ui/filters/day_night_filter.gd 这一层屏幕滤镜，View 不再触碰任何颜色。
 
-const ORIGINAL_BACKGROUND_SELF_MODULATE_META := &"original_background_self_modulate"
 const DEFAULT_ROOM_SIZE := Vector2(1280.0, 720.0)
 
 signal on_entered_room(position: Vector2i, scene: Node2D)
@@ -15,12 +18,9 @@ signal room_activated(position: Vector2i, scene: Node2D)
 ## 房间离开窗口、节点释放前发出，供内容层清理索引与输入。
 signal room_deactivating(position: Vector2i, scene: Node2D)
 
-@export var night_background_tint: Color = Color(0.45, 0.45, 0.55, 1.0)
-
 @onready var map_position: Node = get_node_or_null("../MapPositionCreate")
 @onready var map_types: Node = get_node_or_null("../MapTypes")
 @onready var map_world_model: Node = get_node_or_null("../MapWorldModel")
-@onready var time_system: Node = get_node_or_null("/root/TimeSystem")
 
 ## 玩家当前所在房间，供棋盘和背景解析器读取。
 var current_scene: Node2D = null
@@ -32,10 +32,8 @@ var map_road_in_map: Dictionary = {}
 var active_instances: Dictionary = {}
 ## 旧调用方仍使用 map_scene，指向同一份活跃实例字典。
 var map_scene: Dictionary = active_instances
-var _is_night: bool = false
 
 func _ready() -> void:
-	_bind_time_system()
 	if map_position == null or map_types == null or map_world_model == null:
 		push_error("UIMapWorldView 缺少 MapPositionCreate、MapTypes 或 MapWorldModel，无法显示无缝地图。")
 		return
@@ -53,10 +51,6 @@ func _exit_tree() -> void:
 		var callable := Callable(self, "_on_model_current_room_changed")
 		if map_world_model.is_connected(&"current_room_changed", callable):
 			map_world_model.disconnect(&"current_room_changed", callable)
-	if time_system != null and time_system.has_signal(&"DayNightToggled"):
-		var callable := Callable(self, "_on_day_night_toggled")
-		if time_system.is_connected(&"DayNightToggled", callable):
-			time_system.disconnect(&"DayNightToggled", callable)
 
 ## 根据地图生成结果建立坐标到场景路径的查询表。
 ##
@@ -128,7 +122,6 @@ func ensure_scene_at(room_position: Vector2i) -> Node2D:
 	add_child(room_scene)
 	if room_scene.has_method(&"initialize_scene"):
 		room_scene.call(&"initialize_scene")
-	_apply_background_time_tint(room_scene)
 	room_activated.emit(room_position, room_scene)
 	return room_scene
 
@@ -188,48 +181,3 @@ func _position_all_rooms() -> void:
 		var room_scene := active_instances[position_value] as Node2D
 		if room_scene != null and is_instance_valid(room_scene):
 			room_scene.position = map_world_model.call(&"world_origin_for", position_value as Vector2i)
-
-func _bind_time_system() -> void:
-	if time_system == null:
-		push_warning("UIMapWorldView 未找到 TimeSystem，地图背景不会随昼夜状态变暗。")
-		return
-
-	_is_night = bool(time_system.get("IsNight"))
-	if not time_system.has_signal(&"DayNightToggled"):
-		push_warning("TimeSystem 缺少 DayNightToggled 信号，地图背景不会实时响应昼夜切换。")
-		return
-	var callable := Callable(self, "_on_day_night_toggled")
-	if not time_system.is_connected(&"DayNightToggled", callable):
-		time_system.connect(&"DayNightToggled", callable)
-
-func _on_day_night_toggled(is_night: bool) -> void:
-	_is_night = is_night
-	for room_scene_value in active_instances.values():
-		var room_scene := room_scene_value as Node
-		if room_scene != null and is_instance_valid(room_scene):
-			_apply_background_time_tint(room_scene)
-
-func _apply_background_time_tint(room_scene: Node) -> void:
-	var background := _find_background(room_scene)
-	if background == null:
-		return
-	var day_self_modulate := _get_day_background_self_modulate(background)
-	background.self_modulate = _multiply_color(day_self_modulate, night_background_tint) if _is_night else day_self_modulate
-
-func _find_background(room_scene: Node) -> Sprite2D:
-	if room_scene == null:
-		return null
-	return room_scene.get_node_or_null("Background") as Sprite2D
-
-func _get_day_background_self_modulate(background: Sprite2D) -> Color:
-	if not background.has_meta(ORIGINAL_BACKGROUND_SELF_MODULATE_META):
-		background.set_meta(ORIGINAL_BACKGROUND_SELF_MODULATE_META, background.self_modulate)
-	return background.get_meta(ORIGINAL_BACKGROUND_SELF_MODULATE_META)
-
-func _multiply_color(base_color: Color, tint: Color) -> Color:
-	return Color(
-		base_color.r * tint.r,
-		base_color.g * tint.g,
-		base_color.b * tint.b,
-		base_color.a * tint.a
-	)

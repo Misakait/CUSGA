@@ -890,7 +890,7 @@ func test_current_map_background_resolver_contract() -> void:
 	var current_background := Sprite2D.new()
 	current_background.name = "Background"
 	current_background.modulate = Color.GREEN
-	current_background.self_modulate = Color(0.45, 0.45, 0.55, 1.0)
+	current_background.self_modulate = Color(0.8, 0.8, 0.8, 1.0)
 	current_room.add_child(current_background)
 	map_instantiator.add_child(current_room)
 	map_instantiator.current_scene = current_room
@@ -903,7 +903,7 @@ func test_current_map_background_resolver_contract() -> void:
 		return
 	assert_eq(duplicated.name, "MapBackground", "复制背景应使用战斗场景稳定名称")
 	assert_eq(duplicated.modulate, Color.GREEN, "复制背景必须来自 current_scene，而不是缓存首个房间")
-	assert_eq(duplicated.self_modulate, Color(0.45, 0.45, 0.55, 1.0), "复制背景应保留夜间变暗效果")
+	assert_eq(duplicated.self_modulate, Color(0.8, 0.8, 0.8, 1.0), "复制背景应原样保留源背景的 self_modulate")
 	duplicated.free()
 	map_system.free()
 	assert_eq(resolver.get_script().resource_path, CURRENT_MAP_BACKGROUND_RESOLVER_SCRIPT.resource_path, "解析器实例应来自 GDScript 并行实现")
