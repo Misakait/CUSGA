@@ -9,13 +9,12 @@ extends ColorRect
 ## 混合前提：本节点预期配合 CanvasItemMaterial 的 BLEND_MODE_MUL 使用，
 ## 最终像素 = 源像素 × color。白色 (1,1,1,1) 表示完全不改变画面，颜色越暗压暗越强。
 ##
-## 挂载方式：配套场景 day_night_filter.tscn 的根是普通 Node（DayNightFilter），
-## 真正绘制的是它的子节点 FilterRect（ColorRect，本脚本挂在它身上）。
-## 这层宿主不是多余的：Control 的 anchors 以父级 CanvasItem 的 anchorable rect 为参考，
-## 而 Node2D 的 anchorable rect 是空矩形，会让全屏 ColorRect 的 size 退化成 0×0、
-## 静默地什么都画不出来（实测：战斗场景根节点是 Node2D，直接挂 ColorRect 时滤镜完全失效）；
-## 父级是普通 Node 时才会回退到视口矩形。因此必须连同内置宿主一起实例化，
-## 不要把 FilterRect 单独挂到 Node2D 或其它非 Control 的 CanvasItem 下面。
+## 挂载方式：本节点本身就是全屏 ColorRect（配套场景 day_night_filter.tscn 的根），
+## 由宿主决定放在哪一层 —— 探索场景把它放进 CanvasLayer（相机跟随玩家，放在默认 canvas
+## 的覆盖层会随相机一起移出画面），战斗场景让它留在默认 canvas 并用 z_index 压住世界。
+## 注意：不要把它直接挂在 Node2D 下。Control 的 anchors 以父级 CanvasItem 的
+## anchorable rect 为参考，而 Node2D 的该矩形是空的，全屏尺寸会退化成 0×0 并静默失效；
+## _fit_to_viewport() 虽然会兜底自愈，但仍应避免这种挂法。
 ##
 ## 颜色由 TimeSystem 的昼夜状态与阶段进度共同决定：
 ##   白天：day_color → dusk_color（清晨通透 → 黄昏转暖）
@@ -52,21 +51,22 @@ const MIN_TAU: float = 0.001
 @export_group("昼夜颜色")
 
 ## 白天阶段起点（阶段进度为 0）的滤镜颜色，即清晨。
-## 乘法混合下 (1,1,1,1) 表示完全不改变画面；调暗会让整个白天一起变暗。
-@export var day_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+## 默认偏冷且略微压暗，与黄昏拉开足够的色温差。
+## 这个跨度直接决定「白天期间天色是否看得出在变化」：一次地图移动只推进阶段长度的十分之一，
+## 若两端过于接近，玩家会误以为白天根本不变色，只有入夜那一瞬才有感觉。
+@export var day_color: Color = Color(0.94, 0.97, 1.00, 1.0)
 
 ## 白天阶段终点（阶段进度接近满）的滤镜颜色，即黄昏。
-## 默认偏暖黄且几乎不压暗，只做色温偏移；这是「白天随时间变暖」的来源。
-@export var dusk_color: Color = Color(1.0, 0.86, 0.68, 1.0)
+## 默认明显偏暖橙，与清晨的冷调形成足够距离，使阶段内每一次行动都能看出色温推移。
+@export var dusk_color: Color = Color(1.00, 0.70, 0.42, 1.0)
 
 ## 夜晚阶段起点（刚入夜）的滤镜颜色，即最暗的夜色。
-## 默认冷蓝，整体亮度约为原始的一半，沿用改造前地图背景夜色的观感量级，
-## 避免本次改造让夜晚亮度出现明显落差。
-@export var night_color: Color = Color(0.40, 0.46, 0.70, 1.0)
+## 默认冷蓝，亮度约为原始的三分之一，保留「晚上游戏变黑」这条最初的观感诉求。
+@export var night_color: Color = Color(0.34, 0.40, 0.64, 1.0)
 
 ## 夜晚阶段终点（即将天亮）的滤镜颜色，即黎明。
-## 默认淡青白，取值向 day_color 靠拢，保证跨入白天时不产生突兀跳变。
-@export var dawn_color: Color = Color(0.82, 0.90, 0.96, 1.0)
+## 默认亮青，与入夜拉开明显亮度差，让夜晚后半段随时间持续变亮而不是一直黑到底。
+@export var dawn_color: Color = Color(0.84, 0.90, 1.00, 1.0)
 
 @export_group("过渡")
 

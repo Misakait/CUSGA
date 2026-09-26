@@ -43,6 +43,7 @@
 - 用 `CanvasLayer` 承载覆盖层时，它默认画在**所有**默认 canvas 内容之上，因此要按 `layer` 值把它排在世界之上、其余 UI `CanvasLayer` 之下（本项目探索场景的实际取值：滤镜 `0`、小地图 `1`、HUD `2`）。同层 `CanvasLayer` 之间的顺序不确定，必须错开。
 - 验证口径：移动相机后，覆盖层的 `get_screen_transform().origin` 必须仍为 `(0, 0)`；只看「覆盖层大小是否为视口尺寸」会漏掉这个缺陷。
 - 全屏 `Control`（`ColorRect` 滤镜、全屏遮罩）的父级必须是普通 `Node`、`Control` 或 `CanvasLayer`，**不得直接挂在 `Node2D` 下**。
+- 覆盖层的强度由**离散事件**驱动时（时间按行动值跳变、血量按回合变化），参数跨度要按**最小触发步长**校验，而不是按一整轮的总跨度设计。本项目一次移动只推进昼夜阶段的十分之一（`10 / 100`），端点色差过小会让玩家以为覆盖层根本没生效、只有跨阶段那一瞬才看得出来。为「单步可见性」写契约测试（断言相邻两步的差值不低于阈值），不要只靠肉眼看一次。
 - 原因：`Control` 的 anchors 以父级 `CanvasItem` 的 `anchorable_rect` 为参考，而 `Node2D` 的该矩形是空的，全屏 anchors 会算出 `0×0`。此时节点照常进树、`visible` 仍是 `true`、`color` 也能正常读写，但**什么都不画，且不产生任何报错**——只能靠像素级验证发现。
 - 兜底写法：在 `_ready` 里检测退化尺寸并自愈，例如 `set_anchors_preset(Control.PRESET_TOP_LEFT)` 后显式 `size = get_viewport_rect().size`。参考 `core/ui/filters/day_night_filter.gd` 的 `_fit_to_viewport()`。
 - 层级判断：默认 canvas 内按 `z_index` 排序，而 `CanvasLayer` 的内容**永远**画在默认 canvas 之上（与 `layer` 数值是否为 `0` 无关，已实测 `map_control.tscn` 的 `layer = 0` 仍在滤镜之上）。因此「压住世界但保留 UI」的覆盖层应放在默认 canvas，并取一个高于世界内容 `z_index` 的值；若某场景的 HUD 不在 `CanvasLayer` 上（战斗场景即是），必须把 HUD 根节点的 `z_index` 提到覆盖层之上。

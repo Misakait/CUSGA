@@ -3,11 +3,13 @@ extends McpTestSuite
 
 ## 昼夜屏幕滤镜（DayNightFilter）的行为契约套件。
 ##
-## 锁定四条边界：
+## 锁定六条边界：
 ## 1. 昼夜两段各自按阶段进度做颜色插值（白天转暖、夜晚转亮）；
-## 2. 过渡是逐帧渐变的，且必然收敛到目标色，不会跳变也不会停在中间；
-## 3. 缺少 TimeSystem 时降级为中性色而不是崩溃；
-## 4. 父级是 Node2D 时自动铺满视口，否则全屏 Control 会静默退化成 0×0。
+## 2. 每推进一次行动值（阶段长度的十分之一）都要产生可见的天色变化；
+## 3. 过渡是逐帧渐变的，且必然收敛到目标色，不会跳变也不会停在中间；
+## 4. 缺少 TimeSystem 时降级为中性色而不是崩溃；
+## 5. 父级是 Node2D 时自动铺满视口，否则全屏 Control 会静默退化成 0×0；
+## 6. 探索场景把滤镜挂在 CanvasLayer 下，避免随相机移出画面。
 
 ## 待验证的滤镜脚本。
 const DAY_NIGHT_FILTER_SCRIPT: GDScript = preload("res://core/ui/filters/day_night_filter.gd")
@@ -48,7 +50,8 @@ func test_day_night_filter_interpolates_phase_colors() -> void:
 	fake.set("IsNight", false)
 	fake.set("Progress", 0)
 	var day_start: Color = filter.call("get_target_color")
-	assert_eq(day_start, NEUTRAL_COLOR, "白天起点必须完全不改变画面。")
+	assert_true(day_start.b >= day_start.r, "清晨应当偏冷，蓝通道不低于红通道。")
+	assert_true(day_start.b >= 0.95, "清晨必须保持明亮，不能明显压暗画面。")
 
 	fake.set("Progress", 99)
 	var day_end: Color = filter.call("get_target_color")
@@ -71,6 +74,35 @@ func test_day_night_filter_interpolates_phase_colors() -> void:
 	_remove_fake_time_system()
 
 
+## 验证阶段内每推进一次行动值都能产生可感知的天色变化。
+## 一次地图移动推进 10 点（阶段长度 100 的十分之一）；若单步变化太小，玩家在白天或夜晚
+## 期间会以为天色根本没动，只有昼夜切换那一瞬才有感觉 —— 这正是本需求要避免的表现。
+## 返回值：无。
+func test_each_action_step_produces_visible_color_shift() -> void:
+	const STEP: int = 10
+	const MIN_CHANNEL_DELTA: float = 0.04
+	var fake := _install_fake_time_system()
+	var filter: Node = _new_filter()
+	for is_night in [false, true]:
+		fake.set("IsNight", is_night)
+		var previous: Color = _target_at(filter, fake, 0)
+		var progress: int = STEP
+		while progress <= 100:
+			var current: Color = _target_at(filter, fake, progress)
+			var delta: float = maxf(
+				absf(current.r - previous.r),
+				maxf(absf(current.g - previous.g), absf(current.b - previous.b))
+			)
+			assert_true(
+				delta >= MIN_CHANNEL_DELTA,
+				"昼夜状态 %s 下每推进 %d 点进度必须产生可见的天色变化，当前最大通道差仅 %.4f。" % [str(is_night), STEP, delta]
+			)
+			previous = current
+			progress += STEP
+	_free_filter(filter)
+	_remove_fake_time_system()
+
+
 ## 验证过渡逐帧渐变、收敛到目标色，并且中途再次推进时间也能收敛到新目标。
 ## 返回值：无。
 func test_day_night_filter_transition_is_smooth_and_converges() -> void:
@@ -78,9 +110,10 @@ func test_day_night_filter_transition_is_smooth_and_converges() -> void:
 	var filter: Node = _new_filter()
 	fake.set("IsNight", false)
 	fake.set("Progress", 0)
+	var day_zero_target: Color = filter.call("get_target_color")
 	filter.call("_process", 0.1)
 	var start: Color = filter.call("get_current_color")
-	assert_true(start.is_equal_approx(NEUTRAL_COLOR), "白天起点不应产生任何染色。")
+	assert_true(start.is_equal_approx(day_zero_target), "白天起点应直接吸附到当前时刻的目标色，不产生额外染色。")
 
 	fake.set("IsNight", true)
 	fake.set("Progress", 0)
@@ -207,6 +240,16 @@ func _remove_fake_time_system() -> void:
 	if existing != null:
 		scene_tree.root.remove_child(existing)
 		existing.free()
+
+
+## 读取指定昼夜状态与阶段进度下的目标颜色。
+## 参数 filter：滤镜节点。
+## 参数 fake：已安装的假时间系统。
+## 参数 progress：阶段进度。
+## 返回值：该状态下的目标颜色。
+func _target_at(filter: Node, fake: Node, progress: int) -> Color:
+	fake.set("Progress", progress)
+	return filter.call("get_target_color")
 
 
 ## 读取项目内文本文件的内容。
