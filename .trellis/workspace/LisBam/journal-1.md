@@ -499,3 +499,26 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 17: 长按速度倍率与技能卡类别标签收尾
+<!-- trellis-session: v=2 fp=9b774eec9653a5a9 -->
+
+**Date**: 2026-09-26
+**Task**: 长按速度倍率与技能卡类别标签收尾
+**Branch**: `main`
+
+### Summary
+
+新增开发者菜单长按速度倍率：倍率 k 由 WorldInteractionTiming 持有，在 begin_timed_hold 统一施加，只压缩等待时长而不改任何行动值扣费；移除面板的行动值消耗调节入口并保留 TimeSystem.MapMoveTimeCost；契约测试同步至 18/18，并用 game_eval + Tween.custom_step 在真实进程内实证时长精确缩放；测试规范补记 game_eval 陷阱、SceneTree 脚本不可 test_run、全局静态状态复位纪律。归档本任务与上一个技能卡类别标签任务。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `70fdab2` | 1.新增技能卡类别标签； 2，更新技能卡贴图 |
+| `7a3a34c` | feat：新增长按速度倍率，移除开发者菜单的行动值消耗调节入口 |
+
+### Status
+
+[OK] **Completed**
