@@ -522,3 +522,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 18: 昼夜动态屏幕滤镜
+<!-- trellis-session: v=2 fp=72e3a42c8ad64ef1 -->
+
+**Date**: 2026-09-27
+**Task**: 昼夜动态屏幕滤镜
+**Branch**: `main`
+
+### Summary
+
+新增全屏乘法混合滤镜，随 TimeSystem 昼夜状态与阶段进度连续改变天色并带平滑过渡；移除 UIMapWorldView 的旧背景自变暗逻辑；探索与战斗分别划分世界与 UI 层级；契约测试锁定颜色曲线、过渡收敛与 Node2D 父级尺寸自愈；沉淀全屏覆盖层父级约束到前端规范。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b593b0d` | feat：新增昼夜动态屏幕滤镜 |
+
+### Status
+
+[OK] **Completed**
