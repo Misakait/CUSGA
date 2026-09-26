@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/gameplay-system-patterns.md", "reason": "局外长按是交互系统的一部分，改 WorldHoldInteractionController 与 WorldInteractionTiming 前需确认现有交互模式与计时约定"}
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "本次要更新既有契约套件并新增倍率断言，需遵循项目 test_run / 场景冒烟规范与顶层壳文件机制"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "GDScript 文档注释、依赖检查与验证要求适用于新增的静态倍率 API 与控制器改动"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "开发者设置面板是可复用 UI 组件，控件增删需符合既有面板结构与唯一名访问约定"}
