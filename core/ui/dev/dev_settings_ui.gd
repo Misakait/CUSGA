@@ -5,20 +5,27 @@ extends Control
 ## 面板提供一段隐藏的按键序列入口与若干调试开关，让开发者在不重启游戏、
 ## 不改动任何资源文件的前提下直接观察和改变当前对局状态。
 ##
-## 它只调用 TimeSystem 的既有公开协议，不参与时间流逝或昼夜切换规则本身，
-## 因此不会与时间系统的权威状态产生分歧；所有调试效果都通过「触发原本就会
-## 发生的流程」生效，而不是绕过它们。
+## 它不自己保存任何游戏状态，而是把每次调整都交给该状态的既有持有者：天数与时间走
+## TimeSystem 的公开协议，长按速度倍率走 WorldInteractionTiming 的换算规则。这样面板显示
+## 与运行期生效值始终同源，也不会与时间流逝、昼夜切换这些权威规则产生分歧。
+##
+## 所有调试效果都通过「触发原本就会发生的流程」生效，而不是绕过它们。
 
 ## 触发本面板的固定按键序列。
 const DEV_SEQUENCE: String = "LISBAM"
 
-## 行动值消耗控件的默认值，与 TimeSystem.MapMoveTimeCost 的导出默认值保持一致。
-const DEFAULT_ACTION_COST: int = 10
+## 长按速度倍率控件的默认值：1 表示保持所有长按的原始等待时长。
+const DEFAULT_HOLD_SPEED_MULTIPLIER: float = 1.0
 
-## 行动值消耗控件的合法上界。
-## 行动值按「每 10 点 = 1 秒」换算成长按等待时长（core/constants/world_interaction_timing.gd），
-## 上界过大会让一次采集的等待时间变得不可用，因此在这里收口。
-const MAX_ACTION_COST: int = 999
+## 长按速度倍率控件的下界，与 WorldInteractionTiming.MIN_HOLD_SPEED_MULTIPLIER 一致。
+##
+## 倍率在换算里是除数，取 0 会让等待时长变成无穷，因此这一侧的下界不是可调项。
+const MIN_HOLD_SPEED_MULTIPLIER: float = 0.1
+
+## 长按速度倍率控件的合法上界。
+##
+## 倍率越大长按越快，上界过大会让一次采集的等待短到看不清圆环，因此在这里收口。
+const MAX_HOLD_SPEED_MULTIPLIER: float = 10.0
 
 ## TimeSystem 阶段长度的兜底值。
 ## 正常路径会从 TimeSystem 动态读取 PhaseLength，兜底只在协议读取失败时生效，
@@ -46,8 +53,8 @@ const MAX_GOLD_AMOUNT: int = 999999
 
 ## 是否显示只对局内有意义的功能。
 ##
-## 受它控制的是一组控件：当前天数、行动值消耗、恢复默认、下一天、增加一级。它们都作用于
-## 局内状态——等级每局重建、行动值消耗只影响地图移动、天数属于本局时钟——摆在局外只会
+## 受它控制的是一组控件：当前天数、长按速度倍率、恢复默认、下一天、增加一级。它们都作用于
+## 局内状态——等级每局重建、长按只发生在局内地图交互、天数属于本局时钟——摆在局外只会
 ## 给出无效效果。
 ##
 ## 由宿主场景决定：`Main.tscn` 保持默认 true（局内全套功能）；主菜单把它设为 false，
@@ -58,11 +65,11 @@ const MAX_GOLD_AMOUNT: int = 999999
 ## 承载本面板各控件的稳定子节点。
 ## 用唯一名而不是固定层级路径访问：既与 TimePanelUI 的既有惯例一致，
 ## 也让面板可以在测试里用最小节点树构造，不必复刻整棵场景层级。
-@onready var _cost_row: HBoxContainer = %CostRow
+@onready var _hold_speed_row: HBoxContainer = %HoldSpeedRow
 @onready var _day_label: Label = %DayLabel
-@onready var _cost_spin_box: SpinBox = %CostSpinBox
+@onready var _hold_speed_spin_box: SpinBox = %HoldSpeedSpinBox
 @onready var _next_day_button: Button = %NextDayButton
-@onready var _reset_cost_button: Button = %ResetCostButton
+@onready var _reset_hold_speed_button: Button = %ResetHoldSpeedButton
 @onready var _close_button: Button = %CloseButton
 @onready var _level_up_button: Button = %LevelUpButton
 @onready var _gold_spin_box: SpinBox = %GoldSpinBox
@@ -98,7 +105,7 @@ var _is_initialized: bool = false
 ## 返回值：无。
 func _ready() -> void:
 	hide()
-	_configure_cost_spin_box()
+	_configure_hold_speed_spin_box()
 	_configure_gold_spin_box()
 	_connect_buttons()
 
@@ -126,8 +133,11 @@ func _ready() -> void:
 ##
 ## 主菜单与仓库这两个宿主由 `SceneManager` 缓存复用：切走时只做 `remove_child`、切回时
 ## 直接 `add_child`，因此 `_ready` 不会再次执行，而 `_exit_tree` 已经断开订阅并把
-## `_time_system` 置空。没有这一层恢复，第二次进入同一个缓存实例时「下一天」与
-## 「行动值消耗」会静默失效（两个回调都靠 `_time_system != null` 提前返回），且不报错。
+## `_time_system` 置空。没有这一层恢复，第二次进入同一个缓存实例时「下一天」会静默失效
+## （它的回调靠 `_time_system != null` 提前返回），且不报错。
+##
+## 长按速度倍率不受这条路径影响：它写的是 WorldInteractionTiming 的静态状态，与
+## TimeSystem 无关，因此在缓存挂回后依然有效。
 ##
 ## 首次进入时必须让路：此时 `_ready` 还没跑，唯一名子节点尚未就绪，初始化只能由
 ## `_ready` 完成，所以用 `_is_initialized` 把这两种时机区分开。
@@ -232,6 +242,7 @@ func _extract_ascii_letter(text: String) -> String:
 ## 返回值：无。
 func _open_panel() -> void:
 	_sync_from_time_system()
+	_sync_hold_speed_from_multiplier()
 	show()
 
 
@@ -242,7 +253,7 @@ func _open_panel() -> void:
 ## 返回值：无。
 func _on_close_button_pressed() -> void:
 	hide()
-	_cost_spin_box.release_focus()
+	_hold_speed_spin_box.release_focus()
 	_gold_spin_box.release_focus()
 
 
@@ -288,21 +299,24 @@ func _on_gain_gold_button_pressed() -> void:
 	_player_wallet.call("Add", int(_gold_spin_box.value))
 
 
-## 把行动值消耗控件恢复为默认值。
+## 把长按速度倍率恢复为默认值。
+##
+## 恢复的是面板自己的控件值，写回换算规则由控件的 value_changed 信号完成，
+## 因此这里不必也不应直接调用 WorldInteractionTiming。
 ## 返回值：无。
-func _on_reset_cost_button_pressed() -> void:
-	_cost_spin_box.value = DEFAULT_ACTION_COST
+func _on_reset_hold_speed_button_pressed() -> void:
+	_hold_speed_spin_box.value = DEFAULT_HOLD_SPEED_MULTIPLIER
 
 
-## 把控件数值写入时间系统。
-## 参数 value：SpinBox 当前值；控件本身已按 min/max 夹紧，这里再取整一次。
+## 把控件里的倍率写入长按换算规则。
+##
+## 与其它控件不同，这一步不经过 TimeSystem：倍率只压缩长按的等待时长，不改动任何行动值
+## 扣费，因此它作为换算规则上的系数写在 WorldInteractionTiming 的静态状态里。
+##
+## 参数 value：SpinBox 当前值；控件已按 min/max 夹紧，换算规则侧还会再兜一次非法值。
 ## 返回值：无。
-func _on_cost_spin_box_value_changed(value: float) -> void:
-	if _time_system == null:
-		return
-
-	# SetMapMoveTimeCost 自带 amount > 0 守卫，构成 SpinBox 夹紧之外的第二道防线。
-	_time_system.call("SetMapMoveTimeCost", int(value))
+func _on_hold_speed_spin_box_value_changed(value: float) -> void:
+	WorldInteractionTiming.set_hold_speed_multiplier(value)
 
 
 ## 响应 TimeSystem 的完整时间快照并刷新显示。
@@ -365,11 +379,6 @@ func _sync_from_time_system() -> void:
 	_phase_length = _read_phase_length()
 	_refresh_day_label(int(_time_system.get("CurrentDay")))
 
-	# 用 set_value_no_signal 回填：打开面板只做展示，不应把当前值再写回时间系统，
-	# 否则会与「只在玩家改动时才写入」的契约相冲突。
-	var current_cost: int = int(_time_system.get("MapMoveTimeCost"))
-	_cost_spin_box.set_value_no_signal(clampi(current_cost, 1, MAX_ACTION_COST))
-
 
 ## 刷新天数标签文本。
 ## 参数 current_day：需要展示的当前天数。
@@ -378,24 +387,41 @@ func _refresh_day_label(current_day: int) -> void:
 	_day_label.text = "当前天数：%d" % current_day
 
 
-## 配置行动值消耗控件的合法取值范围。
+## 用当前生效的倍率刷新控件显示。
+##
+## 必须从换算规则回填，而不是只在脚本里写死初始值：倍率的权威是那份静态状态，别处可能
+## 已经改过它，面板显示与实际生效值不一致会让开发者误判自己的调整到底有没有生效。
+## 回填走 set_value_no_signal，避免回填动作本身又被当成一次玩家改动写回去。
 ## 返回值：无。
-func _configure_cost_spin_box() -> void:
-	_cost_spin_box.min_value = 1
-	_cost_spin_box.max_value = MAX_ACTION_COST
-	_cost_spin_box.step = 1
+func _sync_hold_speed_from_multiplier() -> void:
+	_hold_speed_spin_box.set_value_no_signal(
+		clampf(
+			WorldInteractionTiming.get_hold_speed_multiplier(),
+			MIN_HOLD_SPEED_MULTIPLIER,
+			MAX_HOLD_SPEED_MULTIPLIER
+		)
+	)
+
+
+## 配置长按速度倍率控件的合法取值范围并填入默认倍率。
+## 返回值：无。
+func _configure_hold_speed_spin_box() -> void:
+	_hold_speed_spin_box.min_value = MIN_HOLD_SPEED_MULTIPLIER
+	_hold_speed_spin_box.max_value = MAX_HOLD_SPEED_MULTIPLIER
+	_hold_speed_spin_box.step = 0.1
+	_hold_speed_spin_box.value = DEFAULT_HOLD_SPEED_MULTIPLIER
 	# 显式关闭越界放行，让非法输入在控件层就被夹紧，而不是留给下游判断。
-	_cost_spin_box.allow_greater = false
-	_cost_spin_box.allow_lesser = false
+	_hold_speed_spin_box.allow_greater = false
+	_hold_speed_spin_box.allow_lesser = false
 
 
 ## 把金币输入框限制在既定范围内并填入默认数量。
 ##
-## 与行动值消耗控件同一套做法：范围在场景里也写了一遍（供编辑器预览），这里再收口一次，
+## 与倍率控件同一套做法：范围在场景里也写了一遍（供编辑器预览），这里再收口一次，
 ## 避免改场景时只改了一半；越界放行同样关闭，让非法输入在控件层就被夹紧。
 ##
-## 与消耗控件不同的是，这里连初始值也由脚本写死：金币输入框是「要加多少」的一次性数量，
-## 不镜像任何外部状态（消耗控件会从时间系统回填），因此常量必须是唯一的权威来源。
+## 与倍率控件不同的是，这里连初始值也由脚本写死：金币输入框是「要加多少」的一次性数量，
+## 不镜像任何外部状态（倍率控件会从换算规则回填），因此常量必须是唯一的权威来源。
 ## 返回值：无。
 func _configure_gold_spin_box() -> void:
 	_gold_spin_box.min_value = 1
@@ -408,14 +434,14 @@ func _configure_gold_spin_box() -> void:
 
 ## 按 ShowRunFeatures 决定局内专属控件的可见性。
 ##
-## 隐藏的是整行而不是单个输入框：行动值消耗那一行的说明文字与输入框分属两个节点，
+## 隐藏的是整行而不是单个输入框：长按速度倍率那一行的说明文字与输入框分属两个节点，
 ## 只藏输入框会留下一句没有对应控件的标签。
 ## 返回值：无。
 func _apply_feature_visibility() -> void:
 	var run_only_rows: Array[CanvasItem] = [
 		_day_label,
-		_cost_row,
-		_reset_cost_button,
+		_hold_speed_row,
+		_reset_hold_speed_button,
 		_next_day_button,
 		_level_up_button,
 	]
@@ -428,10 +454,10 @@ func _apply_feature_visibility() -> void:
 func _connect_buttons() -> void:
 	_next_day_button.pressed.connect(_on_next_day_button_pressed)
 	_level_up_button.pressed.connect(_on_level_up_button_pressed)
-	_reset_cost_button.pressed.connect(_on_reset_cost_button_pressed)
+	_reset_hold_speed_button.pressed.connect(_on_reset_hold_speed_button_pressed)
 	_close_button.pressed.connect(_on_close_button_pressed)
 	_gain_gold_button.pressed.connect(_on_gain_gold_button_pressed)
-	_cost_spin_box.value_changed.connect(_on_cost_spin_box_value_changed)
+	_hold_speed_spin_box.value_changed.connect(_on_hold_speed_spin_box_value_changed)
 
 
 ## 连接时间系统的完整快照信号。

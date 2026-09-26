@@ -16,6 +16,9 @@ const DEV_SEQUENCE_MATCHER_SCRIPT: GDScript = preload("res://core/ui/dev/dev_seq
 ## 生产场景路径，用于锁定「一个功能一行」的排版契约。
 const DEV_SETTINGS_SCENE_PATH: String = "res://scenes/ui_scenes/dev_settings_ui.tscn"
 
+## 长按控制器脚本路径，用于锁定「长按速度倍率只施加一次」的接线契约。
+const WORLD_HOLD_CONTROLLER_PATH: String = "res://core/gameflow/world_hold_interaction_controller.gd"
+
 ## 局外入口（主菜单）场景路径。
 ## 它必须复用同一份面板场景，而不是另建一套内容不同的开发者菜单。
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/main_menu.tscn"
@@ -44,10 +47,10 @@ const OUT_OF_RUN_ENTRY_SCENES: Dictionary = {
 ## 输入框同处 GoldRow 一行，由 GOLD_BUTTON_ROW_PARENT 单独锁定。
 const REQUIRED_VBOX_ROWS: Array[String] = [
 	"DayLabel",
-	"CostRow",
+	"HoldSpeedRow",
 	"NextDayButton",
 	"LevelUpButton",
-	"ResetCostButton",
+	"ResetHoldSpeedButton",
 	"GoldRow",
 	"CloseButton",
 ]
@@ -268,31 +271,191 @@ func test_next_day_advances_to_the_next_day() -> void:
 	_dispose(scene_tree, ui, time_system)
 
 
-## 验证行动值消耗控件写入时间系统，并把越界输入夹紧到合法范围。
+## 验证长按速度倍率控件写入换算规则，并把越界输入夹紧到合法范围。
+##
+## 同时断言时间系统的行动值消耗没有被改动：倍率只压缩等待时长，任何扣费都不该因为它
+## 而变化，这条断言正是该边界的守卫。
 ## 返回值：无。
-func test_cost_spin_box_writes_through_and_clamps() -> void:
+func test_hold_speed_spin_box_writes_through_and_clamps() -> void:
 	var scene_tree := Engine.get_main_loop() as SceneTree
 	var time_system := _install_fake_time_system(scene_tree)
 	if time_system == null:
 		return
 	var ui := _new_dev_settings_ui(scene_tree)
-	var spin_box := ui.get_node("%CostSpinBox") as SpinBox
+	var spin_box := ui.get_node("%HoldSpeedSpinBox") as SpinBox
 
-	assert_eq(int(spin_box.value), 10, "行动值消耗控件必须默认显示 10。")
+	assert_eq(spin_box.value, 1.0, "长按速度倍率控件必须默认显示 1。")
+	assert_eq(
+		WorldInteractionTiming.get_hold_speed_multiplier(),
+		1.0,
+		"默认倍率必须是「不改变任何等待时长」的 1。"
+	)
 
-	spin_box.value = 25
-	assert_eq(int(time_system.get("MapMoveTimeCost")), 25, "合法值必须立即写入时间系统。")
+	spin_box.value = 2.5
+	assert_eq(
+		WorldInteractionTiming.get_hold_speed_multiplier(),
+		2.5,
+		"合法值必须立即写入长按换算规则。"
+	)
+	assert_eq(int(time_system.get("MapMoveTimeCost")), 10, "倍率不得顺手改动行动值消耗。")
 
-	# 越界输入由 SpinBox 的 min_value 夹紧，不得把时间系统置为非法值。
+	# 越界输入由 SpinBox 的 min_value 夹紧，不得让换算规则拿到 0（那会产生无穷时长）。
 	spin_box.value = 0
-	assert_eq(int(spin_box.value), 1, "越界输入必须被夹紧到控件下界。")
-	assert_eq(int(time_system.get("MapMoveTimeCost")), 1, "夹紧后的值才是写入时间系统的值。")
+	assert_true(is_equal_approx(spin_box.value, 0.1), "越界输入必须被夹紧到控件下界。")
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.get_hold_speed_multiplier(), 0.1),
+		"夹紧后的值才是写入换算规则的倍率。"
+	)
 
-	var reset_button := ui.get_node("%ResetCostButton") as Button
+	var reset_button := ui.get_node("%ResetHoldSpeedButton") as Button
 	reset_button.pressed.emit()
-	assert_eq(int(time_system.get("MapMoveTimeCost")), 10, "「恢复默认」必须把行动值消耗写回 10。")
+	assert_eq(spin_box.value, 1.0, "「恢复默认」必须把控件写回默认倍率。")
+	assert_eq(
+		WorldInteractionTiming.get_hold_speed_multiplier(),
+		1.0,
+		"「恢复默认」必须把换算规则一并写回 1。"
+	)
 
 	_dispose(scene_tree, ui, time_system)
+	WorldInteractionTiming.set_hold_speed_multiplier(1.0)
+
+
+## 验证长按速度倍率的换算行为。
+##
+## 这里复刻 tests/godot/world_hold_interaction_tests.gd 里的那组纯换算断言：该文件是
+## extends SceneTree 的独立脚本，不注册为 McpTestSuite，test_run 根本跑不到它，
+## 因此把与本改动直接相关的部分搬进来，保证它们在编辑器测试里真的被执行。
+## 返回值：无。
+func test_hold_speed_multiplier_scales_wait_without_touching_action_points() -> void:
+	WorldInteractionTiming.set_hold_speed_multiplier(1.0)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.scale_hold_seconds(1.0), 1.0),
+		"倍率为 1 时必须完全保持原始等待时长。"
+	)
+
+	WorldInteractionTiming.set_hold_speed_multiplier(2.0)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.scale_hold_seconds(1.0), 0.5),
+		"倍率为 2 时必须把 1 秒长按缩短到 0.5 秒。"
+	)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.scale_hold_seconds(4.0), 2.0),
+		"倍率对更长的等待同样按比例生效。"
+	)
+
+	WorldInteractionTiming.set_hold_speed_multiplier(0.5)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.scale_hold_seconds(1.0), 2.0),
+		"倍率小于 1 时必须拉长等待，供开发者复现慢节奏手感。"
+	)
+
+	# 行动值换算必须与倍率彻底解耦：无论倍率多少，它始终按每 10 点 1 秒折算。
+	WorldInteractionTiming.set_hold_speed_multiplier(4.0)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.get_hold_duration_seconds(10), 1.0),
+		"行动值换算不得被长按速度倍率污染。"
+	)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.get_hold_duration_seconds(20), 2.0),
+		"每 10 点行动值折算 1 秒的规则必须保持不变。"
+	)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.get_hold_duration_seconds(0), 0.0),
+		"零行动值必须折算为零等待。"
+	)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.get_hold_duration_seconds(-5), 0.0),
+		"负数行动值必须折算为零等待，而不是负时长。"
+	)
+
+	# 非正倍率会让等待时长变成无穷，必须在写入时就被夹紧。
+	WorldInteractionTiming.set_hold_speed_multiplier(0.0)
+	assert_true(
+		is_equal_approx(
+			WorldInteractionTiming.get_hold_speed_multiplier(),
+			WorldInteractionTiming.MIN_HOLD_SPEED_MULTIPLIER
+		),
+		"倍率 0 必须被夹紧到下界，而不是留下一个会让等待变成无穷的除数。"
+	)
+	WorldInteractionTiming.set_hold_speed_multiplier(-3.0)
+	assert_true(
+		WorldInteractionTiming.get_hold_speed_multiplier() > 0.0,
+		"负倍率必须被拒绝，换算规则里不得出现非正数。"
+	)
+
+	# NaN 参与的比较恒为假，一旦写进去会一路污染到 Tween 时长，必须在入口丢弃。
+	WorldInteractionTiming.set_hold_speed_multiplier(2.0)
+	WorldInteractionTiming.set_hold_speed_multiplier(NAN)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.get_hold_speed_multiplier(), 2.0),
+		"NaN 必须被忽略并保留原值，绝不能进入换算规则。"
+	)
+
+	# 零时长交互必须保持零，不能因为倍率而重新长出等待。
+	WorldInteractionTiming.set_hold_speed_multiplier(5.0)
+	assert_true(
+		is_equal_approx(WorldInteractionTiming.scale_hold_seconds(0.0), 0.0),
+		"零消耗交互不得因为倍率而出现等待，否则单击会退化成隐藏的长按。"
+	)
+
+	WorldInteractionTiming.set_hold_speed_multiplier(1.0)
+
+
+## 验证长按控制器把倍率接进了唯一的计时路径，且没有在两条入口上重复缩放。
+##
+## 控制器实例需要圆环节点才能开始长按，在编辑器测试里驱动真实 Tween 会引入 await 时序；
+## 因此这里锁定接线形状，真实等待时长另由运行期 game_eval 实证。
+## 返回值：无。
+func test_hold_controller_applies_multiplier_exactly_once() -> void:
+	var source: String = FileAccess.get_file_as_string(WORLD_HOLD_CONTROLLER_PATH)
+	assert_false(source.is_empty(), "必须能读到长按控制器脚本。")
+
+	assert_true(
+		source.contains("WorldInteractionTiming.scale_hold_seconds(duration_seconds)"),
+		"控制器必须在计时前对基础时长施加长按速度倍率。"
+	)
+	assert_true(
+		source.contains("tween_method(_progress_indicator.set_hold_progress, 0.0, 1.0, effective_seconds)"),
+		"长按 Tween 必须使用缩放后的有效时长，否则倍率接了也不生效。"
+	)
+	assert_true(
+		source.contains("var effective_seconds: float = WorldInteractionTiming.scale_hold_seconds"),
+		"缩放结果必须落在具名变量上，让即时回调判断与 Tween 共用同一个值。"
+	)
+	assert_true(
+		source.contains(
+			"begin_timed_hold(hold_owner, WorldInteractionTiming.get_hold_duration_seconds(action_point_cost),"
+		),
+		"begin_hold 必须把未缩放的基础时长交给 begin_timed_hold，避免倍率被应用两次。"
+	)
+	assert_false(
+		source.contains("scale_hold_seconds(WorldInteractionTiming.get_hold_duration_seconds"),
+		"不得在 begin_hold 里预先缩放，否则实际倍率会变成平方。"
+	)
+
+
+## 验证面板的倍率下界与默认值没有和换算规则脱节。
+##
+## 两处常量刻意分开命名：面板的可调范围是产品决策，换算规则的下界是防除零的安全边界，
+## 它们将来可能各自演化，所以不该合并成一个。但当前值必须一致 —— 否则控件会显示出一个
+## 换算规则并不接受、或被静默夹紧的值，开发者会以为自己的调整没生效。
+## 返回值：无。
+func test_hold_speed_bounds_stay_aligned_with_timing_rule() -> void:
+	var constants: Dictionary = DEV_SETTINGS_UI_SCRIPT.get_script_constant_map()
+
+	assert_true(constants.has("MIN_HOLD_SPEED_MULTIPLIER"), "面板必须定义倍率下界常量。")
+	assert_true(constants.has("DEFAULT_HOLD_SPEED_MULTIPLIER"), "面板必须定义默认倍率常量。")
+	assert_true(
+		is_equal_approx(
+			float(constants["MIN_HOLD_SPEED_MULTIPLIER"]),
+			WorldInteractionTiming.MIN_HOLD_SPEED_MULTIPLIER
+		),
+		"面板的倍率下界必须与换算规则的安全下界一致，否则会显示出一个生效不了的值。"
+	)
+	assert_true(
+		is_equal_approx(float(constants["DEFAULT_HOLD_SPEED_MULTIPLIER"]), 1.0),
+		"默认倍率必须保持 1，才能保证默认状态不改动任何等待时长。"
+	)
 
 
 ## 验证「获得金币」按输入框当前值增发金币，且每次都走钱包的公开接口。
@@ -392,8 +555,8 @@ func test_run_features_visibility_follows_the_export_switch() -> void:
 
 	var run_only_names: Array[String] = [
 		"%DayLabel",
-		"%CostRow",
-		"%ResetCostButton",
+		"%HoldSpeedRow",
+		"%ResetHoldSpeedButton",
 		"%NextDayButton",
 		"%LevelUpButton",
 	]
@@ -491,7 +654,7 @@ func test_level_up_button_is_inert_without_player_level() -> void:
 	_dispose(scene_tree, ui, time_system)
 
 
-## 验证生产场景按「一个功能一行」排版，且行动值消耗标签措辞符合要求。
+## 验证生产场景按「一个功能一行」排版，且长按速度倍率标签措辞符合要求。
 ##
 ## 断言的是控件声明行里的直接父路径：只要它们都直接挂在主纵向容器下，排版就必然是每个
 ## 功能独占一行。这条断言在有人把按钮重新并排分组时会立刻失败。
@@ -514,8 +677,12 @@ func test_production_scene_layout_places_each_feature_on_its_own_row() -> void:
 		"功能控件不得再被横向分组，每个功能必须独占一行。"
 	)
 	assert_true(
-		scene_text.contains("text = \"每次行动消耗的行动值\""),
-		"行动值消耗标签必须显示「每次行动消耗的行动值」。"
+		scene_text.contains("text = \"长按速度倍率\""),
+		"长按速度倍率标签必须显示「长按速度倍率」。"
+	)
+	assert_false(
+		scene_text.contains("每次行动消耗的行动值"),
+		"行动值消耗的调节入口已移除，场景里不得再残留它的标签。"
 	)
 	assert_true(scene_text.contains("text = \"增加一级\""), "必须保留「增加一级」按钮。")
 
@@ -609,7 +776,7 @@ func test_time_changed_refreshes_day_label_and_disconnects() -> void:
 ##
 ## 主菜单与仓库由 SceneManager 缓存复用，场景切换走的正是这条 remove_child → add_child
 ## 路径：_ready 不会重跑，而 _exit_tree 已经把 _time_system 置空。若不在这里恢复，
-## 「下一天」「行动值消耗」会在第二次进入同一个缓存实例时静默失效且不报任何错。
+## 「下一天」会在第二次进入同一个缓存实例时静默失效且不报任何错。
 ## 返回值：无。
 func test_panel_restores_time_system_subscription_after_being_readded() -> void:
 	var scene_tree := Engine.get_main_loop() as SceneTree
@@ -619,7 +786,7 @@ func test_panel_restores_time_system_subscription_after_being_readded() -> void:
 	var ui := _new_dev_settings_ui(scene_tree)
 	var callback := Callable(ui, "_on_time_changed")
 	var day_label := ui.get_node("%DayLabel") as Label
-	var cost_spin_box := ui.get_node("%CostSpinBox") as SpinBox
+	var hold_speed_spin_box := ui.get_node("%HoldSpeedSpinBox") as SpinBox
 
 	assert_true(time_system.is_connected(&"TimeChanged", callback), "首次进入必须订阅 TimeChanged。")
 
@@ -633,7 +800,13 @@ func test_panel_restores_time_system_subscription_after_being_readded() -> void:
 		"重新挂回后必须恢复订阅，否则缓存复用的入口会静默失效。"
 	)
 	assert_eq(day_label.text, "当前天数：1", "重新挂回后必须重新同步一次天数显示。")
-	assert_eq(int(cost_spin_box.value), 10, "重新挂回后必须重新回填行动值消耗。")
+
+	# 倍率不依赖 TimeSystem，因此它在缓存挂回后依然生效；但控件显示必须与换算规则里的
+	# 生效值保持一致，否则开发者会以为自己刚做的调整没有生效。
+	WorldInteractionTiming.set_hold_speed_multiplier(3.0)
+	ui.call("_sync_hold_speed_from_multiplier")
+	assert_eq(hold_speed_spin_box.value, 3.0, "面板必须按换算规则里的生效倍率回填控件。")
+	WorldInteractionTiming.set_hold_speed_multiplier(1.0)
 
 	# 恢复必须是双向的：挂回后再推进时间，显示仍要跟着走。
 	time_system.call("PassTime", 240)
@@ -735,12 +908,12 @@ func _new_dev_settings_ui(scene_tree: SceneTree, show_run_features: bool = true)
 	var ui := DEV_SETTINGS_UI_SCRIPT.new() as Control
 	ui.name = "DevSettingsUIContractProbe"
 	ui.set("ShowRunFeatures", show_run_features)
-	_add_unique_child(ui, "CostRow", HBoxContainer.new())
+	_add_unique_child(ui, "HoldSpeedRow", HBoxContainer.new())
 	_add_unique_child(ui, "DayLabel", Label.new())
-	_add_unique_child(ui, "CostSpinBox", SpinBox.new())
+	_add_unique_child(ui, "HoldSpeedSpinBox", SpinBox.new())
 	_add_unique_child(ui, "NextDayButton", Button.new())
 	_add_unique_child(ui, "LevelUpButton", Button.new())
-	_add_unique_child(ui, "ResetCostButton", Button.new())
+	_add_unique_child(ui, "ResetHoldSpeedButton", Button.new())
 	_add_unique_child(ui, "CloseButton", Button.new())
 	_add_unique_child(ui, "GoldSpinBox", SpinBox.new())
 	_add_unique_child(ui, "GainGoldButton", Button.new())
