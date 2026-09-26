@@ -58,6 +58,32 @@ class CarryAuthorityStub extends Node:
 		return payload
 
 
+## 时间系统桩：只实现 `_reset_time` 依赖的 `RestoreSnapshot` 协议，并记录每次调用参数。
+##
+## 刻意记录**全部**调用而不是最后一次：新一局必须恰好重置一次，
+## 只留最后一条会把「重复重置」这类缺陷藏起来。
+class TimeSystemStub extends Node:
+	## 每次 RestoreSnapshot 的参数，元素为 [total_time_passed, current_day, is_night]。
+	var restore_calls: Array = []
+
+	func RestoreSnapshot(total_time_passed: int, current_day: int, is_night: bool) -> void:
+		restore_calls.append([total_time_passed, current_day, is_night])
+
+
+## 局内快照桩：`HasPendingRun` 决定开局走「接续存档」还是「新一局」分支。
+class RunSnapshotStub extends Node:
+	## 是否报告存在待接续的存档。
+	var pending: bool = false
+	## 接续是否成功；false 用于覆盖「存档损坏」的降级路径。
+	var restore_succeeds: bool = true
+
+	func HasPendingRun() -> bool:
+		return pending
+
+	func RestorePlayer(_player: Node, _inventory: Node, _player_char: Node) -> bool:
+		return restore_succeeds
+
+
 ## RunStartInitialized 信号的广播次数。
 var _initialized_signal_count: int = 0
 
@@ -135,6 +161,59 @@ func _build_fixture(payload: Array, capacity: int = 0) -> Dictionary:
 	host.add_child(initializer)
 
 	return {"initializer": initializer, "inventory": inventory, "carry": carry}
+
+
+## 搭建带时间系统与局内快照桩的装配，用于验证新一局的时间重置。
+##
+## 与 `_build_fixture` 同样刻意不入场景树：既避开 `_ready`，也让 `TimeSystemPath` 能指向
+## 相对路径下的桩，而不是 `test_run` 环境里并不存在的 `/root/TimeSystem` autoload。
+## 参数 pending：局内快照桩是否报告存在待接续存档。
+## 参数 restore_succeeds：接续存档是否成功。
+## 返回值：{"initializer": Node, "time_system": Node, "snapshot": Node}。
+func _build_time_fixture(pending: bool, restore_succeeds: bool = true) -> Dictionary:
+	var host: Node = track(Node.new()) as Node
+	host.name = "TimeResetHostFixture"
+
+	var player: Node = track(Node.new()) as Node
+	player.name = "Player"
+	host.add_child(player)
+
+	var components: Node = track(Node.new()) as Node
+	components.name = "Components"
+	player.add_child(components)
+
+	var inventory: Node = track(INVENTORY_SCRIPT.new()) as Node
+	inventory.name = "InventoryComponent"
+	components.add_child(inventory)
+
+	var carry: Node = track(CarryAuthorityStub.new()) as Node
+	carry.name = CARRY_STUB_NAME
+	host.add_child(carry)
+
+	# 路径形状必须与生产一致：初始化节点按 ../RuntimeState/RunSnapshot 查找快照。
+	var runtime_state: Node = track(Node.new()) as Node
+	runtime_state.name = "RuntimeState"
+	host.add_child(runtime_state)
+
+	var snapshot: Node = track(RunSnapshotStub.new()) as Node
+	snapshot.name = "RunSnapshot"
+	snapshot.set("pending", pending)
+	snapshot.set("restore_succeeds", restore_succeeds)
+	runtime_state.add_child(snapshot)
+
+	var time_system: Node = track(TimeSystemStub.new()) as Node
+	time_system.name = "TimeSystemStub"
+	host.add_child(time_system)
+
+	var initializer: Node = track(INITIALIZER_SCRIPT.new()) as Node
+	initializer.name = "RunStartInitializer"
+	initializer.set("PlayerPath", NodePath("../Player"))
+	initializer.set("CarrySourcePath", NodePath("../%s" % CARRY_STUB_NAME))
+	initializer.set("InventoryComponentPath", NodePath("Components/InventoryComponent"))
+	initializer.set("TimeSystemPath", NodePath("../TimeSystemStub"))
+	host.add_child(initializer)
+
+	return {"initializer": initializer, "time_system": time_system, "snapshot": snapshot}
 
 
 # ----- 带入栏权威 -----
@@ -404,4 +483,77 @@ func test_production_wiring_shape() -> void:
 	assert_false(
 		warehouse_text.contains("warehouse_to_player"),
 		"仓库界面不得再维护旧导出数组。"
+	)
+
+
+# ----- 新一局的时间重置 -----
+
+## 验证新一局把常驻的时间系统拨回开局状态。
+##
+## `TimeSystem` 是 autoload，状态跨场景常驻：玩家在黑夜退回主菜单再开新一局时 `Main`
+## 会重新加载，但时间仍停在上局，昼夜滤镜会按当前时间吸附颜色，于是新一局开局即是黑夜。
+## 返回值：无。
+func test_new_run_resets_persistent_time_system() -> void:
+	var fixture: Dictionary = _build_time_fixture(false)
+	var initializer: Node = fixture["initializer"]
+	var time_system: Node = fixture["time_system"]
+
+	assert_true(bool(initializer.call("Initialize")), "开局初始化应当成功。")
+
+	var calls: Array = time_system.get("restore_calls")
+	assert_eq(calls.size(), 1, "新一局必须且只能重置一次时间。")
+	var reset_args: Array = calls[0]
+	assert_eq(int(reset_args[0]), 0, "新一局的累计时间必须归零。")
+	assert_eq(int(reset_args[1]), 1, "新一局必须回到第一天。")
+	assert_eq(bool(reset_args[2]), false, "新一局必须从白天开始。")
+
+
+## 验证接续存档时不重置时间。
+##
+## 该路径的时间由 `RunSnapshot.RestorePlayer` 负责还原；若这里也重置，读档会丢掉存档里的
+## 天数与昼夜状态。
+## 返回值：无。
+func test_continuing_run_does_not_reset_time_system() -> void:
+	var fixture: Dictionary = _build_time_fixture(true, true)
+	var initializer: Node = fixture["initializer"]
+	var time_system: Node = fixture["time_system"]
+
+	assert_true(bool(initializer.call("Initialize")), "接续存档的初始化应当成功。")
+	assert_true(bool(initializer.call("IsContinuingRun")), "本局应当被识别为接续存档。")
+
+	var calls: Array = time_system.get("restore_calls")
+	assert_eq(calls.size(), 0, "接续存档不得重置时间，时间由存档还原负责。")
+
+
+## 验证接续存档失败时按新一局处理并重置时间。
+##
+## 存档损坏时 `RestorePlayer` 返回 false；若此时既不读档也不重置，上一局的天数会被带进新局。
+## 返回值：无。
+func test_failed_restore_falls_back_to_new_run_time_reset() -> void:
+	var fixture: Dictionary = _build_time_fixture(true, false)
+	var initializer: Node = fixture["initializer"]
+	var time_system: Node = fixture["time_system"]
+
+	assert_true(bool(initializer.call("Initialize")), "初始化仍应成功。")
+	assert_false(bool(initializer.call("IsContinuingRun")), "接续失败时不应标记为接续存档。")
+
+	var calls: Array = time_system.get("restore_calls")
+	assert_eq(calls.size(), 1, "接续失败必须按新一局重置时间。")
+
+
+## 验证 Main 场景里初始化节点排在昼夜滤镜之前。
+##
+## 重置时间必须早于滤镜 `_ready()` 的吸附：否则滤镜会先按上局的夜色着色，再慢慢过渡过来，
+## 新一局开场就会看到一次本不该存在的天亮渐变。同级 `_ready` 按树顺序触发，因此这条
+## 顺序依赖必须被锁定，不能靠「碰巧排在前面」。
+## 返回值：无。
+func test_initializer_precedes_day_night_filter_in_main() -> void:
+	var main_text: String = FileAccess.get_file_as_string(MAIN_SCENE_PATH)
+	var initializer_index: int = main_text.find('name="RunStartInitializer"')
+	var filter_index: int = main_text.find('name="DayNightFilterLayer"')
+	assert_gt(initializer_index, -1, "Main 场景必须挂载开局初始化节点。")
+	assert_gt(filter_index, -1, "Main 场景必须挂载昼夜滤镜层。")
+	assert_true(
+		initializer_index < filter_index,
+		"初始化节点必须排在昼夜滤镜之前，才能保证新一局的时间重置早于滤镜吸附颜色。"
 	)

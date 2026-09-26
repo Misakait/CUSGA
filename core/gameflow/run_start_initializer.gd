@@ -16,7 +16,12 @@ extends Node
 ##    （`InventoryComponent._ready()` 会建好空槽位）。同步执行同时天然早于
 ##    `DebugLoadoutSeeder` 的 `call_deferred`，顺序不依赖帧内延迟链。
 ##
-## 4）**可测**。所有依赖都通过「导出路径 + 稳定方法协议」访问，脚本里不出现
+## 4）**新一局要重置常驻时间**。`TimeSystem` 是 autoload，状态跨场景常驻；若不在新一局
+##    开始时把它拨回第一天白天，玩家在黑夜退回主菜单再开一局就会直接进入黑夜。
+##    重置点落在「非接续存档」分支，且必须早于昼夜滤镜 `_ready()` 的吸附
+##    （本节点在 `Main.tscn` 中排在 `DayNightFilterLayer` 之前，这条顺序依赖由契约测试锁定）。
+##
+## 5）**可测**。所有依赖都通过「导出路径 + 稳定方法协议」访问，脚本里不出现
 ##    `ItemsControl` 标识符；测试（`test_run` 环境没有 autoload）可以用桩节点
 ##    改写 `CarrySourcePath` 来验证行为。
 
@@ -31,6 +36,9 @@ signal RunStartInitialized
 
 ## 带入栏权威来源。默认指向 `ItemsControl` autoload；测试可改指桩节点。
 @export var CarrySourcePath: NodePath = NodePath("/root/ItemsControl")
+
+## 时间系统权威来源。默认指向 `TimeSystem` autoload；测试可改指桩节点。
+@export var TimeSystemPath: NodePath = NodePath("/root/TimeSystem")
 
 ## 玩家背包组件相对玩家节点的路径，与 `player.tscn` 的 `Components` 布局一致。
 @export var InventoryComponentPath: NodePath = NodePath("Components/InventoryComponent")
@@ -85,6 +93,10 @@ func Initialize() -> bool:
 			RunStartInitialized.emit()
 			return true
 
+	# 新一局：把常驻的时间系统拨回开局状态。
+	# 必须早于昼夜滤镜的 _ready() 吸附，否则滤镜会先按上局的夜色着色再慢慢过渡过来。
+	_reset_time()
+
 	# 先清空背包再装入：新一局的玩家是全新实例（默认背包为空，见 player.tscn），
 	# 清空让「初始化」的语义与调用次数无关——任何重复触发都不会累积内容。
 	# 出战卡组与装备不需要额外清空，理由同上：它们在 player.tscn 里同样没有预置内容，
@@ -119,6 +131,36 @@ func HasInitialized() -> bool:
 ## @return 接续成功时为 true。
 func IsContinuingRun() -> bool:
 	return _restored_run
+
+
+## 把时间系统拨回新一局的初始状态：第一天、白天、累计时间为零。
+##
+## 为什么必须做：`TimeSystem` 是 autoload，状态在整个进程内常驻。玩家在黑夜退回主菜单、
+## 再开新一局时 `Main` 会重新加载，但时间仍停在上局的黑夜，而昼夜滤镜在 `_ready()` 里
+## 按当前时间吸附颜色，于是新一局开局就是黑夜。这条重置只走「新一局」路径；
+## 接续存档不经过这里 —— 那条路径由 `RunSnapshot.RestorePlayer` 还原时间。
+##
+## 为什么用 `RestoreSnapshot` 而不是新增接口：它只广播 `TimeChanged`、不广播
+## `DayNightToggled`，因此不会误触发「昼夜切换」的跨阶段副作用，语义上正是
+## 「把时间直接放到指定状态」，也就无需改动 TimeSystem 本身。
+## 参数：无。返回值：无。
+func _reset_time() -> void:
+	var time_system: Node = get_node_or_null(TimeSystemPath)
+	if time_system == null:
+		# 可降级依赖：没有时间系统时开局流程照常，只是天数不会回到第一天。
+		push_warning(
+			"RunStartInitializer: 未找到时间系统 %s，新一局的时间未重置。" % str(TimeSystemPath)
+		)
+		return
+
+	if not time_system.has_method("RestoreSnapshot"):
+		push_warning(
+			"RunStartInitializer: %s 未提供 RestoreSnapshot 协议，新一局的时间未重置。"
+			% str(TimeSystemPath)
+		)
+		return
+
+	time_system.call("RestoreSnapshot", 0, 1, false)
 
 
 ## 取出带入栏权威里的全部待带入条目，并让其清空。
