@@ -132,6 +132,7 @@ Loadout = ExtResource("14_loadout")
 [node name="UI" type="Node" parent="." unique_id=705485533]
 
 [node name="HUDLayer" type="CanvasLayer" parent="UI" unique_id=1726390246]
+layer = 2
 
 [node name="HUDRoot" type="Control" parent="UI/HUDLayer" unique_id=155195524]
 layout_mode = 3
@@ -302,4 +303,7 @@ player_char = NodePath("../PlayerChar")
 [node name="PlayerChar" parent="." unique_id=761419866 groups=["tooltip_panel"] instance=ExtResource("27_fs0b5")]
 position = Vector2(640, 360)
 
-[node name="DayNightFilter" parent="." unique_id=1523666417 instance=ExtResource("37_kxyth")]
+[node name="DayNightFilterLayer" type="CanvasLayer" parent="." unique_id=1324058004]
+layer = 0
+
+[node name="DayNightFilter" parent="DayNightFilterLayer" unique_id=1523666417 instance=ExtResource("37_kxyth")]

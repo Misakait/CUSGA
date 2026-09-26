@@ -148,6 +148,23 @@ func test_day_night_filter_fits_viewport_under_node2d_parent() -> void:
 	parent.free()
 
 
+## 验证探索场景把滤镜挂在 CanvasLayer 下。
+## 若滤镜直接挂在场景根（默认 canvas）下，它会随跟随玩家的 Camera2D 一起移出画面，
+## 表现为「滤镜完全没生效」且不报任何错，因此这条结构契约必须锁定。
+## 返回值：无。
+func test_exploration_scene_hosts_filter_under_canvas_layer() -> void:
+	var text := _read_scene_text("res://scenes/Main.tscn")
+	assert_true(text.contains("name=\"DayNightFilterLayer\""), "探索场景必须有 DayNightFilterLayer（CanvasLayer）承载滤镜。")
+	assert_true(
+		text.contains("name=\"DayNightFilter\" parent=\"DayNightFilterLayer\""),
+		"滤镜必须挂在 DayNightFilterLayer 下，不能直接挂在场景根下。"
+	)
+	assert_false(
+		text.contains("name=\"DayNightFilter\" parent=\".\""),
+		"滤镜不得回到场景根（默认 canvas），否则会随相机移出画面。"
+	)
+
+
 ## 创建并挂载一个滤镜节点，并关闭引擎驱动以便测试手动控制帧推进。
 ## 返回值：已进入场景树的滤镜节点。
 func _new_filter() -> Node:
@@ -190,3 +207,15 @@ func _remove_fake_time_system() -> void:
 	if existing != null:
 		scene_tree.root.remove_child(existing)
 		existing.free()
+
+
+## 读取项目内文本文件的内容。
+## 参数 path：res:// 路径。
+## 返回值：文件全文；无法读取时返回空字符串。
+func _read_scene_text(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	var text := file.get_as_text()
+	file.close()
+	return text

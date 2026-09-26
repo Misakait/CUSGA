@@ -39,7 +39,10 @@
 
 ## 全屏覆盖层（滤镜、遮罩）
 
-- 全屏 `Control`（`ColorRect` 滤镜、全屏遮罩）的父级必须是普通 `Node` 或 `Control`，**不得直接挂在 `Node2D` 下**。
+- **先确认宿主场景的相机**：放在默认 canvas 的全屏覆盖层会随 `Camera2D` 一起变换。相机跟随玩家移动时，覆盖层会跟着移出画面——表现为「滤镜完全没生效」，且**不报任何错**；相机固定在屏幕左上角（`top_level = true`、缩放 `1`）时才不受影响。相机不固定的场景必须把覆盖层放进 `CanvasLayer`（`CanvasLayer` 不受相机变换影响）。
+- 用 `CanvasLayer` 承载覆盖层时，它默认画在**所有**默认 canvas 内容之上，因此要按 `layer` 值把它排在世界之上、其余 UI `CanvasLayer` 之下（本项目探索场景的实际取值：滤镜 `0`、小地图 `1`、HUD `2`）。同层 `CanvasLayer` 之间的顺序不确定，必须错开。
+- 验证口径：移动相机后，覆盖层的 `get_screen_transform().origin` 必须仍为 `(0, 0)`；只看「覆盖层大小是否为视口尺寸」会漏掉这个缺陷。
+- 全屏 `Control`（`ColorRect` 滤镜、全屏遮罩）的父级必须是普通 `Node`、`Control` 或 `CanvasLayer`，**不得直接挂在 `Node2D` 下**。
 - 原因：`Control` 的 anchors 以父级 `CanvasItem` 的 `anchorable_rect` 为参考，而 `Node2D` 的该矩形是空的，全屏 anchors 会算出 `0×0`。此时节点照常进树、`visible` 仍是 `true`、`color` 也能正常读写，但**什么都不画，且不产生任何报错**——只能靠像素级验证发现。
 - 兜底写法：在 `_ready` 里检测退化尺寸并自愈，例如 `set_anchors_preset(Control.PRESET_TOP_LEFT)` 后显式 `size = get_viewport_rect().size`。参考 `core/ui/filters/day_night_filter.gd` 的 `_fit_to_viewport()`。
 - 层级判断：默认 canvas 内按 `z_index` 排序，而 `CanvasLayer` 的内容**永远**画在默认 canvas 之上（与 `layer` 数值是否为 `0` 无关，已实测 `map_control.tscn` 的 `layer = 0` 仍在滤镜之上）。因此「压住世界但保留 UI」的覆盖层应放在默认 canvas，并取一个高于世界内容 `z_index` 的值；若某场景的 HUD 不在 `CanvasLayer` 上（战斗场景即是），必须把 HUD 根节点的 `z_index` 提到覆盖层之上。
