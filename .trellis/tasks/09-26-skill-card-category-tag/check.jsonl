@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "验证阶段需要按质量规范跑测试、依赖检查与编辑器扫描"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "验证卡面贴图切换时需要场景冒烟与运行时检查"}

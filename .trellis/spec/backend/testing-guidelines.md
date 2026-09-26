@@ -18,6 +18,15 @@ CUSGA 使用 `tests/godot/` 下的 GDScript 测试和真实场景冒烟测试。
 - 修改信号顺序、节点生命周期或 UI 行为时，测试必须把节点加入场景树并覆盖真实生命周期。
 - 新增公共契约时，添加最小回归测试，避免把多个无关系统塞进同一个测试。
 - 运行方式：`test_run(suite=..., test_name=...)`。
+- **套件必须在 `tests/` 顶层有同名壳文件**：`test_run` 的发现逻辑只列 `res://tests` 的直接子项、不递归，`tests/godot/` 下的套件全靠顶层壳被发现。壳文件只有两行：
+
+  ```gdscript
+  @tool
+  extends "res://tests/godot/test_xxx_contract.gd"
+  ```
+
+  只把文件放进 `tests/godot/` 会得到 `No suite named '...' is registered (N discovered)`。补壳文件后重新 `filesystem_manage(op="scan")` 即可被发现；重载插件**不会**刷新该缓存。
+- **编辑器测试的边界**：`PackedScene.instantiate()` 对非 `@tool` 的生产脚本只会得到占位实例，方法不可调用。这类行为（贴图切换、节点生命周期）不要硬塞进 `test_run`，改为在冒烟阶段用 `game_eval` 断言真实运行期结果；套件侧只保留数据契约与源码形状断言，并在套件注释里写明该限制。
 
 ### 场景冒烟测试
 

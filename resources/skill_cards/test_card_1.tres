@@ -8,6 +8,7 @@
 script = ExtResource("1_7sme0")
 Skill = ExtResource("combat_skill")
 CardTags = Array[String](["加速", "伤害"])
+CardCategory = 1
 CardId = null
 CardName = "测试卡1"
 CardIcon = ExtResource("icon_skillcard")

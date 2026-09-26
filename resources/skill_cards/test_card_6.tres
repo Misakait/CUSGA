@@ -9,6 +9,7 @@ script = ExtResource("1_card")
 Skill = ExtResource("combat_skill")
 cost = 0
 CardTags = Array[String](["测试", "全体单位"])
+CardCategory = 1
 CardId = null
 CardName = "测试卡6（全体单位）"
 CardIcon = ExtResource("icon_skillcard")

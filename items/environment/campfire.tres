@@ -25,3 +25,4 @@ CardId = &"campfire"
 CardName = "篝火"
 CardIcon = ExtResource("1_xoi1m")
 Description = "左键点击建筑牌，在菜单中选择放置，再左键确认落点；右键或 Esc 取消。靠近后按 F 休息：消耗 50 行动值，恢复最多 200 生命值，满血也可休息并正常消耗。靠近后长按地面篝火 1 秒可拆除，掉落 1 个树枝。"
+metadata/_custom_type_script = "uid://dypewmj21sddd"

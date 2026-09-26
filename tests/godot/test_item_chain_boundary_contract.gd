@@ -19,7 +19,7 @@ const ITEM_CLASS_ROWS: Array = [
 	["ItemData", "res://resources/item/ItemData.cs", "res://resources/item/item_data.gd", ["MaxStackSize", "ItemTags", "BuyPrice", "SellPrice"]],
 	["BaseCardData", "res://resources/item/BaseCardData.cs", "res://resources/item/base_card_data.gd", ["CardId", "CardName", "CardIcon", "Description"]],
 	["ResourceCardData", "res://resources/item/card/ResourceCardData.cs", "res://resources/item/card/resource_card_data.gd", []],
-	["SkillCardData", "res://resources/item/card/SkillCardData.cs", "res://resources/item/card/skill_card_data.gd", ["Skill", "cost", "CardTags"]],
+	["SkillCardData", "res://resources/item/card/SkillCardData.cs", "res://resources/item/card/skill_card_data.gd", ["Skill", "cost", "CardTags", "CardCategory"]],
 	["ToolData", "res://resources/item/tool/ToolData.cs", "res://resources/item/tool/tool_data.gd", ["TargetGatheringTag", "YieldGrowth", "GatheringTimeReduction"]],
 	["EquipmentData", "res://resources/item/equipment/EquipmentData.cs", "res://resources/item/equipment/equipment_data.gd", ["ValidSlots", "SetType", "AttributeBonuses", "GrantedTags"]],
 	["EquipmentSetData", "res://resources/item/equipment/EquipmentSetData.cs", "res://resources/item/equipment/equipment_set_data.gd", ["SetType", "Tiers"]],
@@ -31,7 +31,7 @@ const ITEM_CLASS_ROWS: Array = [
 const GD_EXPORT_SNIPPETS: Array = [
 	["res://resources/item/base_card_data.gd", ["@export var CardId: StringName = &\"\"", "@export var CardName: String = \"\"", "@export var CardIcon: Texture2D", "@export_multiline var Description: String = \"\""]],
 	["res://resources/item/item_data.gd", ["@export var MaxStackSize: int = 99", "@export var ItemTags: Array[StringName] = []", "@export var BuyPrice: int = 0", "@export var SellPrice: int = 0"]],
-	["res://resources/item/card/skill_card_data.gd", ["@export var Skill: Resource", "@export var cost: int = 10", "@export var CardTags: Array[String] = []"]],
+	["res://resources/item/card/skill_card_data.gd", ["@export var Skill: Resource", "@export var cost: int = 10", "@export var CardTags: Array[String] = []", "@export_enum(\"未分类\", \"攻击\", \"防御\", \"状态\") var CardCategory: int = CARD_CATEGORY_UNCLASSIFIED"]],
 	["res://resources/item/tool/tool_data.gd", ["@export var TargetGatheringTag: StringName = &\"\"", "@export var YieldGrowth: int = 0", "@export_range(0, 999, 1, \"or_greater\") var GatheringTimeReduction: int = 0"]],
 	["res://resources/item/equipment/equipment_data.gd", ["@export var ValidSlots: Array[int] = []", "@export var SetType: int = 0", "@export var AttributeBonuses: Dictionary = {}", "@export var GrantedTags: Array[StringName] = []"]],
 	["res://resources/item/equipment/equipment_set_data.gd", ["@export var SetType: int = 0", "@export var Tiers: Array[Resource] = []"]],

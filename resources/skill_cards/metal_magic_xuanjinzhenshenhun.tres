@@ -9,6 +9,7 @@ script = ExtResource("1_skillcard")
 Skill = ExtResource("combat_skill")
 cost = 60
 CardTags = Array[String](["高额伤害"])
+CardCategory = 1
 CardId = null
 CardName = "玄金镇神魂"
 CardIcon = ExtResource("icon_skillcard")

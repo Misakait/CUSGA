@@ -26,6 +26,7 @@ script = ExtResource("1_skillcard")
 Skill = ExtResource("combat_skill")
 cost = 30
 CardTags = Array[String](["扩散伤害"])
+CardCategory = 1
 CardId = null
 CardName = "蔓枝绞"
 CardIcon = ExtResource("icon_skillcard")

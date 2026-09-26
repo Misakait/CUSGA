@@ -136,7 +136,7 @@ starting_deck_data = Array[Resource]([ExtResource("8_eboiy"), ExtResource("8_ebo
 starting_monster_data = Array[Resource]([ExtResource("18_eboiy"), ExtResource("8_kvn6b"), ExtResource("14_kgjmv"), ExtResource("15_7ebbf"), ExtResource("16_lbcxr")])
 card_scene = SubResource("Resource_navvr")
 
-[node name="BattleCamera" type="Camera2D" parent="."]
+[node name="BattleCamera" type="Camera2D" parent="." unique_id=1226200323]
 top_level = true
 anchor_mode = 0
 

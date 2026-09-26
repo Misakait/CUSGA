@@ -8,6 +8,32 @@ var hand_position #手牌位置
 var data: Resource
 var is_lock:bool = false
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/skill_execution_context.gd"
+
+## 卡面底板贴图：攻击牌（红）。
+const CARD_FRAME_ATTACK: Texture2D = preload("res://res/Card/skillcardboard/技能卡模板-红.png")
+
+## 卡面底板贴图：防御牌（绿）。
+const CARD_FRAME_DEFENSE: Texture2D = preload("res://res/Card/skillcardboard/技能卡模板-绿.png")
+
+## 卡面底板贴图：状态牌（蓝）。
+const CARD_FRAME_STATUS: Texture2D = preload("res://res/Card/skillcardboard/技能卡模板-蓝.png")
+
+## 未分类或类别缺失时的兜底底板。
+##
+## 沿用改动前一直在用的通用模板：类别是手工配置项，缺配置时保持中性外观，
+## 好过让它看起来像攻击 / 防御 / 状态牌中的某一类。
+const CARD_FRAME_UNCLASSIFIED: Texture2D = preload("res://res/skillcard/技能卡模板2.png")
+
+## 卡面用的类别取值镜像。
+##
+## 为什么不直接引用 skill_card_data.gd 的常量：GDScript 的常量初始化器只接受常量表达式，
+## 跨脚本常量不满足该条件（编辑器报 "isn't a constant expression"），只能用运行时字典查询，
+## 反而把编译期能发现的错误推迟到运行时。这里沿用项目既有的「镜像常量 + 契约测试锁死」
+## 做法（参见 scripts/shop/shop_control.gd 的 FAILURE_* 镜像），由
+## tests/godot/test_skill_card_category_contract.gd 断言两侧数值一致，防止两处漂移。
+const CATEGORY_ATTACK: int = 1
+const CATEGORY_DEFENSE: int = 2
+const CATEGORY_STATUS: int = 3
 const ELEMENT_DISPLAY_NAMES := {
 	0: "无",
 	1: "木",
@@ -74,6 +100,35 @@ func init_card_data(card_data: Resource) -> void:
 	$CardTag.text = data.DisplayTag
 	$CardTag.visible = not $CardTag.text.is_empty()
 	$CardCost.text = str(data.cost)
+	# 底板贴图与上面这些文本同源：文字说的是哪张卡，颜色就必须说同一件事，
+	# 因此换色放在唯一的绑定入口里，而不是让各复用界面自己判断。
+	$Sprite2D.texture = _resolve_card_frame(card_data)
+
+## 按卡牌类别选择卡面底板贴图。
+##
+## 未分类与未知取值一律回退到通用模板：类别是手工配置项，缺配置时保持中性外观，
+## 好过让它看起来像攻击 / 防御 / 状态牌中的某一类。
+##
+## 参数 card_data：技能卡资源；允许为空，也允许是缺少 CardCategory 字段的旧资源。
+## 返回值：应显示的底板贴图，永不为 null。
+func _resolve_card_frame(card_data) -> Texture2D:
+	if card_data == null:
+		return CARD_FRAME_UNCLASSIFIED
+
+	# 类别字段是手工配置项，旧资源或缺字段的资源会返回 null，这里必须按值判定而不是直接转换。
+	var category: Variant = card_data.get("CardCategory")
+	if not (category is int):
+		return CARD_FRAME_UNCLASSIFIED
+
+	match int(category):
+		CATEGORY_ATTACK:
+			return CARD_FRAME_ATTACK
+		CATEGORY_DEFENSE:
+			return CARD_FRAME_DEFENSE
+		CATEGORY_STATUS:
+			return CARD_FRAME_STATUS
+		_:
+			return CARD_FRAME_UNCLASSIFIED
 
 func _get_combat_skill_element_display_text(card_data) -> String:
 	# 技能卡本身只是玩家卡牌包装，元素来源必须取自关联的 CombatSkillData.Skill，确保 UI 显示和实际战斗技能一致。

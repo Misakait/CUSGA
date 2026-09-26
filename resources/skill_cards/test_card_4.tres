@@ -9,6 +9,7 @@ script = ExtResource("4_lwned")
 Skill = ExtResource("combat_skill")
 cost = 0
 CardTags = Array[String](["自残"])
+CardCategory = 1
 CardId = null
 CardName = "测试卡4"
 CardIcon = ExtResource("icon_skillcard")

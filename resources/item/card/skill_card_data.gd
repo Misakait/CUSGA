@@ -14,6 +14,27 @@ extends "res://resources/item/item_data.gd"
 ## 卡牌展示标签；空白标签不会进入最终换行文本。
 @export var CardTags: Array[String] = []
 
+## 卡牌类别取值：未分类。该值同时是 CardCategory 的默认值。
+##
+## 未分类固定在 0 是必要约束：Godot 保存资源时会省略「等于默认值」的属性行，
+## 只有把未分类放在 0，显式填写的攻击 / 防御 / 状态值才会持久保留在 .tres 中；
+## 同时未配置类别的新卡也不会静默退化成攻击牌（卡面会回退到通用模板）。
+const CARD_CATEGORY_UNCLASSIFIED: int = 0
+
+## 卡牌类别取值：攻击牌，指造成伤害的牌。
+const CARD_CATEGORY_ATTACK: int = 1
+
+## 卡牌类别取值：防御牌，指抵御伤害或获得护盾的牌。
+const CARD_CATEGORY_DEFENSE: int = 2
+
+## 卡牌类别取值：状态牌，指无伤害、无护盾、单纯施加状态的牌。
+const CARD_CATEGORY_STATUS: int = 3
+
+## 卡牌类别标签，用于卡面配色与后续的分类筛选。
+##
+## 取值顺序必须与 CARD_CATEGORY_* 常量逐项对应，错位会让卡面颜色整体错配。
+@export_enum("未分类", "攻击", "防御", "状态") var CardCategory: int = CARD_CATEGORY_UNCLASSIFIED
+
 ## 过滤空白标签后生成逐行展示文本。
 var DisplayTag: String:
 	get:
