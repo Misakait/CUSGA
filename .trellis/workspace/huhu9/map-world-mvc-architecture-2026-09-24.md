@@ -2,9 +2,9 @@
 
 初稿日期：2026-09-24
 
-最后修订：2026-09-25
+最后修订：2026-09-27
 
-状态：本文件是地图系统当前架构的唯一设计依据。无缝地图的 3×3 房间实例窗口已完成并运行验证；房间内的桥、地面、障碍和三类边界控制器及瓦片碰撞现已接入代码；新增回归测试已编写。当前编辑器 MCP 被权限策略拦截，本轮运行验收尚未执行。
+状态：本文件是地图系统当前架构的唯一设计依据。无缝地图的 3×3 房间实例窗口、房间内部模块控制器，以及大小地图共享画布与探索揭示均已接入。大小地图本轮只完成房间图标、连接桥、当前房间高亮、小地图居中和大地图开关；图钉、迷雾、拖拽、滚轮缩放与房间内精确玩家位置尚未实现。
 
 ## 1. 目标与约束
 
@@ -21,7 +21,7 @@
 
 ### Model：地图事实、业务校验与资源配置
 
-- 保存生成结果、房间连接、当前地图坐标、房间尺寸和地图场景资源缓存。
+- 保存生成结果、房间连接、当前地图坐标、已探索房间集合、房间尺寸和地图场景资源缓存。
 - 根据坐标返回房间资源与纯数据 RoomContext。
 - 校验房间存在性、相邻关系和连接方向，并通过信号广播状态变化。
 - 可依赖地图生成器、MapTypes 和纯数据 Resource；不得依赖场景树中的 View、玩家节点或输入事件。
@@ -140,7 +140,10 @@ Model 不依赖 View；View 读取 Model；Controller 依赖 Model 的公开接�
 
 ### 其他 UI View
 
-- UIMapLittle.gd：小地图格子、连接线和当前坐标高亮。
+- `UIWorldMapCanvas.gd`：把 `MapWorldModel` 的已探索坐标与真实双向连接转换为轻量房间图片和 `Room_Bridge` 图片；不实例化真实房间场景。
+- `UIMiniMap.gd`：在 `MiniMap/MaskContainer` 的裁切范围内缩放共享画布实例，并持续把当前房间放在遮罩中心。
+- `UILargeMap.gd`：管理另一份独立画布实例，使用 `open_map` 输入动作切换显示，并在打开时聚焦当前房间。
+- `UIMapLittle.gd`：旧调用兼容适配器。保留 `build_little_map`、`change_this_cell_color`、`return_this_cell_color` 和 `update_current_position`，但不再生成旧格子与旧桥节点。
 - UIRoomBoardPresenter.gd：监听 MapControl.on_entered_room，读取房间根节点 terrain_profile 并刷新地形棋盘。
 - UICurrentMapBackgroundResolver.gd：从 MapInstantiator.current_scene 解析当前房间背景。
 - 房间根节点 map_env_base.gd 保留 scene_type、terrain_profile、initialize_scene() 等已有兼容功能；只提供转发 configure_room_context() 的薄入口，不承担地面、障碍、桥或边界行为。
@@ -257,6 +260,23 @@ Bridge 是场景内真实可通行的连接表现，不是传送点。玩家穿�
 
 跨房前后玩家 global_position 必须连续。RoomBoardPresenter 仍可依据 on_entered_room 更新地形棋盘；这个显示更新不等于传送。
 
+### 大小地图生成数据流
+
+    MapWorldModel.discovered_rooms / current_position
+        ↓ room_discovered / current_room_changed
+    MiniMap 与 LargeMap 各自绑定同一个 Model
+        ↓
+    两个独立 WorldMapCanvas 实例生成相同房间和桥集合
+
+`WorldMapCanvas.tscn` 是共用的场景与脚本，不是同一个运行时节点。`MiniMap/MaskContainer/CanvasViewport` 与 `LargeMap/ViewportControl` 各自实例化一份画布，因此两者可以有独立的缩放、位置和裁切状态，又不会复制地图事实数据。
+
+- `RoomsContainer` 同时容纳房间图片与桥图片。房间以 `Vector2i(row, column)` 为键，画布横坐标使用 column、纵坐标使用 row。
+- 已探索普通房间使用 `res://res/room_icon/Room.png`，当前房间使用 `res://res/room_icon/Room-With-Me.png`。
+- 连接使用 `res://res/room_icon/Room_Bridge.png`。水平连接保持原角度，纵向连接旋转 90 度；无向端点键保证每对房间只生成一张桥。
+- 桥只有在两个端点都已探索、并且 `MapWorldModel.are_rooms_connected()` 确认真实双向连接时生成，不会提前暴露未探索房间。
+- 新局起始房间自动进入探索集合。成功跨入新房间时先加入探索集合，再更新当前房间；失败请求不揭示房间。
+- `RunSnapshot` 的 `run_world` payload 保存探索坐标字符串数组；旧快照缺少字段时以当前房间作为兼容回退。探索状态随现有局内快照采集流程保存，本轮没有新增独立存档文件或修改存档模式。
+
 ## 7. 依赖与引用审计
 
 | 入口/资源 | 当前消费者或引用 | 架构约束 |
@@ -265,12 +285,14 @@ Bridge 是场景内真实可通行的连接表现，不是传送点。玩家穿�
 | MapPositionCreate.map、scene_to_scene、start_position | MapWorldModel | 生成器保持原职责；连接掩码以其上/右/下/左顺序解释 |
 | MapTypes.from_name_get_road(scene_name) | 当前 UIMapWorldView.create_map_road() 调用 | 目标架构将坐标到资源路径解析责任移入 MapWorldModel；View 不再写 Model 缓存 |
 | MapWorldModel.current_room_changed | UIMapWorldView | Model 只广播坐标事实；不查找或创建显示节点 |
+| MapWorldModel.room_discovered | 两个 WorldMapCanvas | 首次探索时增量生成房间，以及它与已探索相邻房之间的桥 |
 | MapWorldModel.get_scene_resource(position) | UIMapWorldView.ensure_scene_at() | 返回资源配置，不返回/缓存 Node2D |
 | MapInstantiator 节点路径和 UIMapWorldView 的兼容字段/信号 | UIMapControl、UICurrentMapBackgroundResolver、旧 MapButton/DoorController 代码 | 暂时保留节点名与兼容接口；新自由跨房流程不接入旧门 |
 | UIMapWorldController 玩家绑定 | MapControl.player_char；Main.tscn 提供 PlayerChar | 只读玩家世界坐标；不写玩家位置 |
 | UIMapControl.on_entered_room(position, scene) | UIRoomBoardPresenter 与其他观察者 | 保持参数和信号语义兼容 |
 | room_scene.terrain_profile / initialize_scene() | UIRoomBoardPresenter、map_env_base.gd/map_base.gd | 保留房间地形配置与既有初始化行为，不并入 MapContainerController |
-| UIMapLittle | UIMapControl | 只更新小地图，不实例化真实房间 |
+| WorldMapCanvas.tscn | MiniMap、LargeMap | 共享场景和脚本，各自实例化；只生成轻量 `CanvasItem` |
+| UIMapLittle | UIMapControl、旧门与地图按钮 | 只保留兼容入口，不实例化真实房间，也不再绘制旧格子 |
 | DoorController、Door、Transpoint、MapButton | 旧场景/脚本/测试仍含静态路径引用 | 保留兼容，不连接新 Bridge 跨房链路，不在本次架构实施中顺手删除 |
 | passage_guard_controller.gd | 旧通道战斗流程和测试 | 保留旧系统；新的世界跨房链路不得调用 |
 
@@ -324,9 +346,10 @@ normal 生态有 12 个唯一房间场景，且当前工作树中的 normal 场�
 
 本节原有三条记录保留为本轮实施前的历史快照；本轮模块、碰撞和跨房的最新结果见文末补充及任务 runtime-validation.md。MapTypes 路径表的原有建立方式没有在本轮重构。
 
-- 已实现并由 Godot 4.7.1 编辑器验证：MapWorldModel 的资源缓存、共享 PackedScene、1280×720 坐标换算、UIMapWorldView 的 3×3 实例窗口、玩家连续跨越房间以及现有棋盘/背景兼容链路。
-- 本次提出但尚未实现：MapTypes 场景路径解析迁入 Model、MapWorldModel 连接强校验、RoomContext、六类房间子模块 Controller、TileSet 碰撞配置和 normal 房间场景接线。
-- 本文件描述目标架构，不表示上述待实施项已写入源码或通过运行验证。
+- 已实现：MapWorldModel 的资源缓存、共享 PackedScene、连接强校验、RoomContext、1280×720 坐标换算、3×3 实例窗口、房间模块控制器、探索集合，以及两份独立 WorldMapCanvas 的大小地图生成。
+- 已实现的大小地图交互仅包括：小地图裁切并居中当前房间；大地图用 M 键开关并聚焦当前房间；当前房间使用红色临时图标。
+- 后续接口：`PinesContainer` 保留图钉容器，`PlayerMarker` 保留房间内精确位置或指南针入口；大地图拖拽、滚轮缩放、图例内容、图钉编辑和地图迷雾尚未实现。
+- 未改动：MapPositionCreate 生成算法、3×3 房间加载规则、旧门/地图按钮/通道战斗系统，以及房间 TileMap 美术内容。
 
 ## 本轮落地补充
 
@@ -335,3 +358,4 @@ normal 生态有 12 个唯一房间场景，且当前工作树中的 normal 场�
 - 三类边界和障碍使用 TileSet 物理层 32、掩码 16，匹配玩家层 16、掩码 32。32 像素桥边瓦片只在外侧半格阻挡，让 100×140 的玩家矩形能通过中心。
 - 用户已明确允许 Main.tscn 的初始出生点为 (640,360)；这只是场景加载时的初值。Controller 跨房时仍不修改玩家位置、不传送。
 - 用户已开放编辑器 MCP 权限。两个新套件在新启动的 Godot 4.7.1 游戏进程完整通过：12 个用例、30,725 个断言；五个目标场景完成冒烟，Main 连续往返、节点回收和资源复用通过。依据见 .trellis/tasks/09-23-seamless-map-world/runtime-validation.md。没有截图，也没有把编辑器跳过项算作运行通过。
+- 2026-09-27 的大小地图任务新增 `map_ui_contract` 契约套件，覆盖共享画布接线、房间/桥去重、当前房间纹理切换、画布实例独立和探索坐标快照编解码。编辑器测试与 MiniMap、LargeMap、Main 冒烟的最终证据记录在 `.trellis/tasks/09-27-world-map-generation/runtime-validation.md`。

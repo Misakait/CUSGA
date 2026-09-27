@@ -89,6 +89,68 @@
 
 正确：BridgeController 只配置桥；世界 Controller 观察连续玩家位置并调用 Model 校验。
 
+## 探索地图画布合同
+
+### 1. 范围与触发条件
+
+- 触发：大小地图需要把无缝世界的地图事实转换成轻量二维图元，并只揭示玩家已经进入的房间。
+- 范围：探索集合、当前房间、房间图片、真实连接桥、小地图居中和大地图显示；不包含迷雾、图钉、拖拽缩放或房间内精确位置。
+
+### 2. 公开签名
+
+- MapWorldModel.discover_room(position: Vector2i) -> bool
+- MapWorldModel.is_room_discovered(position: Vector2i) -> bool
+- MapWorldModel.get_discovered_positions() -> Array[Vector2i]
+- UIWorldMapCanvas.bind_model(model: Node) -> bool
+- UIWorldMapCanvas.refresh_discovered_rooms() -> void
+- UIWorldMapCanvas.reveal_room(room_position: Vector2i) -> void
+- UIWorldMapCanvas.update_current_room(room_position: Vector2i) -> void
+- UIWorldMapCanvas.get_room_canvas_position(room_position: Vector2i) -> Vector2
+
+### 3. 数据与边界合同
+
+- MapWorldModel.discovered_rooms 是本局探索状态的唯一来源，键为 Vector2i(row, column)，值固定为 true；View 不维护第二份探索事实。
+- RunSnapshot 的 run_world.discovered_rooms 使用 row,column 字符串数组保存坐标；恢复时去重并跳过格式损坏的条目，旧快照缺字段时至少把当前房间视为已探索。
+- MiniMap 与 LargeMap 使用同一个 WorldMapCanvas.tscn 和同一个 Model，但必须是两个运行时实例；一个 Node 不能同时挂在两个父节点下。
+- 画布横坐标使用 column，纵坐标使用 row；统一通过 room_step 配置中心间距。
+- 房间与桥都是轻量 CanvasItem，不得实例化真实房间场景、读取 TileMap 或拍摄世界画面。
+
+### 4. 校验与失败矩阵
+
+| 条件 | 处理 |
+|---|---|
+| 首次揭示有效房间 | 加入探索集合并发出一次 room_discovered |
+| 重复揭示或坐标无效 | 返回 false，不重复发信号 |
+| 跨房请求失败 | 不改变当前房间，也不揭示目标 |
+| 两端均探索且双向连接 | 生成一张无向桥；纵向桥旋转 90 度 |
+| 任一端未探索或连接不真实 | 不生成桥，避免提前泄露地图 |
+| Model 缺少方法或信号协议 | bind_model() 返回 false 并输出可定位错误 |
+| 快照探索坐标格式损坏 | 跳过该条，不得回退为合法的 (0,0) |
+
+### 5. 正常、基础与错误案例
+
+- 正常：起始只显示一个红色当前房间；进入相邻已连接房间后，两张地图都变为两个房间和一座桥。
+- 基础：重复刷新画布，房间数和桥数保持不变；小地图和大地图可以使用不同缩放与位置。
+- 错误：A→B 与 B→A 各创建一座桥，或 View 自己保存探索字典，都会造成重叠或状态漂移。
+
+### 6. 必需测试
+
+- Model：有效与无效揭示、重复揭示、失败跨房不泄露、稳定排序副本。
+- 画布：房间去重、无向桥去重、未探索连接隐藏、纵桥旋转、当前纹理切换。
+- 场景：MiniMap/MaskContainer 与 LargeMap/ViewportControl 各自存在独立画布实例，旧 MapLittle 动态入口仍可调用。
+- 运行：Main 起始为 1 房间 / 0 桥；合法跨房后两张地图均为 2 房间 / 1 桥，各自居中位置等于 View 计算值。
+- 快照：坐标编码稳定、解码去重、损坏坐标跳过、旧字段缺失兼容。
+
+### 7. 错误与正确模式
+
+错误：MiniMap 与 LargeMap 各自扫描 MapPositionCreate 并维护独立探索集合。
+
+正确：MapWorldModel 拥有探索集合并发信号；两个独立 WorldMapCanvas 实例只把同一份状态转换成图元。
+
+错误：只要当前房间有某方向连接，就把桥画向未探索房间。
+
+正确：桥的两个端点都已探索，并通过 are_rooms_connected() 的双向校验后才生成。
+
 ## 交互与时间
 
 - 需要长按确认的操作由共享长按 Controller 管理开始、取消、完成和进度显示。

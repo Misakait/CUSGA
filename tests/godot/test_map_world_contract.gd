@@ -56,7 +56,9 @@ func test_direction_masks_and_negative_world_coordinates() -> void:
 func test_rejected_moves_preserve_state_and_signal_count() -> void:
 	var model: Node = _model()
 	var observed: Array[Vector2i] = []
+	var discovered: Array[Vector2i] = []
 	model.connect("current_room_changed", func(position: Vector2i) -> void: observed.append(position))
+	model.connect("room_discovered", func(position: Vector2i) -> void: discovered.append(position))
 	for invalid in [Vector2i(-1, 2), Vector2i(5, 2), Vector2i(0, 0), Vector2i(3, 3)]:
 		assert_false(bool(model.call("try_enter_room", invalid)))
 	var grid: Array = model.get("map")
@@ -70,10 +72,28 @@ func test_rejected_moves_preserve_state_and_signal_count() -> void:
 	assert_false(bool(model.call("try_enter_room", Vector2i(3, 2))))
 	assert_eq(model.get("current_position"), Vector2i(2, 2))
 	assert_eq(observed.size(), 0)
+	assert_eq(discovered.size(), 0, "失败请求不得提前揭示目标房间。")
 	assert_true(bool(model.call("try_enter_room", Vector2i(2, 1))))
 	assert_eq(observed, [Vector2i(2, 1)])
+	assert_eq(discovered, [Vector2i(2, 1)])
 	assert_true(bool(model.call("try_enter_room", Vector2i(2, 1))))
 	assert_eq(observed.size(), 1, "重复进入当前房间不得重发成功信号。")
+	assert_eq(discovered.size(), 1, "重复进入当前房间不得重发探索信号。")
+
+
+## 探索集合必须幂等、可查询，并按行列稳定排序返回副本。
+## @return 无返回值。
+func test_discovered_room_collection_is_stable_and_read_only() -> void:
+	var model: Node = _model()
+	assert_true(bool(model.call("discover_room", Vector2i(3, 2))))
+	assert_true(bool(model.call("discover_room", Vector2i(1, 4))))
+	assert_false(bool(model.call("discover_room", Vector2i(3, 2))))
+	assert_false(bool(model.call("discover_room", Vector2i(-1, 0))))
+	assert_true(bool(model.call("is_room_discovered", Vector2i(1, 4))))
+	var positions: Array[Vector2i] = model.call("get_discovered_positions")
+	assert_eq(positions, [Vector2i(1, 4), Vector2i(3, 2)])
+	positions.clear()
+	assert_eq((model.call("get_discovered_positions") as Array).size(), 2)
 
 
 ## 每个坐标只创建一个资源；同路径跨坐标共享 PackedScene，上下文不包含节点。

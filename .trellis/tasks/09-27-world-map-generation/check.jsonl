@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "Godot 编辑器测试与场景冒烟验证要求"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "场景、脚本和动态绑定质量门禁"}
+{"file": ".trellis/tasks/09-27-world-map-generation/prd.md", "reason": "本任务验收标准与范围边界"}
