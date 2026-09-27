@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://dauvmo7vgkm6i"]
+
+[ext_resource type="Script" path="res://scripts/map_scripts/UIWorldMapRoomTemplate.gd" id="1_template"]
+[ext_resource type="Script" path="res://scripts/map_scripts/UIWorldMapRoomView.gd" id="2_view"]
+[ext_resource type="Script" path="res://scripts/map_scripts/UIWorldMapBridgeContainer.gd" id="3_bridge"]
+
+[node name="RoomTemplate" type="Node2D" unique_id=844419400]
+script = ExtResource("1_template")
+
+[node name="RoomView" type="Sprite2D" parent="." unique_id=1456072202]
+z_index = 1
+script = ExtResource("2_view")
+
+[node name="BridgeContainer" type="Node2D" parent="." unique_id=1921618130]
+z_index = 0
+script = ExtResource("3_bridge")

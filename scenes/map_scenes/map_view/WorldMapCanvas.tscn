@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dkxe1il4862fp"]
+[gd_scene load_steps=3 format=3 uid="uid://dkxe1il4862fp"]
 
 [ext_resource type="Script" path="res://scripts/map_scripts/UIWorldMapCanvas.gd" id="1_canvas"]
+[ext_resource type="Script" path="res://scripts/map_scripts/UIWorldMapRoomsContainer.gd" id="2_rooms"]
 
 [node name="WorldMapCanvas" type="Control" unique_id=391408128]
 layout_mode = 3
@@ -17,6 +18,7 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 2
+script = ExtResource("2_rooms")
 
 [node name="PinesContainer" type="Control" parent="." unique_id=197524882]
 anchors_preset = 0
