@@ -43,7 +43,7 @@
 
 ### R3. 房间图片生成
 
-- 每个应显示的地图坐标在 `RoomsContainer` 下只生成一个房间图片节点。
+- 每个应显示的地图坐标在 `RoomsContainer` 下只生成一个 `RoomTemplate`，其 `RoomView` 显示房间图片。
 - 普通已显示房间使用 `Room.png`。
 - `MapWorldModel.current_position` 对应的房间使用 `Room-With-Me.png`；当前房间改变后，旧房间恢复为 `Room.png`，新房间切换为 `Room-With-Me.png`。
 - 房间图片节点必须能由地图坐标稳定索引，重复刷新不得生成重复节点。
@@ -54,7 +54,10 @@
 - 仅在 `scene_to_scene` 声明真实连接时生成 `Room_Bridge.png`。
 - 每一对互通房间只生成一张桥图片，避免双方各生成一次造成重叠。
 - 水平连接直接使用 `Room_Bridge.png`；垂直连接旋转同一图片。
-- 桥节点与房间节点一起放入 `RoomsContainer`，保证小地图和大地图整体移动或缩放时保持相对位置一致。
+- 默认显示已探索房间通往所有真实连接方向的桥，即使连接另一端尚未探索；未探索房间本身仍不生成 `RoomTemplate`。
+- 保留“仅连接双方都已探索时显示桥”的可切换接口，便于后续按玩法需求选择。
+- 桥节点放在对应 `RoomTemplate/BridgeContainer` 下，随模板和整个画布共同移动或缩放。
+- `WorldMapCanvas`、`RoomsContainer`、`RoomTemplate`、`RoomView` 和 `BridgeContainer` 必须按直接子节点职责拆分，不把图元细节重新集中到画布根脚本。
 
 ### R5. 小地图基础表现
 
@@ -89,6 +92,8 @@
 - [ ] 初始只显示起始房间；成功进入新房间后，两张地图都增加该房间；未探索的非 `void` 房间不显示。
 - [ ] 每个已探索房间只出现一张房间图片；重复刷新不增加重复房间或桥节点。
 - [ ] 当前房间显示 `Room-With-Me.png`，离开后恢复 `Room.png`，新当前房间变为红色图标。
+- [ ] `RoomsContainer` 的直接房间子节点是 `RoomTemplate`，其 `RoomView` 与 `BridgeContainer` 分别管理纹理和桥。
+- [ ] 默认显示已探索房间通往未探索相邻房间的真实连接桥；可切换回仅双方已探索才显示。
 - [ ] 连接桥只出现在真实双向连接之间；每对房间只有一张桥；上下连接正确旋转。
 - [ ] 小地图在当前房间改变后保持当前房间居中，且内容被 `MaskContainer` 裁切。
 - [ ] 大地图能够显示并聚焦当前房间；后续交互接口存在，但拖拽缩放、图钉和迷雾不会被误报为已实现。

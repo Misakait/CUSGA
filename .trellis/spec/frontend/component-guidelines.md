@@ -29,6 +29,7 @@
 - 房间 View 必须按节点职责拆分 `UI` 控制器：`UIBridgeContainerController` 管理方向桥，`UIBridgeWithBoundaryController` 管理方向桥口阻挡，`UIBridgeBoundaryController` 管理桥侧边界，`UIGroundController` 管理地面 TileMapLayer，`UIObstacleController` 管理障碍 TileMapLayer，`UIBoundaryController` 管理 Ground 常设边界；`UIMapContainerController` 只负责注入统一上下文和协调初始化顺序。
 - 子控制器只管理自己的直接子节点，不跨模块搜索和修改其他容器的内部节点；跨模块状态通过房间上下文或信号传递。
 - 新增房间功能时先判断它属于桥、地面、障碍、边界还是房间协调；只有确实属于多个子模块的流程才放在 `UIMapContainerController`。
+- 大小地图图元也按直接子节点拆分：`WorldMapCanvas` 只绑定 Model；`RoomsContainer` 只管理直接 `RoomTemplate` 子节点；`RoomTemplate` 只向 `RoomView` 和 `BridgeContainer` 分发状态；`RoomView` 只管理纹理；`BridgeContainer` 只管理直接桥节点。桥显示与所有权等纯计算放在无状态策略脚本中，不重新堆回任何场景根脚本。
 - 战斗管理脚本拥有战斗状态机；数据资源只提供技能、怪物和地形配置，不直接创建 UI。
 - 通过信号传递完成、取消和失败事实，避免一个节点直接访问另一个节点的内部子路径。
 

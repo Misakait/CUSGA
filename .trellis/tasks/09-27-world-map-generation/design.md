@@ -53,28 +53,33 @@ WorldMapCanvas 实例 A          WorldMapCanvas 实例 B
 
 ## 4. WorldMapCanvas：轻量地图图元
 
-为 `WorldMapCanvas.tscn` 挂载独立脚本。脚本只把 Model 数据转换为地图 UI 节点，不实例化真实房间场景。
+`WorldMapCanvas.tscn` 只负责绑定 Model 并把探索集合和当前房间转发给 `RoomsContainer`，不直接创建房间或桥 `Sprite2D`，也不实例化真实房间场景。
 
 ### 节点职责
 
-- `RoomsContainer`：容纳房间图片和 `Room_Bridge` 图片。桥放在房间后方，保证视觉层级稳定。
+- `RoomsContainer`：按探索集合管理直接 `RoomTemplate` 子节点，计算模板位置并调用桥显示策略。
+- `RoomTemplate`：只协调本房间的 `RoomView` 与 `BridgeContainer`，不读取 Model。
+- `RoomView`：只切换 `Room.png` 与 `Room-With-Me.png`。
+- `BridgeContainer`：只管理自己的上、右、下、左桥 `Sprite2D`；桥放在 `RoomView` 后方。
+- `UIWorldMapBridgeVisibilityPolicy`：无状态计算桥显示与模板所有权，不创建节点。
 - `PinesContainer`：保留用户已有拼写和节点，本轮不生成图钉。
 - `PlayerMarker`：保留后续房间内精确位置/指南针接口，本轮不启用。
 
 ### 坐标和素材
 
 - 画布坐标：`Vector2(column * room_step.x, row * room_step.y)`。
-- `room_step` 作为画布导出配置集中维护，默认按 `16 × 16` 临时素材留出桥接间隔。
+- `room_step` 由 `RoomsContainer` 集中配置，默认按 `16 × 16` 临时素材留出桥接间隔。
 - 普通房间：`Room.png`。
 - 当前房间：`Room-With-Me.png`。
 - 桥：`Room_Bridge.png`；水平方向保持原角度，竖直方向旋转 90 度。
 
 ### 去重规则
 
-- 房间字典：`Vector2i -> TextureRect/Sprite2D`。
-- 桥键使用排序后的两个端点，保证 A→B 与 B→A 是同一条桥。
-- 新房间揭示时，仅生成它的图片，以及它与“已经探索的相邻房间”之间的桥。通往未探索房间的连接不显示，避免桥提前泄露未知地图。
-- 全量刷新先以 Model 的探索集合为准进行增删，再更新当前房间纹理；重复调用保持节点数不变。
+- 房间字典：`Vector2i -> RoomTemplate`。
+- 默认桥模式显示每个已探索房间的所有真实双向连接方向；未探索邻居没有模板，因此桥由当前已探索模板持有。
+- 当连接双方都已探索时，只让 row/column 排序靠前的模板持有共享桥，保证 A→B 与 B→A 不会重叠生成。
+- 模式 `1` 保留旧规则：连接双方都已探索时才显示桥；模式 `0` 恢复默认提前显示出口桥。
+- 全量刷新先以 Model 的探索集合增删模板，再由模板子组件更新纹理和桥；重复调用保持节点数不变。
 
 ### 稳定公开接口
 
@@ -82,6 +87,7 @@ WorldMapCanvas 实例 A          WorldMapCanvas 实例 B
 - `refresh_discovered_rooms() -> void`：按探索集合对齐全部图元。
 - `reveal_room(position: Vector2i) -> void`：增量增加房间与已探索邻居之间的桥。
 - `update_current_room(position: Vector2i) -> void`：切换普通/当前房间纹理。
+- `set_bridge_visibility_mode(mode: int) -> bool`：在默认出口桥与旧的双方探索策略间切换。
 - `get_room_canvas_position(position: Vector2i) -> Vector2`：供两个 View 聚焦使用。
 - `get_generated_room_count()` 与 `get_generated_bridge_count()`：供测试和运行诊断读取，不暴露可变字典。
 
@@ -124,7 +130,7 @@ WorldMapCanvas 实例 A          WorldMapCanvas 实例 B
 ## 8. 测试策略
 
 - 扩展 `test_map_world_contract.gd`：起始探索、成功/失败进入、幂等揭示和旧存档兼容。
-- 新增地图画布/View 契约测试：房间/桥去重、桥不泄露未探索房、当前纹理切换、两个画布节点独立但结果一致、旧 `MapLittle` 方法仍存在。
+- 新增地图画布/View 契约测试：RoomTemplate 结构、房间/桥去重、未探索方向桥、策略切换、当前纹理切换、两个画布节点独立但结果一致、旧 `MapLittle` 方法仍存在。
 - 扩展快照契约测试：探索坐标编码、解码和缺失字段兼容。
 - 编辑器 MCP 刷新脚本后运行相关测试；分别冒烟 `MiniMap.tscn`、`LargeMap.tscn` 和 `Main.tscn`。
 - 在 Main 运行时用 `game_eval` 核对两个画布的房间/桥数量、当前房间纹理、进入相邻房后的同步变化；用游戏截图核对裁切、居中和层级。

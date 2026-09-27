@@ -19,10 +19,11 @@
 ## 2. 共享 WorldMapCanvas
 
 - [x] 新建 `UIWorldMapCanvas.gd` 并挂载到 `WorldMapCanvas.tscn`；保留 `RoomsContainer`、`PinesContainer`、`PlayerMarker` 用户节点。
-- [x] 使用 `Room.png`、`Room-With-Me.png` 和 `Room_Bridge.png` 生成轻量节点；集中配置房间步长和素材。
-- [x] 按已探索集合创建房间；仅在连接双方都已探索时创建桥；以排序端点键去重，纵桥旋转 90 度。
+- [x] 接入用户新建的 `RoomTemplate.tscn`；`RoomsContainer` 生成模板，`RoomView` 管理纹理，`BridgeContainer` 管理四方向桥。
+- [x] 把 `UIWorldMapCanvas.gd` 拆成 Model 协调、模板集合、模板协调、纹理 View、桥容器与无状态桥策略脚本，避免根脚本集中所有图元逻辑。
+- [x] 默认显示已探索房间的所有真实连接桥，即使邻居尚未探索；保留“仅双方已探索”模式接口；双方已探索时按坐标分配唯一桥所有权，纵桥旋转 90 度。
 - [x] 实现 Model 绑定、全量刷新、增量揭示、当前房间纹理更新、坐标查询和只读诊断计数。
-- [x] 增加画布契约测试，覆盖重复刷新、桥去重、未探索连接隐藏和当前房间纹理切换。
+- [x] 增加画布契约测试，覆盖模板结构、重复刷新、桥去重、未探索方向桥、策略切换和当前房间纹理切换。
 
 ## 3. MiniMap、LargeMap 与兼容适配
 

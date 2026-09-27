@@ -106,6 +106,12 @@
 - UIWorldMapCanvas.reveal_room(room_position: Vector2i) -> void
 - UIWorldMapCanvas.update_current_room(room_position: Vector2i) -> void
 - UIWorldMapCanvas.get_room_canvas_position(room_position: Vector2i) -> Vector2
+- UIWorldMapCanvas.set_bridge_visibility_mode(mode: int) -> bool
+- UIWorldMapRoomsContainer.refresh_rooms(map_model: Node, discovered_positions: Array, current_room: Vector2i) -> bool
+- UIWorldMapRoomTemplate.configure_room(map_position: Vector2i, canvas_position: Vector2, bridge_mask: int, room_step: Vector2, is_current_room: bool) -> bool
+- UIWorldMapRoomView.set_current_room(is_current_room: bool) -> void
+- UIWorldMapBridgeContainer.configure_bridges(connection_mask: int, room_step: Vector2) -> void
+- UIWorldMapBridgeVisibilityPolicy.get_owned_bridge_mask(map_model: Node, room_position: Vector2i, discovered_rooms: Dictionary, mode: int) -> int
 
 ### 3. 数据与边界合同
 
@@ -114,6 +120,9 @@
 - MiniMap 与 LargeMap 使用同一个 WorldMapCanvas.tscn 和同一个 Model，但必须是两个运行时实例；一个 Node 不能同时挂在两个父节点下。
 - 画布横坐标使用 column，纵坐标使用 row；统一通过 room_step 配置中心间距。
 - 房间与桥都是轻量 CanvasItem，不得实例化真实房间场景、读取 TileMap 或拍摄世界画面。
+- `RoomsContainer` 的直接子节点必须是 `RoomTemplate`。模板内部的 `RoomView` 负责纹理，`BridgeContainer` 负责方向桥；画布根脚本不得直接创建 `Sprite2D`。
+- 默认桥模式为 `0`：已探索房间的所有真实双向连接方向都显示桥，即使邻居尚未探索。模式 `1` 保留旧行为，只显示连接双方都已探索的桥。
+- 两端都已探索时，以 row/column 排序靠前的模板持有共享桥；另一端不得再生成反向桥。未探索邻居没有模板时，由当前已探索模板持有伸向该方向的桥。
 
 ### 4. 校验与失败矩阵
 
@@ -122,23 +131,26 @@
 | 首次揭示有效房间 | 加入探索集合并发出一次 room_discovered |
 | 重复揭示或坐标无效 | 返回 false，不重复发信号 |
 | 跨房请求失败 | 不改变当前房间，也不揭示目标 |
-| 两端均探索且双向连接 | 生成一张无向桥；纵向桥旋转 90 度 |
-| 任一端未探索或连接不真实 | 不生成桥，避免提前泄露地图 |
+| 默认模式下，一端已探索且双向连接真实 | 在已探索端的 `BridgeContainer` 生成方向桥；不生成邻居房间图片 |
+| 两端均探索且双向连接 | 由排序靠前的 `RoomTemplate` 持有唯一共享桥；纵向桥旋转 90 度 |
+| 模式 `1` 且任一端未探索 | 不生成该方向桥，保持旧的“双方探索”显示策略 |
+| 连接不真实 | 任何模式都不生成桥 |
 | Model 缺少方法或信号协议 | bind_model() 返回 false 并输出可定位错误 |
+| 桥模式不是 `0` 或 `1` | set_bridge_visibility_mode() 返回 false，保持当前模式 |
 | 快照探索坐标格式损坏 | 跳过该条，不得回退为合法的 (0,0) |
 
 ### 5. 正常、基础与错误案例
 
-- 正常：起始只显示一个红色当前房间；进入相邻已连接房间后，两张地图都变为两个房间和一座桥。
-- 基础：重复刷新画布，房间数和桥数保持不变；小地图和大地图可以使用不同缩放与位置。
-- 错误：A→B 与 B→A 各创建一座桥，或 View 自己保存探索字典，都会造成重叠或状态漂移。
+- 正常：起始只显示一个红色当前房间，并从该模板显示所有真实出口桥；进入相邻房间后新增一个房间模板，共享桥仍只有一张。
+- 基础：重复刷新画布，房间数和桥数保持不变；模式 `0` 与模式 `1` 可以来回切换；小地图和大地图可以使用不同缩放与位置。
+- 错误：`WorldMapCanvas` 直接创建全部房间和桥 `Sprite2D`，或 A→B 与 B→A 各创建一座桥，会重新形成上帝脚本或重叠图元。
 
 ### 6. 必需测试
 
 - Model：有效与无效揭示、重复揭示、失败跨房不泄露、稳定排序副本。
-- 画布：房间去重、无向桥去重、未探索连接隐藏、纵桥旋转、当前纹理切换。
+- 画布：`RoomTemplate` 生成与去重、默认显示未探索方向桥、模式切换、共享桥去重、纵桥旋转、当前纹理切换。
 - 场景：MiniMap/MaskContainer 与 LargeMap/ViewportControl 各自存在独立画布实例，旧 MapLittle 动态入口仍可调用。
-- 运行：Main 起始为 1 房间 / 0 桥；合法跨房后两张地图均为 2 房间 / 1 桥，各自居中位置等于 View 计算值。
+- 运行：Main 起始为 1 个房间模板，桥数等于起始房真实连接数；合法跨房后两张地图房间数同步增加，所有桥全局位置的出现次数均为 1。
 - 快照：坐标编码稳定、解码去重、损坏坐标跳过、旧字段缺失兼容。
 
 ### 7. 错误与正确模式
@@ -147,9 +159,9 @@
 
 正确：MapWorldModel 拥有探索集合并发信号；两个独立 WorldMapCanvas 实例只把同一份状态转换成图元。
 
-错误：只要当前房间有某方向连接，就把桥画向未探索房间。
+错误：为了避免暴露未知房间，把真实出口桥与房间图片一起隐藏，导致玩家无法从地图判断已探索房间有哪些出口。
 
-正确：桥的两个端点都已探索，并通过 are_rooms_connected() 的双向校验后才生成。
+正确：房间图片仍只显示已探索房间；默认模式显示已探索房间的所有真实双向连接桥，模式 `1` 保留旧的双方探索显示策略。
 
 ## 交互与时间
 

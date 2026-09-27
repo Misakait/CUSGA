@@ -266,14 +266,19 @@ Bridge 是场景内真实可通行的连接表现，不是传送点。玩家穿�
         ↓ room_discovered / current_room_changed
     MiniMap 与 LargeMap 各自绑定同一个 Model
         ↓
-    两个独立 WorldMapCanvas 实例生成相同房间和桥集合
+    两个独立 WorldMapCanvas 实例同步相同探索数据
+        ↓
+    RoomsContainer 管理 RoomTemplate 集合与位置
+        ↓
+    RoomTemplate → RoomView / BridgeContainer
 
 `WorldMapCanvas.tscn` 是共用的场景与脚本，不是同一个运行时节点。`MiniMap/MaskContainer/CanvasViewport` 与 `LargeMap/ViewportControl` 各自实例化一份画布，因此两者可以有独立的缩放、位置和裁切状态，又不会复制地图事实数据。
 
-- `RoomsContainer` 同时容纳房间图片与桥图片。房间以 `Vector2i(row, column)` 为键，画布横坐标使用 column、纵坐标使用 row。
-- 已探索普通房间使用 `res://res/room_icon/Room.png`，当前房间使用 `res://res/room_icon/Room-With-Me.png`。
-- 连接使用 `res://res/room_icon/Room_Bridge.png`。水平连接保持原角度，纵向连接旋转 90 度；无向端点键保证每对房间只生成一张桥。
-- 桥只有在两个端点都已探索、并且 `MapWorldModel.are_rooms_connected()` 确认真实双向连接时生成，不会提前暴露未探索房间。
+- `WorldMapCanvas` 只绑定 Model 和转发状态；`RoomsContainer` 只管理直接 `RoomTemplate` 子节点，房间以 `Vector2i(row, column)` 为键，画布横坐标使用 column、纵坐标使用 row。
+- 每个 `RoomTemplate` 只协调 `RoomView` 与 `BridgeContainer`。`RoomView` 负责普通/当前房间纹理；`BridgeContainer` 负责自己的上、右、下、左桥节点；纯桥显示和所有权计算放在 `UIWorldMapBridgeVisibilityPolicy.gd`。
+- 已探索普通房间使用 `res://res/room_icon/Room.png`，当前房间使用 `res://res/room_icon/Room-With-Me.png`。未探索房间不生成模板和房间图片。
+- 连接使用 `res://res/room_icon/Room_Bridge.png`。默认显示已探索房间的所有真实双向连接方向，即使邻居尚未探索；水平桥保持原角度，纵向桥旋转 90 度。
+- 连接双方都已探索后，由 row/column 排序靠前的模板持有唯一共享桥，另一模板不生成反向桥。`set_bridge_visibility_mode(1)` 保留旧的“双方已探索才显示”规则，模式 `0` 恢复默认出口桥规则。
 - 新局起始房间自动进入探索集合。成功跨入新房间时先加入探索集合，再更新当前房间；失败请求不揭示房间。
 - `RunSnapshot` 的 `run_world` payload 保存探索坐标字符串数组；旧快照缺少字段时以当前房间作为兼容回退。探索状态随现有局内快照采集流程保存，本轮没有新增独立存档文件或修改存档模式。
 
@@ -285,13 +290,13 @@ Bridge 是场景内真实可通行的连接表现，不是传送点。玩家穿�
 | MapPositionCreate.map、scene_to_scene、start_position | MapWorldModel | 生成器保持原职责；连接掩码以其上/右/下/左顺序解释 |
 | MapTypes.from_name_get_road(scene_name) | 当前 UIMapWorldView.create_map_road() 调用 | 目标架构将坐标到资源路径解析责任移入 MapWorldModel；View 不再写 Model 缓存 |
 | MapWorldModel.current_room_changed | UIMapWorldView | Model 只广播坐标事实；不查找或创建显示节点 |
-| MapWorldModel.room_discovered | 两个 WorldMapCanvas | 首次探索时增量生成房间，以及它与已探索相邻房之间的桥 |
+| MapWorldModel.room_discovered | 两个 WorldMapCanvas | 首次探索时刷新 RoomTemplate 集合，并重新计算连接桥所有权 |
 | MapWorldModel.get_scene_resource(position) | UIMapWorldView.ensure_scene_at() | 返回资源配置，不返回/缓存 Node2D |
 | MapInstantiator 节点路径和 UIMapWorldView 的兼容字段/信号 | UIMapControl、UICurrentMapBackgroundResolver、旧 MapButton/DoorController 代码 | 暂时保留节点名与兼容接口；新自由跨房流程不接入旧门 |
 | UIMapWorldController 玩家绑定 | MapControl.player_char；Main.tscn 提供 PlayerChar | 只读玩家世界坐标；不写玩家位置 |
 | UIMapControl.on_entered_room(position, scene) | UIRoomBoardPresenter 与其他观察者 | 保持参数和信号语义兼容 |
 | room_scene.terrain_profile / initialize_scene() | UIRoomBoardPresenter、map_env_base.gd/map_base.gd | 保留房间地形配置与既有初始化行为，不并入 MapContainerController |
-| WorldMapCanvas.tscn | MiniMap、LargeMap | 共享场景和脚本，各自实例化；只生成轻量 `CanvasItem` |
+| WorldMapCanvas.tscn / RoomTemplate.tscn | MiniMap、LargeMap | 共享场景，各自实例化；房间和桥按容器职责拆分，只生成轻量 `CanvasItem` |
 | UIMapLittle | UIMapControl、旧门与地图按钮 | 只保留兼容入口，不实例化真实房间，也不再绘制旧格子 |
 | DoorController、Door、Transpoint、MapButton | 旧场景/脚本/测试仍含静态路径引用 | 保留兼容，不连接新 Bridge 跨房链路，不在本次架构实施中顺手删除 |
 | passage_guard_controller.gd | 旧通道战斗流程和测试 | 保留旧系统；新的世界跨房链路不得调用 |
