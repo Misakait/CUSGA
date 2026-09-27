@@ -1,6 +1,6 @@
 # 技术设计：大小地图生成与共享画布
 
-状态：用户已批准实施。需求与验收编号见 `prd.md`，执行顺序见 `implement.md`。
+状态：用户已批准实施。第一阶段生成能力已经提交；本设计现包含第二阶段交互与标记扩展。需求与验收编号见 `prd.md`，执行顺序见 `implement.md`。
 
 ## 1. 总体架构
 
@@ -15,7 +15,7 @@ MapWorldModel
        ├──────────────────────────┐
        ▼                          ▼
 MiniMap                         LargeMap
-  裁切并持续居中                  M 键显示并聚焦当前房间
+  裁切并持续居中                  open_map 动作显示并聚焦当前房间
        │                          │
        ▼                          ▼
 WorldMapCanvas 实例 A          WorldMapCanvas 实例 B
@@ -71,7 +71,7 @@ WorldMapCanvas 实例 A          WorldMapCanvas 实例 B
 - `room_step` 由 `RoomsContainer` 集中配置，默认按 `16 × 16` 临时素材留出桥接间隔。
 - 普通房间：`Room.png`。
 - 当前房间：`Room-With-Me.png`。
-- 桥：`Room_Bridge.png`；水平方向保持原角度，竖直方向旋转 90 度。
+- 桥：左右使用 `Room_Bridge.png`，上下使用 `Room_Bridge_V.png`；所有方向旋转均为 0，避免像素图运行时旋转产生锯齿。
 
 ### 去重规则
 
@@ -142,6 +142,48 @@ WorldMapCanvas 实例 A          WorldMapCanvas 实例 B
 - 同步更新 `docs/游戏机制与玩法内容.md`，记录“只显示已探索房间、当前房间使用红色临时图标、连接只在双方均已探索时显示”的当前机制，并明确图钉、迷雾、精确玩家位置、拖拽缩放尚未实现。
 
 ## 10. 风险与回退点
+
+第一阶段的风险与回退点继续有效。第二阶段不得整体重建用户正在编辑的 `Item.tscn`、`LargeMap.tscn`、`pause_menu.tscn` 和 `option_panel.tscn`；只在现有结构上补脚本、子节点和必要属性。
+
+## 11. 第二阶段：地图交互组件拆分
+
+继续沿用“父节点协调、直接子节点各管一件事”的结构：
+
+- `UIMiniMap`：只绑定 Model、读取缩放偏好并驱动居中 Tween。
+- `UILargeMap`：只协调 Inspector 可配置的 InputMap 动作、暂停所有权、标记选择和两个子控制器。
+- `UIMapPanZoomController`（挂在 `ViewportControl`）：只处理拖拽、滚轮缩放、点击坐标换算和聚焦。
+- `UIMapLegend`（挂在 `LegendUI`）：只构建可滚动选项、维护选中态并发出选择信号。
+- `UIWorldMapMarkersContainer`（挂在 `PinesContainer`）：只把 Model 标记快照转换成 `Sprite2D`。
+- `UIMapMarkerController`（挂在场景或 `Item/MarkerController`）：只读取标记 Resource、使用 `MarkerPoint` 计算位置并注册稳定来源标记。
+- `UIOptionPanel`：只读写地图偏好并发出返回请求。
+- `PauseMenu`：只负责主菜单与设置页切换，不直接读写小地图节点。
+
+## 12. 标记数据合同
+
+`MapMarkerConfig` 是可编辑 Resource，保存标记类型与表现配置，不保存某次运行的位置。字段至少包括稳定类型键、显示名、图标、是否允许显示、当前是否激活、显示比例和是否允许玩家手动放置。
+
+`MapWorldModel` 保存运行时标记记录，并提供添加玩家标记、注册来源标记、移除玩家标记、查询只读快照等入口。标记位置采用逻辑地图坐标：`Vector2.x` 是 column（可含房间内小数），`Vector2.y` 是 row。`WorldMapCanvas` 通过 `room_step` 把它换算为画布像素；Model 不依赖 UI 像素尺寸。
+
+来源标记使用“来源场景 + 房间坐标 + 锚点逻辑位置”组成稳定 ID。相邻房预加载时，MarkerController 只等待探索信号；对应房间进入探索集合后才注册，防止提前泄露。
+
+## 13. 输入与暂停
+
+`project.godot` 当前把 `open_map` 绑定到物理键 T。`UILargeMap.open_map_action` 导出到 Inspector，脚本只调用 `event.is_action_pressed(open_map_action)`，不读取具体键码。LargeMap 记录打开前的 `SceneTree.paused`，打开时暂停并保持 `PROCESS_MODE_ALWAYS`；关闭时仅在打开前未暂停的情况下解除。拖拽、滚轮、图例与设置页均必须在暂停时可交互。
+
+`UIMapPanZoomController` 区分点击与拖拽：移动超过导出阈值才视为拖拽；没有超过阈值的左键释放向 LargeMap 报告画布局部坐标，右键报告删除意图。滚轮缩放保持鼠标下的画布点不漂移。
+
+## 14. 小地图过渡与设置页
+
+小地图首次绑定立即定位；`current_room_changed` 使用 Tween 平滑移动。新的换房事件先停止旧 Tween，再从当前视觉位置移动到新中心。
+
+缩放偏好使用 `SettingsManager` 的 `map/minimap_zoom`。OptionPanel 的地图分类通过滑条更新该键；MiniMap 监听设置变化并同步缩放与中心位置。暂停菜单只实例化和切换 OptionPanel，不直接寻找 MiniMap。
+
+## 15. 第二阶段验证重点
+
+- 契约测试覆盖竖桥纹理、不旋转、标记 Resource 默认值、Model 去重或删除、两个画布同步、MiniMap Tween 与缩放设置。
+- 独立冒烟 `MiniMap.tscn`、`LargeMap.tscn`、`option_panel.tscn`、`pause_menu.tscn`。
+- Main 运行时验证物理 T 键通过 `open_map` 动作暂停或恢复、拖拽缩放范围、标记放置或删除、两个画布标记数量一致、场景 Item 标记只在探索后出现。
+- 用游戏截图检查大地图图例滚动布局、选中态、地图标记层级和选项页视觉。
 
 - `MapSystem/CanvasLayer` 是现有协调器的固定路径，不能删除或改名；只替换其内部旧小地图显示节点。
 - `MapLittle` 是旧门和地图按钮的动态调用目标，不能删除；改造后必须用运行验证覆盖动态调用。

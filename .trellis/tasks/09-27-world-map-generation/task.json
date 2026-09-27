@@ -1,8 +1,8 @@
 {
   "id": "world-map-generation",
   "name": "world-map-generation",
-  "title": "大小地图生成与共享画布",
-  "description": "基于现有 WorldMapCanvas、minimap、largemap 场景生成房间图与房间桥接，并为后续地图功能保留接口。",
+  "title": "大小地图生成、交互与标记系统",
+  "description": "在现有共享 WorldMapCanvas 架构上完成大小地图生成、过渡、暂停、拖拽缩放、标记与地图选项设置。",
   "status": "in_progress",
   "dev_type": null,
   "scope": null,

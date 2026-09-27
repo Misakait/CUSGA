@@ -94,7 +94,7 @@
 ### 1. 范围与触发条件
 
 - 触发：大小地图需要把无缝世界的地图事实转换成轻量二维图元，并只揭示玩家已经进入的房间。
-- 范围：探索集合、当前房间、房间图片、真实连接桥、小地图居中和大地图显示；不包含迷雾、图钉、拖拽缩放或房间内精确位置。
+- 范围：探索集合、当前房间、房间图片、真实连接桥、小地图平滑居中、大地图拖拽缩放与通用标记；不包含迷雾、购买地图规则或指南针精确玩家位置。
 
 ### 2. 公开签名
 
@@ -112,6 +112,14 @@
 - UIWorldMapRoomView.set_current_room(is_current_room: bool) -> void
 - UIWorldMapBridgeContainer.configure_bridges(connection_mask: int, room_step: Vector2) -> void
 - UIWorldMapBridgeVisibilityPolicy.get_owned_bridge_mask(map_model: Node, room_position: Vector2i, discovered_rooms: Dictionary, mode: int) -> int
+- MapWorldModel.register_source_marker(source_id: StringName, config: Resource, logical_position: Vector2) -> bool
+- MapWorldModel.add_player_marker(config: Resource, logical_position: Vector2) -> StringName
+- MapWorldModel.remove_nearest_player_marker(logical_position: Vector2, radius: float) -> bool
+- MapWorldModel.get_marker_snapshot() -> Array[Dictionary]
+- UIMapPanZoomController.set_zoom(requested_zoom: float, viewport_point: Vector2) -> float
+- UIMapPanZoomController.viewport_to_canvas(viewport_position: Vector2) -> Vector2
+- UIMapMarkerController.bind_map_model(model: Node) -> bool
+- UIMapMarkerController.set_room_identity(room_position: Vector2i) -> void
 
 ### 3. 数据与边界合同
 
@@ -132,12 +140,17 @@
 | 重复揭示或坐标无效 | 返回 false，不重复发信号 |
 | 跨房请求失败 | 不改变当前房间，也不揭示目标 |
 | 默认模式下，一端已探索且双向连接真实 | 在已探索端的 `BridgeContainer` 生成方向桥；不生成邻居房间图片 |
-| 两端均探索且双向连接 | 由排序靠前的 `RoomTemplate` 持有唯一共享桥；纵向桥旋转 90 度 |
+| 两端均探索且双向连接 | 由排序靠前的 `RoomTemplate` 持有唯一共享桥；上下桥使用 `Room_Bridge_V.png` 且旋转为 0 |
 | 模式 `1` 且任一端未探索 | 不生成该方向桥，保持旧的“双方探索”显示策略 |
 | 连接不真实 | 任何模式都不生成桥 |
 | Model 缺少方法或信号协议 | bind_model() 返回 false 并输出可定位错误 |
 | 桥模式不是 `0` 或 `1` | set_bridge_visibility_mode() 返回 false，保持当前模式 |
 | 快照探索坐标格式损坏 | 跳过该条，不得回退为合法的 (0,0) |
+| 标记配置为空、禁用、禁止显示或缺少图标 | 来源和玩家标记入口安全拒绝，不中断房间生成 |
+| 来源房间尚未探索 | `MarkerController` 监听 `room_discovered`，不得提前注册 |
+| 同一来源重复注册 | 使用稳定 ID 去重，不新增第二个图标 |
+| 大地图打开前已暂停 | 关闭大地图后继续保持暂停 |
+| 请求缩放超出导出上下限 | `set_zoom()` 夹取后返回实际倍率，鼠标下画布点保持稳定 |
 
 ### 5. 正常、基础与错误案例
 
@@ -148,7 +161,9 @@
 ### 6. 必需测试
 
 - Model：有效与无效揭示、重复揭示、失败跨房不泄露、稳定排序副本。
-- 画布：`RoomTemplate` 生成与去重、默认显示未探索方向桥、模式切换、共享桥去重、纵桥旋转、当前纹理切换。
+- 画布：`RoomTemplate` 生成与去重、默认显示未探索方向桥、模式切换、共享桥去重、竖桥独立纹理、当前纹理和标记同步。
+- 标记：真实 `Item.tscn/MarkerController/MarkerPoint` 接线、未探索等待、探索后注册、稳定来源去重、来源节点释放后 Model 保留、两份画布同步。
+- 交互：物理 T 键通过可配置 `open_map` 动作切换大地图、暂停所有权、连续点击放置、右键删除、拖拽位移、缩放夹取与小地图 Tween 起点/中间/终点；生产脚本不得硬编码具体键码。
 - 场景：MiniMap/MaskContainer 与 LargeMap/ViewportControl 各自存在独立画布实例，旧 MapLittle 动态入口仍可调用。
 - 运行：Main 起始为 1 个房间模板，桥数等于起始房真实连接数；合法跨房后两张地图房间数同步增加，所有桥全局位置的出现次数均为 1。
 - 快照：坐标编码稳定、解码去重、损坏坐标跳过、旧字段缺失兼容。
@@ -162,6 +177,16 @@
 错误：为了避免暴露未知房间，把真实出口桥与房间图片一起隐藏，导致玩家无法从地图判断已探索房间有哪些出口。
 
 正确：房间图片仍只显示已探索房间；默认模式显示已探索房间的所有真实双向连接桥，模式 `1` 保留旧的双方探索显示策略。
+
+## 地图标记与交互合同
+
+- `MapMarkerConfig` 只保存类型键、显示名、图标、显示许可、激活状态、倍率和玩家可放置许可，不保存运行时位置。
+- `MapWorldModel` 是玩家标记与场景来源标记的唯一事实来源；两份 `PinesContainer` 只渲染同一份只读快照。
+- 标记逻辑坐标统一使用 `Vector2(column, row)`，整数点代表房间中心；画布乘以 `room_step`，大地图点击反向除以 `room_step`。
+- 场景 `MarkerPoint` 的房间内偏移使用 `(global_position - room_origin) / room_size - Vector2(0.5, 0.5)`；再加 `Vector2(room.y, room.x)`。
+- 未探索的 3×3 预加载房间不得注册来源标记；房间首次探索后注册，Model 持有记录，来源节点卸载不会删除标记。
+- 大地图拖拽和鼠标中心缩放只修改自己的画布实例；最小倍率、最大倍率、步长与拖拽阈值必须导出。
+- `UILargeMap` 通过 Inspector 导出的 InputMap 动作切换大地图；当前 `open_map` 动作绑定物理 T 键。打开时记录此前暂停状态并暂停，关闭时只归还本次打开造成的暂停；生产脚本不得读取具体键码。
 
 ## 交互与时间
 

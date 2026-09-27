@@ -7,6 +7,8 @@ const VIEW: GDScript = preload("res://scripts/map_scripts/UIMapWorldView.gd")
 const CONTROLLER: GDScript = preload("res://scripts/map_scripts/UIMapWorldController.gd")
 const ROOM: String = "res://scenes/map_scenes/map_env/normal/main/clear_creek.tscn"
 const OFFSETS: Array[Vector2i] = [Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1)]
+const MARKER_CONFIG: GDScript = preload("res://resources/map/map_marker_config.gd")
+
 
 ## 返回编辑器测试入口名称。
 ## @return 无缝地图契约套件名称。
@@ -42,7 +44,10 @@ func test_direction_masks_and_negative_world_coordinates() -> void:
 		assert_true(context.has_connection(direction))
 		var neighbor: Vector2i = Vector2i(2, 2) + OFFSETS[direction]
 		assert_true(bool(model.call("are_rooms_connected", Vector2i(2, 2), neighbor)))
-		assert_eq(model.call("world_origin_for", neighbor), Vector2(OFFSETS[direction].y * 1280, OFFSETS[direction].x * 720))
+		assert_eq(
+			model.call("world_origin_for", neighbor),
+			Vector2(OFFSETS[direction].y * 1280, OFFSETS[direction].x * 720)
+		)
 	assert_eq(model.call("map_position_for_world", Vector2(-0.01, -0.01)), Vector2i(1, 1))
 	assert_eq(model.call("map_position_for_world", Vector2(1279.99, 719.99)), Vector2i(2, 2))
 	assert_eq(model.call("map_position_for_world", Vector2(1280, 720)), Vector2i(3, 3))
@@ -57,7 +62,9 @@ func test_rejected_moves_preserve_state_and_signal_count() -> void:
 	var model: Node = _model()
 	var observed: Array[Vector2i] = []
 	var discovered: Array[Vector2i] = []
-	model.connect("current_room_changed", func(position: Vector2i) -> void: observed.append(position))
+	model.connect(
+		"current_room_changed", func(position: Vector2i) -> void: observed.append(position)
+	)
 	model.connect("room_discovered", func(position: Vector2i) -> void: discovered.append(position))
 	for invalid in [Vector2i(-1, 2), Vector2i(5, 2), Vector2i(0, 0), Vector2i(3, 3)]:
 		assert_false(bool(model.call("try_enter_room", invalid)))
@@ -94,6 +101,44 @@ func test_discovered_room_collection_is_stable_and_read_only() -> void:
 	assert_eq(positions, [Vector2i(1, 4), Vector2i(3, 2)])
 	positions.clear()
 	assert_eq((model.call("get_discovered_positions") as Array).size(), 2)
+
+
+## 玩家与来源标记必须共享逻辑坐标协议，并按稳定 ID 去重或删除。
+## @return 无返回值。
+func test_marker_model_supports_source_deduplication_and_player_removal() -> void:
+	var model: Node = _model()
+	var config: Resource = MARKER_CONFIG.new()
+	config.set("marker_type", &"contract_marker")
+	config.set("icon", load("res://res/room_icon/room_marker/Room_Marker.png"))
+	var changed_count: Array[int] = [0]
+	model.connect("markers_changed", func() -> void: changed_count[0] += 1)
+	assert_true(
+		bool(model.call("register_source_marker", &"scene:one", config, Vector2(2.25, 3.5)))
+	)
+	assert_false(
+		bool(model.call("register_source_marker", &"scene:one", config, Vector2(2.25, 3.5)))
+	)
+	assert_eq(changed_count[0], 1)
+	var player_id: StringName = model.call("add_player_marker", config, Vector2(4.0, 1.0))
+	assert_ne(player_id, &"")
+	assert_eq((model.call("get_marker_snapshot") as Array).size(), 2)
+	assert_false(
+		bool(model.call("remove_nearest_player_marker", Vector2(2.25, 3.5), 0.2)), "来源标记不可被右键删除。"
+	)
+	assert_true(bool(model.call("remove_nearest_player_marker", Vector2(4.1, 1.0), 0.2)))
+	assert_eq((model.call("get_marker_snapshot") as Array).size(), 1)
+
+
+## 标记 Resource 默认值必须可安全创建，并由 Inspector 覆盖表现字段。
+## @return 无返回值。
+func test_marker_config_has_safe_defaults() -> void:
+	var config: Resource = MARKER_CONFIG.new()
+	assert_eq(config.get("marker_type"), &"marker")
+	assert_eq(config.get("display_name"), "地图标记")
+	assert_true(bool(config.get("allow_map_display")))
+	assert_true(bool(config.get("active")))
+	assert_eq(float(config.get("marker_scale")), 1.0)
+	assert_true(bool(config.get("player_placeable")))
 
 
 ## 每个坐标只创建一个资源；同路径跨坐标共享 PackedScene，上下文不包含节点。
@@ -178,8 +223,9 @@ func test_model_signal_updates_current_room_compatibility_surface() -> void:
 	model.connect("current_room_changed", Callable(view, "_on_model_current_room_changed"))
 	view.call("_activate_window", Vector2i(2, 2))
 	var notifications: Array = []
-	view.connect("on_entered_room", func(position: Vector2i, scene: Node2D) -> void:
-		notifications.append([position, scene])
+	view.connect(
+		"on_entered_room",
+		func(position: Vector2i, scene: Node2D) -> void: notifications.append([position, scene])
 	)
 	assert_true(bool(model.call("try_enter_room", Vector2i(2, 3))))
 	assert_eq(view.get("current_position"), Vector2i(2, 3))

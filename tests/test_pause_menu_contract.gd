@@ -34,13 +34,14 @@ const PROJECT_CONFIG_PATH: String = "res://project.godot"
 ##
 ## 只要这行还在，暂停菜单就仍然活在被局内战斗保留的 HUD 宿主上；一旦有人把它挪进
 ## battle.tscn，这条断言就会当场失败。
-const REQUIRED_HOST_DECLARATION: String = "[node name=\"PauseMenu\" parent=\"UI/HUDLayer/HUDRoot\""
+const REQUIRED_HOST_DECLARATION: String = '[node name="PauseMenu" parent="UI/HUDLayer/HUDRoot"'
 
 ## 脚本里必须保留的控件接线语句。
 ## 非 @tool 脚本在编辑器进程里不会执行 _ready，因此接线用源码断言锁定。
 const REQUIRED_WIRING_STATEMENTS: Array[String] = [
 	"_pause_button.pressed.connect(_on_pause_button_pressed)",
 	"_continue_button.pressed.connect(_on_continue_button_pressed)",
+	"_options_button.pressed.connect(_on_options_button_pressed)",
 	"_exit_button.pressed.connect(_on_exit_button_pressed)",
 ]
 
@@ -50,13 +51,16 @@ const REQUIRED_PUBLIC_METHODS: Array[String] = [
 	"func close_pause_menu",
 	"func toggle_pause_menu",
 	"func _on_continue_button_pressed",
+	"func _on_options_button_pressed",
+	"func _on_option_panel_back_requested",
 	"func _on_exit_button_pressed",
 ]
 
-## 菜单必须按「继续游戏」在前、「退出游戏」在后排列的按钮。
+## 菜单必须按「继续游戏」「参数设置」「退出游戏」排列的按钮。
 ## 继续游戏排在第一位，玩家打开菜单后第一个看到的选项才是「回到游戏」。
 const REQUIRED_MENU_ORDER: Array[String] = [
 	"ContinueButton",
+	"OptionsButton",
 	"ExitButton",
 ]
 
@@ -80,13 +84,11 @@ func test_pause_action_is_registered_on_escape() -> void:
 	# loaded_in_input_map 都是 false），所以这里只断言配置文件本身；按键是否真的生效由
 	# 运行中游戏进程的 game_eval 负责。
 	var block: String = _action_block(
-		FileAccess.get_file_as_string(PROJECT_CONFIG_PATH),
-		action_name
+		FileAccess.get_file_as_string(PROJECT_CONFIG_PATH), action_name
 	)
 	assert_false(block.is_empty(), "project.godot 必须包含 pause_game 动作块。")
 	assert_true(
-		block.contains("\"keycode\":%d" % KEY_ESCAPE),
-		"pause_game 必须绑定 ESC（keycode %d）。" % KEY_ESCAPE
+		block.contains('"keycode":%d' % KEY_ESCAPE), "pause_game 必须绑定 ESC（keycode %d）。" % KEY_ESCAPE
 	)
 
 
@@ -100,13 +102,10 @@ func test_scene_is_hosted_by_the_cross_state_hud_root() -> void:
 	assert_false(main_scene_text.is_empty(), "必须能读到生产主场景。")
 
 	assert_true(
-		_find_node_declaration(main_scene_text, "HUDRoot").contains("parent=\"UI/HUDLayer\""),
+		_find_node_declaration(main_scene_text, "HUDRoot").contains('parent="UI/HUDLayer"'),
 		"HUDRoot 必须仍挂在 UI/HUDLayer 下。"
 	)
-	assert_true(
-		main_scene_text.contains("path=\"%s\"" % PAUSE_MENU_SCENE_PATH),
-		"主场景必须引用暂停菜单生产场景。"
-	)
+	assert_true(main_scene_text.contains('path="%s"' % PAUSE_MENU_SCENE_PATH), "主场景必须引用暂停菜单生产场景。")
 	assert_true(
 		_find_node_declaration(main_scene_text, "PauseMenu").begins_with(REQUIRED_HOST_DECLARATION),
 		"暂停菜单必须直接挂在 UI/HUDLayer/HUDRoot 下。"
@@ -154,14 +153,8 @@ func test_menu_offers_continue_first_then_exit() -> void:
 	assert_eq(exit_button.text, "退出游戏", "菜单必须保留「退出游戏」选项。")
 
 	assert_eq(continue_button.get_parent(), exit_button.get_parent(), "两个选项必须挂在同一个纵向容器下。")
-	assert_true(
-		continue_button.get_index() < exit_button.get_index(),
-		"「继续游戏」必须排在「退出游戏」之前。"
-	)
-	assert_true(
-		continue_button.visible and exit_button.visible,
-		"两个选项在菜单展开时都必须可见。"
-	)
+	assert_true(continue_button.get_index() < exit_button.get_index(), "「继续游戏」必须排在「退出游戏」之前。")
+	assert_true(continue_button.visible and exit_button.visible, "两个选项在菜单展开时都必须可见。")
 
 	_dispose(scene_tree, menu)
 
@@ -177,15 +170,11 @@ func test_production_scene_places_pause_button_in_the_top_right_corner() -> void
 
 	var declaration: String = _find_node_declaration(scene_text, "PauseButton")
 	assert_true(not declaration.is_empty(), "场景必须包含 PauseButton。")
+	assert_true(declaration.contains('parent="."'), "暂停键必须直接挂在浮层根节点下，才能独立于菜单显隐常驻显示。")
 	assert_true(
-		declaration.contains("parent=\".\""),
-		"暂停键必须直接挂在浮层根节点下，才能独立于菜单显隐常驻显示。"
+		scene_text.contains('type="CenterContainer"'), "菜单内容必须交给全屏 CenterContainer 居中，而不是靠子面板自身锚点。"
 	)
-	assert_true(
-		scene_text.contains("type=\"CenterContainer\""),
-		"菜单内容必须交给全屏 CenterContainer 居中，而不是靠子面板自身锚点。"
-	)
-	assert_true(scene_text.contains("type=\"ColorRect\""), "暂停时必须有一层全屏遮罩。")
+	assert_true(scene_text.contains('type="ColorRect"'), "暂停时必须有一层全屏遮罩。")
 
 
 ## 验证生产场景引用了唯一名节点，脚本才能用 %Name 解析菜单控件。
@@ -197,7 +186,15 @@ func test_scene_exposes_the_unique_names_the_script_depends_on() -> void:
 	var scene_text: String = FileAccess.get_file_as_string(PAUSE_MENU_SCENE_PATH)
 	var script_source: String = FileAccess.get_file_as_string(PAUSE_MENU_SCRIPT.resource_path)
 
-	for node_name: String in ["PauseButton", "PauseOverlay", "ContinueButton", "ExitButton"]:
+	for node_name: String in [
+		"PauseButton",
+		"PauseOverlay",
+		"ContinueButton",
+		"OptionsButton",
+		"ExitButton",
+		"MainMenuPage",
+		"OptionPanel"
+	]:
 		assert_true(
 			not _find_node_declaration(scene_text, node_name).is_empty(),
 			"场景必须包含 %s 节点。" % node_name
@@ -206,10 +203,7 @@ func test_scene_exposes_the_unique_names_the_script_depends_on() -> void:
 			_find_node_block(scene_text, node_name).contains("unique_name_in_owner = true"),
 			"%s 必须开启唯一名，脚本才能用 %%%s 解析。" % [node_name, node_name]
 		)
-		assert_true(
-			script_source.contains("%%%s" % node_name),
-			"脚本必须通过 %%%s 引用该控件。" % node_name
-		)
+		assert_true(script_source.contains("%%%s" % node_name), "脚本必须通过 %%%s 引用该控件。" % node_name)
 
 
 ## 验证生产场景里两个选项的声明顺序与契约一致。
@@ -222,7 +216,7 @@ func test_production_scene_declares_continue_before_exit() -> void:
 	var previous_index: int = -1
 
 	for node_name: String in REQUIRED_MENU_ORDER:
-		var index: int = scene_text.find("[node name=\"%s\"" % node_name)
+		var index: int = scene_text.find('[node name="%s"' % node_name)
 		assert_gt(index, -1, "场景必须声明 %s 节点。" % node_name)
 		assert_gt(index, previous_index, "%s 必须声明在上一项之后，保持菜单顺序。" % node_name)
 		previous_index = index
@@ -243,17 +237,10 @@ func test_script_keeps_wiring_and_public_entries() -> void:
 	for wiring: String in REQUIRED_WIRING_STATEMENTS:
 		assert_true(source.contains(wiring), "脚本必须保留接线 %s。" % wiring)
 
+	assert_true(source.contains("process_mode = Node.PROCESS_MODE_ALWAYS"), "脚本必须保证暂停期间菜单仍能处理输入。")
+	assert_true(source.contains("event.is_action_pressed(PAUSE_ACTION)"), "脚本必须监听暂停动作。")
 	assert_true(
-		source.contains("process_mode = Node.PROCESS_MODE_ALWAYS"),
-		"脚本必须保证暂停期间菜单仍能处理输入。"
-	)
-	assert_true(
-		source.contains("event.is_action_pressed(PAUSE_ACTION)"),
-		"脚本必须监听暂停动作。"
-	)
-	assert_true(
-		source.contains("get_viewport().set_input_as_handled()"),
-		"消费暂停按键后必须标记事件已处理，避免同一次按键再次切换。"
+		source.contains("get_viewport().set_input_as_handled()"), "消费暂停按键后必须标记事件已处理，避免同一次按键再次切换。"
 	)
 
 
@@ -271,10 +258,7 @@ func test_pause_mapping_records_and_restores_previous_state() -> void:
 
 	var close_body: String = _method_body(source, "func close_pause_menu")
 	assert_true(close_body.contains("_is_menu_open = false"), "关闭必须先清除展开状态。")
-	assert_true(
-		close_body.contains("if not _was_paused_before_open:"),
-		"关闭时只能归还本次打开造成的暂停。"
-	)
+	assert_true(close_body.contains("if not _was_paused_before_open:"), "关闭时只能归还本次打开造成的暂停。")
 	assert_true(close_body.contains("get_tree().paused = false"), "关闭菜单必须解除本次暂停。")
 
 	# 「继续游戏」必须复用同一条关闭路径，否则暂停的归还判据会出现第二份实现。
@@ -299,7 +283,9 @@ func test_exit_releases_pause_before_switching_scene() -> void:
 	assert_gt(switch_index, -1, "退出处理必须切换到主菜单场景。")
 	assert_true(release_index < switch_index, "解除暂停必须发生在切换场景之前。")
 
-	var target_path: String = str(PAUSE_MENU_SCRIPT.get_script_constant_map()["MAIN_MENU_SCENE_PATH"])
+	var target_path: String = str(
+		PAUSE_MENU_SCRIPT.get_script_constant_map()["MAIN_MENU_SCENE_PATH"]
+	)
 	assert_eq(target_path, EXPECTED_MAIN_MENU_SCENE_PATH, "退出游戏必须回到生产主菜单场景。")
 	assert_true(ResourceLoader.exists(target_path), "主菜单场景路径必须真实存在。")
 
@@ -314,7 +300,7 @@ func test_exit_releases_pause_before_switching_scene() -> void:
 ## 参数 node_name：节点名。
 ## 返回值：匹配到的声明行；未找到时返回空字符串。
 func _find_node_declaration(scene_text: String, node_name: String) -> String:
-	var marker: String = "[node name=\"%s\"" % node_name
+	var marker: String = '[node name="%s"' % node_name
 	for raw_line: String in scene_text.split("\n"):
 		if raw_line.begins_with(marker):
 			return raw_line
@@ -327,7 +313,7 @@ func _find_node_declaration(scene_text: String, node_name: String) -> String:
 ## 参数 node_name：节点名。
 ## 返回值：从声明行到下一个节点声明之前的文本；未找到时返回空字符串。
 func _find_node_block(scene_text: String, node_name: String) -> String:
-	var start: int = scene_text.find("[node name=\"%s\"" % node_name)
+	var start: int = scene_text.find('[node name="%s"' % node_name)
 	if start < 0:
 		return ""
 
@@ -382,7 +368,12 @@ func _action_block(config_text: String, action_name: String) -> String:
 ## 参数 scene_tree：当前测试的主循环。
 ## 返回值：已进入场景树的暂停菜单。
 func _new_pause_menu(scene_tree: SceneTree) -> Control:
-	var menu := PAUSE_MENU_SCENE.instantiate() as Control
+	# 编辑器长会话会保留 preload 的旧 PackedScene；这里以磁盘版本替换缓存，避免假失败。
+	var current_scene := (
+		ResourceLoader.load(PAUSE_MENU_SCENE_PATH, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE)
+		as PackedScene
+	)
+	var menu := current_scene.instantiate() as Control
 	menu.name = "PauseMenuContractProbe"
 	scene_tree.root.add_child(menu)
 	return menu

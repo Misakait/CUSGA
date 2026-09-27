@@ -7,12 +7,18 @@ const MAP_LITTLE_SCRIPT: GDScript = preload("res://scripts/map_scripts/UIMapLitt
 const RUN_SNAPSHOT_SCRIPT: GDScript = preload("res://core/gameflow/run_snapshot.gd")
 const ROOM_TEXTURE_PATH: String = "res://res/room_icon/Room.png"
 const CURRENT_ROOM_TEXTURE_PATH: String = "res://res/room_icon/Room-With-Me.png"
+const VERTICAL_BRIDGE_TEXTURE_PATH: String = "res://res/room_icon/Room_Bridge_V.png"
+const MARKER_CONFIG_SCRIPT: GDScript = preload("res://resources/map/map_marker_config.gd")
+const MARKER_CONTROLLER_SCRIPT: GDScript = preload(
+	"res://scripts/map_scripts/UIMapMarkerController.gd"
+)
 
 
 class FakeMapModel:
 	extends Node
 	signal room_discovered(position: Vector2i)
 	signal current_room_changed(position: Vector2i)
+	signal markers_changed
 
 	var current_position: Vector2i = Vector2i(2, 2)
 	var discovered_rooms: Dictionary = {}
@@ -22,6 +28,8 @@ class FakeMapModel:
 		Vector2i(3, 3): [1, 0, 0, 0],
 		Vector2i(1, 1): [0, 0, 0, 0],
 	}
+	var markers: Dictionary = {}
+	var room_size: Vector2 = Vector2(1280.0, 720.0)
 
 	func get_discovered_positions() -> Array[Vector2i]:
 		var positions: Array[Vector2i] = []
@@ -65,6 +73,48 @@ class FakeMapModel:
 	func move_to(position: Vector2i) -> void:
 		current_position = position
 		current_room_changed.emit(position)
+
+	func get_marker_snapshot() -> Array[Dictionary]:
+		var snapshot: Array[Dictionary] = []
+		for record: Dictionary in markers.values():
+			snapshot.append(record.duplicate())
+		return snapshot
+
+	func add_test_marker(
+		marker_id: StringName, config: Resource, logical_position: Vector2
+	) -> void:
+		markers[marker_id] = {
+			"id": marker_id,
+			"source_kind": &"player",
+			"marker_type": config.get("marker_type"),
+			"logical_position": logical_position,
+			"config": config,
+		}
+		markers_changed.emit()
+
+	func register_source_marker(
+		marker_id: StringName, config: Resource, logical_position: Vector2
+	) -> bool:
+		if marker_id == &"" or config == null:
+			return false
+		var record := {
+			"id": marker_id,
+			"source_kind": &"source",
+			"marker_type": config.get("marker_type"),
+			"logical_position": logical_position,
+			"config": config,
+		}
+		if markers.has(marker_id) and markers[marker_id] == record:
+			return false
+		markers[marker_id] = record
+		markers_changed.emit()
+		return true
+
+	func has_marker(marker_id: StringName) -> bool:
+		return markers.has(marker_id)
+
+	func world_origin_for(_position: Vector2i) -> Vector2:
+		return Vector2.ZERO
 
 
 class FakeSnapshotMapModel:
@@ -129,11 +179,73 @@ func test_canvas_reveals_rooms_bridges_and_current_texture() -> void:
 		vertical_owner.get_node("BridgeContainer").call("get_bridge_node", 2) as Sprite2D
 	)
 	assert_eq(horizontal_bridge.rotation, 0.0, "水平桥不得旋转。")
-	var vertical_rotation: float = vertical_bridge.rotation
-	assert_true(
-		is_equal_approx(vertical_rotation, PI / 2.0),
-		"垂直桥必须旋转 90 度，实际为 %s。" % str(rad_to_deg(vertical_rotation))
+	assert_eq(vertical_bridge.rotation, 0.0, "垂直桥必须使用原始方向，不得旋转像素图。")
+	assert_eq(vertical_bridge.texture.resource_path, VERTICAL_BRIDGE_TEXTURE_PATH)
+
+
+## 两份画布必须渲染同一份逻辑标记快照，并保持各自独立节点。
+## @return 无返回值。
+func test_two_canvas_instances_share_marker_state_without_sharing_nodes() -> void:
+	var model: FakeMapModel = track(FakeMapModel.new()) as FakeMapModel
+	model.discovered_rooms[Vector2i(2, 2)] = true
+	var first: Control = _create_canvas(model)
+	var second: Control = _create_canvas(model)
+	var config: Resource = MARKER_CONFIG_SCRIPT.new()
+	config.set("marker_type", &"test_marker")
+	config.set("icon", load("res://res/room_icon/room_marker/Room_Marker.png"))
+	config.set("marker_scale", 1.25)
+	model.add_test_marker(&"player:test", config, Vector2(2.5, 1.25))
+	assert_eq(first.call("get_generated_marker_count"), 1)
+	assert_eq(second.call("get_generated_marker_count"), 1)
+	var first_marker: Sprite2D = first.get_node("PinesContainer").get_child(0) as Sprite2D
+	var second_marker: Sprite2D = second.get_node("PinesContainer").get_child(0) as Sprite2D
+	assert_ne(first_marker, second_marker)
+	assert_eq(first_marker.position, Vector2(80.0, 40.0))
+	assert_eq(second_marker.position, first_marker.position)
+	assert_eq(first_marker.scale, Vector2(1.25, 1.25))
+
+
+## Item 标记在房间未探索时等待，探索后注册，并在来源节点释放后由 Model 保留。
+## @return 无返回值。
+func test_item_marker_waits_for_discovery_and_persists_in_model() -> void:
+	var model: FakeMapModel = track(FakeMapModel.new()) as FakeMapModel
+	var item_scene := (
+		ResourceLoader.load(
+			"res://scenes/ItemTerrian/Item.tscn",
+			"PackedScene",
+			ResourceLoader.CACHE_MODE_REPLACE_DEEP
+		)
+		as PackedScene
 	)
+	var item: Node2D = item_scene.instantiate() as Node2D
+	var item_marker_controller: Node = item.get_node("MarkerController")
+	assert_true(item_marker_controller.get_node_or_null("MarkerPoint") is Node2D)
+	assert_eq(
+		item_marker_controller.get_script().resource_path,
+		"res://scripts/map_scripts/UIMapMarkerController.gd"
+	)
+	item.free()
+
+	var marker_controller: Node2D = MARKER_CONTROLLER_SCRIPT.new() as Node2D
+	var marker_point := Node2D.new()
+	marker_point.name = &"MarkerPoint"
+	marker_controller.add_child(marker_point)
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	tree.root.add_child(marker_controller)
+	marker_controller.set(
+		"marker_config", load("res://resources/map/markers/room_marker_blue.tres")
+	)
+	assert_true(bool(marker_controller.call("bind_map_model", model)))
+	marker_controller.call("set_room_identity", Vector2i(2, 3))
+	assert_eq(model.get_marker_snapshot().size(), 0, "未探索房间的预加载 Item 不得提前泄露标记。")
+
+	assert_true(model.discover(Vector2i(2, 3)))
+	assert_eq(model.get_marker_snapshot().size(), 1, "房间探索后 Item 标记应注册到 Model。")
+	marker_controller.call("set_room_identity", Vector2i(2, 3))
+	assert_eq(model.get_marker_snapshot().size(), 1, "同一稳定来源重复注册不得生成重复标记。")
+
+	marker_controller.free()
+	assert_eq(model.get_marker_snapshot().size(), 1, "来源节点卸载后，已发现标记仍应由 Model 保留。")
 
 
 ## 桥显示策略可切回“仅连接双方都已探索”，并能恢复默认提前显示模式。
@@ -169,28 +281,74 @@ func test_two_canvas_instances_are_independent_and_consistent() -> void:
 ## @return 无返回值。
 func test_scene_structure_uses_shared_canvas_and_compatibility_nodes() -> void:
 	var mini: Node = (
-		track((load("res://scenes/map_scenes/map_view/MiniMap.tscn") as PackedScene).instantiate())
+		track(
+			(
+				(
+					ResourceLoader.load(
+						"res://scenes/map_scenes/map_view/MiniMap.tscn",
+						"PackedScene",
+						ResourceLoader.CACHE_MODE_REPLACE
+					)
+					as PackedScene
+				)
+				. instantiate()
+			)
+		)
 		as Node
 	)
 	var large: Node = (
-		track((load("res://scenes/map_scenes/map_view/LargeMap.tscn") as PackedScene).instantiate())
+		track(
+			(
+				(
+					ResourceLoader.load(
+						"res://scenes/map_scenes/map_view/LargeMap.tscn",
+						"PackedScene",
+						ResourceLoader.CACHE_MODE_REPLACE
+					)
+					as PackedScene
+				)
+				. instantiate()
+			)
+		)
 		as Node
 	)
 	var room_template: Node = (
 		track(
 			(
-				(load("res://scenes/map_scenes/map_view/RoomTemplate.tscn") as PackedScene)
+				(
+					ResourceLoader.load(
+						"res://scenes/map_scenes/map_view/RoomTemplate.tscn",
+						"PackedScene",
+						ResourceLoader.CACHE_MODE_REPLACE
+					)
+					as PackedScene
+				)
 				. instantiate()
 			)
 		)
 		as Node
 	)
 	var map_control: Node = (
-		track((load("res://scenes/map_scenes/map_control.tscn") as PackedScene).instantiate())
+		track(
+			(
+				(
+					ResourceLoader.load(
+						"res://scenes/map_scenes/map_control.tscn",
+						"PackedScene",
+						ResourceLoader.CACHE_MODE_REPLACE
+					)
+					as PackedScene
+				)
+				. instantiate()
+			)
+		)
 		as Node
 	)
 	assert_true(mini.get_node_or_null("MaskContainer/CanvasViewport/WorldMapCanvas") != null)
 	assert_true(large.get_node_or_null("ViewportControl/WorldMapCanvas") != null)
+	assert_true(large.get_node_or_null("LegendUI/Margin/Content/OptionsScroll") is ScrollContainer)
+	assert_true(large.get_node("ViewportControl").has_method("set_zoom"))
+	assert_true(mini.get_script().resource_path.ends_with("UIMiniMap.gd"))
 	assert_true(room_template.has_method("configure_room"))
 	assert_true(room_template.get_node_or_null("RoomView") is Sprite2D)
 	assert_true(room_template.get_node_or_null("RoomView").has_method("set_current_room"))
@@ -200,6 +358,11 @@ func test_scene_structure_uses_shared_canvas_and_compatibility_nodes() -> void:
 	assert_true(map_control.get_node_or_null("LargeMap") != null)
 	assert_true(map_control.get_node_or_null("MapLittle") != null)
 	assert_true(map_control.get_node_or_null("CanvasLayer") is CanvasLayer)
+	assert_true(
+		FileAccess.get_file_as_string("res://scripts/map_scripts/UIMiniMap.gd").contains(
+			"create_tween()"
+		)
+	)
 	var old_adapter: Node = MAP_LITTLE_SCRIPT.new()
 	track(old_adapter)
 	for method_name: StringName in [
@@ -209,6 +372,38 @@ func test_scene_structure_uses_shared_canvas_and_compatibility_nodes() -> void:
 		&"update_current_position",
 	]:
 		assert_true(old_adapter.has_method(method_name), "旧动态入口必须保留：%s" % method_name)
+
+
+## 大地图输入、暂停和地图设置页必须保留稳定的生产接线。
+## @return 无返回值。
+func test_map_interaction_and_option_panel_contracts() -> void:
+	var project_config: String = FileAccess.get_file_as_string("res://project.godot")
+	var open_map_start: int = project_config.find("open_map={")
+	var open_map_end: int = project_config.find("\n}\n", open_map_start)
+	var open_map_block: String = project_config.substr(
+		open_map_start, open_map_end - open_map_start
+	)
+	assert_true(open_map_block.contains('"physical_keycode":84'), "open_map 必须绑定物理 T 键。")
+	assert_false(open_map_block.contains('"physical_keycode":77'), "open_map 不得继续占用物理 M 键。")
+
+	var large_source: String = FileAccess.get_file_as_string(
+		"res://scripts/map_scripts/UILargeMap.gd"
+	)
+	assert_true(large_source.contains('@export var open_map_action: StringName = &"open_map"'))
+	assert_true(large_source.contains("event.is_action_pressed(open_map_action)"))
+	assert_false(large_source.contains("KEY_T"), "大地图脚本不得硬编码 T 键。")
+	assert_false(large_source.contains("physical_keycode"), "大地图脚本不得读取物理键码。")
+	assert_true(large_source.contains("_was_paused_before_open = tree.paused"))
+	assert_true(large_source.contains("tree.paused = true"))
+	assert_true(large_source.contains("remove_nearest_player_marker"))
+
+	var option_scene := load("res://scenes/ui_scenes/option_panel.tscn") as PackedScene
+	var option_panel: Control = track(option_scene.instantiate()) as Control
+	assert_true(option_panel.get_node_or_null("Center/Panel") is PanelContainer)
+	assert_true(option_panel.get_node_or_null("%MapCategoryButton") is Button)
+	assert_true(option_panel.get_node_or_null("%MiniMapZoomSlider") is HSlider)
+	assert_true(option_panel.get_node_or_null("%ResetMapButton") is Button)
+	assert_true(option_panel.get_node_or_null("%BackButton") is Button)
 
 
 ## RunSnapshot 必须稳定编码探索集合，并能从 payload 恢复且去重。

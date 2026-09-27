@@ -4,7 +4,7 @@
 
 最后修订：2026-09-27
 
-状态：本文件是地图系统当前架构的唯一设计依据。无缝地图的 3×3 房间实例窗口、房间内部模块控制器，以及大小地图共享画布与探索揭示均已接入。大小地图本轮只完成房间图标、连接桥、当前房间高亮、小地图居中和大地图开关；图钉、迷雾、拖拽、滚轮缩放与房间内精确玩家位置尚未实现。
+状态：本文件是地图系统当前架构的唯一设计依据。无缝地图的 3×3 房间实例窗口、房间内部模块控制器、大小地图共享画布、探索揭示、通用标记、大地图拖拽缩放和地图偏好均已接入。迷雾、购买地图规则与指南针精确玩家位置尚未实现。
 
 ## 1. 目标与约束
 
@@ -141,8 +141,8 @@ Model 不依赖 View；View 读取 Model；Controller 依赖 Model 的公开接�
 ### 其他 UI View
 
 - `UIWorldMapCanvas.gd`：把 `MapWorldModel` 的已探索坐标与真实双向连接转换为轻量房间图片和 `Room_Bridge` 图片；不实例化真实房间场景。
-- `UIMiniMap.gd`：在 `MiniMap/MaskContainer` 的裁切范围内缩放共享画布实例，并持续把当前房间放在遮罩中心。
-- `UILargeMap.gd`：管理另一份独立画布实例，使用 `open_map` 输入动作切换显示，并在打开时聚焦当前房间。
+- `UIMiniMap.gd`：在裁切范围内应用 `map/minimap_zoom`，换房时停止旧 Tween 并平滑聚焦新当前房。
+- `UILargeMap.gd`：协调 Inspector 可配置的 InputMap 动作、暂停所有权、当前房聚焦与标记意图；当前 `open_map` 由项目配置绑定物理 T 键。拖拽缩放交给 `UIMapPanZoomController`，选项交给 `UIMapLegend`。
 - `UIMapLittle.gd`：旧调用兼容适配器。保留 `build_little_map`、`change_this_cell_color`、`return_this_cell_color` 和 `update_current_position`，但不再生成旧格子与旧桥节点。
 - UIRoomBoardPresenter.gd：监听 MapControl.on_entered_room，读取房间根节点 terrain_profile 并刷新地形棋盘。
 - UICurrentMapBackgroundResolver.gd：从 MapInstantiator.current_scene 解析当前房间背景。
@@ -277,7 +277,7 @@ Bridge 是场景内真实可通行的连接表现，不是传送点。玩家穿�
 - `WorldMapCanvas` 只绑定 Model 和转发状态；`RoomsContainer` 只管理直接 `RoomTemplate` 子节点，房间以 `Vector2i(row, column)` 为键，画布横坐标使用 column、纵坐标使用 row。
 - 每个 `RoomTemplate` 只协调 `RoomView` 与 `BridgeContainer`。`RoomView` 负责普通/当前房间纹理；`BridgeContainer` 负责自己的上、右、下、左桥节点；纯桥显示和所有权计算放在 `UIWorldMapBridgeVisibilityPolicy.gd`。
 - 已探索普通房间使用 `res://res/room_icon/Room.png`，当前房间使用 `res://res/room_icon/Room-With-Me.png`。未探索房间不生成模板和房间图片。
-- 连接使用 `res://res/room_icon/Room_Bridge.png`。默认显示已探索房间的所有真实双向连接方向，即使邻居尚未探索；水平桥保持原角度，纵向桥旋转 90 度。
+- 左右连接使用 `Room_Bridge.png`，上下连接使用 `Room_Bridge_V.png`，所有桥旋转均为 0。默认显示已探索房间的所有真实双向连接方向，即使邻居尚未探索。
 - 连接双方都已探索后，由 row/column 排序靠前的模板持有唯一共享桥，另一模板不生成反向桥。`set_bridge_visibility_mode(1)` 保留旧的“双方已探索才显示”规则，模式 `0` 恢复默认出口桥规则。
 - 新局起始房间自动进入探索集合。成功跨入新房间时先加入探索集合，再更新当前房间；失败请求不揭示房间。
 - `RunSnapshot` 的 `run_world` payload 保存探索坐标字符串数组；旧快照缺少字段时以当前房间作为兼容回退。探索状态随现有局内快照采集流程保存，本轮没有新增独立存档文件或修改存档模式。
@@ -352,8 +352,15 @@ normal 生态有 12 个唯一房间场景，且当前工作树中的 normal 场�
 本节原有三条记录保留为本轮实施前的历史快照；本轮模块、碰撞和跨房的最新结果见文末补充及任务 runtime-validation.md。MapTypes 路径表的原有建立方式没有在本轮重构。
 
 - 已实现：MapWorldModel 的资源缓存、共享 PackedScene、连接强校验、RoomContext、1280×720 坐标换算、3×3 实例窗口、房间模块控制器、探索集合，以及两份独立 WorldMapCanvas 的大小地图生成。
-- 已实现的大小地图交互仅包括：小地图裁切并居中当前房间；大地图用 M 键开关并聚焦当前房间；当前房间使用红色临时图标。
-- 后续接口：`PinesContainer` 保留图钉容器，`PlayerMarker` 保留房间内精确位置或指南针入口；大地图拖拽、滚轮缩放、图例内容、图钉编辑和地图迷雾尚未实现。
+- 已实现的小地图交互包括：裁切、独立缩放、读取 `map/minimap_zoom` 偏好，以及换房时停止旧 Tween 后平滑居中新当前房间。
+- 已实现的大地图交互包括：物理 T 键通过 `open_map` 动作开关、暂停所有权恢复、当前房聚焦、拖拽、鼠标中心缩放、可滚动标记图例、连续左键放置和右键删除附近玩家标记。具体按键只存在于 InputMap，`UILargeMap.open_map_action` 可在 Inspector 更换动作名。
+- `PinesContainer` 挂载 `UIWorldMapMarkersContainer`，只把 Model 快照转换为 Sprite2D；标记逻辑坐标是 `Vector2(column, row)`，整数点为房间中心。
+- 场景锚点先用 `(MarkerPoint.global_position - room_origin) / room_size - Vector2(0.5, 0.5)` 得到房间内偏移，再加 `Vector2(room_position.y, room_position.x)`；画布乘以 `room_step`，点击放置则反向除以 `room_step`。
+- `MapMarkerConfig` 只保存可编辑配置；`MapWorldModel` 负责玩家标记、稳定来源标记、去重、右键删除与同步信号。来源节点卸载不删除记录。
+- `UIMapMarkerController` 用 MarkerPoint 精确换算房间内偏移；预加载未探索房只等待 `room_discovered`。
+- `UIMapPanZoomController` 管拖拽、阈值、鼠标中心缩放和点击反算；`UIMapLegend` 管可滚动选项和选中态。
+- `UIOptionPanel` 只写 `SettingsManager` 的 `map/minimap_zoom`；暂停菜单只切换主菜单页与设置页。
+- 后续接口：`PlayerMarker` 保留房间内精确玩家位置或指南针入口；地图迷雾、购买地图与专用商店/长椅标记规则尚未实现。
 - 未改动：MapPositionCreate 生成算法、3×3 房间加载规则、旧门/地图按钮/通道战斗系统，以及房间 TileMap 美术内容。
 
 ## 本轮落地补充
@@ -363,4 +370,4 @@ normal 生态有 12 个唯一房间场景，且当前工作树中的 normal 场�
 - 三类边界和障碍使用 TileSet 物理层 32、掩码 16，匹配玩家层 16、掩码 32。32 像素桥边瓦片只在外侧半格阻挡，让 100×140 的玩家矩形能通过中心。
 - 用户已明确允许 Main.tscn 的初始出生点为 (640,360)；这只是场景加载时的初值。Controller 跨房时仍不修改玩家位置、不传送。
 - 用户已开放编辑器 MCP 权限。两个新套件在新启动的 Godot 4.7.1 游戏进程完整通过：12 个用例、30,725 个断言；五个目标场景完成冒烟，Main 连续往返、节点回收和资源复用通过。依据见 .trellis/tasks/09-23-seamless-map-world/runtime-validation.md。没有截图，也没有把编辑器跳过项算作运行通过。
-- 2026-09-27 的大小地图任务新增 `map_ui_contract` 契约套件，覆盖共享画布接线、房间/桥去重、当前房间纹理切换、画布实例独立和探索坐标快照编解码。编辑器测试与 MiniMap、LargeMap、Main 冒烟的最终证据记录在 `.trellis/tasks/09-27-world-map-generation/runtime-validation.md`。
+- 2026-09-27 的大小地图任务新增并扩展 `map_ui_contract` 契约套件，覆盖共享画布接线、房间/桥去重、竖桥独立纹理、当前房间纹理切换、画布实例独立、双画布标记同步、Item 标记探索门控和探索坐标快照编解码。编辑器测试、四个独立 UI 场景、Main 冒烟、真实鼠标标记交互与截图证据记录在 `.trellis/tasks/09-27-world-map-generation/runtime-validation.md`。
