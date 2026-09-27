@@ -1,0 +1,57 @@
+[gd_scene load_steps=4 format=3 uid="uid://bj57s3cu8kobp"]
+
+[ext_resource type="Texture2D" uid="uid://c4ri77xeojhnq" path="res://res/Nine-grid-template/九宫格.png" id="1_t6o3n"]
+[ext_resource type="Script" path="res://scripts/map_scripts/UILargeMap.gd" id="2_largemap"]
+[ext_resource type="PackedScene" uid="uid://dkxe1il4862fp" path="res://scenes/map_scenes/map_view/WorldMapCanvas.tscn" id="3_canvas"]
+
+[node name="LargeMap" type="CanvasLayer" unique_id=1998329483]
+layer = 3
+visible = false
+script = ExtResource("2_largemap")
+
+[node name="FrameBackground" type="NinePatchRect" parent="." unique_id=1098757123]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 32.0
+offset_right = -840.0
+offset_bottom = -456.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(3, 3)
+texture = ExtResource("1_t6o3n")
+patch_margin_left = 32
+patch_margin_top = 32
+patch_margin_right = 32
+patch_margin_bottom = 48
+
+[node name="ViewportControl" type="Control" parent="." unique_id=1324088621]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 32.0
+offset_right = -40.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+clip_contents = true
+
+[node name="WorldMapCanvas" parent="ViewportControl" instance=ExtResource("3_canvas")]
+layout_mode = 0
+
+[node name="LegendUI" type="Control" parent="." unique_id=1989857418]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -440.0
+offset_top = -160.0
+offset_right = -48.0
+offset_bottom = -48.0
+grow_horizontal = 0
+grow_vertical = 0

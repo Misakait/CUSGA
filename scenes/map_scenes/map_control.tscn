@@ -1,20 +1,16 @@
-[gd_scene format=3 uid="uid://55q6p6bk1ll7"]
+[gd_scene load_steps=12 format=3 uid="uid://55q6p6bk1ll7"]
 
 [ext_resource type="Script" uid="uid://crdg22f1in3jb" path="res://scripts/map_scripts/UIMapControl.gd" id="1_map_control"]
 [ext_resource type="Script" uid="uid://ub52pkyd8aau" path="res://scripts/map_scripts/map_position_create.gd" id="2_map_position"]
 [ext_resource type="Script" uid="uid://dbafvwcesbb1j" path="res://scripts/map_scripts/UIMapWorldView.gd" id="3_map_instantiator"]
 [ext_resource type="Script" uid="uid://gvo2d2kl7n0t" path="res://scripts/map_scripts/UIMapLittle.gd" id="7_map_little"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_map_types"]
-[ext_resource type="Texture2D" uid="uid://db2u22qgnbtry" path="res://res/image/mini_map_circle2.png" id="14_map_circle"]
-[ext_resource type="Script" path="res://scripts/map_scripts/mini_map_viewport.gd" id="14_map_viewport"]
-[ext_resource type="Texture2D" uid="uid://c8d12t4avf8b7" path="res://res/image/mini_map_circle.png" id="16_map_frame"]
 [ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="22_biome"]
 [ext_resource type="Resource" uid="uid://1if71u0wx1x8" path="res://resources/map/biomes/normal_biome.tres" id="23_normal"]
 [ext_resource type="Script" uid="uid://dnt3p5445q5g6" path="res://core/map/map_world_model.gd" id="31_world_model"]
 [ext_resource type="Script" uid="uid://cfq56eupau1gn" path="res://scripts/map_scripts/UIMapWorldController.gd" id="32_world_controller"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1iq7d"]
-texture = ExtResource("14_map_circle")
+[ext_resource type="PackedScene" uid="uid://cdpnmp4syanoa" path="res://scenes/map_scenes/map_view/MiniMap.tscn" id="33_minimap"]
+[ext_resource type="PackedScene" uid="uid://bj57s3cu8kobp" path="res://scenes/map_scenes/map_view/LargeMap.tscn" id="34_largemap"]
 
 [node name="MapControl" type="Node2D" unique_id=223958387 node_paths=PackedStringArray("canvas_layer")]
 script = ExtResource("1_map_control")
@@ -36,44 +32,12 @@ script = ExtResource("3_map_instantiator")
 [node name="MapWorldController" type="Node" parent="." unique_id=1117302278]
 script = ExtResource("32_world_controller")
 
-[node name="MapLittle" type="Node2D" parent="." unique_id=1178223658 node_paths=PackedStringArray("subviewport")]
-position = Vector2(19, -799)
+[node name="MapLittle" type="Node2D" parent="." unique_id=1178223658]
 script = ExtResource("7_map_little")
-cell_pic = "res://scenes/map_scenes/little_map_cell.tscn"
-bridge_pic = "res://scenes/map_scenes/little_map_bridge.tscn"
-if_show_the_scene = true
-subviewport = NodePath("../CanvasLayer/PanelContainer/SubViewportContainer/SubViewport")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=841791713]
+layer = 1
 
-[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer" unique_id=1707377844]
-clip_children = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -214.0
-offset_top = 71.0
-offset_right = -96.0
-offset_bottom = 190.0
-grow_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxTexture_1iq7d")
+[node name="MiniMap" parent="CanvasLayer" instance=ExtResource("33_minimap")]
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/PanelContainer" unique_id=250783514]
-layout_mode = 2
-mouse_filter = 2
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="CanvasLayer/PanelContainer/SubViewportContainer" unique_id=1091230112 node_paths=PackedStringArray("camera_node")]
-handle_input_locally = false
-canvas_item_default_texture_filter = 0
-canvas_cull_mask = 4294967293
-size = Vector2i(118, 119)
-render_target_update_mode = 4
-script = ExtResource("14_map_viewport")
-camera_node = NodePath("Camera2D")
-
-[node name="Camera2D" type="Camera2D" parent="CanvasLayer/PanelContainer/SubViewportContainer/SubViewport" unique_id=1813230729]
-
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer/PanelContainer" unique_id=2004731865]
-layout_mode = 2
-texture = ExtResource("16_map_frame")
+[node name="LargeMap" parent="." instance=ExtResource("34_largemap")]

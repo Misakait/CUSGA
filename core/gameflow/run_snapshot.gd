@@ -1,6 +1,6 @@
 extends Node
 
-## 局内世界快照参与者。
+## 局内世界状态的快照参与者。
 ##
 ## 快照只保存稳定的字符串、数字、数组和字典，不保存 Node、PackedScene 或运行时 Resource
 ## 引用。恢复顺序由 Main 的节点顺序保证：先给地图生成器布局，再由开局初始化恢复玩家，
@@ -64,10 +64,12 @@ func save_change_signals() -> Array:
 func capture_save_data() -> Dictionary:
 	var map_model: Node = get_node_or_null(MapModelPath)
 	var player_char: Node2D = get_node_or_null(PlayerCharPath) as Node2D
-	var time_system: Node = get_node_or_null("/root/TimeSystem")
+	# 编辑器契约测试会把参与者作为独立夹具调用；节点未进入场景树时不能解析绝对路径。
+	var time_system: Node = get_node_or_null("/root/TimeSystem") if is_inside_tree() else null
 	var payload: Dictionary = {
 		"map": [], "connections": {}, "start": _encode_vec2i(Vector2i.ZERO),
 		"current": _encode_vec2i(Vector2i.ZERO), "player_position": [0.0, 0.0],
+		"discovered_rooms": [],
 		"time": 0, "day": 1, "night": false,
 		"terrain": {}, "loot": {}, "buildings": {}, "building_next_id": 1,
 		"inventory": [],
@@ -77,6 +79,7 @@ func capture_save_data() -> Dictionary:
 		payload["connections"] = _encode_connections(map_model.get("scene_to_scene"))
 		payload["start"] = _encode_vec2i(map_model.get("start_position"))
 		payload["current"] = _encode_vec2i(map_model.get("current_position"))
+		payload["discovered_rooms"] = _encode_positions(map_model.get("discovered_rooms"))
 	if player_char != null:
 		payload["player_position"] = [player_char.global_position.x, player_char.global_position.y]
 	if time_system != null:
@@ -128,6 +131,17 @@ func GetCurrentRoomOrNull() -> Variant:
 	if not _has_pending:
 		return null
 	return _decode_vec2i(_pending.get("current", "0,0"))
+
+
+## 读取快照中的已探索房间集合。
+##
+## 旧存档没有该字段时返回空数组，由 MapWorldModel 把当前房间作为兼容回退。
+##
+## @return 已探索地图坐标数组；无待恢复快照或字段无效时为空。
+func GetDiscoveredRooms() -> Array[Vector2i]:
+	if not _has_pending:
+		return []
+	return _decode_positions(_pending.get("discovered_rooms", []))
 
 
 ## 在 RunStartInitializer 阶段恢复玩家位置与背包，避免新局带入逻辑覆盖存档。
@@ -190,6 +204,46 @@ func _decode_connections(source: Variant) -> Dictionary:
 		return output
 	for key: Variant in source:
 		output[_decode_vec2i(key)] = (source[key] as Array).duplicate()
+	return output
+
+
+func _encode_positions(source: Variant) -> Array[String]:
+	var output: Array[String] = []
+	var positions: Array[Vector2i] = []
+	if source is Dictionary:
+		for key: Variant in source:
+			if key is Vector2i and bool((source as Dictionary).get(key, false)):
+				positions.append(key)
+	elif source is Array:
+		for value: Variant in source:
+			if value is Vector2i:
+				positions.append(value)
+	positions.sort_custom(func(left: Vector2i, right: Vector2i) -> bool:
+		return left.x < right.x or (left.x == right.x and left.y < right.y)
+	)
+	for position: Vector2i in positions:
+		output.append(_encode_vec2i(position))
+	return output
+
+
+func _decode_positions(source: Variant) -> Array[Vector2i]:
+	var output: Array[Vector2i] = []
+	if not source is Array:
+		return output
+	var seen: Dictionary = {}
+	for value: Variant in source:
+		var position_parts: PackedStringArray = str(value).split(",")
+		# 探索集合不能沿用单坐标的零值兜底，否则损坏条目会误揭示合法的 (0, 0) 房间。
+		if (
+			position_parts.size() != 2
+			or not position_parts[0].is_valid_int()
+			or not position_parts[1].is_valid_int()
+		):
+			continue
+		var position := Vector2i(int(position_parts[0]), int(position_parts[1]))
+		if not seen.has(position):
+			seen[position] = true
+			output.append(position)
 	return output
 
 

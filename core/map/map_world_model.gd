@@ -19,6 +19,8 @@ const OPPOSITE_DIRECTIONS: Array[int] = [2, 3, 0, 1]
 
 ## 当前房间坐标发生变化时广播；View 监听后刷新显示。
 signal current_room_changed(position: Vector2i)
+## 房间第一次加入已探索集合时广播；地图 View 据此增量生成房间图元。
+signal room_discovered(position: Vector2i)
 ## 首次为坐标创建资源配置时广播；View 不需要依赖具体缓存实现。
 signal map_resource_created(position: Vector2i, resource: Resource)
 
@@ -34,6 +36,8 @@ var scene_resource_cache: Dictionary = {}
 var packed_scene_cache: Dictionary = {}
 ## 当前玩家所在的有效地图坐标。
 var current_position: Vector2i = Vector2i.ZERO
+## 本局已经成功进入过的房间集合；键为地图坐标，值固定为 true。
+var discovered_rooms: Dictionary = {}
 ## 地图生成器给出的起始坐标，用于把起始房间放在世界原点。
 var start_position: Vector2i = Vector2i.ZERO
 ## 单个完整房间场景在世界中的固定步长；normal 群系统一按 1280x720 拼接。
@@ -56,13 +60,56 @@ func _refresh_from_generator() -> void:
 	scene_to_scene = _map_position_create.get(&"scene_to_scene")
 	start_position = _map_position_create.get(&"start_position")
 	current_position = start_position
+	discovered_rooms.clear()
 	var run_snapshot: Node = get_node_or_null("../../RuntimeState/RunSnapshot")
 	if run_snapshot != null:
 		var restored: Variant = run_snapshot.call("GetCurrentRoomOrNull")
 		if restored is Vector2i and has_room(restored):
 			current_position = restored
+		if run_snapshot.has_method(&"GetDiscoveredRooms"):
+			var restored_rooms: Variant = run_snapshot.call(&"GetDiscoveredRooms")
+			if restored_rooms is Array:
+				for room_value: Variant in restored_rooms:
+					if room_value is Vector2i and has_room(room_value):
+						discovered_rooms[room_value] = true
+	# 旧存档没有探索字段时，至少保留玩家当前房间，避免继续本局后地图为空。
+	discovered_rooms[current_position] = true
 	scene_resource_cache.clear()
 	packed_scene_cache.clear()
+
+
+## 将一个有效房间加入本局探索集合。
+##
+## @param position 要揭示的地图坐标。
+## @return 房间首次加入时返回 true；无效坐标或已经探索时返回 false。
+func discover_room(position: Vector2i) -> bool:
+	if not has_room(position) or discovered_rooms.has(position):
+		return false
+	discovered_rooms[position] = true
+	room_discovered.emit(position)
+	return true
+
+
+## 返回指定房间是否已经被玩家进入过。
+##
+## @param position 要查询的地图坐标。
+## @return 房间存在于探索集合时返回 true。
+func is_room_discovered(position: Vector2i) -> bool:
+	return bool(discovered_rooms.get(position, false))
+
+
+## 返回已探索房间的稳定排序副本。
+##
+## @return 按行、列升序排列的地图坐标；调用方修改数组不会影响 Model。
+func get_discovered_positions() -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	for position_value: Variant in discovered_rooms.keys():
+		if position_value is Vector2i and bool(discovered_rooms[position_value]):
+			positions.append(position_value)
+	positions.sort_custom(func(left: Vector2i, right: Vector2i) -> bool:
+		return left.x < right.x or (left.x == right.x and left.y < right.y)
+	)
+	return positions
 
 ## 返回指定地图坐标是否存在可进入的房间。
 ##
@@ -193,7 +240,9 @@ func try_enter_room(position: Vector2i) -> bool:
 	if get_scene_resource(position) == null:
 		return false
 	if current_position == position:
+		discover_room(position)
 		return true
+	discover_room(position)
 	current_position = position
 	emit_signal("current_room_changed", position)
 	return true

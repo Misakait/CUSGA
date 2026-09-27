@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3 uid="uid://dkxe1il4862fp"]
+
+[ext_resource type="Script" path="res://scripts/map_scripts/UIWorldMapCanvas.gd" id="1_canvas"]
+
+[node name="WorldMapCanvas" type="Control" unique_id=391408128]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_canvas")
+
+[node name="RoomsContainer" type="Control" parent="." unique_id=741811031]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+
+[node name="PinesContainer" type="Control" parent="." unique_id=197524882]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+
+[node name="PlayerMarker" type="Node2D" parent="." unique_id=1308123692]
+visible = false

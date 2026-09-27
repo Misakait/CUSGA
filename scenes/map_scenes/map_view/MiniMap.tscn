@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3 uid="uid://cdpnmp4syanoa"]
+
+[ext_resource type="Texture2D" uid="uid://c4ri77xeojhnq" path="res://res/Nine-grid-template/九宫格.png" id="1_3y033"]
+[ext_resource type="Script" path="res://scripts/map_scripts/UIMiniMap.gd" id="2_minimap"]
+[ext_resource type="PackedScene" uid="uid://dkxe1il4862fp" path="res://scenes/map_scenes/map_view/WorldMapCanvas.tscn" id="3_canvas"]
+
+[node name="MiniMap" type="Control" unique_id=1121433739]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("2_minimap")
+
+[node name="FrameBackground" type="NinePatchRect" parent="." unique_id=2115668018]
+layout_mode = 0
+offset_left = -250.0
+offset_bottom = 200.0
+texture = ExtResource("1_3y033")
+patch_margin_left = 32
+patch_margin_top = 32
+patch_margin_right = 32
+patch_margin_bottom = 48
+mouse_filter = 2
+
+[node name="MaskContainer" type="PanelContainer" parent="." unique_id=1915853292]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -234.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 168.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CanvasViewport" type="Control" parent="MaskContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="WorldMapCanvas" parent="MaskContainer/CanvasViewport" instance=ExtResource("3_canvas")]
+layout_mode = 0
