@@ -50,6 +50,8 @@ func bind_model(model: Node) -> bool:
 	var current_value: Variant = _map_model.get(&"current_position")
 	if current_value is Vector2i:
 		_current_room = current_value
+	if pines_container.has_method(&"bind_model"):
+		pines_container.call(&"bind_model", _map_model, get_room_step())
 	refresh_discovered_rooms()
 	return true
 
@@ -117,6 +119,25 @@ func get_room_canvas_position(room_position: Vector2i) -> Vector2:
 	return Vector2.ZERO
 
 
+## 返回地图画布统一使用的房间中心步长。
+##
+## @return x 为列间距、y 为行间距的画布像素向量。
+func get_room_step() -> Vector2:
+	var step_value: Variant = rooms_container.get("room_step")
+	return step_value if step_value is Vector2 else Vector2(32.0, 32.0)
+
+
+## 将画布局部坐标换算为标记使用的逻辑地图坐标。
+##
+## @param canvas_position WorldMapCanvas 中的局部像素坐标。
+## @return x 为 column、y 为 row 的逻辑坐标。
+func canvas_position_to_logical(canvas_position: Vector2) -> Vector2:
+	var room_step: Vector2 = get_room_step()
+	if room_step.x <= 0.0 or room_step.y <= 0.0:
+		return Vector2.ZERO
+	return Vector2(canvas_position.x / room_step.x, canvas_position.y / room_step.y)
+
+
 ## 返回当前已生成的 RoomTemplate 数量。
 ##
 ## @return 房间模板节点数量。
@@ -132,6 +153,15 @@ func get_generated_room_count() -> int:
 func get_generated_bridge_count() -> int:
 	if rooms_container.has_method(&"get_generated_bridge_count"):
 		return int(rooms_container.call(&"get_generated_bridge_count"))
+	return 0
+
+
+## 返回当前渲染的地图标记数量。
+##
+## @return PinesContainer 中的有效标记节点数量。
+func get_generated_marker_count() -> int:
+	if pines_container.has_method(&"get_generated_marker_count"):
+		return int(pines_container.call(&"get_generated_marker_count"))
 	return 0
 
 

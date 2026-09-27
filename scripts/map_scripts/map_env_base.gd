@@ -9,10 +9,11 @@ extends "res://scripts/map_scripts/map_son_scripts/map_base.gd"
 ##
 ## 如果特定场景需要特殊行为，可单独创建脚本继承此类。
 
-var scene_types: Dictionary = {1: "main" , 2: "secondary", 3: "market", 4: "transmitting"}
+var scene_types: Dictionary = {1: "main", 2: "secondary", 3: "market", 4: "transmitting"}
 
 ## 1表示主场景，2表示过渡场景，3表示集市场景，4表示传送场景
 @export var scene_type: int
+
 
 ## 将世界视图提供的房间数据转交给 MapContainer 协调器。
 ##
@@ -31,7 +32,23 @@ func configure_room_context(context: RoomContext) -> bool:
 		push_error("%s 的 MapContainer 缺少 configure_room_context(context)。" % scene_file_path)
 		return false
 
-	return bool(map_container.call(&"configure_room_context", context))
+	var configured: bool = bool(map_container.call(&"configure_room_context", context))
+	if configured:
+		_bind_scene_marker_controllers(context.room_position)
+	return configured
+
+
+func _bind_scene_marker_controllers(room_position: Vector2i) -> void:
+	# 房间可在 Inspector 自由添加通用 MarkerController；根脚本只转交房间身份，
+	# 不读取标记配置或写入 Model，保持房间协调职责稳定。
+	var pending: Array[Node] = [self]
+	while not pending.is_empty():
+		var current: Node = pending.pop_back()
+		for child: Node in current.get_children():
+			pending.append(child)
+			if child.has_method(&"set_room_identity") and child.name == &"MarkerController":
+				child.call(&"set_room_identity", room_position)
+
 
 ## 返回场景类型的兼容名称。
 ## @return 已配置的类型名称；未知编号返回错误说明。

@@ -30,6 +30,7 @@ var _base_visual_scale: Vector2 = Vector2.ONE
 @onready var _collision: CollisionShape2D = $Collision
 @onready var _interaction: Area2D = $Interaction
 @onready var _animation_player: AnimationPlayer = $AnimationPlayer
+@onready var _marker_controller: Node = $MarkerController
 
 
 ## 连接唯一的鼠标输入入口，并配置当前实例自己的视觉动作。
@@ -54,6 +55,8 @@ func _ready() -> void:
 func SetRoomIdentity(room: Vector2i, loot_id: int = -1) -> void:
 	RoomPosition = room
 	LootId = loot_id
+	if _marker_controller != null and _marker_controller.has_method(&"set_room_identity"):
+		_marker_controller.call(&"set_room_identity", room)
 
 
 ## 绑定地形状态，启用按配置设定的物理阻挡。
@@ -219,16 +222,39 @@ func _configure_motion() -> void:
 	var idle_amplitude: float = _motion_float("IdleScaleAmplitude", 0.03)
 	var idle_tint: Color = MotionConfig.get("IdleTint") if MotionConfig != null else Color.WHITE
 	var base_scale: Vector2 = _base_visual_scale
-	_set_track(idle, 0, [0.0, idle_duration / 2.0, idle_duration], [base_scale, base_scale * (1.0 + idle_amplitude), base_scale])
-	_set_track(idle, 1, [0.0, idle_duration / 2.0, idle_duration], [Color.WHITE, idle_tint, Color.WHITE])
+	_set_track(
+		idle,
+		0,
+		[0.0, idle_duration / 2.0, idle_duration],
+		[base_scale, base_scale * (1.0 + idle_amplitude), base_scale]
+	)
+	_set_track(
+		idle, 1, [0.0, idle_duration / 2.0, idle_duration], [Color.WHITE, idle_tint, Color.WHITE]
+	)
 	idle.length = idle_duration
 	var hover_duration: float = _motion_float("HoverDuration", 0.25)
-	var squash: Vector2 = MotionConfig.get("HoverSquash") if MotionConfig != null else Vector2(0.92, 1.08)
-	var stretch: Vector2 = MotionConfig.get("HoverStretch") if MotionConfig != null else Vector2(1.08, 0.95)
-	var rest: Vector2 = MotionConfig.get("HoverRest") if MotionConfig != null else Vector2(1.04, 1.04)
+	var squash: Vector2 = (
+		MotionConfig.get("HoverSquash") if MotionConfig != null else Vector2(0.92, 1.08)
+	)
+	var stretch: Vector2 = (
+		MotionConfig.get("HoverStretch") if MotionConfig != null else Vector2(1.08, 0.95)
+	)
+	var rest: Vector2 = (
+		MotionConfig.get("HoverRest") if MotionConfig != null else Vector2(1.04, 1.04)
+	)
 	var tint: Color = MotionConfig.get("HoverTint") if MotionConfig != null else Color.WHITE
-	_set_track(hover, 0, [0.0, hover_duration * 0.28, hover_duration * 0.64, hover_duration], [base_scale, base_scale * squash, base_scale * stretch, base_scale * rest])
-	_set_track(hover, 1, [0.0, hover_duration * 0.28, hover_duration * 0.64, hover_duration], [Color.WHITE, tint, Color.WHITE, tint])
+	_set_track(
+		hover,
+		0,
+		[0.0, hover_duration * 0.28, hover_duration * 0.64, hover_duration],
+		[base_scale, base_scale * squash, base_scale * stretch, base_scale * rest]
+	)
+	_set_track(
+		hover,
+		1,
+		[0.0, hover_duration * 0.28, hover_duration * 0.64, hover_duration],
+		[Color.WHITE, tint, Color.WHITE, tint]
+	)
 	hover.length = hover_duration
 
 

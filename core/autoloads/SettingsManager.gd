@@ -3,6 +3,9 @@
 ## 从而避免多个场景各自处理配置文件、默认值和损坏文件的恢复逻辑。
 extends Node
 
+## 任意偏好写入或删除后广播，供运行中的 View 即时刷新。
+signal setting_changed(section: String, key: String, value: Variant)
+
 ## 玩家本地设置文件的固定保存位置。
 ## 使用 user:// 可避免将运行时偏好写入项目资源目录；修改该路径会使既有偏好不再被读取。
 const SETTINGS_FILE_PATH: String = "user://settings.cfg"
@@ -11,10 +14,12 @@ const SETTINGS_FILE_PATH: String = "user://settings.cfg"
 ## 它在自动加载初始化时读取一次，并在每次写入后立即保存；读取失败时会被清空以保证默认值回退可靠。
 var _settings_config: ConfigFile = ConfigFile.new()
 
+
 ## 初始化本地设置缓存。
 ## @return void 无返回值。
 func _ready() -> void:
 	_load_settings()
+
 
 ## 读取一个设置值；当分组、键或配置文件不存在时返回调用方提供的默认值。
 ## @param section 设置所属的功能分组，用于避免不同功能的键名冲突。
@@ -24,6 +29,7 @@ func _ready() -> void:
 func get_setting(section: String, key: String, default_value: Variant) -> Variant:
 	return _settings_config.get_value(section, key, default_value)
 
+
 ## 更新一个设置值并立即保存到本地文件。
 ## 即使磁盘保存失败，内存中的新值仍会保留至本次运行结束，避免玩家当前操作被回滚。
 ## @param section 设置所属的功能分组。
@@ -32,12 +38,14 @@ func get_setting(section: String, key: String, default_value: Variant) -> Varian
 ## @return bool 写入磁盘是否成功。
 func set_setting(section: String, key: String, value: Variant) -> bool:
 	_settings_config.set_value(section, key, value)
+	setting_changed.emit(section, key, value)
 	# 本次将内存配置落盘的错误码；OK 表示偏好已成功跨重启保存。
 	var save_error: Error = _settings_config.save(SETTINGS_FILE_PATH)
 	if save_error != OK:
 		push_error("无法保存本地设置：%s（错误码：%s）" % [SETTINGS_FILE_PATH, save_error])
 		return false
 	return true
+
 
 ## 删除一个已保存的设置值并立即保存。
 ## 用于让调用方在「不再需要某个键」时把配置清干净，避免它在下次打开相关开关时被当成有效存档读回来。
@@ -49,12 +57,14 @@ func erase_setting(section: String, key: String) -> bool:
 		return true
 
 	_settings_config.erase_section_key(section, key)
+	setting_changed.emit(section, key, null)
 	# 本次将内存配置落盘的错误码；OK 表示删除已成功跨重启生效。
 	var save_error: Error = _settings_config.save(SETTINGS_FILE_PATH)
 	if save_error != OK:
 		push_error("无法保存本地设置：%s（错误码：%s）" % [SETTINGS_FILE_PATH, save_error])
 		return false
 	return true
+
 
 ## 从本地文件加载所有设置。
 ## 文件尚未创建是首次运行的正常情况；其他加载失败均丢弃可能不完整的数据，以确保调用方得到明确默认值。

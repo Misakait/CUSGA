@@ -21,6 +21,8 @@ const OPPOSITE_DIRECTIONS: Array[int] = [2, 3, 0, 1]
 signal current_room_changed(position: Vector2i)
 ## 房间第一次加入已探索集合时广播；地图 View 据此增量生成房间图元。
 signal room_discovered(position: Vector2i)
+## 玩家或场景来源标记发生变化时广播；两个地图画布据此同步刷新。
+signal markers_changed
 ## 首次为坐标创建资源配置时广播；View 不需要依赖具体缓存实现。
 signal map_resource_created(position: Vector2i, resource: Resource)
 
@@ -38,6 +40,9 @@ var packed_scene_cache: Dictionary = {}
 var current_position: Vector2i = Vector2i.ZERO
 ## 本局已经成功进入过的房间集合；键为地图坐标，值固定为 true。
 var discovered_rooms: Dictionary = {}
+## 本局地图标记记录；键是稳定 ID，值是只含配置与逻辑坐标的字典。
+var map_markers: Dictionary = {}
+var _next_player_marker_id: int = 1
 ## 地图生成器给出的起始坐标，用于把起始房间放在世界原点。
 var start_position: Vector2i = Vector2i.ZERO
 ## 单个完整房间场景在世界中的固定步长；normal 群系统一按 1280x720 拼接。
@@ -45,8 +50,11 @@ var room_size: Vector2 = Vector2(1280.0, 720.0)
 
 @onready var _map_position_create: Node = get_node_or_null(map_position_create_path)
 
+
 func _ready() -> void:
+	add_to_group(&"map_world_model")
 	_refresh_from_generator()
+
 
 ## 从现有地图生成器复制只读运行数据。
 ##
@@ -76,6 +84,116 @@ func _refresh_from_generator() -> void:
 	discovered_rooms[current_position] = true
 	scene_resource_cache.clear()
 	packed_scene_cache.clear()
+	map_markers.clear()
+	_next_player_marker_id = 1
+
+
+## 注册一个由场景或物品提供的稳定来源标记。
+##
+## @param source_id 来源场景、房间和锚点共同组成的稳定 ID。
+## @param config 地图标记配置 Resource。
+## @param logical_position x 为 column、y 为 row 的逻辑地图坐标。
+## @return 首次加入或已有记录发生变化时返回 true；无效或完全重复时返回 false。
+func register_source_marker(
+	source_id: StringName, config: Resource, logical_position: Vector2
+) -> bool:
+	if source_id == &"" or not _is_marker_config_visible(config):
+		return false
+	var record := {
+		"id": source_id,
+		"source_kind": &"source",
+		"marker_type": StringName(str(config.get("marker_type"))),
+		"logical_position": logical_position,
+		"config": config,
+	}
+	if map_markers.has(source_id) and map_markers[source_id] == record:
+		return false
+	map_markers[source_id] = record
+	markers_changed.emit()
+	return true
+
+
+## 新增一个玩家在大地图自由放置的标记。
+##
+## @param config 允许玩家放置的地图标记配置。
+## @param logical_position x 为 column、y 为 row 的逻辑地图坐标。
+## @return 成功时返回新标记的稳定运行时 ID；配置无效时返回空 StringName。
+func add_player_marker(config: Resource, logical_position: Vector2) -> StringName:
+	if not _is_marker_config_visible(config) or not bool(config.get("player_placeable")):
+		return &""
+	var marker_id := StringName("player:%d" % _next_player_marker_id)
+	_next_player_marker_id += 1
+	map_markers[marker_id] = {
+		"id": marker_id,
+		"source_kind": &"player",
+		"marker_type": StringName(str(config.get("marker_type"))),
+		"logical_position": logical_position,
+		"config": config,
+	}
+	markers_changed.emit()
+	return marker_id
+
+
+## 删除指定逻辑位置附近最近的玩家标记。
+##
+## @param logical_position 点击换算后的逻辑地图坐标。
+## @param radius 允许删除的逻辑坐标半径。
+## @return 找到并删除玩家标记时返回 true。
+func remove_nearest_player_marker(logical_position: Vector2, radius: float) -> bool:
+	if radius < 0.0:
+		return false
+	var nearest_id: StringName = &""
+	var nearest_distance: float = radius
+	for marker_id_value: Variant in map_markers.keys():
+		var record: Dictionary = map_markers[marker_id_value]
+		if StringName(str(record.get("source_kind", &""))) != &"player":
+			continue
+		var marker_position: Variant = record.get("logical_position", null)
+		if not marker_position is Vector2:
+			continue
+		var distance: float = logical_position.distance_to(marker_position)
+		if distance <= nearest_distance:
+			nearest_distance = distance
+			nearest_id = StringName(str(marker_id_value))
+	if nearest_id == &"":
+		return false
+	map_markers.erase(nearest_id)
+	markers_changed.emit()
+	return true
+
+
+## 查询 Model 是否已经持有指定稳定标记。
+##
+## @param marker_id 玩家或来源标记 ID。
+## @return 记录存在时返回 true。
+func has_marker(marker_id: StringName) -> bool:
+	return map_markers.has(marker_id)
+
+
+## 返回地图标记的只读排序快照。
+##
+## @return 按稳定 ID 排序的记录副本；修改返回字典不会改写 Model。
+func get_marker_snapshot() -> Array[Dictionary]:
+	var marker_ids: Array = map_markers.keys()
+	marker_ids.sort_custom(
+		func(left: Variant, right: Variant) -> bool: return str(left) < str(right)
+	)
+	var snapshot: Array[Dictionary] = []
+	for marker_id: Variant in marker_ids:
+		var record: Dictionary = map_markers[marker_id]
+		snapshot.append(record.duplicate())
+	return snapshot
+
+
+func _is_marker_config_visible(config: Resource) -> bool:
+	if config == null:
+		return false
+	return (
+		bool(config.get("allow_map_display"))
+		and bool(config.get("active"))
+		and config.get("icon") is Texture2D
+		and not str(config.get("marker_type")).is_empty()
+	)
 
 
 ## 将一个有效房间加入本局探索集合。
@@ -106,10 +224,12 @@ func get_discovered_positions() -> Array[Vector2i]:
 	for position_value: Variant in discovered_rooms.keys():
 		if position_value is Vector2i and bool(discovered_rooms[position_value]):
 			positions.append(position_value)
-	positions.sort_custom(func(left: Vector2i, right: Vector2i) -> bool:
-		return left.x < right.x or (left.x == right.x and left.y < right.y)
+	positions.sort_custom(
+		func(left: Vector2i, right: Vector2i) -> bool:
+			return left.x < right.x or (left.x == right.x and left.y < right.y)
 	)
 	return positions
+
 
 ## 返回指定地图坐标是否存在可进入的房间。
 ##
@@ -122,6 +242,7 @@ func has_room(position: Vector2i) -> bool:
 	if position.y < 0 or position.y >= column.size():
 		return false
 	return String(column[position.y]) != "void"
+
 
 ## 返回指定地图坐标的资源配置；第一次访问时创建并缓存。
 ##
@@ -199,6 +320,7 @@ func are_rooms_connected(from_position: Vector2i, to_position: Vector2i) -> bool
 		and _has_declared_connection(to_position, opposite_direction)
 	)
 
+
 ## 返回同一路径共享的 PackedScene，避免重复加载完整房间资源。
 ##
 ## @param scene_path 完整房间场景路径。
@@ -215,6 +337,7 @@ func _get_packed_scene(scene_path: String) -> PackedScene:
 	packed_scene_cache[scene_path] = packed_scene
 	return packed_scene
 
+
 ## 返回当前坐标周围 3×3 范围内的有效地图坐标。
 ##
 ## @param center 当前房间坐标。
@@ -227,6 +350,7 @@ func get_window_positions(center: Vector2i) -> Array[Vector2i]:
 			if has_room(position):
 				positions.append(position)
 	return positions
+
 
 ## 由 Controller 调用，验证并更新当前地图坐标。
 ##
@@ -263,6 +387,7 @@ func _has_declared_connection(position: Vector2i, direction: int) -> bool:
 		return false
 	return int(connections[direction]) == 1
 
+
 ## 返回地图坐标对应的世界原点。
 ##
 ## @param position 地图坐标。
@@ -272,6 +397,7 @@ func world_origin_for(position: Vector2i) -> Vector2:
 		float(position.y - start_position.y) * room_size.x,
 		float(position.x - start_position.x) * room_size.y
 	)
+
 
 ## 将玩家世界坐标换算为所在的地图坐标。
 ##
@@ -285,6 +411,7 @@ func map_position_for_world(world_position: Vector2) -> Vector2i:
 		start_position.x + floori(world_position.y / room_size.y),
 		start_position.y + floori(world_position.x / room_size.x)
 	)
+
 
 ## 设置运行时测得的房间世界步长。
 ##

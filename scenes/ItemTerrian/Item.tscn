@@ -1,9 +1,9 @@
-[gd_scene format=3 uid="uid://xkui1sasq866"]
+[gd_scene load_steps=15 format=3 uid="uid://xkui1sasq866"]
 
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="1_4st0y"]
 [ext_resource type="Texture2D" uid="uid://cime5163xllty" path="res://res/UI/卡牌模板.png" id="2_rjja6"]
 [ext_resource type="Script" uid="uid://dlj862l0mk1ek" path="res://scripts/item_scripts/item_view.gd" id="3_item_view"]
-[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="4_78iq1"]
+[ext_resource type="Script" path="res://scripts/map_scripts/UIMapMarkerController.gd" id="4_marker_controller"]
 
 [sub_resource type="Shader" id="Shader_s04oc"]
 code = "// 玩家角色的闪白效果（供 AnimationPlayer 驱动）。
@@ -176,7 +176,7 @@ shape = SubResource("RectangleShape2D_35b51")
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=770209852]
 libraries/ = SubResource("AnimationLibrary_3rina")
 
-[node name="技能卡模板2" type="Sprite2D" parent="." unique_id=733036613]
-visible = false
-position = Vector2(243, 317)
-texture = ExtResource("4_78iq1")
+[node name="MarkerController" type="Node2D" parent="." unique_id=640680814]
+script = ExtResource("4_marker_controller")
+
+[node name="MarkerPoint" type="Node2D" parent="MarkerController" unique_id=1529036434]

@@ -33,9 +33,15 @@ const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/main_menu.ts
 
 ## 菜单第一行的「继续游戏」按钮。
 @onready var _continue_button: Button = %ContinueButton
+## 菜单中的「参数设置」按钮。
+@onready var _options_button: Button = %OptionsButton
 
 ## 菜单中的「退出游戏」按钮。
 @onready var _exit_button: Button = %ExitButton
+## 暂停菜单的主选项页面。
+@onready var _main_menu_page: Control = %MainMenuPage
+## 参数设置页面实例。
+@onready var _option_panel: Control = %OptionPanel
 
 ## 菜单是否处于展开状态。
 ##
@@ -58,9 +64,13 @@ func _ready() -> void:
 	# 与天赋选择界面（talent_manager.gd）保持同一约定。
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_pause_overlay.visible = false
+	_show_main_menu_page()
 	_pause_button.pressed.connect(_on_pause_button_pressed)
 	_continue_button.pressed.connect(_on_continue_button_pressed)
+	_options_button.pressed.connect(_on_options_button_pressed)
 	_exit_button.pressed.connect(_on_exit_button_pressed)
+	if _option_panel.has_signal(&"back_requested"):
+		_option_panel.connect(&"back_requested", _on_option_panel_back_requested)
 
 
 ## 场景被释放时归还全局暂停状态。
@@ -111,6 +121,7 @@ func open_pause_menu() -> void:
 	_was_paused_before_open = get_tree().paused
 	get_tree().paused = true
 	_pause_overlay.visible = true
+	_show_main_menu_page()
 
 
 ## 收起菜单并恢复游戏。
@@ -123,6 +134,7 @@ func close_pause_menu() -> void:
 
 	_is_menu_open = false
 	_pause_overlay.visible = false
+	_show_main_menu_page()
 	if not _was_paused_before_open:
 		get_tree().paused = false
 
@@ -142,6 +154,23 @@ func _on_continue_button_pressed() -> void:
 	close_pause_menu()
 
 
+## 从暂停主菜单进入参数设置页。
+##
+## 页面切换只改变浮层内容，不解除暂停。
+## 返回值：无。
+func _on_options_button_pressed() -> void:
+	_main_menu_page.visible = false
+	_option_panel.visible = true
+	if _option_panel.has_method(&"refresh_from_settings"):
+		_option_panel.call(&"refresh_from_settings")
+
+
+## 从参数设置页返回暂停主菜单。
+## 返回值：无。
+func _on_option_panel_back_requested() -> void:
+	_show_main_menu_page()
+
+
 ## 退出游戏并回到主菜单。
 ##
 ## 换场景前必须由本组件解除全局暂停：Main 被释放后不再有节点负责把它置回 false，
@@ -153,3 +182,10 @@ func _on_exit_button_pressed() -> void:
 	_pause_overlay.visible = false
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+
+func _show_main_menu_page() -> void:
+	if _main_menu_page != null:
+		_main_menu_page.visible = true
+	if _option_panel != null:
+		_option_panel.visible = false

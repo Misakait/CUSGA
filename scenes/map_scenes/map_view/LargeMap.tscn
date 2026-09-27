@@ -1,12 +1,27 @@
-[gd_scene load_steps=4 format=3 uid="uid://bj57s3cu8kobp"]
+[gd_scene format=3 uid="uid://bj57s3cu8kobp"]
 
 [ext_resource type="Texture2D" uid="uid://c4ri77xeojhnq" path="res://res/Nine-grid-template/九宫格.png" id="1_t6o3n"]
-[ext_resource type="Script" path="res://scripts/map_scripts/UILargeMap.gd" id="2_largemap"]
+[ext_resource type="Script" uid="uid://c1ciohl63s1rv" path="res://scripts/map_scripts/UILargeMap.gd" id="2_largemap"]
 [ext_resource type="PackedScene" uid="uid://dkxe1il4862fp" path="res://scenes/map_scenes/map_view/WorldMapCanvas.tscn" id="3_canvas"]
+[ext_resource type="Script" uid="uid://jpc7dhes6r6i" path="res://scripts/map_scripts/UIMapPanZoomController.gd" id="4_pan_zoom"]
+[ext_resource type="Script" uid="uid://cmqmdt4q2voyt" path="res://scripts/map_scripts/UIMapLegend.gd" id="5_legend"]
+[ext_resource type="Resource" path="res://resources/map/markers/room_marker_green.tres" id="6_marker_green"]
+[ext_resource type="Resource" path="res://resources/map/markers/room_marker_blue.tres" id="7_marker_blue"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legend"]
+bg_color = Color(0.055, 0.075, 0.09, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.48, 0.52, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="LargeMap" type="CanvasLayer" unique_id=1998329483]
 layer = 3
-visible = false
 script = ExtResource("2_largemap")
 
 [node name="FrameBackground" type="NinePatchRect" parent="." unique_id=1098757123]
@@ -27,31 +42,84 @@ patch_margin_right = 32
 patch_margin_bottom = 48
 
 [node name="ViewportControl" type="Control" parent="." unique_id=1324088621]
+clip_contents = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 40.0
 offset_top = 32.0
-offset_right = -40.0
+offset_right = -336.0
 offset_bottom = -32.0
 grow_horizontal = 2
 grow_vertical = 2
-clip_contents = true
+mouse_filter = 1
+script = ExtResource("4_pan_zoom")
 
-[node name="WorldMapCanvas" parent="ViewportControl" instance=ExtResource("3_canvas")]
+[node name="WorldMapCanvas" parent="ViewportControl" unique_id=1570104851 instance=ExtResource("3_canvas")]
 layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+grow_horizontal = 1
+grow_vertical = 1
 
-[node name="LegendUI" type="Control" parent="." unique_id=1989857418]
-layout_mode = 3
-anchors_preset = 3
+[node name="LegendUI" type="PanelContainer" parent="." unique_id=1989857418]
+process_mode = 3
+anchors_preset = -1
 anchor_left = 1.0
-anchor_top = 1.0
+anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -440.0
-offset_top = -160.0
-offset_right = -48.0
-offset_bottom = -48.0
+offset_left = -379.0
+offset_top = 25.0
+offset_right = -40.0
+offset_bottom = -25.0
 grow_horizontal = 0
-grow_vertical = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend")
+script = ExtResource("5_legend")
+marker_configs = Array[Resource]([ExtResource("6_marker_green"), ExtResource("7_marker_blue")])
+
+[node name="Margin" type="MarginContainer" parent="LegendUI" unique_id=2111010388]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="Content" type="VBoxContainer" parent="LegendUI/Margin" unique_id=1765319229]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="LegendUI/Margin/Content" unique_id=1296916078]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "地图标记"
+
+[node name="Guide" type="Label" parent="LegendUI/Margin/Content" unique_id=659876378]
+layout_mode = 2
+text = "左键放置 · 右键删除
+拖拽移动 · 滚轮缩放"
+autowrap_mode = 2
+
+[node name="Separator" type="HSeparator" parent="LegendUI/Margin/Content" unique_id=990139375]
+layout_mode = 2
+
+[node name="OptionsScroll" type="ScrollContainer" parent="LegendUI/Margin/Content" unique_id=706749169]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="OptionsList" type="VBoxContainer" parent="LegendUI/Margin/Content/OptionsScroll" unique_id=1827177187]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="StatusLabel" type="Label" parent="LegendUI/Margin/Content" unique_id=146683506]
+unique_name_in_owner = true
+layout_mode = 2
+text = "请选择一个标记"
+autowrap_mode = 2

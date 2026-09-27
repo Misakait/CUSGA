@@ -1,10 +1,13 @@
 [gd_scene format=3 uid="uid://dwahsdi12ru61"]
 
 [ext_resource type="Script" uid="uid://b0mn2f28qu6lh" path="res://core/ui/hud/pause_menu.gd" id="1_pause"]
+[ext_resource type="PackedScene" uid="uid://ci6rxhew02s7e" path="res://scenes/ui_scenes/option_panel.tscn" id="2_option_panel"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pause_button"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_continue_button"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_options_button"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_exit_button"]
 
@@ -14,6 +17,10 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 37.0
+offset_top = 25.0
+offset_right = 37.0
+offset_bottom = 25.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -52,7 +59,8 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.55)
 
-[node name="MenuCenter" type="CenterContainer" parent="PauseOverlay" unique_id=1456762142]
+[node name="MainMenuPage" type="Control" parent="PauseOverlay" unique_id=528651189]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -60,36 +68,56 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MenuPanel" type="PanelContainer" parent="PauseOverlay/MenuCenter" unique_id=1741679936]
+[node name="MenuCenter" type="CenterContainer" parent="PauseOverlay/MainMenuPage" unique_id=695620581]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="PauseOverlay/MainMenuPage/MenuCenter" unique_id=1741679936]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="PauseOverlay/MenuCenter/MenuPanel" unique_id=1604364464]
+[node name="MarginContainer" type="MarginContainer" parent="PauseOverlay/MainMenuPage/MenuCenter/MenuPanel" unique_id=1604364464]
 layout_mode = 2
 theme_override_constants/margin_left = 36
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 24
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer" unique_id=1896376883]
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseOverlay/MainMenuPage/MenuCenter/MenuPanel/MarginContainer" unique_id=1896376883]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="TitleLabel" type="Label" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=575092640]
+[node name="TitleLabel" type="Label" parent="PauseOverlay/MainMenuPage/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=575092640]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "已暂停"
 horizontal_alignment = 1
 
-[node name="ContinueButton" type="Button" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=1284376192]
+[node name="ContinueButton" type="Button" parent="PauseOverlay/MainMenuPage/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=1284376192]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 48)
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_continue_button")
 text = "继续游戏"
 
-[node name="ExitButton" type="Button" parent="PauseOverlay/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=694765966]
+[node name="OptionsButton" type="Button" parent="PauseOverlay/MainMenuPage/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=718653831]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_options_button")
+text = "参数设置"
+
+[node name="ExitButton" type="Button" parent="PauseOverlay/MainMenuPage/MenuCenter/MenuPanel/MarginContainer/VBoxContainer" unique_id=694765966]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 48)
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_exit_button")
 text = "退出游戏"
+
+[node name="OptionPanel" parent="PauseOverlay" unique_id=812773634 instance=ExtResource("2_option_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

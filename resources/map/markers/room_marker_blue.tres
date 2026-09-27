@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MapMarkerConfig" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/map/map_marker_config.gd" id="1_config"]
+[ext_resource type="Texture2D" path="res://res/room_icon/room_marker/Room_Marker2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_config")
+marker_type = &"blue_pin"
+display_name = "蓝色标记"
+icon = ExtResource("2_icon")
+marker_scale = 1.0
+player_placeable = true

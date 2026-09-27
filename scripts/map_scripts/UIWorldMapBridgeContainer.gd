@@ -8,8 +8,10 @@ extends Node2D
 
 const DIRECTION_NAMES: Array[String] = ["Up", "Right", "Down", "Left"]
 
-## 四个方向桥共用的临时纹理。
-@export var bridge_texture: Texture2D = preload("res://res/room_icon/Room_Bridge.png")
+## 左右方向使用的横桥纹理。
+@export var horizontal_bridge_texture: Texture2D = preload("res://res/room_icon/Room_Bridge.png")
+## 上下方向使用的竖桥纹理；单独素材避免旋转像素图产生锯齿。
+@export var vertical_bridge_texture: Texture2D = preload("res://res/room_icon/Room_Bridge_V.png")
 
 var _connection_mask: int = 0
 var _room_step: Vector2 = Vector2(32.0, 32.0)
@@ -63,7 +65,6 @@ func _ensure_bridge(direction: int) -> void:
 		return
 	var bridge_node := Sprite2D.new()
 	bridge_node.name = "%sBridge" % DIRECTION_NAMES[direction]
-	bridge_node.texture = bridge_texture
 	bridge_node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_configure_bridge_transform(bridge_node, direction)
 	add_child(bridge_node)
@@ -79,16 +80,17 @@ func _remove_bridge(direction: int) -> void:
 
 
 func _configure_bridge_transform(bridge_node: Sprite2D, direction: int) -> void:
+	bridge_node.texture = (
+		vertical_bridge_texture if direction == 0 or direction == 2 else horizontal_bridge_texture
+	)
+	# 横竖桥都使用美术原始方向，避免像素纹理运行时旋转后产生采样锯齿。
+	bridge_node.rotation = 0.0
 	match direction:
 		0:
 			bridge_node.position = Vector2(0.0, -_room_step.y / 2.0)
-			bridge_node.rotation = PI / 2.0
 		1:
 			bridge_node.position = Vector2(_room_step.x / 2.0, 0.0)
-			bridge_node.rotation = 0.0
 		2:
 			bridge_node.position = Vector2(0.0, _room_step.y / 2.0)
-			bridge_node.rotation = PI / 2.0
 		3:
 			bridge_node.position = Vector2(-_room_step.x / 2.0, 0.0)
-			bridge_node.rotation = 0.0
