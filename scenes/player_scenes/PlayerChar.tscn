@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://bnio8ujbiqsk1" path="res://scripts/player_scripts/PlayerStateMachine.gd" id="5_uw8mp"]
 [ext_resource type="Script" uid="uid://cfyqhj52via0g" path="res://scripts/player_scripts/states/Idle.gd" id="6_am3nn"]
 [ext_resource type="Script" uid="uid://dnq4u185k7ps1" path="res://scripts/player_scripts/states/Walk.gd" id="7_y3bdq"]
+[ext_resource type="Script" uid="uid://bfk8u4u7sa3rr" path="res://scripts/player_scripts/states/ClickWalk.gd" id="8_clickwalk"]
 
 [sub_resource type="Shader" id="Shader_s04oc"]
 code = "// 玩家角色的闪白效果（供 AnimationPlayer 驱动）。
@@ -235,7 +236,8 @@ script = ExtResource("6_am3nn")
 [node name="Walk" type="Node" parent="PlayerState" unique_id=1314674107]
 script = ExtResource("7_y3bdq")
 
-[node name="Hover" type="Node" parent="PlayerState" unique_id=2083080510]
+[node name="ClickWalk" type="Node" parent="PlayerState" unique_id=2083080510]
+script = ExtResource("8_clickwalk")
 
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=607388927]
 active = false

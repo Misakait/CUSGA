@@ -95,6 +95,7 @@ var _gameplay_port: Node = null
 ## 背包飞入目标；缺失时掉落卡直接移除。
 var _backpack_fly_target: Control = null
 var _player_char: Node2D = null
+var _player_click_walk_state: Node = null
 var _loot_store: Node = null
 ## 遭遇管理器；只依赖稳定的 Node 方法协议。
 var _encounter_manager: Node = null
@@ -112,6 +113,8 @@ var _player_was_visible: bool = true
 var _world_status_was_visible: bool = true
 ## 统一处理地图按钮与棋盘地形之间互斥的长按状态。
 var _hold_interaction_controller: Node = null
+## 当前由棋盘地形发起的长按；用于在键盘接管时取消交互并释放鼠标移动锁。
+var _active_terrain_hold_card: Node2D = null
 
 ## 棋盘控制器四个信号的连接实例；退出时必须用同一实例断开。
 var _board_card_clicked_callable: Callable = Callable()
@@ -149,6 +152,8 @@ func _ready() -> void:
 	_gameplay_port = get_node(GameplayPortPath)
 	_backpack_fly_target = get_node_or_null(BackpackFlyTargetPath) as Control
 	_player_char = get_node_or_null(PlayerCharPath) as Node2D
+	if _player_char != null:
+		_player_click_walk_state = _player_char.get_node_or_null("PlayerState/ClickWalk")
 	_loot_store = get_node_or_null(LootStorePath)
 	_encounter_manager = get_node(EncounterManagerPath)
 	_time_system = get_node_or_null(TIME_SYSTEM_PATH)
@@ -179,6 +184,28 @@ func _ready() -> void:
 		push_error("TimeSystem 缺少 TimeChanged 信号，无法刷新可重复采集状态。")
 	elif not _time_system.is_connected(TIME_CHANGED_SIGNAL, _time_changed_callable):
 		_time_system.connect(TIME_CHANGED_SIGNAL, _time_changed_callable)
+
+
+## 键盘方向输入优先于正在进行的棋盘地形长按。
+##
+## @param _delta 本帧间隔秒数。
+## @return 无返回值。
+func _process(_delta: float) -> void:
+	if _active_terrain_hold_card == null:
+		return
+	if not is_instance_valid(_active_terrain_hold_card):
+		_cancel_active_hold()
+		return
+	if Input.get_vector("move_left", "move_right", "move_up", "move_down") == Vector2.ZERO:
+		return
+	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
+		_clear_active_terrain_hold()
+		return
+
+	var is_holding: Variant = _hold_interaction_controller.get("is_holding")
+	if is_holding is bool and bool(is_holding):
+		_hold_interaction_controller.call("cancel_hold_for", _active_terrain_hold_card)
+		_clear_active_terrain_hold()
 
 
 ## 退出场景树时解除全部信号连接并取消未完成的长按。
@@ -294,6 +321,8 @@ func BeginWorldHoldForMap(owner: Node, action_point_cost: int, progress_target: 
 	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
 		push_error("WorldInteractionCoordinator 未找到 WorldHoldInteractionController，无法开始局外长按。")
 		return
+	if _active_terrain_hold_card != null:
+		_cancel_active_hold()
 
 	_hold_interaction_controller.call(
 		"begin_hold",
@@ -328,9 +357,33 @@ func _on_world_hold_completed(owner: Node) -> void:
 ## @return 无返回值。
 func _cancel_active_hold() -> void:
 	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
+		_clear_active_terrain_hold()
 		return
 
 	_hold_interaction_controller.call("cancel_active_hold")
+	_clear_active_terrain_hold()
+
+
+## 屏蔽或恢复 PlayerChar 的鼠标移动输入。
+##
+## @param blocked true 时取消旧鼠标目标并屏蔽鼠标输入；false 时只解除屏蔽。
+## @return 无返回值。
+func _set_player_mouse_movement_blocked(blocked: bool) -> void:
+	if _player_click_walk_state == null or not is_instance_valid(_player_click_walk_state):
+		return
+
+	var method_name: StringName = &"BeginWorldInteraction" if blocked else &"EndWorldInteraction"
+	if _player_click_walk_state.has_method(method_name):
+		_player_click_walk_state.call(method_name)
+
+
+## 清除当前地形长按记录并解除鼠标移动屏蔽。
+## @return 无返回值。
+func _clear_active_terrain_hold() -> void:
+	if _active_terrain_hold_card == null:
+		return
+	_active_terrain_hold_card = null
+	_set_player_mouse_movement_blocked(false)
 
 
 ## 处理棋盘卡牌点击：先尝试拾取掉落卡，再处理地形交互。
@@ -414,6 +467,14 @@ func _on_board_card_pressed(card: Node2D) -> void:
 	var terrain: RefCounted = holdable["terrain"]
 	var interaction: Resource = holdable["interaction"]
 	var action_point_cost: int = int(holdable["action_point_cost"])
+	if _active_terrain_hold_card != null and _active_terrain_hold_card != card:
+		_cancel_active_hold()
+	_active_terrain_hold_card = card
+	_set_player_mouse_movement_blocked(true)
+	if Input.get_vector("move_left", "move_right", "move_up", "move_down") != Vector2.ZERO:
+		_clear_active_terrain_hold()
+		return
+
 	# 圆环锚定在地形图标上；图标缺失时退回卡片自身，保持旧 C# 的兜底目标。
 	var icon: Node = card.call("GetProgressAnchor") as Node if card.has_method("GetProgressAnchor") else card.get_node_or_null("Icon") as Node
 	var progress_target: Node = card if icon == null else icon
@@ -431,10 +492,10 @@ func _on_board_card_pressed(card: Node2D) -> void:
 ## @param card 被抬起的棋盘卡视图。
 ## @return 无返回值。
 func _on_board_card_released(card: Node2D) -> void:
-	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
-		return
-
-	_hold_interaction_controller.call("cancel_hold_for", card)
+	if _hold_interaction_controller != null and is_instance_valid(_hold_interaction_controller):
+		_hold_interaction_controller.call("cancel_hold_for", card)
+	if _active_terrain_hold_card == card:
+		_clear_active_terrain_hold()
 
 
 ## 处理棋盘卡牌生成：可重复采集地形按当前时间刷新可采集状态。
@@ -528,6 +589,8 @@ func _complete_terrain_hold(
 	interaction: Resource,
 	action_point_cost: int
 ) -> void:
+	if _active_terrain_hold_card == card:
+		_clear_active_terrain_hold()
 	if not is_instance_valid(card):
 		return
 	if card.call("GetTerrainInstanceOrNull") != terrain:
