@@ -116,7 +116,8 @@ const OP_VOCABULARY: Array = [
 const MAIN_SCENE: String = "res://scenes/Main.tscn"
 const MAIN_SCENE_SCRIPT_ID: String = "7_nxtc6"
 
-## 必须逐字保留在 GDScript 生产脚本里的 9 个导出。
+## 必须逐字保留在 GDScript 生产脚本里的导出。
+## 前 9 个是迁移对照面（旧 C# 协调器的导出），最后 1 个是迁移后新增的棋盘卡交互距离门禁。
 const GD_EXPORTS: Array[String] = [
 	"@export var BoardControllerPath: NodePath = NodePath(\"\")",
 	"@export var GameplayPortPath: NodePath = NodePath(\"\")",
@@ -127,6 +128,7 @@ const GD_EXPORTS: Array[String] = [
 	"@export var MapSystemPath: NodePath = NodePath(\"../../MapSystem\")",
 	"@export var MapCanvasLayerPath: NodePath = NodePath(\"../../MapSystem/CanvasLayer\")",
 	"@export var HudLayerPath: NodePath = NodePath(\"../../UI/HUDLayer\")",
+	"@export_range(1.0, 1000.0, 1.0) var InteractionRange: float = 160.0",
 ]
 
 ## 必须逐字保留的 2 个信号声明。
@@ -446,6 +448,57 @@ func test_shared_log_and_error_texts() -> void:
 		assert_true(found, "旧 C# 垫片集合缺少同文本：%s" % literal)
 
 
+## 验证棋盘卡交互的距离门禁：导出存在、两个入口都先判定距离、超范围输出可定位日志。
+##
+## 距离判定的运行时效果不能由编辑器套件证明：非 @tool 生产脚本在编辑器中实例化后方法不可调用，
+## 因此套件只锁定源码形状，真实拦截效果由 Main 场景冒烟阶段的 game_eval 实证。
+##
+## @return 无返回值。
+func test_interaction_range_gate() -> void:
+	var coordinator: String = FileAccess.get_file_as_string(COORDINATOR_GD)
+
+	assert_true(
+		coordinator.contains("@export_range(1.0, 1000.0, 1.0) var InteractionRange: float = 160.0"),
+		"交互范围必须导出为可在检查器调试的浮点值。"
+	)
+	assert_true(
+		coordinator.contains("func _try_get_interaction_range(card: Node2D) -> Dictionary:"),
+		"交互距离判定必须集中在单一助手里，便于两处入口复用。"
+	)
+	assert_true(
+		coordinator.contains(
+			"var distance: float = _player_char.global_position.distance_to(card.global_position)"
+		),
+		"距离判定必须比较玩家与卡牌的世界坐标距离。"
+	)
+	assert_true(
+		coordinator.contains('return {"ok": distance <= InteractionRange, "distance": distance}'),
+		"只有距离不超过 InteractionRange 时才允许交互。"
+	)
+	# 掉落拾取与零耗时地形交互共用 _on_board_card_clicked，可长按地形走 _on_board_card_pressed；
+	# 两处都必须接入判定，否则仍能隔着房间交互。
+	assert_eq(
+		_count_occurrences(coordinator, "var range_check: Dictionary = _try_get_interaction_range(card)"),
+		2,
+		"点击与长按两个交互入口都必须先做距离判定。"
+	)
+	assert_true(
+		coordinator.contains("[WorldInteraction] 拒绝超出范围的交互："),
+		"超出范围被拒绝时必须输出包含真实距离的调试日志。"
+	)
+	# 回归：协调器没有 board_controller 的 _card_display_name 助手，日志取卡名必须走稳定方法协议；
+	# 误用未定义助手会让整个脚本以「Function not found in base self」解析失败，游戏启动即卡在 debugger break。
+	# 断言只看「调用形式」（名字 + 左括号），这样讲解这条坑的注释本身不会把断言判红。
+	assert_false(
+		coordinator.contains("_card_display_name("),
+		"协调器不得调用未定义的 _card_display_name。"
+	)
+	assert_true(
+		coordinator.contains('card.has_method("GetCardDisplayName")'),
+		"调试日志的卡名必须按稳定方法协议读取。"
+	)
+
+
 ## 验证 GDScript 消费方仍只按稳定方法名与信号名调用协调器。
 ##
 ## @return 无返回值。
@@ -480,6 +533,18 @@ func test_no_legacy_csharp_script_in_assets() -> void:
 	for directory: String in ["res://scenes", "res://resources"]:
 		var offenders: Array[String] = _grep_asset_references(directory, "WorldInteractionCoordinator.cs")
 		assert_eq(offenders, [] as Array[String], "资产不得继续引用旧 C# 协调器：%s" % str(offenders))
+
+
+## 统计文本中某个字面片段的出现次数。
+##
+## @param text 待检索的全文。
+## @param needle 需要计数的字面片段。
+## @return 片段出现次数；needle 为空时返回 0。
+func _count_occurrences(text: String, needle: String) -> int:
+	if needle.is_empty():
+		return 0
+
+	return text.split(needle).size() - 1
 
 
 ## 判断脚本文本是否声明 class_name。

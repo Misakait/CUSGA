@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://ci6rxhew02s7e"]
+[gd_scene format=3 uid="uid://ci6rxhew02s7e"]
 
 [ext_resource type="Script" path="res://scripts/ui_scripts/UIOptionPanel.gd" id="1_option"]
 

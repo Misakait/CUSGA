@@ -76,6 +76,15 @@ signal WorldHoldCompleted(owner: Node)
 ## 过场 Autoload 路径；旧 C# 未导出该字段，因此这里保持普通属性，不改变序列化面。
 var ScreenTransitionsPath: NodePath = ^"/root/ScreenTransitions"
 
+@export_group("Interaction")
+## 玩家可交互的最远世界距离（像素），取值范围 1～1000。
+## 作用范围：棋盘地形卡的采集/破坏与掉落卡拾取，超出的点击与长按一律被拒绝。
+## 比较口径是「玩家节点中心 → 卡牌中心」的世界坐标距离，与 1280×720 的房间拼接世界坐标同一空间。
+## 默认值 160 的由来：地形卡命中矩形约 93×137 像素，玩家贴到卡牌外缘时中心距约 80～160 像素，
+## 取 160 可以让玩家在卡牌四周一个身位内正常交互，同时挡住站在房间另一端的隔空交互。
+## 该值只在检查器中调整用于调试，运行时不做动态改写；改小会让玩家必须贴得更近，改大则重新放开隔空交互。
+@export_range(1.0, 1000.0, 1.0) var InteractionRange: float = 160.0
+
 @export_group("World View")
 ## 世界根节点路径；战斗场景实例挂在其下。
 @export var WorldRootPath: NodePath = NodePath("../..")
@@ -386,11 +395,66 @@ func _clear_active_terrain_hold() -> void:
 	_set_player_mouse_movement_blocked(false)
 
 
+## 判断卡牌是否位于玩家的交互范围内，并返回当前距离供调试日志使用。
+##
+## 交互范围按「玩家节点中心 → 卡牌中心」的世界坐标比较，与房间拼接使用的世界坐标同一空间，
+## 因此不需要按房间或棋盘做额外换算。玩家节点缺失时返回放行，
+## 避免未装配 PlayerChar 的独立场景（测试场景）被整体锁死交互；生产 Main 一定会在 _ready 解析出玩家。
+##
+## @param card 待交互的棋盘卡视图。
+## @return 含 ok 与 distance 的字典；玩家节点缺失时 ok 为 true、distance 为 0.0，其余情况 distance 为真实距离。
+func _try_get_interaction_range(card: Node2D) -> Dictionary:
+	if not is_instance_valid(_player_char):
+		return {"ok": true, "distance": 0.0}
+	if not is_instance_valid(card):
+		return {"ok": false, "distance": 0.0}
+
+	var distance: float = _player_char.global_position.distance_to(card.global_position)
+	return {"ok": distance <= InteractionRange, "distance": distance}
+
+
+## 输出一条「超出交互范围」的调试日志，便于在检查器中对照真实距离调整 InteractionRange。
+##
+## @param card 被拒绝交互的卡牌视图。
+## @param distance 玩家与卡牌当前的世界坐标距离。
+## @return 无返回值。
+func _report_out_of_range_interaction(card: Node2D, distance: float) -> void:
+	print(
+		"[WorldInteraction] 拒绝超出范围的交互：目标 %s，距离 %.1f 像素，当前 InteractionRange = %.1f 像素。"
+		% [_read_card_name(card), distance, InteractionRange]
+	)
+
+
+## 读取卡牌显示名，等价旧 C# card.Call("GetCardDisplayName")。
+##
+## 卡牌视图可能来自任一语言，因此只按稳定方法协议取名字；卡牌缺失或未实现协议时返回空字符串，
+## 保证调试日志本身不会因为取不到卡名而失败。
+##
+## 注意：协调器没有 board_controller.gd 的 _card_display_name 助手，
+## 误用它会让整个脚本以「Function not found in base self」解析失败、游戏启动即中断。
+##
+## @param card 棋盘卡视图；允许为空或已释放。
+## @return 卡牌显示名；不可读取时返回空字符串。
+func _read_card_name(card: Node2D) -> String:
+	if not is_instance_valid(card) or not card.has_method("GetCardDisplayName"):
+		return ""
+
+	return String(card.call("GetCardDisplayName"))
+
+
 ## 处理棋盘卡牌点击：先尝试拾取掉落卡，再处理地形交互。
+##
+## 距离判定放在最前面：超范围时连掉落拾取与零耗时地形交互都不进入，
+## 保证「只能交互玩家周围的目标」对全部棋盘卡交互一致生效。
 ##
 ## @param card 被点击的棋盘卡视图。
 ## @return 无返回值。
 func _on_board_card_clicked(card: Node2D) -> void:
+	var range_check: Dictionary = _try_get_interaction_range(card)
+	if not bool(range_check["ok"]):
+		_report_out_of_range_interaction(card, float(range_check["distance"]))
+		return
+
 	var loot: RefCounted = _read_ref_counted_property(card, "GetLootStackOrNull")
 	if loot != null:
 		_handle_loot_card_clicked(card, loot)
@@ -454,10 +518,19 @@ func _handle_terrain_card_clicked(card: Node2D, terrain: RefCounted) -> void:
 
 ## 处理棋盘卡牌按下：可长按的地形开始统一长按，其余卡牌不响应。
 ##
+## 超出交互范围时连长按进度环都不开始，避免玩家在远处看到「能填满却不会结算」的反馈。
+## 开始长按后玩家移动会被屏蔽（键盘方向输入会取消长按），因此本次交互在完成时仍处于同一位置，
+## 完成入口不需要重复距离判定。
+##
 ## @param card 被按下的棋盘卡视图。
 ## @return 无返回值。
 func _on_board_card_pressed(card: Node2D) -> void:
 	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
+		return
+
+	var range_check: Dictionary = _try_get_interaction_range(card)
+	if not bool(range_check["ok"]):
+		_report_out_of_range_interaction(card, float(range_check["distance"]))
 		return
 
 	var holdable: Dictionary = _try_get_holdable_terrain(card)
