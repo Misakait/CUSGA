@@ -1,0 +1,246 @@
+[gd_scene format=3 uid="uid://dsd1o2wuaxalx"]
+
+[ext_resource type="Texture2D" uid="uid://bsmrgcbg8sw6i" path="res://res/Nine-grid-template/背包UI.png" id="1_ju2hd"]
+[ext_resource type="Texture2D" uid="uid://cnw6cdtvpsusk" path="res://res/Nine-grid-template/背包界面.png" id="2_2tk5y"]
+[ext_resource type="Texture2D" uid="uid://bowyfx5llseqg" path="res://res/UI/标题空位UI.png" id="3_pk834"]
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="4_ts343"]
+[ext_resource type="Texture2D" uid="uid://busbhe3wcv2lm" path="res://res/UI/图标ui/背包/背包扣子1.png" id="5_64mmh"]
+[ext_resource type="Texture2D" uid="uid://fcb3cfl1u2n8" path="res://res/UI/图标ui/背包/背包扣子3.png" id="6_5qlu5"]
+[ext_resource type="PackedScene" uid="uid://b4aq56ipsxkpy" path="res://scenes/inventory/AttributeSummaryUI.tscn" id="7_ts343"]
+[ext_resource type="Texture2D" uid="uid://bamjq0hp27n10" path="res://res/UI/UI.png" id="8_64mmh"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kvmcx"]
+texture = ExtResource("8_64mmh")
+region_rect = Rect2(0, 0, 16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_5qlu5"]
+load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2x1l7"]
+texture = SubResource("CompressedTexture2D_5qlu5")
+region_rect = Rect2(0, 0, 16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_7ksqs"]
+load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_p4ky1"]
+texture = SubResource("CompressedTexture2D_7ksqs")
+region_rect = Rect2(0, 0, 16, 16)
+
+[node name="OpenBackPack" type="Node2D" unique_id=1073646835]
+
+[node name="Background" type="NinePatchRect" parent="." unique_id=867437543]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_top = -40.0
+offset_right = 426.6667
+offset_bottom = 223.66669
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(3, 3)
+texture = ExtResource("1_ju2hd")
+patch_margin_left = 112
+patch_margin_top = 80
+patch_margin_right = 112
+patch_margin_bottom = 160
+
+[node name="Item" type="Node2D" parent="." unique_id=301475234]
+position = Vector2(232.835, 0)
+
+[node name="ItemBackground" type="NinePatchRect" parent="Item" unique_id=1947467184]
+offset_left = 180.0
+offset_top = 130.0
+offset_right = 400.00043
+offset_bottom = 400.0
+scale = Vector2(2, 2)
+texture = ExtResource("2_2tk5y")
+region_rect = Rect2(26, 34, 204, 199)
+patch_margin_left = 15
+patch_margin_top = 19
+patch_margin_right = 15
+patch_margin_bottom = 14
+
+[node name="ItemTitle" type="Node2D" parent="Item" unique_id=1483692728]
+position = Vector2(48.164986, 2)
+
+[node name="ItemPlace" type="NinePatchRect" parent="Item/ItemTitle" unique_id=1359173922]
+offset_left = 236.0
+offset_top = 107.0
+offset_right = 314.40002
+offset_bottom = 132.6
+scale = Vector2(3, 3)
+texture = ExtResource("3_pk834")
+region_rect = Rect2(5, 2, 70, 29)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 8
+
+[node name="ItemTitle" type="Label" parent="Item/ItemTitle" unique_id=243683629]
+offset_left = 236.0
+offset_top = 107.0
+offset_right = 466.0
+offset_bottom = 177.0
+theme_override_fonts/font = ExtResource("4_ts343")
+theme_override_font_sizes/font_size = 48
+text = "物品"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Item" unique_id=318070040]
+offset_left = 218.16498
+offset_top = 188.0
+offset_right = 582.0
+offset_bottom = 627.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Item/ScrollContainer" unique_id=1709606964]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Item/ScrollContainer/HBoxContainer" unique_id=431991774]
+layout_mode = 2
+
+[node name="PlayerShow" type="Node2D" parent="." unique_id=1694614749]
+position = Vector2(-529, -2)
+
+[node name="PlayerShowBackground" type="NinePatchRect" parent="PlayerShow" unique_id=23084558]
+offset_left = 625.45
+offset_top = 130.0
+offset_right = 780.45
+offset_bottom = 279.5
+scale = Vector2(2, 2)
+texture = ExtResource("2_2tk5y")
+region_rect = Rect2(26, 34, 204, 199)
+patch_margin_left = 15
+patch_margin_top = 19
+patch_margin_right = 15
+patch_margin_bottom = 14
+
+[node name="PlayerShowTitle" type="Node2D" parent="PlayerShow" unique_id=716401750]
+position = Vector2(-137, 3)
+
+[node name="PlayerShowPlace" type="NinePatchRect" parent="PlayerShow/PlayerShowTitle" unique_id=895387738]
+offset_left = 800.0
+offset_top = 107.0
+offset_right = 878.4
+offset_bottom = 132.6
+scale = Vector2(3, 3)
+texture = ExtResource("3_pk834")
+region_rect = Rect2(5, 2, 70, 29)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 8
+
+[node name="PlayerShowTitle" type="Label" parent="PlayerShow/PlayerShowTitle" unique_id=721318238]
+offset_left = 811.0
+offset_top = 108.0
+offset_right = 1036.0
+offset_bottom = 178.0
+theme_override_fonts/font = ExtResource("4_ts343")
+theme_override_font_sizes/font_size = 48
+text = "角色装备"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PlayerShow" unique_id=367564885]
+offset_left = 667.0
+offset_top = 188.0
+offset_right = 901.0
+offset_bottom = 393.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PlayerShow/ScrollContainer" unique_id=582991008]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PlayerShow/ScrollContainer/HBoxContainer" unique_id=46282410]
+layout_mode = 2
+
+[node name="Deck" type="Node2D" parent="." unique_id=1924305165]
+position = Vector2(233, 0)
+
+[node name="DeckBackground" type="NinePatchRect" parent="Deck" unique_id=318514989]
+offset_left = 629.34
+offset_top = 130.0
+offset_right = 789.34
+offset_bottom = 400.0
+scale = Vector2(2, 2)
+texture = ExtResource("2_2tk5y")
+region_rect = Rect2(26, 34, 204, 199)
+patch_margin_left = 15
+patch_margin_top = 19
+patch_margin_right = 15
+patch_margin_bottom = 14
+
+[node name="DeckTitle" type="Node2D" parent="Deck" unique_id=800413971]
+position = Vector2(-137, 3)
+
+[node name="DeckPlace" type="NinePatchRect" parent="Deck/DeckTitle" unique_id=1795642204]
+offset_left = 800.0
+offset_top = 107.0
+offset_right = 878.4
+offset_bottom = 132.6
+scale = Vector2(3, 3)
+texture = ExtResource("3_pk834")
+region_rect = Rect2(5, 2, 70, 29)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 8
+
+[node name="DeckTitle" type="Label" parent="Deck/DeckTitle" unique_id=1363810766]
+offset_left = 811.0
+offset_top = 108.0
+offset_right = 1036.0
+offset_bottom = 178.0
+theme_override_fonts/font = ExtResource("4_ts343")
+theme_override_font_sizes/font_size = 48
+text = "出战卡组"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Deck" unique_id=1399876168]
+offset_left = 665.0
+offset_top = 192.0
+offset_right = 913.0
+offset_bottom = 634.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Deck/ScrollContainer" unique_id=1772122470]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Deck/ScrollContainer/HBoxContainer" unique_id=725067243]
+layout_mode = 2
+
+[node name="Other" type="Node2D" parent="." unique_id=268328036]
+
+[node name="K1" type="Sprite2D" parent="Other" unique_id=674044083]
+position = Vector2(85.00001, 560)
+scale = Vector2(3, 3)
+texture = ExtResource("5_64mmh")
+
+[node name="K2" type="Sprite2D" parent="Other" unique_id=1037830738]
+position = Vector2(474, 679)
+scale = Vector2(3, 3)
+texture = ExtResource("6_5qlu5")
+
+[node name="K3" type="Sprite2D" parent="Other" unique_id=694714802]
+position = Vector2(1186, 570)
+scale = Vector2(3, 3)
+texture = ExtResource("5_64mmh")
+flip_h = true
+
+[node name="AttributeSummaryUI" parent="Other" unique_id=697971532 instance=ExtResource("7_ts343")]
+offset_left = 106.0
+offset_top = 426.0
+offset_right = 394.0
+offset_bottom = 658.0
+
+[node name="CloseButton" type="Button" parent="." unique_id=457342641]
+offset_left = 1118.0
+offset_top = 37.0
+offset_right = 1172.0
+offset_bottom = 96.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_kvmcx")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_2x1l7")
+theme_override_styles/hover = SubResource("StyleBoxTexture_p4ky1")
