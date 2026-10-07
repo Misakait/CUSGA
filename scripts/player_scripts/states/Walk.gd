@@ -3,9 +3,12 @@ class_name Walk_
 
 var if_trans = false
 
-## 进入键盘行走状态时播放走路动画。
+## 键盘行走接管时清除鼠标目标，确保键盘松开后不会恢复旧指令。
 ## @return 无返回值。
 func enter() -> void:
+	var click_walk_state: ClickWalkState = state_machine.states.get("clickwalk") as ClickWalkState
+	if click_walk_state != null:
+		click_walk_state.CancelMovementRequest()
 	player.anim_state.travel("walk")
 	if_trans = false
 
@@ -20,7 +23,7 @@ func physics_update(_delta: float) -> void:
 	player.move_player(_delta)
 	player.move_and_slide()
 
-## 松开键盘后恢复仍有效的鼠标请求，否则回到空闲状态。
+## 松开键盘后因鼠标请求已被接管时清除，所以直接回到空闲状态。
 ## @return 发生状态切换时返回 true。
 func check_trans_condition() -> bool:
 	if Input.get_vector("move_left", "move_right", "move_up", "move_down") == Vector2.ZERO:

@@ -136,6 +136,12 @@ func EndWorldInteraction() -> void:
 	_clear_mouse_request()
 
 
+## 键盘行走接管时取消鼠标移动请求，避免松开按键后继续旧目标。
+## @return 无返回值。
+func CancelMovementRequest() -> void:
+	_clear_mouse_request()
+
+
 ## 判断是否有待执行的鼠标移动请求，供 Idle 与 Walk 状态选择优先级。
 ## @return 短点目标或已达到长按阈值的按住请求存在时返回 true。
 func has_movement_request() -> bool:
