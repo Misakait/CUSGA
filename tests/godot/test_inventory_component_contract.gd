@@ -491,7 +491,10 @@ func test_main_shared_ui_instances_use_gdscript() -> void:
 		var inventory_script := inventory_ui.get_script() as Script
 		assert_true(inventory_script != null, "Main InventoryUI 必须保留脚本。")
 		if inventory_script != null:
-			assert_eq(inventory_script.resource_path, "res://core/ui/inventory_ui.gd", "Main InventoryUI 必须使用 GDScript。")
+			assert_eq(inventory_script.resource_path, "res://core/ui/inventory/inventory_ui_controller.gd", "Main InventoryUI 必须使用新 MVC 根 Controller。")
+			assert_true(inventory_ui.get_node_or_null("Item/ScrollContainer/SlotGrid") is GridContainer, "新背包必须包含物品 GridContainer。")
+			assert_true(inventory_ui.get_node_or_null("PlayerShow/ScrollContainer/EquipmentSlotGrid") is GridContainer, "新背包必须包含装备 GridContainer。")
+			assert_true(inventory_ui.get_node_or_null("Deck/ScrollContainer/DeckSlotGrid") is GridContainer, "新背包必须包含卡组 GridContainer。")
 	if warehouse_ui != null:
 		var warehouse_script := warehouse_ui.get_script() as Script
 		assert_true(warehouse_script != null, "Main WarehouseUI 必须保留脚本。")

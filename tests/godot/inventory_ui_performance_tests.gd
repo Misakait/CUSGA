@@ -1,7 +1,7 @@
 extends SceneTree
 
 const MAIN_SCENE := "res://scenes/Main.tscn"
-const SKILL_CARD_SCRIPT := "res://resources/item/card/SkillCardData.cs"
+const SKILL_CARD_SCRIPT := "res://resources/item/card/skill_card_data.gd"
 const BRANCH_ITEM := "res://resources/item/card/res_cards/branch.tres"
 
 var _failures: Array[String] = []
@@ -29,8 +29,8 @@ func _test_inventory_views_are_reused_and_rebound(main: Node) -> void:
 	var inventory_ui := main.get_node("UI/HUDLayer/HUDRoot/CenterOverlay/InventoryUI")
 	var inventory := main.get_node("Player/Components/InventoryComponent")
 	var battle_deck := main.get_node("Player/Components/BattleDeckComponent")
-	var slot_grid: GridContainer = inventory_ui.get_node("%SlotGrid")
-	var deck_grid: GridContainer = inventory_ui.get_node("%DeckSlotGrid")
+	var slot_grid: GridContainer = inventory_ui.get_node("Item/ScrollContainer/SlotGrid")
+	var deck_grid: GridContainer = inventory_ui.get_node("Deck/ScrollContainer/DeckSlotGrid")
 
 	inventory_ui.Open(inventory)
 	await process_frame
