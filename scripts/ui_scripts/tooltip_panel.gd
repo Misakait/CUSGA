@@ -33,6 +33,8 @@ var _pending_show: bool = false
 var _hover_time: float = 0.0
 var _target_title: String = ""
 var _target_desc: String = ""
+var _has_fixed_anchor: bool = false
+var _fixed_anchor: Vector2 = Vector2.ZERO
 
 var _current_tween: Tween
 var _request_id: int = 0
@@ -71,10 +73,12 @@ func _process(delta: float) -> void:
 	if _is_visible:
 		_update_position()
 
-## 对外接口：请求显示提示框（进入延迟等待）
-## @param title_text: 标题内容
-## @param desc_text: 描述内容
+## 请求显示提示框，并在悬停延迟后跟随鼠标显示。
+## 参数 title_text：标题内容。
+## 参数 desc_text：描述内容。
+## 返回值：无。
 func show_tooltip(title_text: String, desc_text: String) -> void:
+	clear_fixed_anchor()
 	# 每次请求都自增 ID，确保异步延迟期间能认出是否还是这次请求
 	_request_id += 1
 
@@ -89,7 +93,12 @@ func show_tooltip(title_text: String, desc_text: String) -> void:
 		_pending_show = false
 		_actually_show_tooltip()
 
+## 立即显示提示框并恢复默认鼠标跟随定位。
+## 参数 title_text：标题内容。
+## 参数 desc_text：描述内容。
+## 返回值：无。
 func show_tooltip_now(title_text: String, desc_text: String) -> void:
+	clear_fixed_anchor()
 	# 每次请求都自增 ID，确保异步延迟期间能认出是否还是这次请求
 	_request_id += 1
 
@@ -97,6 +106,20 @@ func show_tooltip_now(title_text: String, desc_text: String) -> void:
 	_target_desc = desc_text
 	_pending_show = false
 	_actually_show_tooltip()
+
+## 将提示框固定在指定视口坐标的锚点旁；后续普通悬停显示会自动恢复跟随鼠标。
+## 参数 anchor：锚点右上角的视口坐标。
+## 返回值：无。
+func set_fixed_anchor(anchor: Vector2) -> void:
+	_has_fixed_anchor = true
+	_fixed_anchor = anchor
+	if _is_visible:
+		_update_position()
+
+## 清除固定锚点并恢复默认的鼠标跟随定位。
+## 返回值：无。
+func clear_fixed_anchor() -> void:
+	_has_fixed_anchor = false
 
 ## 内部逻辑：时间到达后真正执行显示
 func _actually_show_tooltip() -> void:
@@ -139,12 +162,18 @@ func _actually_show_tooltip() -> void:
 
 ## 对外接口：隐藏提示框（并取消任何正在等待的显示）
 func hide_tooltip() -> void:
+	clear_fixed_anchor()
 	# 取消挂起的显示，同时自增 ID 以废弃之前可能正在 await 的显示请求
 	_request_id += 1
 	_pending_show = false
 	_hover_time = 0.0
 
 	if not _is_visible:
+		# 显示请求已提前 show() 以计算排版，但两帧等待结束前还没有标记为可见。
+		# 此时取消也必须真正隐藏节点，并终止旧渐变，避免留下透明但 visible 的提示框。
+		if _current_tween and _current_tween.is_valid():
+			_current_tween.kill()
+		hide()
 		return
 
 	_is_visible = false
@@ -158,9 +187,8 @@ func hide_tooltip() -> void:
 
 ## 内部逻辑：根据鼠标位置更新提示框坐标，并防止超出屏幕边界
 func _update_position() -> void:
-	# 获取鼠标在屏幕上的坐标
-	var mouse_pos = get_viewport().get_mouse_position()
-	var target_pos = mouse_pos + mouse_offset
+	var mouse_pos: Vector2 = _fixed_anchor if _has_fixed_anchor else get_viewport().get_mouse_position()
+	var target_pos: Vector2 = mouse_pos + mouse_offset
 
 	# 获取当前提示框的实际渲染宽高
 	var panel_size = size

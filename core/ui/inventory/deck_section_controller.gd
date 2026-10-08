@@ -10,6 +10,7 @@ var _inventory: Node = null
 var _tooltip_presenter: Variant = null
 var _shortcut_handler: Callable = Callable()
 var _slots: Array[ItemSlot] = []
+var _selected_slot: ItemSlot = null
 
 ## 绑定出战卡组并刷新格子。
 ## @param inventory BattleDeckComponent 实例。
@@ -31,6 +32,10 @@ func Refresh() -> void:
 		capacity = maxi(int(_inventory.get("Capacity")), 0)
 	while _slots.size() > capacity:
 		var removed: ItemSlot = _slots.pop_back()
+		if removed == _selected_slot:
+			_selected_slot = null
+		if removed.slot_clicked.is_connected(_on_slot_clicked):
+			removed.slot_clicked.disconnect(_on_slot_clicked)
 		removed.queue_free()
 	while _slots.size() < capacity:
 		_create_slot()
@@ -38,11 +43,24 @@ func Refresh() -> void:
 		var stack: Variant = _inventory.call("GetStackAt", index) if _inventory != null else null
 		_slots[index].configure_display(false, false)
 		_slots[index].bind_inventory(index, stack, _inventory, _shortcut_handler, Callable(), _tooltip_presenter)
+		_slots[index].set_selected(_slots[index] == _selected_slot)
 
 ## 返回当前卡组格子。
 ## @return Array[ItemSlot] 当前格子列表。
 func GetSlots() -> Array[ItemSlot]:
 	return _slots
+
+## 返回本区域当前选中的格子。
+## @return 当前选中的格子；没有选中时返回 null。
+func GetSelectedSlot() -> ItemSlot:
+	return _selected_slot
+
+## 清除本区域的选中格子。
+## @return 无返回值。
+func ClearSelection() -> void:
+	if is_instance_valid(_selected_slot):
+		_selected_slot.set_selected(false)
+	_selected_slot = null
 
 func _create_slot() -> void:
 	var slot: ItemSlot = ITEM_SLOT_SCENE.instantiate() as ItemSlot
@@ -52,6 +70,14 @@ func _create_slot() -> void:
 	_slots.append(slot)
 
 func _on_slot_clicked(slot: ItemSlot) -> void:
+	if is_instance_valid(_selected_slot) and _selected_slot == slot:
+		_selected_slot.set_selected(false)
+		_selected_slot = null
+	else:
+		if is_instance_valid(_selected_slot):
+			_selected_slot.set_selected(false)
+		_selected_slot = slot
+		slot.set_selected(true)
 	slot_clicked.emit(slot)
 
 func _connect_inventory() -> void:
@@ -71,3 +97,6 @@ func _on_inventory_changed() -> void:
 
 func _exit_tree() -> void:
 	_disconnect_inventory()
+	for slot in _slots:
+		if is_instance_valid(slot) and slot.slot_clicked.is_connected(_on_slot_clicked):
+			slot.slot_clicked.disconnect(_on_slot_clicked)

@@ -8,6 +8,8 @@ signal back_requested
 
 const SETTINGS_SECTION: String = "map"
 const MINIMAP_ZOOM_KEY: String = "minimap_zoom"
+const INVENTORY_SECTION: String = "inventory"
+const SHOW_SELECTED_ITEM_INFO_KEY: String = "show_selected_item_info"
 
 ## 小地图缩放滑条下限。
 @export_range(0.1, 4.0, 0.05) var minimum_minimap_zoom: float = 0.75
@@ -19,6 +21,10 @@ const MINIMAP_ZOOM_KEY: String = "minimap_zoom"
 @export_range(0.1, 6.0, 0.05) var default_minimap_zoom: float = 2.0
 
 @onready var _map_category_button: Button = %MapCategoryButton
+@onready var _inventory_category_button: Button = %InventoryCategoryButton
+@onready var _map_settings: Control = %MapSettings
+@onready var _inventory_settings: Control = %InventorySettings
+@onready var _selected_item_info_toggle: CheckButton = %SelectedItemInfoToggle
 @onready var _zoom_slider: HSlider = %MiniMapZoomSlider
 @onready var _zoom_value_label: Label = %MiniMapZoomValue
 @onready var _reset_button: Button = %ResetMapButton
@@ -28,7 +34,10 @@ const MINIMAP_ZOOM_KEY: String = "minimap_zoom"
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_map_category_button.button_pressed = true
-	_map_category_button.disabled = true
+	_inventory_settings.hide()
+	_map_category_button.pressed.connect(_on_map_category_pressed)
+	_inventory_category_button.pressed.connect(_on_inventory_category_pressed)
+	_selected_item_info_toggle.toggled.connect(_on_selected_item_info_toggled)
 	_zoom_slider.min_value = minf(minimum_minimap_zoom, maximum_minimap_zoom)
 	_zoom_slider.max_value = maxf(minimum_minimap_zoom, maximum_minimap_zoom)
 	_zoom_slider.step = minimap_zoom_step
@@ -54,6 +63,28 @@ func _refresh_from_settings() -> void:
 		zoom = float(saved_value)
 	_zoom_slider.set_value_no_signal(clampf(zoom, _zoom_slider.min_value, _zoom_slider.max_value))
 	_update_value_label(_zoom_slider.value)
+	var saved_item_info: Variant = SettingsManager.get_setting(
+		INVENTORY_SECTION, SHOW_SELECTED_ITEM_INFO_KEY, true
+	)
+	_selected_item_info_toggle.set_pressed_no_signal(saved_item_info if saved_item_info is bool else true)
+
+
+func _on_map_category_pressed() -> void:
+	_map_category_button.set_pressed_no_signal(true)
+	_inventory_category_button.set_pressed_no_signal(false)
+	_map_settings.show()
+	_inventory_settings.hide()
+
+
+func _on_inventory_category_pressed() -> void:
+	_map_category_button.set_pressed_no_signal(false)
+	_inventory_category_button.set_pressed_no_signal(true)
+	_map_settings.hide()
+	_inventory_settings.show()
+
+
+func _on_selected_item_info_toggled(enabled: bool) -> void:
+	SettingsManager.set_setting(INVENTORY_SECTION, SHOW_SELECTED_ITEM_INFO_KEY, enabled)
 
 
 func _on_zoom_changed(value: float) -> void:

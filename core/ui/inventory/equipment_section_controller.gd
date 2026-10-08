@@ -5,10 +5,12 @@ extends GridContainer
 
 const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot.tscn")
 const EQUIPMENT_TYPES: GDScript = preload("res://core/constants/equipment_types.gd")
+signal slot_clicked(slot: ItemSlot)
 
 var _equipment: Node = null
 var _tooltip_presenter: Variant = null
 var _slots: Array[ItemSlot] = []
+var _selected_slot: ItemSlot = null
 
 ## 绑定装备组件并刷新固定的 16 个装备槽。
 ## @param equipment EquipmentComponent 实例。
@@ -26,6 +28,10 @@ func Refresh() -> void:
 	var slot_values: Array = EQUIPMENT_TYPES.EquipmentSlot.values()
 	while _slots.size() > slot_values.size():
 		var removed: ItemSlot = _slots.pop_back()
+		if removed == _selected_slot:
+			_selected_slot = null
+		if removed.slot_clicked.is_connected(_on_slot_clicked):
+			removed.slot_clicked.disconnect(_on_slot_clicked)
 		removed.queue_free()
 	while _slots.size() < slot_values.size():
 		_create_slot()
@@ -34,17 +40,42 @@ func Refresh() -> void:
 		_slots[index].configure_display(false, false)
 		_slots[index].set_empty_label(_get_slot_label(slot_value))
 		_slots[index].bind_equipment(_equipment, slot_value, _tooltip_presenter)
+		_slots[index].set_selected(_slots[index] == _selected_slot)
 
 ## 返回当前装备格子。
 ## @return Array[ItemSlot] 当前格子列表。
 func GetSlots() -> Array[ItemSlot]:
 	return _slots
 
+## 返回本区域当前选中的格子。
+## @return 当前选中的格子；没有选中时返回 null。
+func GetSelectedSlot() -> ItemSlot:
+	return _selected_slot
+
+## 清除本区域的选中格子。
+## @return 无返回值。
+func ClearSelection() -> void:
+	if is_instance_valid(_selected_slot):
+		_selected_slot.set_selected(false)
+	_selected_slot = null
+
 func _create_slot() -> void:
 	var slot: ItemSlot = ITEM_SLOT_SCENE.instantiate() as ItemSlot
 	slot.configure_compact_layout(0.8)
 	add_child(slot)
+	slot.slot_clicked.connect(_on_slot_clicked)
 	_slots.append(slot)
+
+func _on_slot_clicked(slot: ItemSlot) -> void:
+	if is_instance_valid(_selected_slot) and _selected_slot == slot:
+		_selected_slot.set_selected(false)
+		_selected_slot = null
+	else:
+		if is_instance_valid(_selected_slot):
+			_selected_slot.set_selected(false)
+		_selected_slot = slot
+		slot.set_selected(true)
+	slot_clicked.emit(slot)
 
 func _connect_equipment() -> void:
 	if _equipment != null and _equipment.has_signal("EquipmentChanged"):
@@ -83,3 +114,6 @@ func _get_slot_label(slot: int) -> String:
 
 func _exit_tree() -> void:
 	_disconnect_equipment()
+	for slot in _slots:
+		if is_instance_valid(slot) and slot.slot_clicked.is_connected(_on_slot_clicked):
+			slot.slot_clicked.disconnect(_on_slot_clicked)

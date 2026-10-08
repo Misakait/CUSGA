@@ -11,6 +11,12 @@ const ITEM_TOOLTIP_PRESENTER_SCRIPT: GDScript = preload("res://core/ui/item_tool
 ## 玩家点击该格子时发出。
 ## @param slot 被点击的格子自身。
 signal slot_clicked(slot: Button)
+## 鼠标进入格子时发出，供背包协调共享提示框。
+signal pointer_entered(slot: Button)
+## 鼠标离开格子时发出，供背包恢复选中物品提示。
+signal pointer_left(slot: Button)
+## 当前绑定物品发生变化时发出。
+signal content_changed(slot: Button)
 
 ## Shift 单击快捷类型；数值保持旧 C# SlotShortcutKind 协议。
 enum SlotShortcutKind { ShiftClick = 0, AltClick = 1 }
@@ -53,6 +59,11 @@ var _allow_empty_drop: bool = false
 var _item_click_pending: bool = false
 ## 鼠标是否停留在格子上。
 var _is_pointer_inside: bool = false
+## 选中外观由所属界面控制，不交给 Button 的自动切换状态。
+var _is_selected: bool = false
+var _normal_style: StyleBox = null
+var _hover_style: StyleBox = null
+var _selected_style: StyleBox = null
 
 var _icon: TextureRect = null
 var _count_label: Label = null
@@ -156,7 +167,7 @@ func configure_display(show_count: bool, show_price: bool) -> void:
 	_price_label.visible = _show_price and item_data != null and _price_label.text != ""
 
 ## 设置当前界面的紧凑布局比例。
-## @param scale_factor 相对于仓库/商店默认格子尺寸的比例；背包使用 0.5。
+## @param scale_factor 相对于仓库/商店默认格子尺寸的比例；背包各区域按布局传入。
 func configure_compact_layout(scale_factor: float) -> void:
 	var factor: float = clampf(scale_factor, 0.25, 1.0)
 	custom_minimum_size = Vector2(96.0, 104.0) * factor
@@ -223,23 +234,36 @@ func clear_slot() -> void:
 	_name_label.text = _empty_label
 	_count_label.visible = false
 	_price_label.visible = false
-	button_pressed = false
+	if not _allow_empty_drop:
+		set_selected(false)
 	disabled = not _allow_empty_drop
 
 ## 设置选中态。
 ## @param selected 是否选中。
 func set_selected(selected: bool) -> void:
-	button_pressed = selected
+	_is_selected = selected
+	if _normal_style == null:
+		return
+	# Button 自身的释放事件会切换 button_pressed；覆盖普通和悬停样式才能稳定显示 Controller 的选择结果。
+	add_theme_stylebox_override("normal", _selected_style if selected else _normal_style)
+	add_theme_stylebox_override("hover", _selected_style if selected else _hover_style)
 
 ## 读取选中态。
 ## @return bool 是否选中。
 func is_selected() -> bool:
-	return button_pressed
+	return _is_selected
 
 func _ready() -> void:
-	toggle_mode = true
-	if not pressed.is_connected(_on_pressed):
-		pressed.connect(_on_pressed)
+	_normal_style = get_theme_stylebox("normal")
+	_hover_style = get_theme_stylebox("hover")
+	# pressed 样式来自场景资源，不能直接修改，否则仓库、商店和背包实例会共享颜色状态。
+	# 每个格子复制一份选中样式，并单独降低底图亮度，让选中态明显区别于普通态。
+	var pressed_style: StyleBox = get_theme_stylebox("pressed")
+	if pressed_style != null:
+		_selected_style = pressed_style.duplicate() as StyleBox
+	if _selected_style is StyleBoxTexture:
+		(_selected_style as StyleBoxTexture).modulate_color = Color(0.55, 0.55, 0.55, 1.0)
+	toggle_mode = false
 	if not mouse_entered.is_connected(_on_mouse_entered):
 		mouse_entered.connect(_on_mouse_entered)
 	if not mouse_exited.is_connected(_on_mouse_exited):
@@ -275,10 +299,6 @@ func _bind_stack_visual(stack: Variant) -> void:
 	_price_label.visible = false
 	disabled = false
 
-func _on_pressed() -> void:
-	if item_data != null:
-		slot_clicked.emit(self)
-
 func _gui_input(event: InputEvent) -> void:
 	if _handle_shortcut_input(event):
 		_item_click_pending = false
@@ -289,12 +309,16 @@ func _gui_input(event: InputEvent) -> void:
 	if event.pressed:
 		_item_click_pending = not event.ctrl_pressed and not event.meta_pressed
 		return
-	var open_menu: bool = _item_click_pending and not get_viewport().gui_is_dragging() \
+	var select_slot: bool = _item_click_pending and not get_viewport().gui_is_dragging() \
 		and Rect2(Vector2.ZERO, size).has_point(event.position)
 	_item_click_pending = false
-	if open_menu and _use_handler.is_valid() and bool(_use_handler.call(self)):
+	if not select_slot:
+		return
+	# 菜单回调会消费松开事件，因此先确定选中并通知区域控制器。
+	slot_clicked.emit(self)
+	if _use_handler.is_valid() and bool(_use_handler.call(self)):
 		_tooltip_presenter.call("Hide")
-		accept_event()
+	# 保留 Button 原生的松开处理以结束瞬时按压；MOUSE_FILTER_STOP 仍会拦截向世界传播的点击。
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	_item_click_pending = false
@@ -418,16 +442,23 @@ func _disconnect_stack_signal() -> void:
 
 func _on_stack_changed(_value: Variant = null) -> void:
 	_bind_stack_visual(_current_stack)
+	content_changed.emit(self)
 
 func _on_mouse_entered() -> void:
 	_is_pointer_inside = true
-	if item_data != null:
+	# 背包根控制器订阅此信号时，由它统一仲裁选中、悬停和再次点击后的抑制状态。
+	# 仓库与商店没有订阅，继续沿用格子自身的悬停提示。
+	if item_data != null and pointer_entered.get_connections().is_empty():
 		_tooltip_presenter.call("Show", _current_stack if _current_stack != null else item_data)
+	pointer_entered.emit(self)
 
 func _on_mouse_exited() -> void:
 	_is_pointer_inside = false
 	_item_click_pending = false
-	_tooltip_presenter.call("Hide")
+	# 背包的悬停提示由根控制器拥有；旧格子的退出事件不能误关新格子的提示。
+	if pointer_left.get_connections().is_empty():
+		_tooltip_presenter.call("Hide")
+	pointer_left.emit(self)
 	if _icon != null:
 		_icon.modulate = Color.WHITE
 
