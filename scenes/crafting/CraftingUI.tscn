@@ -1,0 +1,183 @@
+[gd_scene format=3 uid="uid://canwq8wfxrir5"]
+
+[ext_resource type="Texture2D" uid="uid://btkcu8xnuocfo" path="res://res/UI/图标ui/书卷-印章.png" id="1_enix0"]
+[ext_resource type="Texture2D" uid="uid://ctnhdw2bkfoik" path="res://res/Nine-grid-template/面板1.png" id="2_6ctyo"]
+[ext_resource type="Texture2D" uid="uid://d1worqlnqana0" path="res://res/UI/标题栏2.png" id="3_ngmta"]
+[ext_resource type="Texture2D" uid="uid://dkvtrnt8nqyn8" path="res://res/UI/图标ui/面板/面板组件1.png" id="4_whwry"]
+[ext_resource type="Texture2D" uid="uid://cxu8t0gokde2n" path="res://res/UI/格子/格子1.png" id="5_m30op"]
+[ext_resource type="Texture2D" uid="uid://bamjq0hp27n10" path="res://res/UI/UI.png" id="5_ngmta"]
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="6_tp5ge"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
+texture = ExtResource("5_ngmta")
+region_rect = Rect2(0, 0, 16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_whwry"]
+load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m30op"]
+texture = SubResource("CompressedTexture2D_whwry")
+region_rect = Rect2(0, 0, 16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_tp5ge"]
+load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3c11b"]
+texture = SubResource("CompressedTexture2D_tp5ge")
+region_rect = Rect2(0, 0, 16, 16)
+
+[node name="CraftingUi" type="Control" unique_id=576420656]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RecipeSection" type="Node2D" parent="." unique_id=861192893]
+position = Vector2(-20, -6)
+
+[node name="Background" type="NinePatchRect" parent="RecipeSection" unique_id=638264735]
+offset_left = 32.0
+offset_top = 37.0
+offset_right = 252.0
+offset_bottom = 262.0
+scale = Vector2(3, 3)
+texture = ExtResource("1_enix0")
+region_rect = Rect2(8, 5, 112, 113)
+patch_margin_left = 50
+patch_margin_top = 55
+patch_margin_right = 24
+patch_margin_bottom = 44
+
+[node name="TitleLabel" type="Label" parent="RecipeSection" unique_id=1845576584]
+offset_left = 131.0
+offset_top = 49.0
+offset_right = 653.0
+offset_bottom = 120.0
+theme_override_fonts/font = ExtResource("6_tp5ge")
+theme_override_font_sizes/font_size = 48
+text = "配方"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="RecipeSection" unique_id=974160190]
+offset_left = 134.0
+offset_top = 157.0
+offset_right = 661.0
+offset_bottom = 653.0
+
+[node name="PageContainer" type="Node2D" parent="RecipeSection" unique_id=551130297]
+position = Vector2(343, 365)
+
+[node name="DetailSection" type="Node2D" parent="." unique_id=1885685260]
+position = Vector2(937, 338)
+
+[node name="Background" type="Node2D" parent="DetailSection" unique_id=92336626]
+
+[node name="NinePatchRect" type="NinePatchRect" parent="DetailSection/Background" unique_id=305126524]
+offset_left = -230.0
+offset_top = -230.0
+offset_right = -50.0
+offset_bottom = -30.0
+scale = Vector2(3, 3)
+texture = ExtResource("2_6ctyo")
+region_rect = Rect2(2, 27, 232, 122)
+patch_margin_left = 12
+patch_margin_top = 4
+patch_margin_right = 9
+patch_margin_bottom = 13
+
+[node name="NinePatchRect2" type="NinePatchRect" parent="DetailSection/Background" unique_id=1227728367]
+offset_left = -247.00002
+offset_top = -301.035
+offset_right = -57.000015
+offset_bottom = -276.035
+scale = Vector2(3, 3)
+texture = ExtResource("3_ngmta")
+region_rect = Rect2(0, 0, 237, 28)
+patch_margin_left = 54
+patch_margin_top = 3
+patch_margin_right = 52
+patch_margin_bottom = 4
+
+[node name="NinePatchRect3" type="NinePatchRect" parent="DetailSection/Background" unique_id=2098798513]
+offset_left = -68.0
+offset_top = -208.0
+offset_right = 284.0
+offset_bottom = -33.0
+texture = ExtResource("2_6ctyo")
+region_rect = Rect2(2, 27, 232, 122)
+patch_margin_left = 8
+patch_margin_top = 4
+patch_margin_right = 8
+patch_margin_bottom = 10
+
+[node name="K1" type="Sprite2D" parent="DetailSection/Background" unique_id=1327286417]
+position = Vector2(-195, 336)
+scale = Vector2(4, 4)
+texture = ExtResource("4_whwry")
+
+[node name="K2" type="Sprite2D" parent="DetailSection/Background" unique_id=2019244047]
+position = Vector2(276, 336)
+scale = Vector2(4, 4)
+texture = ExtResource("4_whwry")
+flip_h = true
+
+[node name="ShowBackground" type="Sprite2D" parent="DetailSection/Background" unique_id=247875802]
+position = Vector2(-140, -120)
+scale = Vector2(2, 2)
+texture = ExtResource("5_m30op")
+
+[node name="OutPut" type="Node2D" parent="DetailSection" unique_id=998749756]
+
+[node name="OutputIcon" type="TextureRect" parent="DetailSection/OutPut" unique_id=201399684]
+offset_left = -185.0
+offset_top = -165.0
+offset_right = -95.0
+offset_bottom = -75.0
+
+[node name="OutPutLabel" type="Label" parent="DetailSection/OutPut" unique_id=1718320226]
+offset_left = -91.0
+offset_top = -292.0
+offset_right = 178.0
+offset_bottom = -236.0
+theme_override_fonts/font = ExtResource("6_tp5ge")
+theme_override_font_sizes/font_size = 48
+text = "篝火"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DescriptionContainer" type="ScrollContainer" parent="DetailSection/OutPut" unique_id=448983002]
+custom_minimum_size = Vector2(335, 160)
+offset_left = -58.0
+offset_top = -200.0
+offset_right = 277.0
+offset_bottom = -40.0
+
+[node name="OutPutDescription" type="Label" parent="DetailSection/OutPut/DescriptionContainer" unique_id=519050748]
+custom_minimum_size = Vector2(335, 160)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("6_tp5ge")
+theme_override_font_sizes/font_size = 24
+text = "左键点击建筑牌，在菜单中选择放置，再左键确认落点;右键或Esc取消。靠近后按F休息:消耗 50行动值，恢复最多200生命值，满血也可休息并正常消耗。靠近后长按地面篝火1秒可拆除，掉落1个树枝。"
+autowrap_mode = 3
+
+[node name="Ingredient" type="Node2D" parent="DetailSection" unique_id=116538960]
+
+[node name="ScrollContainer" type="ScrollContainer" parent="DetailSection/Ingredient" unique_id=1972267062]
+offset_left = -188.0
+offset_top = 1.0
+offset_right = 273.0
+offset_bottom = 295.0
+
+[node name="CloseButton" type="Button" parent="." unique_id=1216106099]
+layout_mode = 0
+offset_left = 1190.9999
+offset_top = 47.999996
+offset_right = 1198.9999
+offset_bottom = 55.999996
+scale = Vector2(7, 7)
+theme_override_styles/normal = SubResource("StyleBoxTexture_35b51")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_m30op")
+theme_override_styles/hover = SubResource("StyleBoxTexture_3c11b")
