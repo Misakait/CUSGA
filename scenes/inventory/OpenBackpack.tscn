@@ -8,6 +8,10 @@
 [ext_resource type="Texture2D" uid="uid://fcb3cfl1u2n8" path="res://res/UI/图标ui/背包/背包扣子3.png" id="6_5qlu5"]
 [ext_resource type="PackedScene" uid="uid://b4aq56ipsxkpy" path="res://scenes/inventory/AttributeSummaryUI.tscn" id="7_ts343"]
 [ext_resource type="Texture2D" uid="uid://bamjq0hp27n10" path="res://res/UI/UI.png" id="8_64mmh"]
+[ext_resource type="Script" uid="uid://dd44uk0col266" path="res://core/ui/inventory/inventory_ui_controller.gd" id="9_inventory_controller"]
+[ext_resource type="Script" uid="uid://ce7fbqxplyb7y" path="res://core/ui/inventory/inventory_section_controller.gd" id="10_inventory_section"]
+[ext_resource type="Script" uid="uid://ds0wk6c4v0h5x" path="res://core/ui/inventory/equipment_section_controller.gd" id="11_equipment_section"]
+[ext_resource type="Script" uid="uid://cttccads8ome1" path="res://core/ui/inventory/deck_section_controller.gd" id="12_deck_section"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kvmcx"]
 texture = ExtResource("8_64mmh")
@@ -27,17 +31,26 @@ load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
 texture = SubResource("CompressedTexture2D_7ksqs")
 region_rect = Rect2(0, 0, 16, 16)
 
-[node name="OpenBackPack" type="Node2D" unique_id=1073646835]
+[node name="OpenBackPack" type="Control" unique_id=1073646835]
+custom_minimum_size = Vector2(1300, 720)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1300.0
+offset_bottom = 720.0
+mouse_filter = 1
+script = ExtResource("9_inventory_controller")
 
 [node name="Background" type="NinePatchRect" parent="." unique_id=867437543]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_top = -40.0
-offset_right = 426.6667
-offset_bottom = 223.66669
+offset_left = -661.0
+offset_top = -390.0
+offset_right = -234.33325
+offset_bottom = -126.33331
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(3, 3)
@@ -96,11 +109,12 @@ offset_top = 188.0
 offset_right = 582.0
 offset_bottom = 627.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Item/ScrollContainer" unique_id=1709606964]
+[node name="SlotGrid" type="GridContainer" parent="Item/ScrollContainer" unique_id=431991774]
+unique_name_in_owner = true
 layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Item/ScrollContainer/HBoxContainer" unique_id=431991774]
-layout_mode = 2
+size_flags_horizontal = 3
+columns = 6
+script = ExtResource("10_inventory_section")
 
 [node name="PlayerShow" type="Node2D" parent="." unique_id=1694614749]
 position = Vector2(-529, -2)
@@ -146,16 +160,17 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PlayerShow" unique_id=367564885]
-offset_left = 667.0
+offset_left = 656.0
 offset_top = 188.0
-offset_right = 901.0
-offset_bottom = 393.0
+offset_right = 905.0
+offset_bottom = 399.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PlayerShow/ScrollContainer" unique_id=582991008]
+[node name="EquipmentSlotGrid" type="GridContainer" parent="PlayerShow/ScrollContainer" unique_id=46282410]
+unique_name_in_owner = true
 layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PlayerShow/ScrollContainer/HBoxContainer" unique_id=46282410]
-layout_mode = 2
+size_flags_horizontal = 3
+columns = 3
+script = ExtResource("11_equipment_section")
 
 [node name="Deck" type="Node2D" parent="." unique_id=1924305165]
 position = Vector2(233, 0)
@@ -201,16 +216,17 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Deck" unique_id=1399876168]
-offset_left = 665.0
+offset_left = 661.0
 offset_top = 192.0
 offset_right = 913.0
 offset_bottom = 634.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Deck/ScrollContainer" unique_id=1772122470]
+[node name="DeckSlotGrid" type="GridContainer" parent="Deck/ScrollContainer" unique_id=725067243]
+unique_name_in_owner = true
 layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Deck/ScrollContainer/HBoxContainer" unique_id=725067243]
-layout_mode = 2
+size_flags_horizontal = 3
+columns = 4
+script = ExtResource("12_deck_section")
 
 [node name="Other" type="Node2D" parent="." unique_id=268328036]
 
@@ -223,6 +239,18 @@ texture = ExtResource("5_64mmh")
 position = Vector2(474, 679)
 scale = Vector2(3, 3)
 texture = ExtResource("6_5qlu5")
+
+[node name="K4" type="Sprite2D" parent="Other" unique_id=925048772]
+position = Vector2(399.00003, 87)
+scale = Vector2(3, 3)
+texture = ExtResource("6_5qlu5")
+flip_v = true
+
+[node name="K5" type="Sprite2D" parent="Other" unique_id=922173951]
+position = Vector2(803, 81)
+scale = Vector2(3, 3)
+texture = ExtResource("6_5qlu5")
+flip_v = true
 
 [node name="K3" type="Sprite2D" parent="Other" unique_id=694714802]
 position = Vector2(1186, 570)
@@ -237,6 +265,7 @@ offset_right = 394.0
 offset_bottom = 658.0
 
 [node name="CloseButton" type="Button" parent="." unique_id=457342641]
+layout_mode = 0
 offset_left = 1118.0
 offset_top = 37.0
 offset_right = 1172.0
@@ -244,3 +273,13 @@ offset_bottom = 96.0
 theme_override_styles/normal = SubResource("StyleBoxTexture_kvmcx")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_2x1l7")
 theme_override_styles/hover = SubResource("StyleBoxTexture_p4ky1")
+
+[node name="CraftingButton" type="Button" parent="." unique_id=691105130]
+layout_mode = 0
+offset_left = 942.0
+offset_top = 42.0
+offset_right = 1086.0
+offset_bottom = 90.0
+theme_override_fonts/font = ExtResource("4_ts343")
+theme_override_font_sizes/font_size = 28
+text = "合成"
