@@ -22,7 +22,7 @@
 [ext_resource type="Script" uid="uid://bshlhmrbxfyv2" path="res://core/debug/debug_loadout_seeder.gd" id="13_debug"]
 [ext_resource type="Script" uid="uid://k13qj2wv8e41" path="res://core/gameflow/run_start_initializer.gd" id="14_e2s0e"]
 [ext_resource type="Resource" uid="uid://dr7cyh83nt2jg" path="res://resources/debug/default_inventory_loadout.tres" id="14_loadout"]
-[ext_resource type="PackedScene" uid="uid://76d7t852i5is" path="res://scenes/crafting/crafting_ui.tscn" id="15_crafting"]
+[ext_resource type="PackedScene" uid="uid://canwq8wfxrir5" path="res://scenes/crafting/CraftingUI.tscn" id="15_crafting"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="16_tooltip"]
 [ext_resource type="PackedScene" uid="uid://bgs8y0wsqp31u" path="res://scenes/Warehouse/warehouse_ui.tscn" id="18_warehouse_ui"]
 [ext_resource type="Script" uid="uid://dggoia15cpbun" path="res://core/gameflow/world_hold_interaction_controller.gd" id="19_world_hold"]

@@ -5,19 +5,29 @@
 [ext_resource type="Texture2D" uid="uid://cvc5kivl2kq62" path="res://res/environment/treasurechest.png" id="3_rghks"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="4_aoam7"]
 
-[node name="ItemSlot1" type="TextureButton" unique_id=1816009479]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_84ryh"]
+texture = ExtResource("1_sje54")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wehv6"]
+texture = ExtResource("2_ncu6m")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_aoam7"]
+texture = ExtResource("2_ncu6m")
+
+[node name="ItemSlot1" type="Button" unique_id=1542626322]
 offset_right = 72.0
 offset_bottom = 72.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_84ryh")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_wehv6")
+theme_override_styles/hover = SubResource("StyleBoxTexture_aoam7")
 toggle_mode = true
-texture_normal = ExtResource("1_sje54")
-texture_pressed = ExtResource("2_ncu6m")
 
 [node name="Icon" type="TextureRect" parent="." unique_id=970457782]
 layout_mode = 0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 56.0
-offset_bottom = 56.0
+offset_left = 12.0
+offset_top = 14.0
+offset_right = 60.0
+offset_bottom = 62.0
 mouse_filter = 2
 texture = ExtResource("3_rghks")
 expand_mode = 1
@@ -25,10 +35,10 @@ stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="." unique_id=27891336]
 layout_mode = 0
-offset_left = 10.0
-offset_top = 44.0
-offset_right = 56.0
-offset_bottom = 58.0
+offset_left = 16.0
+offset_top = 50.0
+offset_right = 62.0
+offset_bottom = 64.0
 theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
 theme_override_colors/font_outline_color = Color(0.08, 0.07, 0.12, 1)
 theme_override_constants/outline_size = 4
@@ -39,13 +49,12 @@ horizontal_alignment = 2
 
 [node name="NameLabel" type="Label" parent="." unique_id=914474533]
 layout_mode = 0
-offset_left = -17.0
-offset_top = -1.0
-offset_right = 77.0
-offset_bottom = 18.0
+offset_left = -11.0
+offset_right = 82.0
+offset_bottom = 25.0
 theme_override_colors/font_color = Color(0.94, 0.95, 1, 1)
 theme_override_fonts/font = ExtResource("4_aoam7")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "名字"
 horizontal_alignment = 1
 vertical_alignment = 1
