@@ -3,7 +3,8 @@ extends GridContainer
 ## 玩家背包区域 Controller。
 ## 该脚本只管理直接子节点 ItemSlot 的数量、绑定和刷新，库存规则仍由 Model 负责。
 
-const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot.tscn")
+const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot1.tscn")
+const BACKPACK_ITEM_SLOT_SCRIPT: GDScript = preload("res://scripts/ui_scripts/backpack_item_slot.gd")
 
 ## 普通格子被点击时通知根 Controller。
 signal slot_clicked(slot: ItemSlot)
@@ -67,9 +68,14 @@ func ClearSelection() -> void:
 	_selected_slot = null
 
 func _create_slot() -> void:
-	var slot: ItemSlot = ITEM_SLOT_SCENE.instantiate() as ItemSlot
-	slot.configure_compact_layout(0.6)
+	var slot_node: Button = ITEM_SLOT_SCENE.instantiate() as Button
+	slot_node.set_script(BACKPACK_ITEM_SLOT_SCRIPT)
+	var slot: ItemSlot = slot_node as ItemSlot
+	if slot == null:
+		push_error("InventorySectionController: 无法将 item_slot1 适配为 ItemSlot。")
+		return
 	add_child(slot)
+	slot.configure_compact_layout(0.6)
 	slot.slot_clicked.connect(_on_slot_clicked)
 	_slots.append(slot)
 

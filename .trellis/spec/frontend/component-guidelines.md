@@ -48,6 +48,13 @@
 6. **运行验证**：用 Godot MCP 真实发送按下和松开，读取所有格子的 `is_selected()`、`button_pressed` 并查看截图。点击 A 后移到未点击 B，断言固定面板标题为 A 且悬停面板标题为 B、两者同时可见；离开 B 后只剩 A；点击 B 后仅 B 选中且固定面板显示 B；关闭设置后固定面板隐藏而悬停仍可见。还要验证再次点击后提示隐藏、关闭背包后两块面板隐藏，以及仓库两侧互斥。
 7. **实现示例**：持续选择写入 `slot.set_selected(true)`；不得用 `slot.button_pressed = true` 保存选择。普通点击的 `_gui_input()` 发出选择意图后正常返回；快捷操作单独消费事件，以保留原有快捷与拖拽协议。
 
+### OpenBackpack 的 item_slot1 适配
+
+- 三个区域分别从 `res://scenes/ui/item_slot1.tscn` 实例化 Button，再挂载 `res://scripts/ui_scripts/backpack_item_slot.gd`，继承 ItemSlot 的绑定、拖拽、快捷键和提示协议。原始 item_slot1 场景仍可由合成独立使用，不能通过修改共享场景改变其它界面的输入与外观。
+- 原场景没有 PriceLabel，背包适配须在旧 ItemSlot 解析节点之前补齐隐藏标签；Icon、CountLabel、NameLabel 必须继续读取场景节点。标签不得拦截鼠标事件，否则点击标签和点击格子空白会产生不同结果。
+- 持续选中使用场景的 pressed 样式，不额外染暗。未选中格子的 normal、hover、pressed、hover_pressed 应保持普通外观；仅当前区域选中格子显示点击外观，避免悬停或按住另一格时出现两个点击外观。不同区域可以同时各选一个，不能建立全局互斥选择。
+- 运行验证读取三栏每个格子的 `scene_file_path`、`is_selected()`、`button_pressed` 和样式贴图；真实输入覆盖悬停、按住新格、松开切换、再次取消、跨栏独立、刷新复用和关闭清除。
+
 ## 全屏覆盖层（滤镜、遮罩）
 
 - **先确认宿主场景的相机**：放在默认 canvas 的全屏覆盖层会随 `Camera2D` 一起变换。相机跟随玩家移动时，覆盖层会跟着移出画面——表现为「滤镜完全没生效」，且**不报任何错**；相机固定在屏幕左上角（`top_level = true`、缩放 `1`）时才不受影响。相机不固定的场景必须把覆盖层放进 `CanvasLayer`（`CanvasLayer` 不受相机变换影响）。

@@ -3,7 +3,8 @@ extends GridContainer
 ## 出战卡组区域 Controller。
 ## 卡组继承库存组件协议，只在这里管理 ItemSlot 视图，不复制卡组容量或移动规则。
 
-const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot.tscn")
+const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot1.tscn")
+const BACKPACK_ITEM_SLOT_SCRIPT: GDScript = preload("res://scripts/ui_scripts/backpack_item_slot.gd")
 signal slot_clicked(slot: ItemSlot)
 
 var _inventory: Node = null
@@ -63,9 +64,14 @@ func ClearSelection() -> void:
 	_selected_slot = null
 
 func _create_slot() -> void:
-	var slot: ItemSlot = ITEM_SLOT_SCENE.instantiate() as ItemSlot
-	slot.configure_compact_layout(0.6)
+	var slot_node: Button = ITEM_SLOT_SCENE.instantiate() as Button
+	slot_node.set_script(BACKPACK_ITEM_SLOT_SCRIPT)
+	var slot: ItemSlot = slot_node as ItemSlot
+	if slot == null:
+		push_error("DeckSectionController: 无法将 item_slot1 适配为 ItemSlot。")
+		return
 	add_child(slot)
+	slot.configure_compact_layout(0.6)
 	slot.slot_clicked.connect(_on_slot_clicked)
 	_slots.append(slot)
 

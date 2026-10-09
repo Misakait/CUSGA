@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"背包分栏选择、提示和输入释放契约"}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"GDScript 类型与动态调用"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Godot 编辑器验证规则"}
+{"file":"docs/游戏机制与玩法内容.md","reason":"现有背包行为权威说明"}
