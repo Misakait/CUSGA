@@ -6,8 +6,53 @@
 [ext_resource type="Texture2D" uid="uid://dkvtrnt8nqyn8" path="res://res/UI/图标ui/面板/面板组件1.png" id="4_whwry"]
 [ext_resource type="Texture2D" uid="uid://cxu8t0gokde2n" path="res://res/UI/格子/格子1.png" id="5_m30op"]
 [ext_resource type="Texture2D" uid="uid://bamjq0hp27n10" path="res://res/UI/UI.png" id="5_ngmta"]
+[ext_resource type="Texture2D" uid="uid://s0lwkrmxgado" path="res://res/UI/标题栏1.png" id="6_natmh"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="6_tp5ge"]
 [ext_resource type="Script" uid="uid://bh71kib8syb3d" path="res://core/ui/crafting/crafting_ui_controller.gd" id="7_controller"]
+[ext_resource type="Texture2D" uid="uid://dn42f10y4ktiy" path="res://res/UI/图标ui/背包/背包扣子2.png" id="9_3c11b"]
+[ext_resource type="Texture2D" uid="uid://b0o1jn0v3fdaf" path="res://res/UI/图标ui/面板/小面板.png" id="10_7fhep"]
+[ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/图标ui/右-f68c.png" id="11_oats4"]
+[ext_resource type="Script" uid="uid://day01h6ahs6l" path="res://scripts/export_spinbox_bg.gd" id="11_t3rcs"]
+[ext_resource type="Texture2D" uid="uid://bsd554u1puu6u" path="res://res/UI/图标ui/上-f597.png" id="12_ft378"]
+[ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/图标ui/下-f65b.png" id="13_i78ln"]
+
+[sub_resource type="Theme" id="Theme_gwyw1"]
+default_font = ExtResource("6_tp5ge")
+default_font_size = 36
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i78ln"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_84ryh"]
+texture = ExtResource("10_7fhep")
+texture_margin_left = 4.0
+texture_margin_top = 5.0
+texture_margin_right = 3.0
+texture_margin_bottom = 4.0
+region_rect = Rect2(0, 16, 64, 32)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_gwyw1"]
+load_path = "res://.godot/imported/小面板.png-98e531a257b786af1138e9e59b516f48.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_mf727"]
+texture = SubResource("CompressedTexture2D_gwyw1")
+texture_margin_left = 4.0
+texture_margin_top = 5.0
+texture_margin_right = 3.0
+texture_margin_bottom = 4.0
+region_rect = Rect2(0, 16, 64, 32)
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_awe55"]
+load_path = "res://.godot/imported/小面板.png-98e531a257b786af1138e9e59b516f48.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8dbuf"]
+texture = SubResource("CompressedTexture2D_awe55")
+texture_margin_left = 4.0
+texture_margin_top = 5.0
+texture_margin_right = 3.0
+texture_margin_bottom = 4.0
+region_rect = Rect2(0, 16, 64, 32)
+modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
 texture = ExtResource("5_ngmta")
@@ -119,6 +164,34 @@ patch_margin_top = 4
 patch_margin_right = 8
 patch_margin_bottom = 10
 
+[node name="M1" type="Sprite2D" parent="DetailSection/Background" unique_id=398982382]
+position = Vector2(43.000046, 181.75002)
+scale = Vector2(2.3025208, 2.526846)
+texture = ExtResource("2_6ctyo")
+
+[node name="NinePatchRect4" type="NinePatchRect" parent="DetailSection/Background" unique_id=557932088]
+offset_left = -236.00006
+offset_top = 46.0
+offset_right = 41.49994
+offset_bottom = 72.833336
+scale = Vector2(2, 2)
+texture = ExtResource("6_natmh")
+region_rect = Rect2(0, 0, 238, 28)
+patch_margin_left = 33
+patch_margin_top = 4
+patch_margin_right = 33
+patch_margin_bottom = 5
+
+[node name="背包扣子2" type="Sprite2D" parent="DetailSection/Background" unique_id=1653064570]
+position = Vector2(-134, 59)
+scale = Vector2(3, 3)
+texture = ExtResource("9_3c11b")
+
+[node name="背包扣子3" type="Sprite2D" parent="DetailSection/Background" unique_id=143478966]
+position = Vector2(208, 59)
+scale = Vector2(3, 3)
+texture = ExtResource("9_3c11b")
+
 [node name="K1" type="Sprite2D" parent="DetailSection/Background" unique_id=1327286417]
 position = Vector2(-195, 336)
 scale = Vector2(4, 4)
@@ -181,9 +254,9 @@ autowrap_mode = 3
 [node name="Ingredient" type="Node2D" parent="DetailSection" unique_id=116538960]
 
 [node name="ScrollContainer" type="ScrollContainer" parent="DetailSection/Ingredient" unique_id=1972267062]
-offset_left = -188.0
-offset_top = 1.0
-offset_right = 273.0
+offset_left = -197.0
+offset_top = 108.0
+offset_right = 285.0
 offset_bottom = 295.0
 
 [node name="IngredientList" type="VBoxContainer" parent="DetailSection/Ingredient/ScrollContainer" unique_id=345000002]
@@ -192,30 +265,76 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Quantity" type="SpinBox" parent="DetailSection" unique_id=345000003]
-unique_name_in_owner = true
-offset_left = -180.0
-offset_top = 320.0
-offset_right = -60.0
-offset_bottom = 360.0
-min_value = 1.0
-max_value = 1.0
-value = 1.0
+[node name="OutPutCount" type="Node2D" parent="DetailSection" unique_id=1386388563]
+position = Vector2(-9, 3)
 
-[node name="CraftButton" type="Button" parent="DetailSection" unique_id=345000004]
+[node name="OutPutCountBackground" type="NinePatchRect" parent="DetailSection/OutPutCount" unique_id=382791543]
+offset_left = -194.0
+offset_top = -32.0
+offset_right = -148.66667
+offset_bottom = -12.333328
+scale = Vector2(3, 3)
+texture = ExtResource("10_7fhep")
+region_rect = Rect2(0, 16, 64, 32)
+patch_margin_left = 4
+patch_margin_top = 5
+patch_margin_right = 3
+patch_margin_bottom = 4
+
+[node name="ProcessBackground" type="NinePatchRect" parent="DetailSection/OutPutCount" unique_id=1813975879]
+modulate = Color(1, 0.6166667, 0, 0.7529412)
+offset_left = -27.0
+offset_top = -15.0
+offset_right = 61.0
+offset_bottom = 10.0
+texture = ExtResource("11_oats4")
+region_rect = Rect2(3, 4, 27, 24)
+patch_margin_top = 10
+patch_margin_right = 16
+patch_margin_bottom = 10
+
+[node name="SpinBox" type="SpinBox" parent="DetailSection/OutPutCount" unique_id=1837242147]
+offset_left = -198.0
+offset_top = -24.0
+offset_right = -32.0
+offset_bottom = 21.0
+theme = SubResource("Theme_gwyw1")
+theme_override_icons/up = ExtResource("12_ft378")
+theme_override_icons/up_hover = ExtResource("12_ft378")
+theme_override_icons/up_pressed = ExtResource("12_ft378")
+theme_override_icons/up_disabled = ExtResource("12_ft378")
+theme_override_icons/down = ExtResource("13_i78ln")
+theme_override_icons/down_hover = ExtResource("13_i78ln")
+theme_override_icons/down_pressed = ExtResource("13_i78ln")
+theme_override_icons/down_disabled = ExtResource("13_i78ln")
+alignment = 1
+script = ExtResource("11_t3rcs")
+custom_bg = SubResource("StyleBoxTexture_i78ln")
+
+[node name="Craft" type="Node2D" parent="DetailSection/OutPutCount" unique_id=726835719]
+
+[node name="CraftButton" type="Button" parent="DetailSection/OutPutCount/Craft" unique_id=345000004]
 unique_name_in_owner = true
-offset_left = -50.0
-offset_top = 320.0
-offset_right = 70.0
-offset_bottom = 360.0
+offset_left = 77.0
+offset_top = -32.0
+offset_right = 124.33334
+offset_bottom = -12.0
+scale = Vector2(3, 3)
+theme_override_fonts/font = ExtResource("6_tp5ge")
+theme_override_styles/normal = SubResource("StyleBoxTexture_84ryh")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_mf727")
+theme_override_styles/hover = SubResource("StyleBoxTexture_8dbuf")
+
+[node name="Label" type="Label" parent="DetailSection/OutPutCount/Craft" unique_id=1179678209]
+offset_left = 92.0
+offset_top = -21.0
+offset_right = 208.0
+offset_bottom = 21.0
+theme_override_fonts/font = ExtResource("6_tp5ge")
+theme_override_font_sizes/font_size = 36
 text = "合成"
-
-[node name="StatusLabel" type="Label" parent="DetailSection" unique_id=345000005]
-unique_name_in_owner = true
-offset_left = 80.0
-offset_top = 320.0
-offset_right = 260.0
-offset_bottom = 360.0
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="CloseButton" type="Button" parent="." unique_id=1216106099]
 unique_name_in_owner = true
