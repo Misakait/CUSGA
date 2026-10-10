@@ -40,7 +40,7 @@
 
 ### 背包格子选中与共享提示契约
 
-1. **适用范围**：修改 `ItemSlot`、背包三个区域 Controller 或共享 `TooltipPanel` 时，必须回归仓库和商店，它们复用同一格子。
+1. **适用范围**：修改 `ItemSlot`、背包三个区域 Controller 或共享 `TooltipPanel` 时，检查对应消费方；商店和旧仓库资源使用 ItemSlot，新局外仓库 WarehouseNew 使用原生 item_slot2 Button，但仍复用 TooltipPanel。
 2. **接口**：`ItemSlot.set_selected(selected: bool)` 控制持续选中；`is_selected() -> bool` 读取选中；各区域 `GetSelectedSlot() -> ItemSlot` 返回当前格或空值。`TooltipPanel.set_fixed_anchor(anchor: Vector2)` 使用视口坐标，`clear_fixed_anchor()` 恢复鼠标跟随。
 3. **规则**：区域拥有单选状态。点击新格先清旧格，同格再次点击取消。普通左键松开必须继续交给 Button 原生处理，不能在 `_gui_input()` 尾部调用 `accept_event()` 截断松开；点击穿透由 `MOUSE_FILTER_STOP` 阻止。选中信息与悬停信息使用相同 TooltipPanel 场景和物品名称、描述，但显示在不同实例中：选中实例归背包所有，固定在格子旁；悬停实例仍是 HUD 的共享面板，跟随鼠标。普通物品不得用操作菜单替代提示。
 4. **边界**：空格无物品提示；无选中时隐藏固定面板；关闭背包清空选中和两块面板；同格取消后抑制该格悬停直到离开；关闭选中提示开关只隐藏固定面板，不禁用悬停。复制的固定面板须移出 `tooltip_panel` 全局组，避免其它悬停组件误选。鼠标从 B 离开只隐藏 B 的悬停面板，不能关闭 A 的固定面板；点击同区域 B 后关闭 A 固定面板并显示 B 固定面板。
@@ -54,6 +54,16 @@
 - 原场景没有 PriceLabel，背包适配须在旧 ItemSlot 解析节点之前补齐隐藏标签；Icon、CountLabel、NameLabel 必须继续读取场景节点。标签不得拦截鼠标事件，否则点击标签和点击格子空白会产生不同结果。
 - 持续选中使用场景的 pressed 样式，不额外染暗。未选中格子的 normal、hover、pressed、hover_pressed 应保持普通外观；仅当前区域选中格子显示点击外观，避免悬停或按住另一格时出现两个点击外观。不同区域可以同时各选一个，不能建立全局互斥选择。
 - 运行验证读取三栏每个格子的 `scene_file_path`、`is_selected()`、`button_pressed` 和样式贴图；真实输入覆盖悬停、按住新格、松开切换、再次取消、跨栏独立、刷新复用和关闭清除。
+
+## WarehouseNew 的 item_slot2 契约
+
+- `SceneManager.SCENE_MAP["warehouse"]` 指向 `res://scenes/Warehouse/WarehouseNew.tscn`，保留旧仓库资源兼容路径。不得把局内 `warehouse_ui.tscn` 与局外仓库入口混为一谈。
+- 两区格子放在 `ItemSection/ScrollContainer`、`PackbackSection/ScrollContainer` 下的 GridContainer；仓库铺全部容量，行囊仅铺已解锁容量，内容刷新复用节点。
+- 格子从 `res://scenes/ui/item_slot2.tscn` 实例化。原生 Button 的 normal/hover/pressed 和 toggle 状态直接使用场景配置；禁止套用会覆盖样式的旧 ItemSlot 初始化，禁止重画、染暗或覆盖这三种样式。
+- 根控制器协调生命周期、按钮、钱包及导航；区域控制器管理自己的直接格子。仓库与行囊共同单选；点击使用现有 TooltipPanel 的名称/描述协议。空格、退出、整理或拖动后不残留错误选中描述。
+- 仓库权威是 GlobalWarehouse，行囊权威是 ItemsControl。跨区转移先验证来源快照、目标索引和解锁容量，再提交；刷新与信号不得制造物品复制或丢失。保持现有 item/count 行囊存档格式，不能扩展洗炼字段。
+- Cost、CoinCount 和 CapacityLabel 读取 PlayerProgression、PlayerWallet 和权威物品状态，不写死费用或余额。缓存重入应重建订阅并刷新；离开清理外部信号和提示。
+- 验证包含真实点击/拖动、仓库与行囊数量守恒、失败无副作用、升级扣费/扩容、余额即时刷新、格子复用以及主菜单/商店导航。
 
 ## 全屏覆盖层（滤镜、遮罩）
 
