@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nqcqgfagxafs"
-path="res://.godot/imported/退出 2.png-48e45f031d64a3174744703d44bd9bac.ctex"
+uid="uid://b3i65fxy5yyvn"
+path="res://.godot/imported/格子4.png-dbe5ac701e40e92063486f5929dcd7a5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/图标ui/退出 2.png"
-dest_files=["res://.godot/imported/退出 2.png-48e45f031d64a3174744703d44bd9bac.ctex"]
+source_file="res://res/UI/格子/格子4.png"
+dest_files=["res://.godot/imported/格子4.png-dbe5ac701e40e92063486f5929dcd7a5.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cw1ayhgexe73h"
-path="res://.godot/imported/书卷-背包.png-5e1a18c2081a4d3bd63be3f6da9f06b1.ctex"
+uid="uid://12kbhvf61i65"
+path="res://.godot/imported/下-f65b.png-c7e71f70434b3db5eb3fd3215f898048.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/图标ui/书卷-背包.png"
-dest_files=["res://.godot/imported/书卷-背包.png-5e1a18c2081a4d3bd63be3f6da9f06b1.ctex"]
+source_file="res://res/UI/图标ui/other/下-f65b.png"
+dest_files=["res://.godot/imported/下-f65b.png-c7e71f70434b3db5eb3fd3215f898048.ctex"]
 
 [params]
 

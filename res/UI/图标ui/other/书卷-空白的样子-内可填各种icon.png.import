@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://12kbhvf61i65"
-path="res://.godot/imported/下-f65b.png-fbd3ebbcc1d096bab9013aad75fecbcf.ctex"
+uid="uid://bgm6nn8pdj1gc"
+path="res://.godot/imported/书卷-空白的样子-内可填各种icon.png-e8a7508dabc52b8ebd28394f3f1b82ce.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/图标ui/下-f65b.png"
-dest_files=["res://.godot/imported/下-f65b.png-fbd3ebbcc1d096bab9013aad75fecbcf.ctex"]
+source_file="res://res/UI/图标ui/other/书卷-空白的样子-内可填各种icon.png"
+dest_files=["res://.godot/imported/书卷-空白的样子-内可填各种icon.png-e8a7508dabc52b8ebd28394f3f1b82ce.ctex"]
 
 [params]
 

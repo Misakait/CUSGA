@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3uo2snyqoh7q"
-path="res://.godot/imported/上箭头.png-c095093255fd096ba3d3c3291043d5b3.ctex"
+uid="uid://btkcu8xnuocfo"
+path="res://.godot/imported/书卷-印章.png-df8723be694ed8cc0cf212049f2d74d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://res/UI/图标ui/上箭头.png"
-dest_files=["res://.godot/imported/上箭头.png-c095093255fd096ba3d3c3291043d5b3.ctex"]
+source_file="res://res/UI/图标ui/other/书卷-印章.png"
+dest_files=["res://.godot/imported/书卷-印章.png-df8723be694ed8cc0cf212049f2d74d7.ctex"]
 
 [params]
 
