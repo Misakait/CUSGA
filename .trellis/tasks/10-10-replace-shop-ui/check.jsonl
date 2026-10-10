@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"新商店UI、真实输入与缓存重入的质量门槛"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"MCP验证、测试发现和真实持久化数据保护"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"复核共享格子样式与区域职责没有退化"}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"复核拖动身份、失效快照、Variant和动态协议"}

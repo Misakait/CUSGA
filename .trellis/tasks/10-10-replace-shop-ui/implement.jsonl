@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"遵循现有根/区域控制器分工、格子样式与输入边界"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"缓存场景生命周期、全局权威与信号订阅清理"}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"动态资源、拖放字典与节点协议的类型收敛"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"编辑器测试发现、非工具脚本占位与运行验证边界"}
