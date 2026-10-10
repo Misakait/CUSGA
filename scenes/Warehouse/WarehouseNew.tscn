@@ -1,0 +1,547 @@
+[gd_scene format=3 uid="uid://c1031rfyb8uhf"]
+
+[ext_resource type="Texture2D" uid="uid://cjqidy023v6d" path="res://res/Nine-grid-template/面板2.png" id="1_wi7jn"]
+[ext_resource type="Texture2D" uid="uid://n44ipb2omdhb" path="res://res/UI/标题栏3.png" id="2_g13ow"]
+[ext_resource type="Texture2D" uid="uid://tk7tllbv4tvb" path="res://res/UI/图标ui/面板/面板组件3.png" id="3_5nitr"]
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="4_5rcjv"]
+[ext_resource type="Texture2D" uid="uid://di3k68661y58i" path="res://res/UI/图标ui/面板/面板组件2.png" id="5_5nitr"]
+[ext_resource type="Texture2D" uid="uid://bemxw11qa7tt2" path="res://res/UI/按钮1.png" id="5_62ps0"]
+[ext_resource type="Texture2D" uid="uid://b0msn4rhlkuhl" path="res://res/UI/商店.png" id="6_5rcjv"]
+[ext_resource type="Script" uid="uid://d1wujiwgncel8" path="res://scripts/ui_scripts/image_drag.gd" id="7_5rcjv"]
+[ext_resource type="Texture2D" uid="uid://dv2qpwrgnedyr" path="res://res/UI/金币-UI的样子.png" id="9_vbmi6"]
+[ext_resource type="Texture2D" uid="uid://bamjq0hp27n10" path="res://res/UI/UI.png" id="10_vbmi6"]
+[ext_resource type="Script" uid="uid://b38ygqciruukf" path="res://core/ui/warehouse/warehouse_new_controller.gd" id="11_controller"]
+[ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="12_tooltip"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_62ps0"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vbmi6"]
+texture = SubResource("CompressedTexture2D_62ps0")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_wvm7m"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qdkd5"]
+texture = SubResource("CompressedTexture2D_wvm7m")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_wl7x2"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0f0lq"]
+texture = SubResource("CompressedTexture2D_wl7x2")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_oc26b"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ucgod"]
+texture = SubResource("CompressedTexture2D_oc26b")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_lykow"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_w7rp6"]
+texture = SubResource("CompressedTexture2D_lykow")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_er5hy"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yct1r"]
+texture = SubResource("CompressedTexture2D_er5hy")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_232x7"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nrax1"]
+texture = SubResource("CompressedTexture2D_232x7")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_5pp6m"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3eh1v"]
+texture = SubResource("CompressedTexture2D_5pp6m")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_5kepp"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_20rjh"]
+texture = SubResource("CompressedTexture2D_5kepp")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
+texture = ExtResource("5_62ps0")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_o8jht"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wvm7m"]
+texture = SubResource("CompressedTexture2D_o8jht")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_qdkd5"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wl7x2"]
+texture = SubResource("CompressedTexture2D_qdkd5")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_84ryh"]
+texture = ExtResource("10_vbmi6")
+region_rect = Rect2(0, 0, 16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_0f0lq"]
+load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_oc26b"]
+texture = SubResource("CompressedTexture2D_0f0lq")
+region_rect = Rect2(0, 0, 16, 16)
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_ucgod"]
+load_path = "res://.godot/imported/UI.png-ce9126abf94f0cb8f7d7dec9c51c9822.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lykow"]
+texture = SubResource("CompressedTexture2D_ucgod")
+region_rect = Rect2(0, 0, 16, 16)
+modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[node name="WarehouseNew" type="Node2D" unique_id=318281304]
+script = ExtResource("11_controller")
+
+[node name="ItemSection" type="Node2D" parent="." unique_id=607001246]
+position = Vector2(-32, 3)
+
+[node name="bg" type="Node2D" parent="ItemSection" unique_id=1187335895]
+position = Vector2(64, -26)
+
+[node name="bg1" type="NinePatchRect" parent="ItemSection/bg" unique_id=238833100]
+offset_left = 19.0
+offset_top = 113.99999
+offset_right = 205.66667
+offset_bottom = 311.66666
+scale = Vector2(3, 3)
+texture = ExtResource("1_wi7jn")
+region_rect = Rect2(3, 2, 58, 44)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 7
+
+[node name="bg2" type="NinePatchRect" parent="ItemSection/bg" unique_id=1695419222]
+offset_left = -4.0
+offset_top = 75.0
+offset_right = 198.0
+offset_bottom = 100.0
+scale = Vector2(3, 3)
+texture = ExtResource("2_g13ow")
+region_rect = Rect2(3, 3, 42, 28)
+patch_margin_left = 4
+patch_margin_top = 5
+patch_margin_right = 4
+patch_margin_bottom = 5
+
+[node name="面板组件5" type="Sprite2D" parent="ItemSection/bg" unique_id=137563587]
+position = Vector2(566, 110)
+scale = Vector2(3.5, 3.5)
+texture = ExtResource("3_5nitr")
+flip_h = true
+
+[node name="面板组件6" type="Sprite2D" parent="ItemSection/bg" unique_id=819323483]
+position = Vector2(41, 107)
+scale = Vector2(3.5, 3.5)
+texture = ExtResource("3_5nitr")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="ItemSection/bg" unique_id=1293723332]
+offset_left = 85.0
+offset_top = 81.0
+offset_right = 523.0
+offset_bottom = 140.0
+theme_override_fonts/normal_font = ExtResource("4_5rcjv")
+theme_override_fonts/bold_font = ExtResource("4_5rcjv")
+theme_override_fonts/bold_italics_font = ExtResource("4_5rcjv")
+theme_override_fonts/italics_font = ExtResource("4_5rcjv")
+theme_override_fonts/mono_font = ExtResource("4_5rcjv")
+theme_override_font_sizes/normal_font_size = 48
+theme_override_font_sizes/bold_font_size = 48
+theme_override_font_sizes/bold_italics_font_size = 48
+theme_override_font_sizes/italics_font_size = 48
+theme_override_font_sizes/mono_font_size = 48
+text = "局外仓库"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Down" type="Node2D" parent="ItemSection/bg" unique_id=242186864]
+position = Vector2(-1, 31)
+
+[node name="bg3" type="NinePatchRect" parent="ItemSection/bg/Down" unique_id=1136767987]
+offset_left = 13.0
+offset_top = 634.0
+offset_right = 205.0
+offset_bottom = 655.6666
+scale = Vector2(3, 3)
+texture = ExtResource("2_g13ow")
+region_rect = Rect2(3, 3, 42, 28)
+patch_margin_left = 4
+patch_margin_top = 5
+patch_margin_right = 4
+patch_margin_bottom = 5
+
+[node name="面板组件3" type="Sprite2D" parent="ItemSection/bg/Down" unique_id=1418159022]
+position = Vector2(31, 657)
+scale = Vector2(3, 3)
+texture = ExtResource("3_5nitr")
+
+[node name="面板组件4" type="Sprite2D" parent="ItemSection/bg/Down" unique_id=372741449]
+position = Vector2(560, 658)
+scale = Vector2(3, 3)
+texture = ExtResource("3_5nitr")
+flip_h = true
+
+[node name="Upgrade" type="Node2D" parent="ItemSection" unique_id=1128077890]
+position = Vector2(-374, 314)
+
+[node name="NinePatchRect" type="Button" parent="ItemSection/Upgrade" unique_id=1886610321]
+offset_left = 746.0
+offset_top = 309.0
+offset_right = 814.3334
+offset_bottom = 331.6667
+scale = Vector2(3, 3)
+theme_override_styles/normal = SubResource("StyleBoxTexture_vbmi6")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_qdkd5")
+theme_override_styles/hover = SubResource("StyleBoxTexture_0f0lq")
+
+[node name="Cost" type="Label" parent="ItemSection/Upgrade" unique_id=148904548]
+offset_left = 761.0
+offset_top = 316.0
+offset_right = 940.0
+offset_bottom = 359.0
+theme_override_fonts/font = ExtResource("4_5rcjv")
+theme_override_font_sizes/font_size = 32
+text = "花费100升级"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Clean" type="Node2D" parent="ItemSection" unique_id=1670572560]
+position = Vector2(-602, 313)
+
+[node name="NinePatchRect" type="Button" parent="ItemSection/Clean" unique_id=1920935866]
+offset_left = 746.0
+offset_top = 309.0
+offset_right = 814.3334
+offset_bottom = 331.6667
+scale = Vector2(3, 3)
+theme_override_styles/normal = SubResource("StyleBoxTexture_ucgod")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_w7rp6")
+theme_override_styles/hover = SubResource("StyleBoxTexture_yct1r")
+
+[node name="Label" type="Label" parent="ItemSection/Clean" unique_id=112157309]
+offset_left = 761.0
+offset_top = 316.0
+offset_right = 940.0
+offset_bottom = 359.0
+theme_override_fonts/font = ExtResource("4_5rcjv")
+theme_override_font_sizes/font_size = 32
+text = "一键整理"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ItemSection" unique_id=1972202699]
+offset_left = 104.0
+offset_top = 136.0
+offset_right = 621.0
+offset_bottom = 621.0
+horizontal_scroll_mode = 0
+
+[node name="SlotGrid" type="GridContainer" parent="ItemSection/ScrollContainer" unique_id=277434183]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 6
+
+[node name="PackbackSection" type="Node2D" parent="." unique_id=224738879]
+position = Vector2(-27, 1)
+
+[node name="bg" type="Node2D" parent="PackbackSection" unique_id=1020076286]
+position = Vector2(675, -22)
+
+[node name="bg1" type="NinePatchRect" parent="PackbackSection/bg" unique_id=262979219]
+offset_left = 28.0
+offset_top = 109.00001
+offset_right = 214.66667
+offset_bottom = 199.66667
+scale = Vector2(3, 3)
+texture = ExtResource("1_wi7jn")
+region_rect = Rect2(3, 2, 58, 44)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 7
+
+[node name="bg2" type="NinePatchRect" parent="PackbackSection/bg" unique_id=16548917]
+offset_left = 4.0000153
+offset_top = 75.0
+offset_right = 204.66667
+offset_bottom = 100.0
+scale = Vector2(3, 3)
+texture = ExtResource("2_g13ow")
+region_rect = Rect2(3, 3, 42, 28)
+patch_margin_left = 4
+patch_margin_top = 5
+patch_margin_right = 4
+patch_margin_bottom = 5
+
+[node name="面板组件2" type="Sprite2D" parent="PackbackSection/bg" unique_id=1160574205]
+position = Vector2(46, 110)
+scale = Vector2(3, 3)
+texture = ExtResource("5_5nitr")
+
+[node name="面板组件3" type="Sprite2D" parent="PackbackSection/bg" unique_id=472221938]
+position = Vector2(564, 110)
+scale = Vector2(3, 3)
+texture = ExtResource("5_5nitr")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PackbackSection/bg" unique_id=269192702]
+offset_left = 36.0
+offset_top = 83.0
+offset_right = 303.0
+offset_bottom = 142.0
+theme_override_fonts/normal_font = ExtResource("4_5rcjv")
+theme_override_fonts/bold_font = ExtResource("4_5rcjv")
+theme_override_fonts/bold_italics_font = ExtResource("4_5rcjv")
+theme_override_fonts/italics_font = ExtResource("4_5rcjv")
+theme_override_fonts/mono_font = ExtResource("4_5rcjv")
+theme_override_font_sizes/normal_font_size = 48
+theme_override_font_sizes/bold_font_size = 48
+theme_override_font_sizes/bold_italics_font_size = 48
+theme_override_font_sizes/italics_font_size = 48
+theme_override_font_sizes/mono_font_size = 48
+text = "行囊"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Upgrade" type="Node2D" parent="PackbackSection" unique_id=1880116927]
+position = Vector2(137, 1)
+
+[node name="NinePatchRect" type="Button" parent="PackbackSection/Upgrade" unique_id=1516684955]
+offset_left = 746.0
+offset_top = 309.0
+offset_right = 814.3334
+offset_bottom = 331.6667
+scale = Vector2(3, 3)
+theme_override_styles/normal = SubResource("StyleBoxTexture_nrax1")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_3eh1v")
+theme_override_styles/hover = SubResource("StyleBoxTexture_20rjh")
+
+[node name="Cost" type="Label" parent="PackbackSection/Upgrade" unique_id=28729630]
+offset_left = 761.0
+offset_top = 316.0
+offset_right = 940.0
+offset_bottom = 359.0
+theme_override_fonts/font = ExtResource("4_5rcjv")
+theme_override_font_sizes/font_size = 32
+text = "花费100升级"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CapacityLabel" type="Label" parent="PackbackSection" unique_id=994403987]
+offset_left = 910.0
+offset_top = 67.0
+offset_right = 1167.0
+offset_bottom = 116.0
+theme_override_fonts/font = ExtResource("4_5rcjv")
+theme_override_font_sizes/font_size = 48
+text = "（1/8）"
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PackbackSection" unique_id=1405093764]
+offset_left = 724.0
+offset_top = 128.0
+offset_right = 1241.0
+offset_bottom = 323.0
+horizontal_scroll_mode = 0
+
+[node name="SlotGrid" type="GridContainer" parent="PackbackSection/ScrollContainer" unique_id=1769282707]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 6
+
+[node name="GoToShop" type="Node2D" parent="." unique_id=946461996]
+
+[node name="bg" type="Node2D" parent="GoToShop" unique_id=1036871610]
+
+[node name="bg1" type="NinePatchRect" parent="GoToShop/bg" unique_id=796131823]
+offset_left = 654.0
+offset_top = 375.99997
+offset_right = 855.6667
+offset_bottom = 471.66663
+scale = Vector2(3, 3)
+texture = ExtResource("1_wi7jn")
+region_rect = Rect2(3, 2, 58, 44)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 7
+
+[node name="bg2" type="NinePatchRect" parent="GoToShop/bg" unique_id=130357234]
+offset_left = 646.0
+offset_top = 636.0
+offset_right = 854.0
+offset_bottom = 661.0
+scale = Vector2(3, 3)
+texture = ExtResource("2_g13ow")
+region_rect = Rect2(3, 3, 42, 28)
+patch_margin_left = 4
+patch_margin_top = 5
+patch_margin_right = 4
+patch_margin_bottom = 5
+
+[node name="Shop" type="Control" parent="GoToShop/bg" unique_id=1785881127]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = 669.0
+offset_top = 391.0
+offset_right = 1244.0
+offset_bottom = 636.0
+
+[node name="TextureRect" type="TextureRect" parent="GoToShop/bg/Shop" unique_id=1319537707]
+clip_contents = true
+layout_mode = 0
+offset_left = -40.0
+offset_top = -3.0
+offset_right = 646.0
+offset_bottom = 255.0
+texture = ExtResource("6_5rcjv")
+script = ExtResource("7_5rcjv")
+
+[node name="TheButton" type="Node2D" parent="GoToShop" unique_id=1736569286]
+position = Vector2(14, -4)
+
+[node name="GoToShopButton" type="Button" parent="GoToShop/TheButton" unique_id=466821934]
+offset_left = 854.00006
+offset_top = 615.0
+offset_right = 929.3334
+offset_bottom = 636.0
+scale = Vector2(3, 3)
+theme_override_styles/normal = SubResource("StyleBoxTexture_35b51")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_wvm7m")
+theme_override_styles/hover = SubResource("StyleBoxTexture_wl7x2")
+
+[node name="Label" type="Label" parent="GoToShop/TheButton" unique_id=283189974]
+offset_left = 872.00006
+offset_top = 623.0
+offset_right = 1065.0
+offset_bottom = 662.0
+theme_override_fonts/font = ExtResource("4_5rcjv")
+theme_override_font_sizes/font_size = 32
+text = "去商店"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoinPanel" type="Node2D" parent="GoToShop" unique_id=781367663]
+
+[node name="CoinBG" type="NinePatchRect" parent="GoToShop/CoinPanel" unique_id=1786809905]
+offset_left = 663.0
+offset_top = 639.0
+offset_right = 754.0
+offset_bottom = 671.0
+scale = Vector2(2, 2)
+texture = ExtResource("9_vbmi6")
+region_rect = Rect2(5, 2, 70, 29)
+patch_margin_left = 23
+patch_margin_top = 10
+patch_margin_right = 9
+patch_margin_bottom = 13
+
+[node name="CoinCount" type="Label" parent="GoToShop/CoinPanel" unique_id=1299056711]
+offset_left = 718.0
+offset_top = 645.0
+offset_right = 800.0
+offset_bottom = 695.0
+theme_override_fonts/font = ExtResource("4_5rcjv")
+theme_override_font_sizes/font_size = 36
+text = "100"
+vertical_alignment = 1
+
+[node name="TurnBackButton" type="Button" parent="." unique_id=892326854]
+offset_left = 1182.0
+offset_top = 58.000004
+offset_right = 1192.0
+offset_bottom = 68.0
+scale = Vector2(6, 6)
+theme_override_styles/normal = SubResource("StyleBoxTexture_84ryh")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_oc26b")
+theme_override_styles/hover = SubResource("StyleBoxTexture_lykow")
+
+[node name="TooltipLayer" type="CanvasLayer" parent="." unique_id=2006451618]
+layer = 10
+
+[node name="TooltipPanel" parent="TooltipLayer" unique_id=2011381975 instance=ExtResource("12_tooltip")]

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://canwq8wfxrir5"]
 
-[ext_resource type="Texture2D" uid="uid://btkcu8xnuocfo" path="res://res/UI/图标ui/书卷-印章.png" id="1_enix0"]
+[ext_resource type="Texture2D" uid="uid://btkcu8xnuocfo" path="res://res/UI/图标ui/other/书卷-印章.png" id="1_enix0"]
 [ext_resource type="Texture2D" uid="uid://ctnhdw2bkfoik" path="res://res/Nine-grid-template/面板1.png" id="2_6ctyo"]
 [ext_resource type="Texture2D" uid="uid://d1worqlnqana0" path="res://res/UI/标题栏2.png" id="3_ngmta"]
 [ext_resource type="Texture2D" uid="uid://dkvtrnt8nqyn8" path="res://res/UI/图标ui/面板/面板组件1.png" id="4_whwry"]
@@ -11,10 +11,10 @@
 [ext_resource type="Script" uid="uid://bh71kib8syb3d" path="res://core/ui/crafting/crafting_ui_controller.gd" id="7_controller"]
 [ext_resource type="Texture2D" uid="uid://dn42f10y4ktiy" path="res://res/UI/图标ui/背包/背包扣子2.png" id="9_3c11b"]
 [ext_resource type="Texture2D" uid="uid://b0o1jn0v3fdaf" path="res://res/UI/图标ui/面板/小面板.png" id="10_7fhep"]
-[ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/图标ui/右-f68c.png" id="11_oats4"]
+[ext_resource type="Texture2D" uid="uid://bm1o8rfd8jd4f" path="res://res/UI/图标ui/other/右-f68c.png" id="11_oats4"]
 [ext_resource type="Script" uid="uid://day01h6ahs6l" path="res://scripts/export_spinbox_bg.gd" id="11_t3rcs"]
-[ext_resource type="Texture2D" uid="uid://bsd554u1puu6u" path="res://res/UI/图标ui/上-f597.png" id="12_ft378"]
-[ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/图标ui/下-f65b.png" id="13_i78ln"]
+[ext_resource type="Texture2D" uid="uid://bsd554u1puu6u" path="res://res/UI/图标ui/other/上-f597.png" id="12_ft378"]
+[ext_resource type="Texture2D" uid="uid://12kbhvf61i65" path="res://res/UI/图标ui/other/下-f65b.png" id="13_i78ln"]
 
 [sub_resource type="Theme" id="Theme_gwyw1"]
 default_font = ExtResource("6_tp5ge")
