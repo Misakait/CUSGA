@@ -56,9 +56,22 @@ offset_top = -5.0
 offset_right = 78.0
 offset_bottom = 20.0
 theme_override_colors/font_color = Color(0.94, 0.95, 1, 1)
+theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("4_q2hwc")
 theme_override_font_sizes/font_size = 16
 text = "名字"
 horizontal_alignment = 1
 vertical_alignment = 1
 text_overrun_behavior = 3
+
+[node name="PriceLabel" type="Label" parent="." unique_id=1040776117]
+visible = false
+layout_mode = 0
+offset_left = -1.0
+offset_top = 61.0
+offset_right = 75.0
+offset_bottom = 84.0
+theme_override_fonts/font = ExtResource("4_q2hwc")
+text = "售价100"
+horizontal_alignment = 1
+vertical_alignment = 1

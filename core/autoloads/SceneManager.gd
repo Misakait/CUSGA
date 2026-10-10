@@ -7,7 +7,7 @@ extends Node
 const SCENE_MAP: Dictionary = {
 	"main_menu": "res://scenes/main_menu_scenes/main_menu.tscn",
 	"warehouse": "res://scenes/Warehouse/WarehouseNew.tscn",
-	"shop": "res://scenes/Shop/Shop.tscn",
+	"shop": "res://scenes/Shop/ShopNew.tscn",
 }
 
 ## 缓存池：scene_id → 场景实例。实例化一次，永不销毁。

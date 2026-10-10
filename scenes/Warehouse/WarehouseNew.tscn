@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cjqidy023v6d" path="res://res/Nine-grid-template/面板2.png" id="1_wi7jn"]
 [ext_resource type="Texture2D" uid="uid://n44ipb2omdhb" path="res://res/UI/标题栏3.png" id="2_g13ow"]
+[ext_resource type="Texture2D" uid="uid://cg2bb31b7idev" path="res://res/image/bg/bg2.jpg" id="2_qdkd5"]
 [ext_resource type="Texture2D" uid="uid://tk7tllbv4tvb" path="res://res/UI/图标ui/面板/面板组件3.png" id="3_5nitr"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="4_5rcjv"]
 [ext_resource type="Texture2D" uid="uid://di3k68661y58i" path="res://res/UI/图标ui/面板/面板组件2.png" id="5_5nitr"]
@@ -13,22 +14,22 @@
 [ext_resource type="Script" uid="uid://b38ygqciruukf" path="res://core/ui/warehouse/warehouse_new_controller.gd" id="11_controller"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="12_tooltip"]
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_62ps0"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_wvm7m"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vbmi6"]
-texture = SubResource("CompressedTexture2D_62ps0")
+texture = SubResource("CompressedTexture2D_wvm7m")
 texture_margin_left = 7.0
 texture_margin_top = 6.0
 texture_margin_right = 7.0
 texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_wvm7m"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_qdkd5"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qdkd5"]
-texture = SubResource("CompressedTexture2D_wvm7m")
+texture = SubResource("CompressedTexture2D_qdkd5")
 texture_margin_left = 7.0
 texture_margin_top = 6.0
 texture_margin_right = 7.0
@@ -71,11 +72,11 @@ texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_er5hy"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_w7rp6"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yct1r"]
-texture = SubResource("CompressedTexture2D_er5hy")
+texture = SubResource("CompressedTexture2D_w7rp6")
 texture_margin_left = 7.0
 texture_margin_top = 6.0
 texture_margin_right = 7.0
@@ -126,11 +127,11 @@ texture_margin_right = 7.0
 texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_o8jht"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_er5hy"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wvm7m"]
-texture = SubResource("CompressedTexture2D_o8jht")
+texture = SubResource("CompressedTexture2D_er5hy")
 texture_margin_left = 7.0
 texture_margin_top = 6.0
 texture_margin_right = 7.0
@@ -138,11 +139,11 @@ texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_qdkd5"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yct1r"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wl7x2"]
-texture = SubResource("CompressedTexture2D_qdkd5")
+texture = SubResource("CompressedTexture2D_yct1r")
 texture_margin_left = 7.0
 texture_margin_top = 6.0
 texture_margin_right = 7.0
@@ -172,6 +173,11 @@ modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
 [node name="WarehouseNew" type="Node2D" unique_id=318281304]
 script = ExtResource("11_controller")
+
+[node name="Bg2" type="Sprite2D" parent="." unique_id=1714761670]
+position = Vector2(638.5, 364)
+scale = Vector2(1.8909883, 1.890625)
+texture = ExtResource("2_qdkd5")
 
 [node name="ItemSection" type="Node2D" parent="." unique_id=607001246]
 position = Vector2(-32, 3)
