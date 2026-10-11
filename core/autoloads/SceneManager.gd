@@ -5,7 +5,7 @@ extends Node
 
 ## 场景 ID → 资源路径，集中管理。
 const SCENE_MAP: Dictionary = {
-	"main_menu": "res://scenes/main_menu_scenes/main_menu.tscn",
+	"main_menu": "res://scenes/main_menu_scenes/login_menu.tscn",
 	"warehouse": "res://scenes/Warehouse/WarehouseNew.tscn",
 	"shop": "res://scenes/Shop/ShopNew.tscn",
 }

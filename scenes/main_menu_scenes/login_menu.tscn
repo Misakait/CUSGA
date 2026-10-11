@@ -1,0 +1,151 @@
+[gd_scene format=3 uid="uid://djprnhdutt8vc"]
+
+[ext_resource type="Texture2D" uid="uid://d4eb6mqfpt8cd" path="res://res/image/bg/bg.jpg" id="1_cgngb"]
+[ext_resource type="Script" uid="uid://chhlm716yfdx2" path="res://core/ui/login_menu_controller.gd" id="1_controller"]
+[ext_resource type="Texture2D" uid="uid://cqjjf1ouymipa" path="res://res/UI/按钮/按钮3.png" id="2_gdy84"]
+[ext_resource type="Texture2D" uid="uid://d1wfqrre3lefv" path="res://res/UI/按钮/按钮2.png" id="3_ufma2"]
+[ext_resource type="Texture2D" uid="uid://dugvv3qaa54ut" path="res://res/UI/图标ui/other/右箭头.png" id="4_qq2b2"]
+[ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="5_pdari"]
+[ext_resource type="Texture2D" uid="uid://bmriiagtttffr" path="res://res/UI/图标ui/other/存档.png" id="6_ev58v"]
+[ext_resource type="Texture2D" uid="uid://cc0p0ym662c0o" path="res://res/UI/图标ui/other/齿轮.png" id="7_kph5p"]
+[ext_resource type="Texture2D" uid="uid://b5nyvkmmk8aj5" path="res://res/UI/图标ui/other/错误1.png" id="8_k1l8y"]
+[ext_resource type="PackedScene" uid="uid://ci6rxhew02s7e" path="res://scenes/ui_scenes/option_panel.tscn" id="9_options"]
+[ext_resource type="PackedScene" uid="uid://cj40pkfg5gy2s" path="res://scenes/ui_scenes/dev_settings_ui.tscn" id="10_dev"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_normal"]
+texture = ExtResource("2_gdy84")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pressed"]
+texture = ExtResource("3_ufma2")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hover"]
+texture = ExtResource("2_gdy84")
+modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_menu"]
+
+[node name="LoginMenu" type="Control" unique_id=390941522]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_controller")
+
+[node name="Bg" type="TextureRect" parent="." unique_id=738206352]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_cgngb")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Center" type="CenterContainer" parent="." unique_id=1817770566]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuColumn" type="VBoxContainer" parent="Center" unique_id=274899782]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="StartButton" type="Button" parent="Center/MenuColumn" unique_id=1847192548]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 84)
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_fonts/font = ExtResource("5_pdari")
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxTexture_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/hover = SubResource("StyleBoxTexture_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_menu")
+text = "开始游戏"
+icon = ExtResource("4_qq2b2")
+expand_icon = true
+
+[node name="SettingsButton" type="Button" parent="Center/MenuColumn" unique_id=1407253346]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 84)
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_fonts/font = ExtResource("5_pdari")
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxTexture_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/hover = SubResource("StyleBoxTexture_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+toggle_mode = true
+button_group = SubResource("ButtonGroup_menu")
+text = "游戏设置"
+icon = ExtResource("7_kph5p")
+expand_icon = true
+
+[node name="WarehouseButton" type="Button" parent="Center/MenuColumn" unique_id=1093342363]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 84)
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_fonts/font = ExtResource("5_pdari")
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxTexture_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/hover = SubResource("StyleBoxTexture_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+toggle_mode = true
+button_group = SubResource("ButtonGroup_menu")
+text = "游戏仓库"
+icon = ExtResource("6_ev58v")
+expand_icon = true
+
+[node name="ExitButton" type="Button" parent="Center/MenuColumn" unique_id=769605497]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 84)
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_fonts/font = ExtResource("5_pdari")
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxTexture_normal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/hover = SubResource("StyleBoxTexture_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_pressed")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+toggle_mode = true
+button_group = SubResource("ButtonGroup_menu")
+text = "离开游戏"
+icon = ExtResource("8_k1l8y")
+expand_icon = true
+
+[node name="InputHint" type="Label" parent="Center/MenuColumn" unique_id=975129080]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_pdari")
+theme_override_font_sizes/font_size = 20
+text = "W / S 选择    Enter 确认"
+horizontal_alignment = 1
+
+[node name="OptionPanel" parent="." unique_id=1376722020 instance=ExtResource("9_options")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="DevSettingsUI" parent="." unique_id=1837447843 instance=ExtResource("10_dev")]
+layout_mode = 1
+ShowRunFeatures = false

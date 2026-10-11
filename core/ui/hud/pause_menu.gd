@@ -21,9 +21,9 @@ const PAUSE_ACTION: StringName = &"pause_game"
 ## `SceneManager` 只在主菜单、仓库、商店之间切换，进入 Main 之后它的 `_current_id`
 ## 仍然停在 `"main_menu"`，此时发 `scene_requested("main_menu")` 会被
 ## `_on_scene_requested` 的 `scene_id == _current_id` 判据提前吞掉，玩家按「退出游戏」
-## 将毫无反应。这条路径与 `main_menu.gd` 进入游戏时使用的
-## `change_scene_to_file(Main_scene_path)` 保持对称，进出使用同一套场景语义。
-const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/main_menu.tscn"
+## 将毫无反应。这条路径与 `login_menu_controller.gd` 进入游戏时使用的
+## `change_scene_to_file(MAIN_SCENE_PATH)` 保持对称，进出使用同一套场景语义。
+const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/login_menu.tscn"
 
 ## 右上角常驻的暂停键。
 @onready var _pause_button: Button = %PauseButton
