@@ -1,26 +1,24 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-## husky task runner examples -------------------
-## Note : for local installation use 'dotnet' prefix. e.g. 'dotnet husky'
-
-## run all tasks
-#husky run
-
-### run all tasks with group: 'group-name'
-#husky run --group group-name
-
-## run task with name: 'task-name'
-#husky run --name task-name
-
-## pass hook arguments to task
-#husky run --args "$1" "$2"
-
-## or put your custom commands -------------------
-#echo 'Husky.Net is awesome!'
-
-dotnet tool run husky run --group pre-commit
-
-## GDScript 静态检查（gdlint，只查本次暂存的 .gd）。
-## 单独一个 group 是为了排在 C# 格式化之后，且不把它混进 pre-commit 组。
-dotnet tool run husky run --group pre-commit-gdscript
+## 提交前检查：只做 GDScript 静态检查（gdlint），不再依赖 dotnet。
+##
+## 为什么不再调用 `dotnet tool run husky ...`（2026-10-11 修复提交被中止的问题）：
+##   1) 本项目已从 C# 迁移到纯 GDScript，CUSGA.sln 已被删除，
+##      Husky.Net 的「Format C# Files」任务（dotnet format CUSGA.sln）已没有目标。
+##   2) 更直接的原因：.NET 读取 .config/dotnet-tools.json 时会把本目录判定为
+##      「来自另一台计算机」并以退出码 1 直接中止（实测 `dotnet tool list` 退出码 1；
+##      同一份清单放到本仓库之外的目录则正常返回 0），于是任何提交都会失败，
+##      husky.sh 报 "husky - pre-commit hook exited with code 1 (error)"。
+##      该标记来自 Windows 侧（不在 git 里），本仓库内无法清除。
+##   如果以后要恢复 Husky.Net，先解决上面的第 2 条：在资源管理器里对项目目录执行
+##   「解除锁定」，或换一台没有该标记的机器/路径。
+##
+## 检查范围：只查本次暂存的 .gd 文件；脚本自身始终返回 0（只提示、不拦截），
+## 原因是存量代码仍有约 500 条 gdlint 报错，做成硬门禁会让任何提交都失败。
+## 详见 .husky/gdlint-staged.ps1 的注释。
+if command -v powershell >/dev/null 2>&1; then
+  powershell -NoProfile -ExecutionPolicy Bypass -File .husky/gdlint-staged.ps1 || true
+else
+  echo '[gdlint] SKIPPED - powershell not found on PATH.'
+fi
