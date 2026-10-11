@@ -64,7 +64,7 @@ TerrainData = SubResource("Resource_orj84")
 
 [sub_resource type="Resource" id="Profile_forest"]
 script = ExtResource("3_profile")
-TerrainPool = [SubResource("Resource_y3i50")]
+TerrainPool = Array[ExtResource("7_pool")]([SubResource("Resource_y3i50")])
 EncounterVarianceRange = SubResource("Variance_forest")
 
 [node name="MapForest" type="Node2D" unique_id=1619393080]

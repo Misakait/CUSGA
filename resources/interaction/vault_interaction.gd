@@ -1,11 +1,12 @@
 extends Resource
+class_name VaultInteraction
 
 ## 火山密库地形交互的 GDScript 数据与操作序列。
 ##
 ## 资源只描述“消耗时间后打开仓库”这一既有流程；实际时间推进和界面请求仍由
-## TerrainInteractionExecutor 通过现有 C# 运行时端口执行。
+## TerrainInteractionExecutor 执行。
 
-## 进入密库需要消耗的行动时间；默认值保持旧 C# Resource 的 20。
+## 进入密库需要消耗的游戏时间点数，默认为 20。
 @export var TimeCost: int = 20
 
 

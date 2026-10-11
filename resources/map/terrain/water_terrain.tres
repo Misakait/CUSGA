@@ -52,5 +52,5 @@ TerrainData = SubResource("Resource_h8u2k")
 
 [resource]
 script = ExtResource("9_76e3c")
-TerrainPool = [SubResource("Resource_nn2p2")]
+TerrainPool = Array[ExtResource("8_0n6ch")]([SubResource("Resource_nn2p2")])
 EncounterVarianceRange = SubResource("Resource_ac41b")

@@ -36,7 +36,7 @@ TerrainData = SubResource("Resource_s7rpl")
 
 [sub_resource type="Resource" id="Profile_snowfield"]
 script = ExtResource("3_profile")
-TerrainPool = [SubResource("Pool_snow_boss")]
+TerrainPool = Array[ExtResource("8_pool")]([SubResource("Pool_snow_boss")])
 MaxCount = 1
 GridColumns = 1
 GridRows = 1

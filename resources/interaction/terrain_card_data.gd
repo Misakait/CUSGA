@@ -1,9 +1,9 @@
 extends Resource
+class_name TerrainCardData
 
 ## 描述棋盘地形卡的显示信息与交互资源。
 ##
-## 该资源只保留原 TerrainCardData 的序列化字段。地图生成、棋盘显示和交互执行
-## 通过通用 Resource 字段协议读取，以便迁移期间继续接收旧 C# TerrainCardData。
+## 该资源保存资源点外观与交互配置；地图生成、棋盘显示和交互执行读取稳定字段。
 
 ## 地形卡稳定标识，用于地图与存档中的资源识别。
 @export var CardId: StringName = &""
@@ -17,5 +17,5 @@ extends Resource
 ## 地形卡描述文本。
 @export_multiline var Description: String = ""
 
-## 地形卡点击后执行的交互资源。
-@export var InteractionBehavior: Resource
+## 地形卡的交互规则；选择一次性采集、可重复采集、农场、密库或首领交互。
+@export_custom(PROPERTY_HINT_RESOURCE_TYPE, "GatheringInteraction,ReusableGatheringInteraction,FarmingInteraction,VaultInteraction,BossInteraction") var InteractionBehavior: Resource

@@ -1,4 +1,5 @@
 extends Resource
+class_name MonsterStatMultiplierRange
 
 ## 怪物遭遇属性倍率的最小值与最大值配置。
 ##
@@ -34,7 +35,7 @@ extends Resource
 @export var MaxSpeed: float = 1.0
 
 
-## 返回下界倍率快照，供 GDScript 调试工具和跨语言桥接读取。
+## 返回下界倍率快照，供布局生成与调试工具读取。
 ##
 ## 返回值：包含六个倍率字段的字典。
 func get_min() -> Dictionary:
@@ -48,7 +49,7 @@ func get_min() -> Dictionary:
 	}
 
 
-## 返回上界倍率快照，供 GDScript 调试工具和跨语言桥接读取。
+## 返回上界倍率快照，供布局生成与调试工具读取。
 ##
 ## 返回值：包含六个倍率字段的字典。
 func get_max() -> Dictionary:

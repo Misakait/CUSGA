@@ -28,7 +28,7 @@ TerrainData = ExtResource("3_nw8mf")
 
 [sub_resource type="Resource" id="Profile_brook"]
 script = ExtResource("2_profile")
-TerrainPool = [SubResource("Pool_bush")]
+TerrainPool = Array[ExtResource("4_pool")]([SubResource("Pool_bush")])
 EncounterVarianceRange = SubResource("Variance_brook")
 
 [node name="MapBrook" type="Node2D" unique_id=1398827748]

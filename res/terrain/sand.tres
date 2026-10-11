@@ -21,7 +21,7 @@ metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="Resource_8iy12"]
 script = ExtResource("4_hrn4a")
-Drops = Array[Resource]([SubResource("Resource_8j2mo"), SubResource("Resource_gsjvx")])
+Drops = Array[ExtResource("1_l4qi2")]([SubResource("Resource_8j2mo"), SubResource("Resource_gsjvx")])
 metadata/_custom_type_script = "uid://14ol6fqeh53g"
 
 [sub_resource type="Resource" id="Resource_swtaf"]

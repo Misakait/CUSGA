@@ -39,12 +39,12 @@ func suite_name() -> String:
 	return "room_terrain_store_contract"
 
 
-## 生成一个类型化地形池，避免把无类型数组写入 Array[Resource] 导出字段。
+## 生成一个类型化地形池，避免把无类型数组写入 Array[terrain_pool_entry] 导出字段。
 ##
 ## @param entries 地形池条目数组。
 ## @return 类型化后的地形池。
-func _typed_pool(entries: Array) -> Array[Resource]:
-	var pool: Array[Resource] = []
+func _typed_pool(entries: Array) -> Array[terrain_pool_entry]:
+	var pool: Array[terrain_pool_entry] = []
 	for entry: Variant in entries:
 		pool.append(entry)
 	return pool
@@ -380,9 +380,9 @@ func test_variance_round_trip_matches_snapshot_protocol() -> void:
 
 ## 验证同一种子产生完全相同的布局，且数量落在配置区间内。
 func test_generator_determinism_and_bounds() -> void:
-	var pool: Array[Resource] = _typed_pool([
-		_make_pool_entry(Resource.new(), 3.0),
-		_make_pool_entry(Resource.new(), 1.0),
+	var pool: Array[terrain_pool_entry] = _typed_pool([
+		_make_pool_entry(TerrainCardData.new(), 3.0),
+		_make_pool_entry(TerrainCardData.new(), 1.0),
 	])
 	var variance_range: Resource = VARIANCE_RANGE_SCRIPT.new()
 	variance_range.set("MinMaxHealth", 1.0)
@@ -430,9 +430,9 @@ func test_generator_determinism_and_bounds() -> void:
 
 ## 验证总权重为 0 时退化为第一个有效地形，与旧实现的无随机分支一致。
 func test_generator_weight_zero_fallback() -> void:
-	var first_data: Resource = Resource.new()
-	var second_data: Resource = Resource.new()
-	var pool: Array[Resource] = _typed_pool([
+	var first_data: Resource = TerrainCardData.new()
+	var second_data: Resource = TerrainCardData.new()
+	var pool: Array[terrain_pool_entry] = _typed_pool([
 		_make_pool_entry(first_data, 0.0),
 		_make_pool_entry(second_data, 0.0),
 	])
@@ -451,7 +451,7 @@ func test_generator_weight_zero_fallback() -> void:
 
 ## 验证数量上下界被格子总数与 MinCount 正确夹紧。
 func test_generator_count_clamping() -> void:
-	var pool: Array[Resource] = _typed_pool([_make_pool_entry(Resource.new(), 1.0)])
+	var pool: Array[terrain_pool_entry] = _typed_pool([_make_pool_entry(TerrainCardData.new(), 1.0)])
 	var generator: Object = LAYOUT_GENERATOR_SCRIPT.new(FIXED_SEED)
 
 	var over_profile: Resource = _make_profile(pool, 5, 99, 2, 2)
@@ -478,7 +478,7 @@ func test_generator_count_clamping() -> void:
 
 ## 验证摆放坐标按格子中心在摆放矩形内插值。
 func test_generator_board_position_lerp() -> void:
-	var pool: Array[Resource] = _typed_pool([_make_pool_entry(Resource.new(), 1.0)])
+	var pool: Array[terrain_pool_entry] = _typed_pool([_make_pool_entry(TerrainCardData.new(), 1.0)])
 	var profile: Resource = _make_profile(
 		pool, 4, 4, 2, 2, Vector2.ZERO, Vector2(100, 100)
 	)
@@ -523,7 +523,7 @@ func test_generator_empty_inputs() -> void:
 		"空地形池必须返回空布局。"
 	)
 
-	var invalid_pool: Array[Resource] = _typed_pool([_make_pool_entry(null, 1.0)])
+	var invalid_pool: Array[terrain_pool_entry] = _typed_pool([_make_pool_entry(null, 1.0)])
 	var invalid_profile: Resource = _make_profile(invalid_pool, 1, 3)
 	assert_eq(
 		(generator.call("Generate", invalid_profile) as Array).size(),

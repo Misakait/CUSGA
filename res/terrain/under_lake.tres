@@ -22,7 +22,7 @@ metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="Resource_l10py"]
 script = ExtResource("4_jjotv")
-Drops = Array[Resource]([SubResource("Resource_k7ejw"), SubResource("Resource_qv8fx")])
+Drops = Array[ExtResource("1_br5hh")]([SubResource("Resource_k7ejw"), SubResource("Resource_qv8fx")])
 metadata/_custom_type_script = "uid://14ol6fqeh53g"
 
 [sub_resource type="Resource" id="Resource_2fvi8"]

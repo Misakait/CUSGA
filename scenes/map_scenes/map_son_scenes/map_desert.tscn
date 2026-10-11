@@ -37,7 +37,7 @@ metadata/_custom_type_script = "uid://dso04gkfdac6i"
 
 [sub_resource type="Resource" id="Resource_hy465"]
 script = ExtResource("7_53hot")
-Drops = Array[Resource]([SubResource("Resource_bn557")])
+Drops = Array[ExtResource("4_704vg")]([SubResource("Resource_bn557")])
 metadata/_custom_type_script = "uid://14ol6fqeh53g"
 
 [sub_resource type="Resource" id="Resource_ehudh"]
@@ -62,7 +62,7 @@ TerrainData = ExtResource("10_7xg47")
 
 [sub_resource type="Resource" id="Profile_desert"]
 script = ExtResource("2_profile")
-TerrainPool = Array[Resource]([SubResource("Pool_stone"), SubResource("Pool_sand")])
+TerrainPool = Array[ExtResource("11_pool")]([SubResource("Pool_stone"), SubResource("Pool_sand")])
 MinCount = 2
 MaxCount = 4
 EncounterVarianceRange = SubResource("Variance_desert")

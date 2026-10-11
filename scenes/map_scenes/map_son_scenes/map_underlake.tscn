@@ -28,7 +28,7 @@ TerrainData = ExtResource("4_dblj8")
 
 [sub_resource type="Resource" id="Profile_underlake"]
 script = ExtResource("2_profile")
-TerrainPool = [SubResource("Pool_underlake")]
+TerrainPool = Array[ExtResource("3_pool")]([SubResource("Pool_underlake")])
 EncounterVarianceRange = SubResource("Variance_underlake")
 
 [node name="MapUnderlake" type="Node2D" unique_id=1027647085]

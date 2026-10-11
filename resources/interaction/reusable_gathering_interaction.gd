@@ -1,6 +1,7 @@
 extends Resource
+class_name ReusableGatheringInteraction
 
-## 可重复采集地形交互的 GDScript 数据资源（运行时桥接版本）。
+## 可重复采集地形交互配置，耗尽次数后按游戏时间恢复。
 ##
 ## 资源本身只负责采集规则、工具减免和操作顺序；实际时间流逝、掉落生成
 ## 与遭遇请求仍由 TerrainInteractionExecutor 通过操作描述执行，避免资源直
@@ -13,7 +14,7 @@ extends Resource
 @export var GatheringTag: StringName = &""
 
 ## 采集完成时滚动的掉落表资源。
-@export var DropTable: Resource
+@export var DropTable: LootTableData
 
 ## 每轮刷新后可完成的最大采集次数。
 @export_range(1, 999, 1, "or_greater") var MaxHarvestCount: int = 1
@@ -107,7 +108,7 @@ func record_successful_harvest(terrain: Object, total_time_passed: int) -> void:
 		terrain.set("RefreshReadyTotalTime", total_time_passed + maxi(RefreshTimeCost, 0))
 
 
-## 构建有序的地形操作描述，供 C# 执行器转换为现有 TerrainOp。
+## 构建有序的地形操作描述，交给 TerrainInteractionExecutor 执行。
 ##
 ## 参数 player：触发采集的玩家节点。
 ## 参数 terrain：被交互的 TerrainInstance。

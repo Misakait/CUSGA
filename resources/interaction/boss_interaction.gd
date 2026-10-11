@@ -1,14 +1,15 @@
 extends Resource
+class_name BossInteraction
 
 ## Boss 地形交互的 GDScript 数据与操作序列。
 ##
 ## 本资源只保存耗时与 Boss 配置，并按旧实现顺序返回操作描述；遭遇请求、战斗切换和
-## 棋盘卡移除仍由 TerrainInteractionExecutor 及既有 C# 端口执行。
+## 棋盘卡移除仍由 TerrainInteractionExecutor 执行。
 
-## 触发 Boss 遭遇需要消耗的行动时间；默认值保持旧 C# Resource 的 20。
+## 触发首领遭遇需要消耗的游戏时间点数，默认为 20。
 @export var TimeCost: int = 20
 
-## Boss 遭遇使用的 MonsterData；迁移期继续保留原 C# Resource 对象身份。
+## 首领遭遇使用的怪物配置，保留原资源对象身份。
 @export var Monster: Resource
 
 

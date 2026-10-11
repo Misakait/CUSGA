@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "编辑器测试与真实场景验证"}
+{"file": ".trellis/spec/backend/resource-data-guidelines.md", "reason": "专属创建类型与资产兼容"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "依赖引用、中文文档与边界"}

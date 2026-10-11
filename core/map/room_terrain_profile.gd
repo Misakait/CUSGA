@@ -1,12 +1,13 @@
 extends Resource
+class_name RoomTerrainProfile
 
 ## 描述房间地形生成所需的池、数量、网格和摆放范围配置。
 ##
 ## 该 Resource 只保存可序列化配置；随机抽样与布局计算由
-## RoomTerrainLayoutGenerator 负责，便于 C# 与 GDScript 资源在迁移期间并存。
+## RoomTerrainLayoutGenerator 负责，不在配置资源中保存房间运行时状态。
 
-## 当前房间可抽取的地形池条目。
-@export var TerrainPool: Array[Resource] = []
+## 当前房间可抽取的地形池；新增元素时创建 terrain_pool_entry，再配置地形与权重。
+@export var TerrainPool: Array[terrain_pool_entry] = []
 
 ## 生成布局时允许的最少地形数量。
 @export var MinCount: int = 1
@@ -27,4 +28,4 @@ extends Resource
 @export var PlacementMax: Vector2 = Vector2(920, 560)
 
 ## 遭遇怪物属性倍率范围资源；为空时使用中性倍率。
-@export var EncounterVarianceRange: Resource
+@export var EncounterVarianceRange: MonsterStatMultiplierRange

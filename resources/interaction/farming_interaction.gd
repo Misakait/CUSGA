@@ -1,9 +1,10 @@
 extends Resource
+class_name FarmingInteraction
 
-## 农场地形交互的 GDScript 并行实现。
+## 农场地形交互配置。
 ##
 ## 资源只描述耗时和打开农场面板请求；实际时间流逝与 GameplayPort 信号
-## 继续由 TerrainInteractionExecutor 和既有 C# TerrainOp 执行。
+## 由 TerrainInteractionExecutor 执行。
 
 ## 完成交互消耗的游戏时间点数。
 @export var TimeCost: int = 20

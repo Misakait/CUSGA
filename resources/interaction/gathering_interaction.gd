@@ -1,4 +1,5 @@
 extends Resource
+class_name GatheringInteraction
 
 ## 一次性采集地形交互的 GDScript 数据资源。
 ##
@@ -11,8 +12,8 @@ extends Resource
 ## 用于装备额外产量和采集遭遇匹配的资源标签。
 @export var GatheringTag: StringName = &""
 
-## 完成采集时滚动的掉落表；生产使用 GDScript，并继续接受旧 C# LootTable。
-@export var DropTable: Resource
+## 完成采集时使用的掉落表；创建 LootTableData 后在 Drops 中添加 LootDrop。
+@export var DropTable: LootTableData
 
 
 ## 构建与旧 GatheringInteraction 相同顺序的操作描述。

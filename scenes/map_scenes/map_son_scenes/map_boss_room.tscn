@@ -36,7 +36,7 @@ TerrainData = SubResource("Resource_tgktn")
 
 [sub_resource type="Resource" id="Profile_boss"]
 script = ExtResource("3_profile")
-TerrainPool = [SubResource("Pool_boss")]
+TerrainPool = Array[ExtResource("10_pool")]([SubResource("Pool_boss")])
 MaxCount = 1
 GridColumns = 1
 GridRows = 1

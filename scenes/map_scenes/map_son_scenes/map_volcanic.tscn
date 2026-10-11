@@ -28,7 +28,7 @@ TerrainData = SubResource("Resource_qbqyj")
 
 [sub_resource type="Resource" id="Profile_volcanic"]
 script = ExtResource("2_profile")
-TerrainPool = [SubResource("Pool_vault")]
+TerrainPool = Array[ExtResource("6_pool")]([SubResource("Pool_vault")])
 MaxCount = 1
 GridColumns = 1
 GridRows = 1

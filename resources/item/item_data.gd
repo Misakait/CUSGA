@@ -1,9 +1,10 @@
 extends "res://resources/item/base_card_data.gd"
+class_name ItemData
 
 ## 可堆叠物品的基础 Resource 契约。
 ##
 ## 普通生产物品、ResourceCardData、SkillCardData、EquipmentData 与 ToolData 使用该脚本；
-## 迁移期兼容输入仍可由保留的 C# 派生类型提供。消费者通过稳定 Resource 字段协议读取两种实现。
+## 消费者通过稳定字段协议读取物品配置，派生物品保留同一对象身份。
 
 ## 单格最大堆叠数量；普通物品沿用旧实现的 99 默认值。
 @export var MaxStackSize: int = 99

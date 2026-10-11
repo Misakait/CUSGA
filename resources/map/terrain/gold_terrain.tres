@@ -1,14 +1,14 @@
 [gd_resource type="Resource" format=3 uid="uid://d12wclmkkm3uo"]
 
-[ext_resource type="Script" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="1_0gpsb"]
+[ext_resource type="Script" uid="uid://ywb5murk6b7e" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="1_0gpsb"]
 [ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="2_kmtei"]
 [ext_resource type="Resource" uid="uid://mslyvpd6f5xi" path="res://resources/item/card/res_cards/axe.tres" id="3_yfrxv"]
 [ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="4_0yp1u"]
 [ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="5_4rccu"]
-[ext_resource type="Script" path="res://resources/interaction/gathering_interaction.gd" id="6_7f42d"]
-[ext_resource type="Script" path="res://resources/interaction/terrain_card_data.gd" id="7_w0htb"]
-[ext_resource type="Script" path="res://core/map/room_terrain_pool_entry.gd" id="8_ngta2"]
-[ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="9_wt6p7"]
+[ext_resource type="Script" uid="uid://b12x5ghy82no3" path="res://resources/interaction/gathering_interaction.gd" id="6_7f42d"]
+[ext_resource type="Script" uid="uid://bg7i2r7823omv" path="res://resources/interaction/terrain_card_data.gd" id="7_w0htb"]
+[ext_resource type="Script" uid="uid://dbix1awqn51kd" path="res://core/map/room_terrain_pool_entry.gd" id="8_ngta2"]
+[ext_resource type="Script" uid="uid://tidg11kcaejh" path="res://core/map/room_terrain_profile.gd" id="9_wt6p7"]
 
 [sub_resource type="Resource" id="Resource_o6lon"]
 script = ExtResource("1_0gpsb")
@@ -41,10 +41,10 @@ DropTable = SubResource("Resource_q8qhr")
 
 [sub_resource type="Resource" id="Resource_dec2y"]
 script = ExtResource("7_w0htb")
-InteractionBehavior = SubResource("Resource_g7irk")
 CardId = &"gold"
 CardName = "斧头地形"
 CardIcon = ExtResource("2_kmtei")
+InteractionBehavior = SubResource("Resource_g7irk")
 
 [sub_resource type="Resource" id="Resource_gjman"]
 script = ExtResource("8_ngta2")
@@ -52,5 +52,5 @@ TerrainData = SubResource("Resource_dec2y")
 
 [resource]
 script = ExtResource("9_wt6p7")
-TerrainPool = [SubResource("Resource_gjman")]
+TerrainPool = Array[ExtResource("8_ngta2")]([SubResource("Resource_gjman")])
 EncounterVarianceRange = SubResource("Resource_o6lon")

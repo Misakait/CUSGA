@@ -150,15 +150,17 @@ class FakePlayer extends RefCounted:
 	var Equipment: FakeEquipment
 
 
-## 模拟 LootTable 的稳定 RollLoot 方法并记录额外产量输入。
-class FakeLootTable extends Resource:
+## 模拟 LootTableData 的稳定 RollLoot 方法并记录额外产量输入。
+class FakeLootTable extends LootTableData:
 	## 预设返回的掉落对象。
-	var drops: Array = []
+	var drops: Array[RefCounted] = []
 	## 最近一次收到的额外产量。
 	var received_extra_yield: int = -1
 
 	## 返回预设掉落，并保存调用方传入的额外产量。
-	func RollLoot(extra_yield: int) -> Array:
+	## 参数 extra_yield：采集规则提供的额外产量。
+	## 返回值：预设的物品堆叠对象数组。
+	func RollLoot(extra_yield: int) -> Array[RefCounted]:
 		received_extra_yield = extra_yield
 		return drops
 
@@ -633,6 +635,9 @@ func test_terrain_card_resource_migrated() -> void:
 		var pool: Array = profile.get("TerrainPool")
 		assert_true(not pool.is_empty(), "%s 必须保留地形池。" % asset_path)
 		for entry: Resource in pool:
+			# 编辑器允许保留尚未配置的新条目，空槽不能被当作有效地形。
+			if entry == null:
+				continue
 			var card: Resource = entry.get("TerrainData")
 			assert_true(card != null, "%s 的地形池条目必须保留 TerrainData。" % asset_path)
 			if card != null:
@@ -965,8 +970,8 @@ func test_loot_table_production_roll_contract() -> void:
 	guaranteed.set("DropChance", 100.0)
 	guaranteed.set("MinAmount", 2)
 	guaranteed.set("MaxAmount", 2)
-	## 显式构造 Resource 类型数组，保持导出字段类型稳定。
-	var guaranteed_drops: Array[Resource] = [guaranteed, null]
+	## 显式构造专属掉落条目数组，保持导出字段类型稳定。
+	var guaranteed_drops: Array[LootDrop] = [guaranteed, null]
 	table.set("Drops", guaranteed_drops)
 	## 应用额外产量后的掉落结果。
 	var generated: Array = table.call("RollLoot", 3)

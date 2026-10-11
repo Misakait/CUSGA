@@ -13,7 +13,7 @@ Item = ExtResource("6_branch")
 
 [sub_resource type="Resource" id="Loot_demolition"]
 script = ExtResource("4_loot")
-Drops = Array[Resource]([SubResource("Drop_branch")])
+Drops = Array[ExtResource("5_drop")]([SubResource("Drop_branch")])
 
 [resource]
 script = ExtResource("2_an6yf")

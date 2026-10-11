@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="terrain_pool_entry" format=3 uid="uid://bvha7ibb6oqcq"]
+
+[ext_resource type="Script" uid="uid://dbix1awqn51kd" path="res://core/map/room_terrain_pool_entry.gd" id="1_wsvit"]
+
+[resource]
+script = ExtResource("1_wsvit")
+metadata/_custom_type_script = "uid://dbix1awqn51kd"

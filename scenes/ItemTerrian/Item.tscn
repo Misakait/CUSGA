@@ -1,9 +1,9 @@
-[gd_scene load_steps=15 format=3 uid="uid://xkui1sasq866"]
+[gd_scene format=3 uid="uid://xkui1sasq866"]
 
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="1_4st0y"]
 [ext_resource type="Texture2D" uid="uid://cime5163xllty" path="res://res/UI/卡牌模板.png" id="2_rjja6"]
 [ext_resource type="Script" uid="uid://dlj862l0mk1ek" path="res://scripts/item_scripts/item_view.gd" id="3_item_view"]
-[ext_resource type="Script" path="res://scripts/map_scripts/UIMapMarkerController.gd" id="4_marker_controller"]
+[ext_resource type="Script" uid="uid://dgwge1vm7cyhr" path="res://scripts/map_scripts/UIMapMarkerController.gd" id="4_marker_controller"]
 
 [sub_resource type="Shader" id="Shader_s04oc"]
 code = "// 玩家角色的闪白效果（供 AnimationPlayer 驱动）。
@@ -44,8 +44,8 @@ texture = ExtResource("2_rjja6")
 region_rect = Rect2(0, 0, 99, 139)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kvmcx"]
-radius = 32.0
-height = 116.0
+radius = 15.0
+height = 72.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_35b51"]
 size = Vector2(93, 137)

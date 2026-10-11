@@ -1,15 +1,15 @@
 extends Resource
+class_name LootTableData
 
 ## 掉落表的生产 GDScript 实现。
 ##
-## 本资源接受旧 C# 或新 GDScript 掉落条目，并生成生产 GDScript ItemStack。
-## Item 继续保存原始 Resource，棋盘和库存通过稳定属性协议同时兼容新旧堆叠。
+## 每个 LootDrop 独立判定概率与数量，并生成物品堆叠；保留原始物品资源身份。
 
 ## 用于创建生产掉落结果的 GDScript 物品堆叠脚本。
 const ITEM_STACK_SCRIPT: GDScript = preload("res://resources/item/item_stack.gd")
 
-## 掉落条目列表；保持旧 C# 的 Drops 序列化键和 Resource 兼容边界。
-@export var Drops: Array[Resource] = []
+## 掉落条目列表；新增元素时创建 LootDrop，并配置物品、概率和数量。
+@export var Drops: Array[LootDrop] = []
 
 
 ## 按掉落概率和数量范围生成物品堆叠。
@@ -25,7 +25,7 @@ func RollLoot(yield_growth: int) -> Array[RefCounted]:
 		var item_value: Variant = _read_property(drop, &"Item", null)
 		if not (item_value is Resource):
 			continue
-		## 通过类型检查后的物品资源；保持旧 C# 或 GDScript Resource 原始身份。
+		## 保留原始物品资源，避免生成掉落时复制共享配置。
 		var item := item_value as Resource
 		## 旧实现使用 0 到 100 的浮点随机数，并以小于等于判断命中。
 		var roll: float = randf() * 100.0
@@ -43,7 +43,7 @@ func RollLoot(yield_growth: int) -> Array[RefCounted]:
 		var final_amount: int = base_amount + yield_growth
 		if final_amount <= 0:
 			continue
-		## 生产掉落改用 GDScript ItemStack，旧 C# 消费链通过 RefCounted 属性协议继续接收。
+		## 用统一的物品堆叠协议交给棋盘与库存消费。
 		var stack := ITEM_STACK_SCRIPT.new() as RefCounted
 		stack.call("SetItem", item, final_amount)
 		generated_loot.append(stack)
