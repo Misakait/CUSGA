@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Godot UI 场景的脚本、资源和编辑器 MCP 验证规则"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "GDScript 动态节点、场景节点路径和信号引用的类型安全检查"}

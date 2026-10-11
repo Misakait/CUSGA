@@ -21,7 +21,7 @@ const WORLD_HOLD_CONTROLLER_PATH: String = "res://core/gameflow/world_hold_inter
 
 ## 局外入口（主菜单）场景路径。
 ## 它必须复用同一份面板场景，而不是另建一套内容不同的开发者菜单。
-const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/main_menu.tscn"
+const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/login_menu.tscn"
 
 ## 局内主场景路径。
 ## 它保留全套功能，用来对照局外入口确实只关掉了局内专属的那部分。

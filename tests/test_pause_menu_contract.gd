@@ -25,7 +25,7 @@ const PAUSE_MENU_SCENE_PATH: String = "res://scenes/ui_scenes/pause_menu.tscn"
 const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
 
 ## 主菜单场景路径，必须与脚本常量一致。
-const EXPECTED_MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/main_menu.tscn"
+const EXPECTED_MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/login_menu.tscn"
 
 ## 项目配置文件路径。
 const PROJECT_CONFIG_PATH: String = "res://project.godot"

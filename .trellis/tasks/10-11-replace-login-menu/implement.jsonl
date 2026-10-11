@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "菜单输入、场景切换和设置页信号的数据流与状态边界"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "登录菜单控制器与场景 UI 的节点职责、信号连接和生命周期约束"}
