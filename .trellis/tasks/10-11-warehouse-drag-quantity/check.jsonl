@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"对照 WarehouseNew 契约检查共享格子样式、单选与详情框行为未被破坏"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"审查分层、公共接口文档注释与失败无副作用的约定"}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"审查拖放字典校验、动态调用与类型收敛"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"审查测试覆盖边界：纯逻辑必须单测，运行行为不得伪造通过"}

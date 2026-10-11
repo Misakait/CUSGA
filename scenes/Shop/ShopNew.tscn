@@ -14,10 +14,10 @@
 [ext_resource type="Texture2D" uid="uid://b3uo2snyqoh7q" path="res://res/UI/图标ui/other/上箭头.png" id="12_24rwx"]
 [ext_resource type="Texture2D" uid="uid://ca7xq7q7m5g6o" path="res://res/UI/图标ui/other/下箭头.png" id="13_6grsm"]
 [ext_resource type="Script" uid="uid://day01h6ahs6l" path="res://scripts/export_spinbox_bg.gd" id="14_7vonh"]
-[ext_resource type="Script" path="res://core/ui/shop/shop_new_controller.gd" id="15_control"]
-[ext_resource type="Script" path="res://core/shop/shop_trade_bridge.gd" id="16_bridge"]
-[ext_resource type="Resource" path="res://resources/shop/shop_catalog.tres" id="17_catalog"]
-[ext_resource type="Script" path="res://core/ui/shop/shop_sell_icon.gd" id="18_sell_icon"]
+[ext_resource type="Script" uid="uid://dmx5r25il8a5h" path="res://core/ui/shop/shop_new_controller.gd" id="15_control"]
+[ext_resource type="Script" uid="uid://byk86elmmfkue" path="res://core/shop/shop_trade_bridge.gd" id="16_bridge"]
+[ext_resource type="Resource" uid="uid://bvwok4goxoivg" path="res://resources/shop/shop_catalog.tres" id="17_catalog"]
+[ext_resource type="Script" uid="uid://dmoxc0dws4t1c" path="res://core/ui/shop/shop_sell_icon.gd" id="18_sell_icon"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="19_tooltip"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_62ps0"]
@@ -55,6 +55,18 @@ texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_xdst2"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vukt8"]
+texture = SubResource("CompressedTexture2D_xdst2")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
+
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_oc26b"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
@@ -90,6 +102,18 @@ texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_1pgmv"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fxo0h"]
+texture = SubResource("CompressedTexture2D_1pgmv")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q05fa"]
 texture = ExtResource("7_iy23q")
 texture_margin_left = 7.0
@@ -121,6 +145,18 @@ texture_margin_right = 7.0
 texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_dg26y"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kl6ym"]
+texture = SubResource("CompressedTexture2D_dg26y")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_35b51"]
 size = Vector2(147, 122)
@@ -163,10 +199,22 @@ texture_margin_bottom = 4.0
 region_rect = Rect2(0, 16, 64, 32)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_gq3c3"]
+load_path = "res://.godot/imported/小面板.png-98e531a257b786af1138e9e59b516f48.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_u5ykr"]
+texture = SubResource("CompressedTexture2D_gq3c3")
+texture_margin_left = 4.0
+texture_margin_top = 5.0
+texture_margin_right = 3.0
+texture_margin_bottom = 4.0
+region_rect = Rect2(0, 16, 64, 32)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
+
 [node name="ShopNew" type="Node2D" unique_id=82544422]
 script = ExtResource("15_control")
 
-[node name="ShopTradeBridge" type="Node" parent="."]
+[node name="ShopTradeBridge" type="Node" parent="." unique_id=817605947]
 script = ExtResource("16_bridge")
 Catalog = ExtResource("17_catalog")
 
@@ -289,6 +337,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_jqxul")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_kul4x")
 theme_override_styles/hover = SubResource("StyleBoxTexture_iy23q")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_vukt8")
 
 [node name="Cost" type="Label" parent="ItemSection/Upgrade" unique_id=1632781158]
 offset_left = 761.0
@@ -313,6 +362,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_xill7")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_ii2rh")
 theme_override_styles/hover = SubResource("StyleBoxTexture_e3fsa")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_fxo0h")
 
 [node name="Label" type="Label" parent="ItemSection/Clean" unique_id=186087668]
 offset_left = 761.0
@@ -382,6 +432,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_q05fa")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_24rwx")
 theme_override_styles/hover = SubResource("StyleBoxTexture_6grsm")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_kl6ym")
 
 [node name="Label" type="Label" parent="Shop/TheButton" unique_id=272817782]
 offset_left = 872.00006
@@ -644,6 +695,7 @@ theme_override_fonts/font = ExtResource("4_o3nl3")
 theme_override_styles/normal = SubResource("StyleBoxTexture_yyfyd")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_snsaf")
 theme_override_styles/hover = SubResource("StyleBoxTexture_axtkx")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_u5ykr")
 
 [node name="Label" type="Label" parent="Shop/BuyArea/Buy" unique_id=267265493]
 offset_left = 92.0
@@ -663,7 +715,7 @@ offset_right = 1206.0
 offset_bottom = 645.0
 horizontal_scroll_mode = 0
 
-[node name="SlotGrid" type="GridContainer" parent="Shop/ScrollContainer"]
+[node name="SlotGrid" type="GridContainer" parent="Shop/ScrollContainer" unique_id=1075158091]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 8

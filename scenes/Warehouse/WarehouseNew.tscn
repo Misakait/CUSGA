@@ -49,6 +49,18 @@ texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_nrax1"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5pp6m"]
+texture = SubResource("CompressedTexture2D_nrax1")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
+
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_oc26b"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
 
@@ -83,6 +95,18 @@ texture_margin_right = 7.0
 texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_3eh1v"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5kepp"]
+texture = SubResource("CompressedTexture2D_3eh1v")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_232x7"]
 load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
@@ -119,6 +143,18 @@ texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_20rjh"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_o8uu2"]
+texture = SubResource("CompressedTexture2D_20rjh")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
 texture = ExtResource("5_62ps0")
 texture_margin_left = 7.0
@@ -150,6 +186,18 @@ texture_margin_right = 7.0
 texture_margin_bottom = 8.0
 region_rect = Rect2(7, 8, 102, 35)
 modulate_color = Color(1.1638972, 1.1638972, 1.1638972, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_36fmx"]
+load_path = "res://.godot/imported/按钮1.png-0fb3f6aee832e75bb4cc5381ea6e2f6e.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3f5xc"]
+texture = SubResource("CompressedTexture2D_36fmx")
+texture_margin_left = 7.0
+texture_margin_top = 6.0
+texture_margin_right = 7.0
+texture_margin_bottom = 8.0
+region_rect = Rect2(7, 8, 102, 35)
+modulate_color = Color(0.85814106, 0.85814106, 0.85814106, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_84ryh"]
 texture = ExtResource("10_vbmi6")
@@ -280,6 +328,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_vbmi6")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_qdkd5")
 theme_override_styles/hover = SubResource("StyleBoxTexture_0f0lq")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_5pp6m")
 
 [node name="Cost" type="Label" parent="ItemSection/Upgrade" unique_id=148904548]
 offset_left = 761.0
@@ -304,6 +353,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_ucgod")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_w7rp6")
 theme_override_styles/hover = SubResource("StyleBoxTexture_yct1r")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_5kepp")
 
 [node name="Label" type="Label" parent="ItemSection/Clean" unique_id=112157309]
 offset_left = 761.0
@@ -403,6 +453,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_nrax1")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_3eh1v")
 theme_override_styles/hover = SubResource("StyleBoxTexture_20rjh")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_o8uu2")
 
 [node name="Cost" type="Label" parent="PackbackSection/Upgrade" unique_id=28729630]
 offset_left = 761.0
@@ -500,6 +551,7 @@ scale = Vector2(3, 3)
 theme_override_styles/normal = SubResource("StyleBoxTexture_35b51")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_wvm7m")
 theme_override_styles/hover = SubResource("StyleBoxTexture_wl7x2")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_3f5xc")
 
 [node name="Label" type="Label" parent="GoToShop/TheButton" unique_id=283189974]
 offset_left = 872.00006

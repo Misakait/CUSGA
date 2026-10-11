@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"WarehouseNew 的 item_slot2 契约、拖放载荷约定与真实鼠标验证要求"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"场景缓存复用、权威信号订阅与拖动会话的状态收尾"}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"拖放字典、动态资源与节点方法协议的类型收敛"}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"ItemStack 洗炼属性与按数量转移的字段保留约束"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"编辑器测试发现、套件命名与运行验证边界"}

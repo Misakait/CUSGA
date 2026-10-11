@@ -64,6 +64,21 @@
 - 仓库权威是 GlobalWarehouse，行囊权威是 ItemsControl。跨区转移先验证来源快照、目标索引和解锁容量，再提交；刷新与信号不得制造物品复制或丢失。保持现有 item/count 行囊存档格式，不能扩展洗炼字段。
 - Cost、CoinCount 和 CapacityLabel 读取 PlayerProgression、PlayerWallet 和权威物品状态，不写死费用或余额。缓存重入应重建订阅并刷新；离开清理外部信号和提示。
 - 验证包含真实点击/拖动、仓库与行囊数量守恒、失败无副作用、升级扣费/扩容、余额即时刷新、格子复用以及主菜单/商店导航。
+- 数量拖拽的会话状态在 `core/ui/warehouse/warehouse_drag_controller.gd`（`RefCounted`，没有 `_process`，由根控制器每帧调用 `tick(delta)`，便于测试精确控制时间推进）：持有来源 `side`/`index`、模式（`full` 未选中 / `half` 已选中）、剩余数量、右键按下计时与帧间余量，并构建拖动预览。会话只存在于内存，拖动开始时**不从权威取走物品**，来源物品在每次实际放置前一直留在原权威位置，因此取消或被打断（无效目标、格子外松开、应用级失焦、退出场景）必然无损。应用级失焦（`NOTIFICATION_APPLICATION_FOCUS_OUT`，即切到其它应用）必须真的**结束会话**，不能只保证物品不丢：根控制器 `_notification()` 收到 `NOTIFICATION_APPLICATION_FOCUS_OUT` 时调用 `_drag.call("cancel")`，否则玩家切回来后会用旧来源继续放置，产生非预期的数量变化；这里必须用 `NOTIFICATION_APPLICATION_FOCUS_OUT` 而不是 `NOTIFICATION_WM_WINDOW_FOCUS_OUT`——后者是 `Window`/`MainLoop` 的通知，`Node2D` 收不到，写了也不触发。来源快照在会话期间必须始终等于权威：每次成功放置后重新同步，比对不一致就立刻结束会话。
+- 按数量搬运的数据规则在 `core/ui/warehouse/warehouse_transfer.gd`：`can_receive_amount(data, side, index, amount) -> bool` 只接受空格或同类未满格；`move_amount(data, side, index, amount) -> int` 返回实际搬运数量，实际量取「请求量、来源现有量、目标剩余空间」三者最小值，失败时权威不变并保留洗炼属性。两者都不得调用 `MoveItem` / `MoveItemFromDeferred`（那是整组语义）。整组投放继续走 `warehouse_transfer.move()`，所以未选中拖动保留「不同物品交换」；右键逐个放置无论哪种模式都走按数量原语，只有空格或同类未满格会消耗物品。
+- 三个连续放置速率参数是根控制器的导出字段：`drag_place_initial_rate`（默认 `4.0` 个/秒）、`drag_place_acceleration`（默认 `8.0` 个/秒²）、`drag_place_max_rate`（默认 `30.0` 个/秒）。字段名与默认值由脚本提供，`WarehouseNew.tscn` 不序列化这三个值；改名必须同步检查器、本文档与机制汇总文档。
+- 拖动期间的右键必须在输入阶段处理：根控制器在 `_setup_view()` 里 `set_process_input(true)`，`_input()` 只在 `_drag.is_active()` 时接管右键按下/松开并调用 `set_input_as_handled()`，不让它泄漏给其它界面或场景逻辑。左键松开只调用 `_drag.call_deferred("finish_after_release")`——原生投放发生在同一帧的 GUI 阶段，立即收尾会抢在 `_drop_data` 之前取消会话。Godot 自己结束原生拖动时（例如左键仍按住时又收到一次左键按下），`_input` 收不到左键松开，只能由格子脚本在 `_notification()` 里捕获 `NOTIFICATION_DRAG_END` 并转给控制器的 `on_drag_finished()`，再由后者调用 `_drag.call_deferred("finish_after_release")`；此处同样必须延后，否则会抢在同一帧 `_drop_data` 之前让合法投放失效。漏接这条通知会让会话残留，之后一次普通右键就会从旧来源放出物品。被拖控件之外的格子收不到 `gui_input`，所以目标由 `_resolve_hovered_slot()` 用 `ScrollContainer` 与格子的全局矩形自行判定（滚动裁切靠容器矩形），返回 `[side, index]` 或 `[]`。
+- 放置后只刷新受影响的格子：`refresh_slot(side, index)` 重绑单个格子的内容并刷新行囊占用文案，不重建节点，避免打断正在进行的原生拖动。拖动会话的逐帧开关由 `set_drag_session_active(active: bool)` 控制（内部即 `set_process`）。
+
+### 可执行契约
+
+1. **适用范围**：修改 WarehouseNew 的双区格子、拖动载荷、按数量搬运或连续放置速率时，用本节复核交互规则与提交边界。
+2. **入口签名**：根控制器 `create_drag_data(side: StringName, index: int, selected: bool) -> Dictionary`、`create_drag_preview(item: Resource) -> Control`、`can_drop_item(data: Dictionary, side: StringName, index: int) -> bool`、`drop_item(data: Dictionary, side: StringName, index: int) -> bool`；宿主回调 `commit_placement(data, side, index, amount) -> int`、`commit_group_drop(data, side, index) -> bool`、`refresh_slot(side, index) -> void`、`set_drag_session_active(active: bool) -> void`。`selected` 必须由格子脚本在 `drag_started` 之前读取，因为该信号会让根控制器清空选中。
+3. **载荷约定**：载荷是来源快照（`item`、`amount`、`rolled`）加 `side`、`index`、`owner`（宿主 `get_instance_id()`）与自增 `token`。`can_drop` / `drop` 校验令牌与 `owner`；别的界面、上一轮拖动或缺少令牌的裸快照一律拒绝。会话不预扣物品，`amount` 始终等于来源权威数量。`create_drag_data` 返回空字典代表不能拖动，格子脚本据此在 `_get_drag_data` 里返回 `null` 让原生拖动不启动。
+4. **数量规则**：未选中拖动整组；已选中拖动 `ceil(数量 / 2)` 并向上取整（数量 1 时 `ceil(1 / 2) = 1`，照常拖走这 1 个）；右键不启动拖动，只对空格或同类未满格放 1 个，按住连续放置（`r(t) = min(最高速率, 初始速率 + 加速度 × t)`，间隔 `1 / r(t)`，每次按下立即放 1 个并重新计时，松开立即停止），单帧最多 60 个；松开左键把剩余数量投放到有效目标，无效目标或取消时未放出的物品留在来源。
+5. **正常/初始/错误情况**：正常为选中 9 个的格子拖半（余量 4）、右键放 1 个、再松开左键把余量投到空格；初始为无会话，`is_active()` 为 `false`、`remaining()` 为 0，右键事件全部放行给其它界面；错误为会话结束后仍用旧载荷提交，或来源被外部改动后继续用过期快照放置——两者都必须不产生任何搬运。
+6. **测试断言**：`warehouse_drag_quantity` 覆盖按数量搬运守恒（含目标空间不足时取最小值）、洗炼属性保留、同类未满格合并、空格/满堆叠/不同物品/同一格/越界/过期快照/形状错误的拒绝无副作用、拆半向上取整、右键放 1 与松开停止、加速曲线与 30 个/秒上限、取消保留余量、整组交换、行囊侧与跨区守恒、预览文案刷新；`warehouse_new_transfer` 的既有 5 例作为整组回归基线必须继续通过。真实鼠标输入、预览画面与原生拖动是否被中断属于运行验证，不能在单元测试里伪造通过。
+7. **错误与正确写法**：错误是在格子脚本里自行计算拆半数量、在 `_gui_input()` 里处理右键、或者在会话开始时先扣减来源再回滚；正确的是格子只上报 `is_selected()`，数量计算、目标校验与提交全部由 `warehouse_drag_controller.gd` 经 `warehouse_transfer.gd` 完成，来源扣减只发生在一次放置真正提交时。
 
 ## ShopNew 的交易提交边界
 
