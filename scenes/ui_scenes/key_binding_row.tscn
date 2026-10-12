@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://gw41breki0ns"]
+
+[ext_resource type="Script" uid="uid://4n4oof4b07jp" path="res://scripts/ui_scripts/key_binding_row.gd" id="1_li3xq"]
+
+[node name="KeyBindingRow" type="HBoxContainer" unique_id=964385058]
+theme_override_constants/separation = 12
+script = ExtResource("1_li3xq")
+
+[node name="ActionName" type="Label" parent="." unique_id=1293787215]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+vertical_alignment = 1
+
+[node name="Note" type="Label" parent="." unique_id=154650882]
+unique_name_in_owner = true
+modulate = Color(0.54509807, 0.6039216, 0.6392157, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="." unique_id=1960363374]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="KeyButton" type="Button" parent="." unique_id=489145460]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+
+[node name="ResetButton" type="Button" parent="." unique_id=397834087]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 40)
+layout_mode = 2
+text = "恢复默认"

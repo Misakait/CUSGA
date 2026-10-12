@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ci6rxhew02s7e"]
 
-[ext_resource type="Script" path="res://scripts/ui_scripts/UIOptionPanel.gd" id="1_option"]
+[ext_resource type="Script" uid="uid://ctnn331kiuhii" path="res://scripts/ui_scripts/UIOptionPanel.gd" id="1_option"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.04, 0.055, 0.07, 0.97)
@@ -24,7 +24,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_option")
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="CenterContainer" parent="." unique_id=273397660]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,92 +32,99 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(720, 440)
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=793060192]
+custom_minimum_size = Vector2(760, 560)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=498847042]
 layout_mode = 2
 theme_override_constants/margin_left = 28
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 28
 theme_override_constants/margin_bottom = 24
 
-[node name="RootVBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+[node name="RootVBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=153470452]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="Header" type="HBoxContainer" parent="Center/Panel/Margin/RootVBox"]
+[node name="Header" type="HBoxContainer" parent="Center/Panel/Margin/RootVBox" unique_id=1119247674]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/RootVBox/Header"]
+[node name="Title" type="Label" parent="Center/Panel/Margin/RootVBox/Header" unique_id=1806661947]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
 text = "参数设置"
 
-[node name="BackButton" type="Button" parent="Center/Panel/Margin/RootVBox/Header"]
+[node name="BackButton" type="Button" parent="Center/Panel/Margin/RootVBox/Header" unique_id=1590694176]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 42)
 layout_mode = 2
 text = "返回"
 
-[node name="Separator" type="HSeparator" parent="Center/Panel/Margin/RootVBox"]
+[node name="Separator" type="HSeparator" parent="Center/Panel/Margin/RootVBox" unique_id=1972440713]
 layout_mode = 2
 
-[node name="Body" type="HBoxContainer" parent="Center/Panel/Margin/RootVBox"]
+[node name="Body" type="HBoxContainer" parent="Center/Panel/Margin/RootVBox" unique_id=784848233]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 22
 
-[node name="Categories" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body"]
+[node name="Categories" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body" unique_id=127885448]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 
-[node name="MapCategoryButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/Categories"]
+[node name="MapCategoryButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/Categories" unique_id=847498037]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 toggle_mode = true
 text = "地图"
 
-[node name="InventoryCategoryButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/Categories"]
+[node name="InventoryCategoryButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/Categories" unique_id=1985755979]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 toggle_mode = true
 text = "背包"
 
-[node name="Divider" type="VSeparator" parent="Center/Panel/Margin/RootVBox/Body"]
+[node name="KeyBindingCategoryButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/Categories" unique_id=1642771960]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+toggle_mode = true
+text = "按键"
+
+[node name="Divider" type="VSeparator" parent="Center/Panel/Margin/RootVBox/Body" unique_id=699102968]
 layout_mode = 2
 
-[node name="MapSettings" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body"]
+[node name="MapSettings" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body" unique_id=836301077]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="SectionTitle" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings"]
+[node name="SectionTitle" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings" unique_id=245047049]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "小地图"
 
-[node name="Description" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings"]
+[node name="Description" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings" unique_id=1729151868]
 layout_mode = 2
 text = "调整左上角小地图的显示倍率。修改会立即生效并自动保存。"
 autowrap_mode = 2
 
-[node name="ZoomRow" type="HBoxContainer" parent="Center/Panel/Margin/RootVBox/Body/MapSettings"]
+[node name="ZoomRow" type="HBoxContainer" parent="Center/Panel/Margin/RootVBox/Body/MapSettings" unique_id=56507380]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="ZoomLabel" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings/ZoomRow"]
+[node name="ZoomLabel" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings/ZoomRow" unique_id=1517885682]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 text = "缩放倍率"
 
-[node name="MiniMapZoomSlider" type="HSlider" parent="Center/Panel/Margin/RootVBox/Body/MapSettings/ZoomRow"]
+[node name="MiniMapZoomSlider" type="HSlider" parent="Center/Panel/Margin/RootVBox/Body/MapSettings/ZoomRow" unique_id=1337196363]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -126,34 +133,69 @@ max_value = 3.5
 step = 0.05
 value = 2.0
 
-[node name="MiniMapZoomValue" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings/ZoomRow"]
+[node name="MiniMapZoomValue" type="Label" parent="Center/Panel/Margin/RootVBox/Body/MapSettings/ZoomRow" unique_id=1185891806]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 text = "2.00×"
 horizontal_alignment = 2
 
-[node name="ResetMapButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/MapSettings"]
+[node name="ResetMapButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/MapSettings" unique_id=184299577]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 42)
 layout_mode = 2
 size_flags_horizontal = 0
 text = "恢复默认"
 
-[node name="InventorySettings" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body"]
+[node name="InventorySettings" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body" unique_id=208127525]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="SectionTitle" type="Label" parent="Center/Panel/Margin/RootVBox/Body/InventorySettings"]
+[node name="SectionTitle" type="Label" parent="Center/Panel/Margin/RootVBox/Body/InventorySettings" unique_id=88353106]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "背包"
 
-[node name="SelectedItemInfoToggle" type="CheckButton" parent="Center/Panel/Margin/RootVBox/Body/InventorySettings"]
+[node name="SelectedItemInfoToggle" type="CheckButton" parent="Center/Panel/Margin/RootVBox/Body/InventorySettings" unique_id=1868476954]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "显示选中物品信息"
+
+[node name="KeyBindingSettings" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body" unique_id=1447473679]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="SectionTitle" type="Label" parent="Center/Panel/Margin/RootVBox/Body/KeyBindingSettings" unique_id=269279763]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "按键绑定"
+
+[node name="BindingScroll" type="ScrollContainer" parent="Center/Panel/Margin/RootVBox/Body/KeyBindingSettings" unique_id=216237213]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BindingList" type="VBoxContainer" parent="Center/Panel/Margin/RootVBox/Body/KeyBindingSettings/BindingScroll" unique_id=1216736087]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BindingFeedbackLabel" type="Label" parent="Center/Panel/Margin/RootVBox/Body/KeyBindingSettings" unique_id=1384855266]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="ResetAllBindingsButton" type="Button" parent="Center/Panel/Margin/RootVBox/Body/KeyBindingSettings" unique_id=1139434288]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 42)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "全部恢复默认"
