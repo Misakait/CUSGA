@@ -3,6 +3,13 @@ extends Control
 
 const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
 
+## 开始界面的确认动作名。
+##
+## 项目里这个动作的历史命名是 `check`，语义就是「确认」。这里刻意不读引擎内置的
+## `ui_accept`：内置动作由 Control 焦点系统直接消费，不受 `InputMap` 里的玩家改键控制，
+## 读它等于确认键永远改不掉。
+const CONFIRM_ACTION: StringName = &"check"
+
 @onready var _menu_column: Control = %MenuColumn
 @onready var _option_panel: Control = %OptionPanel
 @onready var _start_button: Button = %StartButton
@@ -69,19 +76,25 @@ func _update_connection(source: Signal, callback: Callable, connect_signal: bool
 		source.disconnect(callback)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if _settings_open or _transition_pending or _dev_settings_ui.visible:
 		return
 	if event is InputEventKey and (event as InputEventKey).echo:
 		return
+	# 确认键和 W/S 一样只由 InputMap 决定，玩家在按键设置里改键即可生效。
+	#
+	# 原生 Button 会在 _gui_input 阶段抢先用引擎内置的 ui_accept 触发 pressed，那条路径不查
+	# check。所以这里用 _input（它排在 _gui_input 之前）先把 ui_accept 整个吞掉，让确认只剩
+	# check 一条路径；否则改键后按新键会确认、按旧键（回车/空格）也会确认，等于没改。
+	if event.is_action_pressed(&"ui_accept"):
+		get_viewport().set_input_as_handled()
 	if event.is_action_pressed(&"move_up"):
 		_select_index(_selected_index - 1, true)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"move_down"):
 		_select_index(_selected_index + 1, true)
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed(&"ui_accept"):
-		# 有焦点时 Enter 已由原生 Button 消费；失焦时仍复用同一个 pressed 入口。
+	elif event.is_action_pressed(CONFIRM_ACTION):
 		get_viewport().set_input_as_handled()
 		_buttons[_selected_index].pressed.emit()
 
