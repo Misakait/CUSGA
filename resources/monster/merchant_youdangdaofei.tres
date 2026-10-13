@@ -1,6 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://dcf6yco4sdvxg"]
 
 [ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="2_monster"]
+[ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="2_yc3c7"]
 [ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="csv_entry_script"]
 [ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="csv_set_script"]
 [ext_resource type="Resource" uid="uid://bfh51o6ax5knt" path="res://resources/combat_skills/metal_phys_jinji.tres" id="csv_skill_1"]

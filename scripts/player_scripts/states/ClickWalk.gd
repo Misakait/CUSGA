@@ -3,6 +3,11 @@ class_name ClickWalkState
 
 ## PlayerChar 的鼠标移动状态：短按设定目的地，长按期间持续跟随鼠标。
 
+## 点击移动总开关。
+## 关闭时 `_unhandled_input` 直接返回，不记录任何鼠标目标，`has_movement_request()` 因此恒为 false，
+## Idle / Walk 也就永远不会切换到 ClickWalk —— 效果等同于停用点击移动，但完整保留原有实现，
+## 需要恢复点击移动时把此常量改回 true 即可，不必还原被停用的代码。
+const CLICK_MOVEMENT_ENABLED: bool = false
 ## 按住达到此时长后，从短点输入切换为跟随鼠标。
 const LONG_PRESS_THRESHOLD_SECONDS: float = 0.25
 ## 到达点击目标的世界坐标容差。
@@ -27,6 +32,9 @@ func enter() -> void:
 ## @param event 当前输入事件。
 ## @return 无返回值。
 func _unhandled_input(event: InputEvent) -> void:
+	# 点击移动已停用：不采集任何鼠标输入，后续所有目标/跟随逻辑都不会被触发。
+	if not CLICK_MOVEMENT_ENABLED:
+		return
 	if _world_interaction_active:
 		return
 
