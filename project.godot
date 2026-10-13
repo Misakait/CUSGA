@@ -59,7 +59,7 @@ project/assembly_name="CUSGA"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/card_csv_sync/plugin.cfg", "res://addons/godot_ai/plugin.cfg", "res://addons/skill_targeting_type_codegen/plugin.cfg")
+enabled=PackedStringArray("res://addons/card_csv_sync/plugin.cfg", "res://addons/godot_ai/plugin.cfg", "res://addons/skill_targeting_type_codegen/plugin.cfg", "res://addons/tag_catalog/plugin.cfg")
 
 [input]
 

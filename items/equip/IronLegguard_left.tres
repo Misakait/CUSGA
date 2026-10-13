@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://diqmcqgs1bph4"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_s42u5"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_s42u5"]
 [ext_resource type="Texture2D" uid="uid://cqwbdldlglxfa" path="res://res/equip/IronLegguard_left.png" id="1_txcnm"]
 
 [resource]
 script = ExtResource("1_s42u5")
+ValidSlots = Array[int]([2])
 BuyPrice = 288
 SellPrice = 144
 MaxStackSize = 1
@@ -14,4 +15,4 @@ CardName = "铁护腿左"
 CardIcon = ExtResource("1_txcnm")
 Description = "一个由铁做的护腿，提供良好的防护，给左腿穿戴
 "
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

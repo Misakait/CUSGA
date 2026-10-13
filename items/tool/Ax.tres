@@ -1,17 +1,40 @@
-[gd_resource type="Resource" format=3 uid="uid://ge83v4y6f05f"]
+[gd_resource type="Resource" script_class="ToolData" format=3 uid="uid://ge83v4y6f05f"]
 
+[ext_resource type="Script" uid="uid://bgh0a708ek8qj" path="res://resources/item/equipment/equipment_attribute_bonus.gd" id="1_53dgu"]
 [ext_resource type="Script" uid="uid://d3ajy7b7py2kl" path="res://resources/item/tool/tool_data.gd" id="1_myhp7"]
 [ext_resource type="Texture2D" uid="uid://b4j1hw36xnpc3" path="res://res/tool/Ax.png" id="1_pdphc"]
 
+[sub_resource type="Resource" id="Resource_6qndp"]
+script = ExtResource("1_53dgu")
+MinValue = 10000
+MaxValue = 10000
+metadata/_custom_type_script = "uid://bgh0a708ek8qj"
+
+[sub_resource type="Resource" id="Resource_e5fui"]
+script = ExtResource("1_53dgu")
+Attribute = 5
+MinValue = 1000
+MaxValue = 1000
+metadata/_custom_type_script = "uid://bgh0a708ek8qj"
+
+[sub_resource type="Resource" id="Resource_i2rao"]
+script = ExtResource("1_53dgu")
+Attribute = 2
+MinValue = 10000
+MaxValue = 10000
+metadata/_custom_type_script = "uid://bgh0a708ek8qj"
+
 [resource]
 script = ExtResource("1_myhp7")
-BuyPrice = 90
-SellPrice = 45
+TargetGatheringTag = &"wood"
+GatheringTimeReduction = 17
+ValidSlots = Array[int]([5, 4])
+SetType = null
+AttributeBonuses = Array[ExtResource("1_53dgu")]([SubResource("Resource_6qndp"), SubResource("Resource_e5fui"), SubResource("Resource_i2rao")])
 MaxStackSize = 1
 ItemTags = Array[StringName]([&"Ax"])
-ValidSlots = Array[int]([5])
-TargetGatheringTag = &"wood"
-GatheringTimeReduction = 10
+BuyPrice = 90
+SellPrice = 45
 CardId = &"Ax"
 CardName = "斧头"
 CardIcon = ExtResource("1_pdphc")

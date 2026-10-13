@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://cb48xa21lw3iq"]
 
 [ext_resource type="Texture2D" uid="uid://hak33cj1uoon" path="res://res/equip/IronNecklace.png" id="1_3omv6"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_6wf7h"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_6wf7h"]
 
 [resource]
 script = ExtResource("1_6wf7h")
+ValidSlots = Array[int]([11])
 BuyPrice = 264
 SellPrice = 132
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"IronNecklace"
 CardName = "铁项链"
 CardIcon = ExtResource("1_3omv6")
 Description = "至少是一个像样的的饰品"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

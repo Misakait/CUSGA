@@ -215,8 +215,13 @@ func TryAddItemToInventory(stack: RefCounted) -> bool:
 	if fields.is_empty():
 		return false
 
-	# AddItem 的返回值是未放入数量；动态调用使同一路径兼容 C# 与 GDScript InventoryComponent。
-	return int(_inventory.call("AddItem", fields["item"], fields["amount"])) == 0
+	# 掉落已经生成实例属性，不能拆成物品类型重新 AddItem，否则会丢失并重随机。
+	if _inventory == null or not _inventory.has_method("AddItemStack") or not _inventory.has_method("CanAddItemStack"):
+		return false
+	# 世界掉落只有完整成功才会被删除，预检查避免部分放入后仍留下完整掉落卡。
+	if not bool(_inventory.call("CanAddItemStack", stack)):
+		return false
+	return int(_inventory.call("AddItemStack", stack)) == 0
 
 
 ## 读取跨语言物品堆叠的稳定字段，等价旧 C# ItemStackProtocol.TryRead。

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://2s3kb3hdeeow"]
 
 [ext_resource type="Texture2D" uid="uid://cervc1l0kw4cn" path="res://res/equip/IronBelt.png" id="1_f3uuj"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_rj8vj"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_rj8vj"]
 
 [resource]
 script = ExtResource("1_rj8vj")
+ValidSlots = Array[int]([14])
 BuyPrice = 216
 SellPrice = 108
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"IronBelt"
 CardName = "铁腰带"
 CardIcon = ExtResource("1_f3uuj")
 Description = "感觉有点奇怪，是不是腰带勒太紧了"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

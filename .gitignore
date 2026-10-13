@@ -9,6 +9,8 @@ addons/*
 !addons/skill_targeting_type_codegen/**
 !addons/card_csv_sync/
 !addons/card_csv_sync/**
+!addons/tag_catalog/
+!addons/tag_catalog/**
 node_modules/
 card_table/.sync_state.json
 card_table/.card_csv_sync_result.json

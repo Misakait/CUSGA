@@ -8,6 +8,8 @@ extends Resource
 ## 生产普通装备 Resource 脚本。
 const EQUIPMENT_DATA_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_data.gd")
 
+const ATTRIBUTE_BONUS_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_attribute_bonus.gd")
+
 ## 生产工具装备 Resource 脚本。
 const TOOL_DATA_SCRIPT: GDScript = preload("res://resources/item/tool/tool_data.gd")
 
@@ -106,9 +108,13 @@ func CreateStack() -> RefCounted:
 	## 生产装备资源持有的槽位整数数组。
 	var valid_slots: Array = equipment.get("ValidSlots")
 	valid_slots.append(Slot)
-	## 生产装备资源持有的属性范围字典。
-	var attribute_bonuses: Dictionary = equipment.get("AttributeBonuses")
-	attribute_bonuses[BonusAttribute] = BonusRange
+	## 转换旧 Debug 区间字段，保持用户已有调试资源参数。
+	var attribute_bonuses: Array = equipment.get("AttributeBonuses")
+	var bonus: EquipmentAttributeBonus = ATTRIBUTE_BONUS_SCRIPT.new()
+	bonus.Attribute = BonusAttribute
+	bonus.MinValue = BonusRange.x
+	bonus.MaxValue = BonusRange.y
+	attribute_bonuses.append(bonus)
 
 	## 生产组件通过稳定堆叠协议接收同一装备 Resource 身份。
 	var stack := ITEM_STACK_SCRIPT.new() as RefCounted

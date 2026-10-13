@@ -18,10 +18,12 @@ extends RefCounted
 ##
 ## 洗炼属性（`rolled`）为什么用字符串键：其键是 `AttributeType` 的整型枚举，而 JSON 对象
 ## 的键只能是字符串，因此写为 `{"0": 15}`。读回时解析为 int 并与该物品 `AttributeBonuses`
-## 的键集合求交集——既避免了「枚举 → 字符串 → 枚举」的类型歧义，也顺手挡住了属性表被
+## 声明的属性编号集合求交集——既避免了「枚举 → 字符串 → 枚举」的类型歧义，也顺手挡住了属性表被
 ## 改动后残留在旧档里的脏数据。
 
 ## 物品数据的跨语言字段协议，用于读取 CardId。
+const EQUIPMENT_DATA_COMPAT: GDScript = preload("res://resources/item/equipment/equipment_data_compat.gd")
+
 const ITEM_DATA_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
 
 ## 槽位解码结局：存档里是 `null`，语义为「合法的空槽位」，不计入告警。
@@ -259,19 +261,10 @@ static func _decode_rolled(raw: Dictionary, item: Resource, out_rolled: Dictiona
 
 
 ## 读取物品声明可洗炼的属性键集合。
-##
-## 参数 item：物品 Resource，可为 null。
-## 返回值：`AttributeBonuses` 的键数组；该字段缺失、不是字典或为空时返回空数组，
-##   调用方一律按「没有白名单、不做交集」处理（见 `_decode_rolled`）。
+## 参数 item：物品资源，可为空。返回值：新资源数组或历史字典声明的属性编号。
+## 没有声明的普通物品保留原有“无法判断时不求交集”行为。
 static func _rolled_whitelist(item: Resource) -> Array:
-	if item == null or not (item is Object):
-		return []
-
-	var bonuses: Variant = (item as Object).get("AttributeBonuses")
-	if not (bonuses is Dictionary):
-		return []
-
-	return (bonuses as Dictionary).keys()
+	return EQUIPMENT_DATA_COMPAT.call("get_attribute_bonuses", item).keys()
 
 
 ## 判断 Variant 是否为可参与整数运算的数值。

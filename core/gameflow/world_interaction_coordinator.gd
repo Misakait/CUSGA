@@ -1273,6 +1273,10 @@ func _get_interaction_action_point_cost(interaction: Resource) -> int:
 		return _get_reusable_effective_time_cost(interaction, _get_gameplay_equipment())
 	if interaction == null:
 		return 0
+	if interaction.has_method("get_effective_time_cost"):
+		var gathering_cost: Variant = interaction.call("get_effective_time_cost", _get_gameplay_equipment())
+		if gathering_cost is int or gathering_cost is float:
+			return maxi(int(gathering_cost), 0)
 
 	var value: Variant = interaction.get("TimeCost")
 	if value is int or value is float:
@@ -1292,8 +1296,12 @@ func _is_reusable_gathering(interaction: Resource) -> bool:
 	if interaction == null:
 		return false
 
-	return interaction.has_method(REUSABLE_GATHERING_CS_METHODS[REUSABLE_GATHERING_TIME_COST_INDEX]) \
+	# 一次性采集也查询有效耗时，只有同时具备次数可用性接口才属于可重复采集。
+	var has_time_method := interaction.has_method(REUSABLE_GATHERING_CS_METHODS[REUSABLE_GATHERING_TIME_COST_INDEX]) \
 		or interaction.has_method(REUSABLE_GATHERING_GD_METHODS[REUSABLE_GATHERING_TIME_COST_INDEX])
+	var has_harvest_method := interaction.has_method(REUSABLE_GATHERING_CS_METHODS[REUSABLE_GATHERING_CAN_HARVEST_INDEX]) \
+		or interaction.has_method(REUSABLE_GATHERING_GD_METHODS[REUSABLE_GATHERING_CAN_HARVEST_INDEX])
+	return has_time_method and has_harvest_method
 
 
 ## 解析可重复采集协议要调用的方法名。

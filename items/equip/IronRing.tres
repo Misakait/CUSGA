@@ -1,16 +1,17 @@
 [gd_resource type="Resource" format=3 uid="uid://b2i828oq0yiny"]
 
 [ext_resource type="Texture2D" uid="uid://bk82osp1i3mrx" path="res://res/equip/IronRing.png" id="1_7psw7"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_tbak8"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_tbak8"]
 
 [resource]
 script = ExtResource("1_tbak8")
+ValidSlots = Array[int]([12, 13])
 BuyPrice = 192
 SellPrice = 96
-MaxStackSize = 5
+MaxStackSize = 1
 ItemTags = Array[StringName]([&"IronRing"])
 CardId = &"IronRing"
 CardName = "铁戒指"
 CardIcon = ExtResource("1_7psw7")
 Description = "不是很气派，但可以当指虎用"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

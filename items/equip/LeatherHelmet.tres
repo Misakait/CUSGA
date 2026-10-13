@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://bif4vc7kp30lp"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_g1jef"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_g1jef"]
 [ext_resource type="Texture2D" uid="uid://cy7p3602vvrdo" path="res://res/equip/LeatherHelmet.png" id="1_klye4"]
 
 [resource]
 script = ExtResource("1_g1jef")
+ValidSlots = Array[int]([0])
 BuyPrice = 80
 SellPrice = 40
 MaxStackSize = 1
@@ -14,4 +15,4 @@ CardName = "皮革头盔"
 CardIcon = ExtResource("1_klye4")
 Description = "一个皮革做的头盔，提供基础的防护
 "
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://c5ge1tt8p2huf"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_6wh3m"]
+[ext_resource type="Script" uid="uid://d3ajy7b7py2kl" path="res://resources/item/tool/tool_data.gd" id="1_6wh3m"]
 [ext_resource type="Texture2D" uid="uid://6vcdcjctnm2h" path="res://res/tool/GoldenAx.png" id="1_mj5lb"]
 
 [resource]
 script = ExtResource("1_6wh3m")
+ValidSlots = Array[int]([5])
 BuyPrice = 800
 SellPrice = 400
 MaxStackSize = 1
@@ -14,4 +15,4 @@ CardName = "金斧"
 CardIcon = ExtResource("1_mj5lb")
 Description = "你把他打造得又沉又锋利
 "
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://d3ajy7b7py2kl"

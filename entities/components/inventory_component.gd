@@ -263,7 +263,11 @@ func AddItem(item: Resource, amount: int) -> int:
 	for slot in _slots:
 		if _stack_is_empty(slot):
 			var amount_to_add: int = mini(remaining, _max_stack_size(item))
-			slot.call("SetItem", item, amount_to_add)
+			# 先在临时副本上生成属性，再一次性复制回槽位，避免观察者读到半成品。
+			var generated_stack: Variant = slot.call("Duplicate")
+			generated_stack.call("SetItem", item, amount_to_add)
+			generated_stack.call("RollRandomStats")
+			slot.call("CopyFrom", generated_stack)
 			remaining -= amount_to_add
 			if remaining <= 0:
 				_notify_inventory_changed()
@@ -272,6 +276,69 @@ func AddItem(item: Resource, amount: int) -> int:
 	if remaining < amount:
 		_notify_inventory_changed()
 	return remaining
+
+
+## 将已生成的完整物品堆叠加入库存，保留实例属性，不重新随机。
+## 参数 stack：已有堆叠，只读输入。返回值：无法放入的数量；空堆叠返回 0。
+func AddItemStack(stack: Variant) -> int:
+	_ensure_initialized()
+	if not (stack is Object) or _stack_is_empty(stack):
+		return 0
+	var item: Resource = _stack_item(stack)
+	var amount: int = _stack_amount(stack)
+	var maximum: int = _max_stack_size(item)
+	if maximum <= 0 or not _can_store_item(item):
+		return amount
+	var rolled_raw: Variant = stack.get("RolledAttributes")
+	var rolled: Dictionary = rolled_raw if rolled_raw is Dictionary else {}
+	var remaining: int = amount
+	_prepare_capacity_for_add(item, amount)
+	# 同物品不同实例属性不能合并；只读来源，真正消费由拾取提交者负责。
+	for slot: Variant in Slots:
+		if _stack_is_empty(slot) or not _same_item(_stack_item(slot), item):
+			continue
+		if slot.get("RolledAttributes") != rolled or bool(slot.get("IsFull")):
+			continue
+		remaining = int(slot.call("Add", remaining))
+		if remaining == 0:
+			break
+	if remaining > 0:
+		for slot: Variant in Slots:
+			if not _stack_is_empty(slot):
+				continue
+			var placed: int = mini(remaining, maximum)
+			var copy: Variant = stack.call("Duplicate")
+			copy.set("Amount", placed)
+			slot.call("CopyFrom", copy)
+			remaining -= placed
+			if remaining == 0:
+				break
+	if remaining < amount:
+		_notify_inventory_changed()
+	return remaining
+
+
+## 预检查完整实例能否放入库存，按物品身份和实例属性共同判断可合并空间。
+## 参数 stack：已有物品堆叠，只读输入。返回值：能完整加入时为 true，不修改库存。
+func CanAddItemStack(stack: Variant) -> bool:
+	_ensure_initialized()
+	if not (stack is Object) or _stack_is_empty(stack):
+		return false
+	var item: Resource = _stack_item(stack)
+	var maximum: int = _max_stack_size(item)
+	if maximum <= 0 or not _can_store_item(item):
+		return false
+	var remaining: int = _stack_amount(stack)
+	var raw_rolled: Variant = stack.get("RolledAttributes")
+	var rolled: Dictionary = raw_rolled if raw_rolled is Dictionary else {}
+	for slot: Variant in Slots:
+		if _stack_is_empty(slot):
+			remaining -= maximum
+		elif _same_item(_stack_item(slot), item) and slot.get("RolledAttributes") == rolled:
+			remaining -= int(slot.get("AvailableSpace"))
+		if remaining <= 0:
+			return true
+	return _can_provide_additional_capacity(item, remaining)
 
 
 ## 预检查指定数量能否完全放入库存。
@@ -323,7 +390,11 @@ func ReplaceItem(index: int, item: Resource, amount: int) -> int:
 	if item == null or amount <= 0:
 		return amount
 	var amount_to_add: int = mini(amount, _max_stack_size(item))
-	_slots[index].call("SetItem", item, amount_to_add)
+	# ReplaceItem 的输入没有实例属性，先生成完整实例，再一次性写入槽位。
+	var generated_stack: Variant = _slots[index].call("Duplicate")
+	generated_stack.call("SetItem", item, amount_to_add)
+	generated_stack.call("RollRandomStats")
+	_slots[index].call("CopyFrom", generated_stack)
 	return amount - amount_to_add
 
 

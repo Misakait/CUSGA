@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://3j3edsdgywi"]
 
 [ext_resource type="Texture2D" uid="uid://garwmy8e2fgh" path="res://res/equip/IronHandguard_left.png" id="1_hcfwj"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_ns2ix"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_ns2ix"]
 
 [resource]
 script = ExtResource("1_ns2ix")
+ValidSlots = Array[int]([8])
 BuyPrice = 168
 SellPrice = 84
 MaxStackSize = 1
@@ -14,4 +15,4 @@ CardName = "铁护手左"
 CardIcon = ExtResource("1_hcfwj")
 Description = "这是一个铁做的护手，给你的左手穿戴
 "
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

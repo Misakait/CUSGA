@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://d2krm7lkvwere"]
 
 [ext_resource type="Texture2D" uid="uid://bqmqqgki1rlpu" path="res://res/tool/StonePickaxe.png" id="1_8bsum"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_hr4y8"]
+[ext_resource type="Script" uid="uid://d3ajy7b7py2kl" path="res://resources/item/tool/tool_data.gd" id="1_hr4y8"]
 
 [resource]
 script = ExtResource("1_hr4y8")
+ValidSlots = Array[int]([6])
 BuyPrice = 90
 SellPrice = 45
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"StonePickaxe"
 CardName = "石镐"
 CardIcon = ExtResource("1_8bsum")
 Description = "用石镐挖石头，真奇怪"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://d3ajy7b7py2kl"

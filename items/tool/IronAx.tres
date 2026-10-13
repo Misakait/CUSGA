@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://dq1kxwpkqbgak"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_6epln"]
+[ext_resource type="Script" uid="uid://d3ajy7b7py2kl" path="res://resources/item/tool/tool_data.gd" id="1_6epln"]
 [ext_resource type="Texture2D" uid="uid://gg1hxonbe6rj" path="res://res/tool/IronAx.png" id="1_8v2j5"]
 
 [resource]
 script = ExtResource("1_6epln")
+ValidSlots = Array[int]([5])
 BuyPrice = 280
 SellPrice = 140
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"IronAx"
 CardName = "铁斧"
 CardIcon = ExtResource("1_8v2j5")
 Description = "泛着冷冷的寒光"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://d3ajy7b7py2kl"
