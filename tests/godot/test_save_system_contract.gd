@@ -1071,7 +1071,7 @@ func test_progression_applies_capacity_to_warehouse() -> void:
 func _new_manager() -> Node:
 	var manager: Node = SAVE_MANAGER_SCRIPT.new()
 	track(manager)
-	manager.set("SaveFilePath", TEST_SAVE_PATH)
+	manager.call("configure_test_persistence", TEST_SAVE_PATH, true)
 	manager.call("load_from_disk")
 	return manager
 
