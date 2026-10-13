@@ -30,9 +30,19 @@ func refresh(entries: Array) -> void:
 		_grid.remove_child(removed)
 		removed.queue_free()
 	for index: int in entries.size():
+		var callback: Callable = Callable(_controller, "_on_slot_selection_cancelled")
+		if not slots[index].is_connected("selection_cancelled", callback):
+			slots[index].connect("selection_cancelled", callback)
 		slots[index].call("bind_content", entries[index])
 
 ## 同步本区单选。参数 index 为位置、-1 为取消；返回无。
 func select(index: int) -> void:
 	for position: int in slots.size():
 		slots[position].call("set_selected", position == index)
+
+## 解除本区新增的取消浏览订阅。无参数；返回无，宿主退出时调用。
+func disconnect_selection_input() -> void:
+	var callback: Callable = Callable(_controller, "_on_slot_selection_cancelled")
+	for slot: Button in slots:
+		if is_instance_valid(slot) and slot.is_connected("selection_cancelled", callback):
+			slot.disconnect("selection_cancelled", callback)

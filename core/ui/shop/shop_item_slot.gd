@@ -1,11 +1,13 @@
 extends Button
 
 ## 商店独立的 item_slot2 适配，不更改共享仓库格子的样式或输入协议。
+signal slot_clicked(slot: Button)
+## 右键已选中的列表格时请求取消浏览；参数 slot 为本格，不表示交易或清空交易区。
+signal selection_cancelled(slot: Button)
+signal drag_started
+
 const COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
 const CREATE_DRAG: StringName = &"create_drag_data"
-
-signal slot_clicked(slot: Button)
-signal drag_started
 
 var side: StringName
 var slot_index: int = -1
@@ -49,6 +51,13 @@ func set_selected(selected: bool) -> void:
 ## 读取持续选择；返回当前按钮切换状态。
 func is_selected() -> bool:
 	return button_pressed
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+		and event.pressed and is_selected() and not get_viewport().gui_is_dragging():
+		# 商品点击会重新初始化购买区，取消浏览必须走独立意图以保留购买数量。
+		selection_cancelled.emit(self)
+		accept_event()
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if side != &"warehouse" or _item == null or _amount <= 0 or not is_instance_valid(_controller) or not _controller.has_method(CREATE_DRAG):

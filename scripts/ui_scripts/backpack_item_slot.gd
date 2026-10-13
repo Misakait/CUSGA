@@ -6,6 +6,16 @@ extends ItemSlot
 var _layout_rects: Dictionary = {}
 var _layout_font_sizes: Dictionary = {}
 
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+		if event.pressed and is_selected() and not get_viewport().gui_is_dragging():
+			_item_click_pending = false
+			# 同格点击入口会同步清理区域选择和悬停抑制；右键不能调用左键建筑菜单。
+			slot_clicked.emit(self)
+			accept_event()
+		return
+	super._gui_input(event)
+
 func _ready() -> void:
 	_normal_style = get_theme_stylebox("normal")
 	_hover_style = _normal_style

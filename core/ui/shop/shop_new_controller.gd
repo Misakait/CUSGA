@@ -71,6 +71,8 @@ func exit() -> void:
 
 func _exit_tree() -> void:
 	exit()
+	_warehouse_list.call("disconnect_selection_input")
+	_goods_list.call("disconnect_selection_input")
 
 func _setup_view() -> void:
 	if _initialized:
@@ -159,6 +161,13 @@ func clear_selection() -> void:
 func _clear_slot_selection() -> void:
 	_warehouse_list.call("select", -1)
 	_goods_list.call("select", -1)
+
+func _on_slot_selection_cancelled(slot: Button) -> void:
+	if not _active or _trading or not bool(slot.call("is_selected")):
+		return
+	# 浏览状态不拥有购买商品、数量和待售来源，右键取消不能清空交易区。
+	_clear_slot_selection()
+	_hide_tooltip()
 
 func _on_slot_clicked(slot: Button) -> void:
 	if not _active or _trading:

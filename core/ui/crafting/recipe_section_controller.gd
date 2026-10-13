@@ -2,12 +2,14 @@ extends RefCounted
 
 ## 配方列表控制器。只管理配方格子的创建、排序和可合成外观。
 
-const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot1.tscn")
-const ITEM_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
-
 signal recipe_selected(recipe: Variant, slot: BaseButton)
 signal item_hovered(item: Resource, slot: BaseButton)
 signal item_left(slot: BaseButton)
+## 右键取消配方浏览时发出；参数 slot 为已取消高亮的格子，不清空制作配方。
+signal selection_cancelled(slot: BaseButton)
+
+const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot1.tscn")
+const ITEM_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
 
 var _container: GridContainer = null
 var _crafting: Node = null
@@ -43,9 +45,10 @@ func refresh() -> void:
 				continue
 			_container.add_child(slot)
 			_slots_by_recipe[recipe] = slot
-			slot.pressed.connect(_on_slot_pressed.bind(recipe, slot))
-			slot.mouse_entered.connect(_on_slot_entered.bind(recipe, slot))
-			slot.mouse_exited.connect(_on_slot_exited.bind(slot))
+		# 退出时会解除订阅，复用格子必须在刷新时恢复，且不能重复连接。
+		for binding: Array in _input_bindings(recipe, slot):
+			if not slot.is_connected(binding[0], binding[1]):
+				slot.connect(binding[0], binding[1])
 		_configure_slot(slot, recipe)
 		_container.move_child(slot, index)
 
@@ -119,6 +122,30 @@ func _on_slot_entered(recipe: Variant, slot: BaseButton) -> void:
 
 func _on_slot_exited(slot: BaseButton) -> void:
 	item_left.emit(slot)
+
+func _on_slot_gui_input(event: InputEvent, slot: BaseButton) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+		and event.pressed and slot.button_pressed and not slot.get_viewport().gui_is_dragging():
+		# 取消列表高亮与当前可制作配方分离，不发出 recipe_selected 重新初始化详情。
+		slot.set_pressed_no_signal(false)
+		selection_cancelled.emit(slot)
+		slot.accept_event()
+
+func _input_bindings(recipe: Variant, slot: BaseButton) -> Array:
+	return [[&"pressed", _on_slot_pressed.bind(recipe, slot)], \
+		[&"mouse_entered", _on_slot_entered.bind(recipe, slot)], \
+		[&"mouse_exited", _on_slot_exited.bind(slot)], \
+		[&"gui_input", _on_slot_gui_input.bind(slot)]]
+
+## 解除本控制器建立的格子订阅。无参数；返回无，根界面退出树时调用。
+func disconnect_input() -> void:
+	for recipe: Variant in _slots_by_recipe:
+		var slot: BaseButton = _slots_by_recipe[recipe]
+		if not is_instance_valid(slot):
+			continue
+		for binding: Array in _input_bindings(recipe, slot):
+			if slot.is_connected(binding[0], binding[1]):
+				slot.disconnect(binding[0], binding[1])
 
 func _resource(value: Variant, property_name: StringName) -> Resource:
 	if not (value is Object):

@@ -41,6 +41,13 @@ func set_selected(selected: bool) -> void:
 func is_selected() -> bool:
 	return button_pressed
 
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+		and event.pressed and is_selected() and not get_viewport().gui_is_dragging():
+		# 复用根控制器的同格取消入口；拖动期间的右键投放先由根 _input 接管。
+		slot_clicked.emit(self)
+		accept_event()
+
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if _item == null or _amount <= 0 or not is_instance_valid(_controller):
 		return null

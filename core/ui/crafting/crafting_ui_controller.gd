@@ -3,9 +3,17 @@ extends Control
 ## 新美术 CraftingUI 的根控制器。
 ## 根节点协调 GameplayPort、配方区和详情区，合成规则仍由 CraftingComponent/Service 负责。
 
-const RECIPE_CONTROLLER_SCRIPT: GDScript = preload("res://core/ui/crafting/recipe_section_controller.gd")
-const INGREDIENT_CONTROLLER_SCRIPT: GDScript = preload("res://core/ui/crafting/ingredient_section_controller.gd")
+const RECIPE_CONTROLLER_SCRIPT: GDScript = preload(
+	"res://core/ui/crafting/recipe_section_controller.gd"
+)
+const INGREDIENT_CONTROLLER_SCRIPT: GDScript = preload(
+	"res://core/ui/crafting/ingredient_section_controller.gd"
+)
 const ITEM_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
+const QUANTITY_PATH: NodePath = ^"DetailSection/OutPutCount/SpinBox"
+const CRAFT_BUTTON_PATH: NodePath = ^"%CraftButton"
+const MAX_CRAFTABLE_METHOD: StringName = &"MaxCraftableQuantity"
+const TRY_CRAFT_METHOD: StringName = &"TryCraftWithReason"
 
 ## GameplayPort 节点路径，由 Main.tscn 实例覆盖。
 @export var GameplayPortPath: NodePath
@@ -33,24 +41,43 @@ func _ready() -> void:
 	_output_icon = get_node_or_null("DetailSection/OutPut/OutputIcon") as TextureRect
 	_output_name = get_node_or_null("DetailSection/OutPut/OutPutLabel") as Label
 	_output_name_compat = get_node_or_null("%OutputNameLabel") as Label
-	_output_description = get_node_or_null("DetailSection/OutPut/DescriptionContainer/OutPutDescription") as Label
+	_output_description = get_node_or_null(
+		"DetailSection/OutPut/DescriptionContainer/OutPutDescription"
+	) as Label
 	var recipe_grid := get_node_or_null("RecipeSection/ScrollContainer/RecipeGrid") as GridContainer
-	var ingredient_list := get_node_or_null("DetailSection/Ingredient/ScrollContainer/IngredientList") as VBoxContainer
+	var ingredient_list := get_node_or_null(
+		"DetailSection/Ingredient/ScrollContainer/IngredientList"
+	) as VBoxContainer
 	_recipe_controller = RECIPE_CONTROLLER_SCRIPT.new()
 	_ingredient_controller = INGREDIENT_CONTROLLER_SCRIPT.new()
 	_recipe_controller.recipe_selected.connect(_select_recipe)
 	_recipe_controller.item_hovered.connect(_show_item_tooltip)
 	_recipe_controller.item_left.connect(_hide_tooltip)
+	_recipe_controller.selection_cancelled.connect(_hide_tooltip)
 	_ingredient_controller.item_selected.connect(_on_ingredient_selected)
 	_ingredient_controller.item_hovered.connect(_show_item_tooltip)
 	_ingredient_controller.item_left.connect(_hide_tooltip)
+	_ingredient_controller.selection_cancelled.connect(_hide_tooltip)
 	_recipe_controller.bind(recipe_grid, null)
 	_ingredient_controller.bind(ingredient_list, null)
-	_quantity = get_node_or_null("DetailSection/Quantity") as SpinBox
-	_craft_button = get_node_or_null("DetailSection/CraftButton") as Button
+	_quantity = get_node_or_null(QUANTITY_PATH) as SpinBox
+	_craft_button = get_node_or_null(CRAFT_BUTTON_PATH) as Button
+	if _quantity == null:
+		push_error("CraftingUI 缺少必需的数量 SpinBox：%s" % QUANTITY_PATH)
+	if _craft_button == null:
+		push_error("CraftingUI 缺少必需的合成按钮：%s" % CRAFT_BUTTON_PATH)
 	_status = get_node_or_null("DetailSection/StatusLabel") as Label
-	if _quantity != null and not _quantity.value_changed.is_connected(_on_quantity_changed):
-		_quantity.value_changed.connect(_on_quantity_changed)
+	if _quantity != null:
+		# 新美术场景保留主题设置，合成次数约束由控制器统一初始化。
+		_quantity.min_value = 1
+		_quantity.step = 1
+		_quantity.rounded = true
+		_quantity.value = 1
+		_quantity.editable = false
+		if not _quantity.value_changed.is_connected(_on_quantity_changed):
+			_quantity.value_changed.connect(_on_quantity_changed)
+	if _craft_button != null:
+		_craft_button.disabled = true
 	if _craft_button != null and not _craft_button.pressed.is_connected(_craft_selected):
 		_craft_button.pressed.connect(_craft_selected)
 	_gameplay_port = get_node_or_null(GameplayPortPath) if not GameplayPortPath.is_empty() else null
@@ -83,12 +110,19 @@ func _handle_open(crafting: Node) -> void:
 func Open(crafting: Node) -> void:
 	if crafting == null:
 		return
+	# 退出树时解除的取消订阅，要在重新打开复用界面时恢复。
+	if not _recipe_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_recipe_controller.selection_cancelled.connect(_hide_tooltip)
+	if not _ingredient_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_ingredient_controller.selection_cancelled.connect(_hide_tooltip)
 	_crafting = crafting
 	_disconnect_signal(_inventory, &"InventoryChanged", Callable(self, "_on_inventory_changed"))
 	_inventory = crafting.get("Inventory") as Node
 	_connect_signal(_inventory, &"InventoryChanged", Callable(self, "_on_inventory_changed"))
 	_recipe_controller.bind(get_node("RecipeSection/ScrollContainer/RecipeGrid"), _crafting)
-	_ingredient_controller.bind(get_node("DetailSection/Ingredient/ScrollContainer/IngredientList"), _inventory)
+	_ingredient_controller.bind(
+		get_node("DetailSection/Ingredient/ScrollContainer/IngredientList"), _inventory
+	)
 	var recipes: Array = _recipe_controller.get_recipes()
 	_selected_recipe = recipes[0] if not recipes.is_empty() else null
 	_refresh_details()
@@ -110,6 +144,15 @@ func _on_ingredient_selected(item: Resource, slot: BaseButton) -> void:
 	_show_item_tooltip(item, slot)
 
 func _refresh_details() -> void:
+	var max_quantity: int = 0
+	if _selected_recipe != null and _crafting != null and _crafting.has_method(MAX_CRAFTABLE_METHOD):
+		max_quantity = int(_crafting.call(MAX_CRAFTABLE_METHOD, _selected_recipe))
+	if _quantity != null:
+		_quantity.max_value = maxi(1, max_quantity)
+		_quantity.editable = max_quantity > 0
+	if _craft_button != null:
+		# 清空配方时也要撤销上一次可合成状态，避免空面板留下可点击按钮。
+		_craft_button.disabled = max_quantity <= 0 or _quantity == null
 	if _output_name == null:
 		return
 	if _selected_recipe == null:
@@ -121,17 +164,13 @@ func _refresh_details() -> void:
 		_ingredient_controller.refresh(null)
 		return
 	var output := _resource(_selected_recipe, "OutputItem")
-	_output_name.text = String(ITEM_COMPAT.call("get_display_name", output, _recipe_name(_selected_recipe)))
+	_output_name.text = String(
+		ITEM_COMPAT.call("get_display_name", output, _recipe_name(_selected_recipe))
+	)
 	if _output_name_compat != null:
 		_output_name_compat.text = _recipe_name(_selected_recipe)
 	_output_description.text = String(ITEM_COMPAT.call("get_display_description", output, "暂无描述"))
 	_output_icon.texture = ITEM_COMPAT.call("get_display_icon", output, null) as Texture2D
-	var max_quantity := int(_crafting.call("MaxCraftableQuantity", _selected_recipe)) if _crafting != null else 0
-	if _quantity != null:
-		_quantity.max_value = maxi(1, max_quantity)
-		_quantity.editable = max_quantity > 0
-	if _craft_button != null:
-		_craft_button.disabled = max_quantity <= 0
 	_ingredient_controller.refresh(_selected_recipe, int(_quantity.value) if _quantity != null else 1)
 
 func _on_quantity_changed(_value: float) -> void:
@@ -139,9 +178,16 @@ func _on_quantity_changed(_value: float) -> void:
 		_ingredient_controller.refresh(_selected_recipe, int(_quantity.value))
 
 func _craft_selected() -> void:
-	if _crafting == null or _selected_recipe == null:
+	if _crafting == null or _selected_recipe == null or _quantity == null:
 		return
-	var reason := int(_crafting.call("TryCraftWithReason", _selected_recipe, int(_quantity.value)))
+	if _craft_button == null or _craft_button.disabled or not _crafting.has_method(TRY_CRAFT_METHOD):
+		return
+	# 点击时提交仍在编辑的文本；库存信号可能同步收窄数量范围，先保存本次请求。
+	_quantity.apply()
+	var quantity: int = int(_quantity.value)
+	if quantity < 1:
+		return
+	var reason: int = int(_crafting.call(TRY_CRAFT_METHOD, _selected_recipe, quantity))
 	if _status != null:
 		_status.text = "已合成" if reason == 0 else ("材料不足" if reason == 3 else "无法合成")
 	_refresh_details()
@@ -163,7 +209,11 @@ func _on_visibility_changed() -> void:
 func _show_item_tooltip(item: Resource, _slot: BaseButton = null) -> void:
 	if item == null or _tooltip_panel == null:
 		return
-	_tooltip_panel.call("show_tooltip_now", String(ITEM_COMPAT.call("get_display_name", item, "")), String(ITEM_COMPAT.call("get_display_description", item, "暂无描述")))
+	_tooltip_panel.call(
+		"show_tooltip_now",
+		String(ITEM_COMPAT.call("get_display_name", item, "")),
+		String(ITEM_COMPAT.call("get_display_description", item, "暂无描述")),
+	)
 
 func _hide_tooltip(_slot: BaseButton = null) -> void:
 	if _tooltip_panel != null:
@@ -182,16 +232,29 @@ func _recipe_name(recipe: Variant) -> String:
 	return String(raw_name) if raw_name != null and not String(raw_name).is_empty() else ""
 
 func _connect_signal(source: Node, signal_name: StringName, callback: Callable) -> void:
-	if source != null and source.has_signal(signal_name) and not source.is_connected(signal_name, callback):
+	if source != null \
+		and source.has_signal(signal_name) \
+		and not source.is_connected(signal_name, callback):
 		source.connect(signal_name, callback)
 
 func _disconnect_signal(source: Node, signal_name: StringName, callback: Callable) -> void:
-	if source != null and source.has_signal(signal_name) and source.is_connected(signal_name, callback):
+	if source != null \
+		and source.has_signal(signal_name) \
+		and source.is_connected(signal_name, callback):
 		source.disconnect(signal_name, callback)
 
 func _exit_tree() -> void:
+	# 区域是 RefCounted，不接收节点退出通知，必须由拥有它们的根节点解除输入订阅。
+	_recipe_controller.disconnect_input()
+	_ingredient_controller.disconnect_input()
+	if _recipe_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_recipe_controller.selection_cancelled.disconnect(_hide_tooltip)
+	if _ingredient_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_ingredient_controller.selection_cancelled.disconnect(_hide_tooltip)
 	_disconnect_signal(_inventory, &"InventoryChanged", Callable(self, "_on_inventory_changed"))
 	_disconnect_signal(_gameplay_port, &"CraftingToggleRequested", Callable(self, "_handle_toggle"))
 	_disconnect_signal(_gameplay_port, &"CraftingOpenRequested", Callable(self, "_handle_open"))
-	_disconnect_signal(_gameplay_port, &"CraftingNodeToggleRequested", Callable(self, "_handle_toggle"))
+	_disconnect_signal(
+		_gameplay_port, &"CraftingNodeToggleRequested", Callable(self, "_handle_toggle")
+	)
 	_disconnect_signal(_gameplay_port, &"CraftingNodeOpenRequested", Callable(self, "_handle_open"))

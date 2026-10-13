@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "四界面选择、提示、拖动与交易契约"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "GDScript 与 Godot 验证"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "动态调用和节点协议"}
+{"file": ".trellis/spec/guides/index.md", "reason": "职责和依赖检查"}
+{"file": "docs/游戏机制与玩法内容.md", "reason": "当前玩法权威说明"}
