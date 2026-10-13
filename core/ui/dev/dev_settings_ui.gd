@@ -105,6 +105,11 @@ var _is_initialized: bool = false
 ## 返回值：无。
 func _ready() -> void:
 	hide()
+	# 暂停期间（暂停菜单与天赋选择都会把 SceneTree.paused 置为 true）也必须继续监听按键：
+	# 树一旦暂停，继承自父节点的 PROCESS_MODE_INHERIT 会让本节点的输入回调整段停摆，
+	# 玩家按下暂停键之后就再也输不进序列，看起来仍然像「被别的按键拦掉了」。
+	# 与 PauseMenu 保持同一约定：谁需要在暂停期间继续工作，谁就自己声明。
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_configure_hold_speed_spin_box()
 	_configure_gold_spin_box()
 	_connect_buttons()
@@ -124,9 +129,14 @@ func _ready() -> void:
 
 	if not _bind_time_system():
 		push_error("DevSettingsUI 未找到 TimeSystem Autoload，开发者设置已禁用。")
-		# 没有时间系统时序列入口没有任何可执行效果，直接停止监听未处理输入，
+		# 没有时间系统时序列入口没有任何可执行效果，直接停止监听输入，
 		# 避免面板成为只吞按键不办事的空壳。
-		set_process_unhandled_input(false)
+		set_process_input(false)
+		return
+
+	# 抢输入队列必须放在最后：上面一旦因为缺少 TimeSystem 关掉了输入监听，再抢位置就等于
+	# 把一个收不到事件的位置占住，还会让「面板到底有没有在监听」变得难以判断。
+	_claim_first_input_slot()
 
 
 ## 缓存场景被重新挂回时恢复时间系统绑定。
@@ -180,13 +190,20 @@ func _exit_tree() -> void:
 	_time_system = null
 
 
-## 在未处理输入阶段累积隐藏序列。
+## 在最早的输入阶段累积隐藏序列。
 ##
-## 刻意不调用 get_viewport().set_input_as_handled()：序列监听对既有输入系统
-## 必须完全透明，否则会吞掉背包、合成等快捷键，也会干扰文本输入控件。
-## 参数 event：尚未被其他节点消费的输入事件。
+## 必须用 `_input` 而不是 `_unhandled_input`：`_unhandled_input` 排在 `_gui_input` 与所有
+## `_input` 之后，任何一处「先到先得」的按键处理一旦调用 set_input_as_handled()，序列字母就
+## 再也送不到这里。序列里恰好有几个键是别的系统正在用的键——局外菜单用 W/S 上下切换选项
+## （`move_down` 就是 S），局内用 B 开关背包——旧写法下按到这些键会当场把进度打断，
+## 表现为「明明按了 LISBAM 却没反应」。`_input` 排在上述全部阶段之前，隐藏序列因此只取决于
+## 玩家实际按了哪些键，与别的系统怎么消费这些键无关。
+##
+## 与提前监听同样重要的是不消费：刻意不调用 get_viewport().set_input_as_handled()，序列监听
+## 对既有输入系统必须完全透明，否则会吞掉背包、合成等快捷键，也会干扰文本输入控件。
+## 参数 event：Godot 分发的输入事件。
 ## 返回值：无。
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	var key_event := event as InputEventKey
 	if key_event == null:
 		return
@@ -197,6 +214,21 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if _matcher.push_letter(letter):
 		_open_panel()
+
+
+## 把自己排到视口输入队列的队尾，从而在 `_input` 分发中第一个拿到按键。
+##
+## Godot 按节点注册顺序的逆序分发 `_input`，并且一旦事件被标记为已处理就停止继续分发：
+## 注册得越晚越先收到事件。光靠「面板恰好写在消费方之后」这种隐含的场景顺序太脆——编辑器里
+## 拖动一下兄弟节点就可能把优先级反转，功能会静默失效。因此这里显式重排一次：先退出输入队列
+## 再重新加入，把自己挪到队尾。
+##
+## 抢先监听不会改变任何既有按键行为：本节点只观察、从不消费事件，排在队首只是保证自己一定
+## 看得到按键，其余节点照旧按原顺序收到并处理同一个事件。
+## 返回值：无。
+func _claim_first_input_slot() -> void:
+	set_process_input(false)
+	set_process_input(true)
 
 
 ## 从一次按键事件中解析出用于匹配的单个大写字母。
@@ -248,8 +280,9 @@ func _open_panel() -> void:
 
 ## 关闭面板，并释放数值控件的键盘焦点。
 ##
-## 释放焦点是必要的：SpinBox 会消费自己持有的按键，若焦点残留在隐藏的控件上，
-## 之后的 LISBAM 序列将无法到达本面板的未处理输入回调。
+## 释放焦点是必要的：SpinBox 会消费自己持有的按键，焦点若留在刚被隐藏的控件上，
+## 下一次打开面板时输入的按键会被这个看不见的控件吃掉（例如数字键会静默改动长按倍率）。
+## 序列监听本身已经提前到 `_input`，排在控件的 GUI 输入之前，因此它不再受焦点影响。
 ## 返回值：无。
 func _on_close_button_pressed() -> void:
 	hide()

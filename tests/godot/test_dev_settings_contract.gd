@@ -151,6 +151,29 @@ class FakeWallet extends Node:
 		add_calls.append(amount)
 
 
+## 抢在面板之前消费按键的伪消费者。
+##
+## 复刻局外菜单的按键路径：在 `_input` 里消费按键并标记事件已处理。用例直接调用它的回调，
+## 模拟「事件先被别的系统吃掉了」这一状态，再验证面板照样能消化同一个字母。
+##
+## 刻意不看动作名而只看物理键位：动作绑定是玩家可以改、其它套件也会临时改的东西，而本用例
+## 要证明的是「无论动作绑在哪个键上，面板都抢得到那个键」。
+class SequenceBlocker extends Control:
+	## 已消费的按键次数。
+	var consumed: int = 0
+
+	## 消费一个按键事件，处理方式与 login_menu_controller 的移动分支一致。
+	## 参数 event：Godot 分发的输入事件。
+	## 返回值：无。
+	func _input(event: InputEvent) -> void:
+		var key_event := event as InputEventKey
+		if key_event == null or not key_event.pressed or key_event.echo:
+			return
+
+		consumed += 1
+		get_viewport().set_input_as_handled()
+
+
 ## 验证序列匹配器的完整触发、错键容错与无效输入边界。
 ## 返回值：无。
 func test_sequence_matcher_accepts_only_the_exact_sequence() -> void:
@@ -192,9 +215,9 @@ func test_sequence_matcher_accepts_only_the_exact_sequence() -> void:
 	assert_eq(matcher.get_progress(), 0, "非单字母输入不得改变进度。")
 
 
-## 验证未处理输入监听只在凑齐完整序列时打开面板，且重复输入是幂等的。
+## 验证输入监听只在凑齐完整序列时打开面板，且重复输入是幂等的。
 ## 返回值：无。
-func test_unhandled_input_opens_panel_only_after_full_sequence() -> void:
+func test_input_opens_panel_only_after_full_sequence() -> void:
 	var scene_tree := Engine.get_main_loop() as SceneTree
 	var time_system := _install_fake_time_system(scene_tree)
 	if time_system == null:
@@ -205,25 +228,25 @@ func test_unhandled_input_opens_panel_only_after_full_sequence() -> void:
 	assert_false(ui.visible, "面板初始必须隐藏。")
 
 	for letter in ["L", "I", "S", "B", "A"]:
-		ui.call("_unhandled_input", _make_key_event(letter))
+		ui.call("_input", _make_key_event(letter))
 	assert_false(ui.visible, "未凑齐完整序列时不得打开面板。")
 
-	ui.call("_unhandled_input", _make_key_event("M"))
+	ui.call("_input", _make_key_event("M"))
 	assert_true(ui.visible, "凑齐 LISBAM 必须打开面板。")
 
 	# 已打开时再次输入完整序列必须保持打开，而不是创建第二个面板。
 	for letter in ["L", "I", "S", "B", "A", "M"]:
-		ui.call("_unhandled_input", _make_key_event(letter))
+		ui.call("_input", _make_key_event(letter))
 	assert_true(ui.visible, "重复输入完整序列必须保持面板打开。")
 
 	# 普通按键推进进度，而键盘重复事件必须被忽略。
 	ui_matcher.reset()
-	ui.call("_unhandled_input", _make_key_event("L"))
+	ui.call("_input", _make_key_event("L"))
 	assert_eq(ui_matcher.get_progress(), 1, "普通按键必须推进序列进度。")
 
 	var echo_event := _make_key_event("I")
 	echo_event.echo = true
-	ui.call("_unhandled_input", echo_event)
+	ui.call("_input", echo_event)
 	assert_eq(ui_matcher.get_progress(), 1, "键盘重复事件不得推进序列进度。")
 
 	# 关闭按钮必须隐藏面板。
@@ -232,6 +255,69 @@ func test_unhandled_input_opens_panel_only_after_full_sequence() -> void:
 	assert_false(ui.visible, "关闭按钮必须隐藏面板。")
 
 	_dispose(scene_tree, ui, time_system)
+
+
+## 验证序列监听落在最早的输入阶段，且对既有输入保持透明。
+##
+## 这是本次修复的核心契约。序列里的 S 与 B 恰好都是别的系统正在用的键：局外菜单在 `_input`
+## 里用 move_down（W/S）上下切换选项，局内 HUD 在 `_unhandled_input` 里用 toggle_inventory
+## （B）开关背包，两者都会在消费后调用 set_input_as_handled()。旧实现把监听放在
+## `_unhandled_input`，事件一旦被别人消费就再也送不到面板，序列会在中途断掉。
+##
+## 这里断言阶段注册与回调行为，而不是真的推进一次按键分发：编辑器内的子视口分发本身不稳定
+## （同一份用例时好时坏，取决于当前帧的编辑器状态），把它当断言依据会得到随机失败的用例。
+## 真实按键链路的端到端验证交给运行时冒烟测试（局外菜单与局内 HUD 各推一次 LISBAM）。
+## 返回值：无。
+func test_sequence_listens_in_the_earliest_input_stage_and_stays_transparent() -> void:
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	var time_system := _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+
+	# 用子视口承载：根视口的「已处理」标记会被编辑器界面改脏，透明性断言会失去意义。
+	var viewport := SubViewport.new()
+	viewport.name = "DevSettingsInputContractViewport"
+	scene_tree.root.add_child(viewport)
+
+	# 先注册消费者，再注册面板，复刻生产场景里「宿主先于面板进树」的顺序。
+	var blocker := SequenceBlocker.new()
+	blocker.name = "SequenceBlocker"
+	viewport.add_child(blocker)
+	var ui := _new_dev_settings_ui_in(viewport)
+
+	assert_true(ui.is_processing_input(), "面板必须处于输入监听状态，否则序列入口等于不存在。")
+
+	# Godot 按阶段维护视口级分组：_input 落在 _vp_input，_unhandled_input 落在 _vp_unhandled_input。
+	# 面板必须落在前者，否则永远排在所有消费方之后。
+	var in_input_stage := false
+	var in_unhandled_stage := false
+	for group_name: StringName in ui.get_groups():
+		if String(group_name).begins_with("_vp_unhandled_input"):
+			in_unhandled_stage = true
+		elif String(group_name).begins_with("_vp_input"):
+			in_input_stage = true
+	assert_true(in_input_stage, "面板必须注册在 _input 阶段，否则会排在所有消费方之后。")
+	assert_false(in_unhandled_stage, "面板不得注册在未处理输入阶段。")
+
+	# 透明性：面板消化字母时绝不能把事件标记为已处理，否则会反过来吞掉菜单与背包的按键。
+	assert_false(viewport.is_input_handled(), "用例前提：子视口初始不得处于已处理状态。")
+	ui.call("_input", _make_key_event("L"))
+	assert_eq(int(ui.get("_matcher").get_progress()), 1, "面板必须消化送进来的序列字母。")
+	assert_false(viewport.is_input_handled(), "面板不得把事件标记为已处理，必须保持透明。")
+
+	# 别人先把同一个字母消费掉之后，面板仍必须消化它：这正是序列里 S 与 B 的真实处境。
+	ui.get("_matcher").reset()
+	blocker.call("_input", _make_key_event("L"))
+	assert_eq(blocker.consumed, 1, "用例前提：消费者必须先吃掉这个字母。")
+	assert_true(viewport.is_input_handled(), "用例前提：消费者必须把事件标记为已处理。")
+	ui.call("_input", _make_key_event("L"))
+	assert_eq(int(ui.get("_matcher").get_progress()), 1, "事件已被别人消费时，面板仍必须消化这个字母。")
+
+	# 暂停兼容：局内暂停时面板必须继续监听，否则暂停中无法唤出。
+	assert_eq(ui.process_mode, Node.PROCESS_MODE_ALWAYS, "面板必须在暂停时仍然处理输入。")
+
+	viewport.free()
+	_dispose(scene_tree, null, time_system)
 
 
 ## 验证「下一天」按时间系统的阶段长度推进到下一个天数边界。
@@ -905,6 +991,18 @@ func _find_node_declaration(scene_text: String, node_name: String) -> String:
 ## 参数 show_run_features：是否显示局内专属功能；默认 true，即局内模式。
 ## 返回值：已进入场景树并完成初始同步的面板。
 func _new_dev_settings_ui(scene_tree: SceneTree, show_run_features: bool = true) -> Control:
+	return _new_dev_settings_ui_in(scene_tree.root, show_run_features)
+
+
+## 把面板构造进指定父节点，供需要干净视口状态的用例使用。
+##
+## 单独开一个入口而不是让调用方自己挂载：面板必须在进树之前就装配好全部唯一名子节点，
+## 否则 _ready 里的 @onready 引用会拿到 null。
+##
+## 参数 parent：面板的宿主节点，通常是 SceneTree.root 或一个 SubViewport。
+## 参数 show_run_features：是否显示局内专属功能；默认 true，即局内模式。
+## 返回值：已进入场景树并完成初始同步的面板。
+func _new_dev_settings_ui_in(parent: Node, show_run_features: bool = true) -> Control:
 	var ui := DEV_SETTINGS_UI_SCRIPT.new() as Control
 	ui.name = "DevSettingsUIContractProbe"
 	ui.set("ShowRunFeatures", show_run_features)
@@ -917,7 +1015,7 @@ func _new_dev_settings_ui(scene_tree: SceneTree, show_run_features: bool = true)
 	_add_unique_child(ui, "CloseButton", Button.new())
 	_add_unique_child(ui, "GoldSpinBox", SpinBox.new())
 	_add_unique_child(ui, "GainGoldButton", Button.new())
-	scene_tree.root.add_child(ui)
+	parent.add_child(ui)
 	return ui
 
 
