@@ -1,4 +1,5 @@
 extends "res://resources/item/equipment/equipment_data.gd"
+class_name ToolData
 
 ## 采集工具数据的生产 GDScript Resource 实现。
 ##

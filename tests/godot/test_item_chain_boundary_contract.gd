@@ -33,9 +33,9 @@ const GD_EXPORT_SNIPPETS: Array = [
 	["res://resources/item/item_data.gd", ["@export var MaxStackSize: int = 99", "@export var ItemTags: Array[StringName] = []", "@export var BuyPrice: int = 0", "@export var SellPrice: int = 0"]],
 	["res://resources/item/card/skill_card_data.gd", ["@export var Skill: Resource", "@export var cost: int = 10", "@export var CardTags: Array[String] = []", "@export_enum(\"未分类\", \"攻击\", \"防御\", \"状态\") var CardCategory: int = CARD_CATEGORY_UNCLASSIFIED"]],
 	["res://resources/item/tool/tool_data.gd", ["@export var TargetGatheringTag: StringName = &\"\"", "@export var YieldGrowth: int = 0", "@export_range(0, 999, 1, \"or_greater\") var GatheringTimeReduction: int = 0"]],
-	["res://resources/item/equipment/equipment_data.gd", ["@export var ValidSlots: Array[int] = []", "@export var SetType: int = 0", "@export var AttributeBonuses: Dictionary = {}", "@export var GrantedTags: Array[StringName] = []"]],
-	["res://resources/item/equipment/equipment_set_data.gd", ["@export var SetType: int = 0", "@export var Tiers: Array[Resource] = []"]],
-	["res://resources/item/equipment/set_bonus_tier.gd", ["@export var RequiredPieces: int = 0", "@export var AttributeBonuses: Dictionary = {}", "@export var GrantedTags: Array[StringName] = []"]],
+	["res://resources/item/equipment/equipment_data.gd", [") var ValidSlots: Array[int] = []", "@export var SetType: PackedStringArray = PackedStringArray()", "@export var AttributeBonuses: Array[EquipmentAttributeBonus] = []", "@export var GrantedTags: Array[StringName] = []"]],
+	["res://resources/item/equipment/equipment_set_data.gd", ["@export var SetType: String = \"\"", "@export var Tiers: Array[EquipmentSetBonusTier] = []"]],
+	["res://resources/item/equipment/set_bonus_tier.gd", ["@export var RequiredPieces: int = 0", "@export var AttributeBonuses: Array[EquipmentSetAttributeBonus] = []", "@export var GrantedTags: Array[StringName] = []"]],
 	["res://resources/shop/shop_catalog.gd", ["@export var Goods: Array[Resource] = []", "@export var AlsoIncludeEveryPricedItem: bool = false", "@export_range(0, 999999, 1, \"or_greater\") var DefaultBuyPrice: int = 100"]],
 ]
 
@@ -57,10 +57,10 @@ const CONTAINER_WEAKENING_CS_ROWS: Array = [
 
 ## 弱化后的 GDScript 出口类型。
 const CONTAINER_WEAKENING_GD_ROWS: Array = [
-	["res://resources/item/equipment/equipment_data.gd", "@export var ValidSlots: Array[int] = []"],
-	["res://resources/item/equipment/equipment_data.gd", "@export var AttributeBonuses: Dictionary = {}"],
-	["res://resources/item/equipment/equipment_set_data.gd", "@export var Tiers: Array[Resource] = []"],
-	["res://resources/item/equipment/set_bonus_tier.gd", "@export var AttributeBonuses: Dictionary = {}"],
+	["res://resources/item/equipment/equipment_data.gd", ") var ValidSlots: Array[int] = []"],
+	["res://resources/item/equipment/equipment_data.gd", "@export var AttributeBonuses: Array[EquipmentAttributeBonus] = []"],
+	["res://resources/item/equipment/equipment_set_data.gd", "@export var Tiers: Array[EquipmentSetBonusTier] = []"],
+	["res://resources/item/equipment/set_bonus_tier.gd", "@export var AttributeBonuses: Array[EquipmentSetAttributeBonus] = []"],
 	["res://resources/shop/shop_catalog.gd", "@export var Goods: Array[Resource] = []"],
 ]
 
@@ -220,7 +220,7 @@ func _gd_export_names(text: String) -> Array:
 	var names: Array = []
 	var source: String = _strip_gd_comments(text)
 	var regex := RegEx.new()
-	if regex.compile("@export[^\\n]*?\\bvar\\s+([A-Za-z_][A-Za-z0-9_]*)") != OK:
+	if regex.compile("@export(?:_[A-Za-z_]+)?(?:\\s*\\([^)]*\\))?\\s+var\\s+([A-Za-z_][A-Za-z0-9_]*)") != OK:
 		return names
 	for match_result: RegExMatch in regex.search_all(source):
 		names.append(match_result.get_string(1))

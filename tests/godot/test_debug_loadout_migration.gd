@@ -254,7 +254,11 @@ func test_generated_equipment_preserves_regular_and_tool_contract() -> void:
 	assert_eq(regular_item.get_script().resource_path, PRODUCTION_EQUIPMENT_DATA_PATH, "无采集字段时必须生成生产 GDScript EquipmentData。")
 	assert_eq(regular_item.get("CardId"), &"debug_Weapon_Debug 木剑", "动态装备 CardId 必须保留旧枚举名称格式。")
 	assert_eq(int((regular_item.get("ValidSlots") as Array)[0]), 4, "普通装备必须写入 Weapon 槽。")
-	assert_eq((regular_item.get("AttributeBonuses") as Dictionary)[0], Vector2i(70, 70), "普通装备必须保留属性范围。")
+	var bonuses: Array = regular_item.get("AttributeBonuses")
+	assert_eq(bonuses.size(), 1, "Debug 普通装备必须生成一个专属属性条目。")
+	assert_eq(int(bonuses[0].get("Attribute")), 0, "属性条目必须为物理攻击。")
+	assert_eq(int(bonuses[0].get("MinValue")), 70, "属性下界必须保持原配置。")
+	assert_eq(int(bonuses[0].get("MaxValue")), 70, "属性上界必须保持原配置。")
 	assert_eq(int((regular_stack.get("RolledAttributes") as Dictionary)[0]), 70, "固定范围必须生成相同随机属性值。")
 
 	## 生成带采集字段的斧头调试条目。

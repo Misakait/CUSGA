@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://djmus5gnpd25v"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_epqxe"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_epqxe"]
 [ext_resource type="Texture2D" uid="uid://c38u7aeu7uxwb" path="res://res/equip/GoldenNecklace.png" id="1_kr004"]
 
 [resource]
 script = ExtResource("1_epqxe")
+ValidSlots = Array[int]([11])
 BuyPrice = 770
 SellPrice = 385
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"GoldenNecklace"
 CardName = "金项链"
 CardIcon = ExtResource("1_kr004")
 Description = "带上之后我就是大富人家"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

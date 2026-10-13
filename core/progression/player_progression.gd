@@ -1,11 +1,9 @@
 extends Node
 
-## 玩家容量升级 Autoload 的 GDScript 并行实现，同时是「局外存档」的参与者
-## （key = player_progression）。
+## 玩家容量升级的兼容入口，同时是局外存档参与者（键为 player_progression）。
 ##
 ## 仓库容量和带入栏规则集中在此脚本，钱包与仓库只通过 Gold/TrySpend/Add、
-## SetCapacity 等稳定方法协议访问。旧 PlayerProgression.cs 仍保留为兼容垫片，
-## 生产 Autoload 通过本脚本接入钱包与仓库。
+## SetCapacity 等稳定方法协议访问，永久等级只保存在 PlayerProfile。
 ##
 ## 存档为什么从 `SettingsManager` 搬到 `SaveManager`：升级等级是玩家花金币买来的资产，
 ## 读坏了必须保留现场并告警，而 `SettingsManager` 的定位是「可丢弃偏好」。搬走之后本脚本
@@ -28,6 +26,9 @@ const SAVE_KEY: String = "player_progression"
 
 ## 本参与者的作用域字面量，与 `SaveManager.SCOPE_GLOBAL` 同值（由契约套件断言）。
 const SAVE_SCOPE: String = "global"
+const PROFILE_SCRIPT: GDScript = preload("res://core/progression/player_profile.gd")
+## 未入树的测试夹具使用本地档案；生产就绪时绑定 SaveManager 的同一档案。
+var _profile: RefCounted = PROFILE_SCRIPT.new()
 
 ## 仓库容量升级档位在存档中的键名。
 const WarehouseLevelKey: String = "warehouse_level"
@@ -60,8 +61,6 @@ signal UpgradeChanged(kind: String, value: int)
 var _wallet = null
 ## 仓库动态节点，使用 SetCapacity 协议。
 var _warehouse = null
-## 两个升级项的当前等级，索引 0=仓库，1=带入栏。
-var _levels: Array[int] = [0, 0]
 
 
 ## 初始化依赖、注册存档参与者，并把等级同步到仓库容量。
@@ -91,6 +90,8 @@ func _register_with_save_manager() -> void:
 		push_error("PlayerProgression: 未找到 SaveManager，升级等级将不会跨运行保存。")
 		return
 
+	if save_manager.has_method("get_profile"):
+		_profile = save_manager.call("get_profile")
 	save_manager.call("register_participant", self)
 
 
@@ -141,10 +142,11 @@ func capture_save_data() -> Dictionary:
 ## @param data 本参与者的存档载荷；空字典表示「没有存档」，此时回到 0 级。
 ## @return 恒为 true，见上面的收窄说明。
 func apply_save_data(data: Dictionary) -> bool:
-	_levels[0] = _sanitize_level(0, data.get(WarehouseLevelKey, 0))
-	_levels[1] = _sanitize_level(1, data.get(CarryLevelKey, 0))
+	var levels: Dictionary = _profile.get("upgrade_levels")
+	levels[WarehouseLevelKey] = _sanitize_level(0, data.get(WarehouseLevelKey, 0))
+	levels[CarryLevelKey] = _sanitize_level(1, data.get(CarryLevelKey, 0))
 	_apply_warehouse_capacity()
-	UpgradeChanged.emit(_kind_name(0), _get_value(0, _levels[0]))
+	UpgradeChanged.emit(_kind_name(0), GetWarehouseCapacity())
 	return true
 
 
@@ -226,9 +228,10 @@ func TryUpgradeCarrySlots() -> bool:
 ## @param kind 0 表示仓库，1 表示带入栏。
 ## @return 当前等级；未知项目回退为 0。
 func GetLevel(kind: int) -> int:
-	if kind < 0 or kind >= _levels.size():
+	if kind not in [0, 1]:
 		return 0
-	return _clamp_level(kind, _levels[kind])
+	var levels: Dictionary = _profile.get("upgrade_levels")
+	return _clamp_level(kind, int(levels.get(_level_key(kind), 0)))
 
 
 # ── 内部规则 ─────────────────────────────────────────────────────────────
@@ -253,9 +256,10 @@ func _try_upgrade(kind: int) -> bool:
 		return false
 	if not bool((_wallet as Object).call("TrySpend", cost)):
 		return false
-	_levels[kind] = level + 1
+	var levels: Dictionary = _profile.get("upgrade_levels")
+	levels[_level_key(kind)] = level + 1
 	_apply_warehouse_capacity()
-	UpgradeChanged.emit(_kind_name(kind), _get_value(kind, _levels[kind]))
+	UpgradeChanged.emit(_kind_name(kind), _get_value(kind, level + 1))
 	return true
 
 

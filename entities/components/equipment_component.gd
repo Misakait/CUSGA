@@ -22,7 +22,7 @@ const EQUIPMENT_SLOT_COUNT: int = 16
 signal EquipmentChanged
 
 ## 游戏中可用于套装结算的全部套装配置。
-@export var AllSetDatabase: Array[Resource] = []
+@export var AllSetDatabase: Array[EquipmentSetData] = []
 
 ## 有效火把在夜晚遭遇计算中使用的概率乘数；运行时限制到 0..1。
 @export_range(0.0, 1.0, 0.05) var TorchNightEncounterChanceMultiplier: float = 0.5
@@ -106,11 +106,8 @@ static func CanEquipStack(stack: Variant, slot: int) -> bool:
 	var item: Resource = _stack_item(stack)
 	if bool(EQUIPMENT_DATA_COMPAT.call("is_equipment_resource", item)):
 		var valid_slots: Array[int] = EQUIPMENT_DATA_COMPAT.call("get_valid_slots", item)
-		if valid_slots.has(slot):
-			return true
-		# 只要设计资源显式配置了槽位，就不能再让旧名称兜底绕过配置。
-		if not valid_slots.is_empty():
-			return false
+		# 正式装备只认显式配置，空数组不代表可以靠名称猜槽位。
+		return valid_slots.has(slot)
 	return _can_equip_tagged_item(stack, slot)
 
 
@@ -342,13 +339,12 @@ func _check_set_bonuses() -> void:
 		var item: Resource = _stack_item(stack)
 		if not bool(EQUIPMENT_DATA_COMPAT.call("is_equipment_resource", item)):
 			continue
-		var set_type: int = int(EQUIPMENT_DATA_COMPAT.call("get_set_type", item))
-		if set_type == int(EQUIPMENT_TYPES.EquipmentSet.None):
-			continue
-		set_counts[set_type] = int(set_counts.get(set_type, 0)) + 1
+		# 兼容桥按单件去重，因此一件装备可贡献多个套装但不重复贡献同一个。
+		for set_type in EQUIPMENT_DATA_COMPAT.call("get_set_types", item):
+			set_counts[set_type] = int(set_counts.get(set_type, 0)) + 1
 
 	for set_type in set_counts:
-		var set_data: Resource = _find_set_data(int(set_type))
+		var set_data: Resource = _find_set_data(String(set_type))
 		if set_data == null:
 			continue
 		var raw_tiers: Variant = set_data.get("Tiers")
@@ -370,36 +366,46 @@ func _clear_active_set_bonuses() -> void:
 	_active_set_tiers.clear()
 
 
-## 按套装整数值寻找配置 Resource。
-func _find_set_data(set_type: int) -> Resource:
+## 按套装稳定标识寻找配置，历史数字定义经同一桥映射。
+func _find_set_data(set_type: String) -> Resource:
 	for data in AllSetDatabase:
-		if data != null and int(data.get("SetType")) == set_type:
+		if data != null and EQUIPMENT_DATA_COMPAT.call("get_set_types", data).has(set_type):
 			return data
 	return null
 
 
-## 应用单个套装阶级的属性和标签效果。
+## 应用单个套装阶级的固定属性和标签效果。
 func _apply_tier_effects(tier: Resource) -> void:
-	var raw_bonuses: Variant = tier.get("AttributeBonuses")
-	if raw_bonuses is Dictionary:
-		for attribute_type in raw_bonuses:
-			_attribute_component.call("AddPermanentBonus", attribute_type, float(raw_bonuses[attribute_type]), self)
-	var raw_tags: Variant = tier.get("GrantedTags")
-	if raw_tags is Array:
-		for raw_tag in raw_tags:
-			_tag_component.call("AddTag", StringName(raw_tag))
+	var bonuses := _get_tier_bonuses(tier)
+	for attribute_type in bonuses:
+		_attribute_component.call("AddPermanentBonus", attribute_type, float(bonuses[attribute_type]), self)
+	for tag in EQUIPMENT_DATA_COMPAT.call("get_granted_tags", tier):
+		_tag_component.call("AddTag", tag)
 
 
 ## 撤销单个套装阶级的属性和标签效果。
 func _remove_tier_effects(tier: Resource) -> void:
+	var bonuses := _get_tier_bonuses(tier)
+	for attribute_type in bonuses:
+		_attribute_component.call("RemovePermanentBonus", attribute_type, float(bonuses[attribute_type]), self)
+	for tag in EQUIPMENT_DATA_COMPAT.call("get_granted_tags", tier):
+		_tag_component.call("RemoveTag", tag)
+
+
+## 把新固定条目或历史浮点字典统一为属性增量，同属性条目相加。
+static func _get_tier_bonuses(tier: Resource) -> Dictionary:
+	var bonuses: Dictionary = {}
 	var raw_bonuses: Variant = tier.get("AttributeBonuses")
 	if raw_bonuses is Dictionary:
-		for attribute_type in raw_bonuses:
-			_attribute_component.call("RemovePermanentBonus", attribute_type, float(raw_bonuses[attribute_type]), self)
-	var raw_tags: Variant = tier.get("GrantedTags")
-	if raw_tags is Array:
-		for raw_tag in raw_tags:
-			_tag_component.call("RemoveTag", StringName(raw_tag))
+		return raw_bonuses.duplicate(true)
+	if raw_bonuses is Array:
+		for entry in raw_bonuses:
+			if not (entry is Resource):
+				continue
+			var attribute: int = int(entry.get("Attribute"))
+			if attribute >= 0 and attribute <= 14:
+				bonuses[attribute] = float(bonuses.get(attribute, 0.0)) + float(entry.get("Value"))
+	return bonuses
 
 
 ## 判断库存对象是否接受给定索引。
@@ -439,46 +445,26 @@ static func _duplicate_stack(stack: Variant) -> Variant:
 	return null if stack == null or not stack.has_method("Duplicate") else stack.call("Duplicate")
 
 
-## 按旧 CardId/ItemTags 名称片段规则判断槽位兼容性。
+## 普通物品仅保留火把与魔法物品的精确分类兼容，其他装备必须配置 ValidSlots。
 static func _can_equip_tagged_item(stack: Variant, slot: int) -> bool:
 	match slot:
-		EQUIPMENT_TYPES.EquipmentSlot.Helmet:
-			return _has_any_identifier(stack, ["Helmet"])
-		EQUIPMENT_TYPES.EquipmentSlot.Chest:
-			return _has_any_identifier(stack, ["Breastplate", "Chest"])
-		EQUIPMENT_TYPES.EquipmentSlot.Legs:
-			return _has_any_identifier(stack, ["Legguard", "Legs"])
-		EQUIPMENT_TYPES.EquipmentSlot.Boots:
-			return _has_any_identifier(stack, ["Shoes", "Boots"])
-		EQUIPMENT_TYPES.EquipmentSlot.Weapon:
-			return _has_any_identifier(stack, ["Sword", "Weapon", "Truncheon", "Hammer", "Shovel"])
-		EQUIPMENT_TYPES.EquipmentSlot.Axe:
-			return _has_any_identifier(stack, ["Axe"])
-		EQUIPMENT_TYPES.EquipmentSlot.Pickaxe:
-			return _has_any_identifier(stack, ["Pickaxe"])
-		EQUIPMENT_TYPES.EquipmentSlot.FishingRod:
-			return _has_any_identifier(stack, ["FishingRod"])
-		EQUIPMENT_TYPES.EquipmentSlot.LeftHandguard:
-			return _has_any_identifier(stack, ["Handguard_left", "LeftHandguard"])
-		EQUIPMENT_TYPES.EquipmentSlot.RightHandguard:
-			return _has_any_identifier(stack, ["Handguard_right", "RightHandguard"])
 		EQUIPMENT_TYPES.EquipmentSlot.Torch:
 			return _is_torch_stack(stack)
-		EQUIPMENT_TYPES.EquipmentSlot.Pendant:
-			return _has_any_identifier(stack, ["Necklace", "Pendant"])
-		EQUIPMENT_TYPES.EquipmentSlot.Ring1, EQUIPMENT_TYPES.EquipmentSlot.Ring2:
-			return _has_any_identifier(stack, ["Ring"])
-		EQUIPMENT_TYPES.EquipmentSlot.Belt:
-			return _has_any_identifier(stack, ["Belt"])
 		EQUIPMENT_TYPES.EquipmentSlot.MagicItem:
 			return _has_exact_tag(stack, MAGIC_ITEM_TAG)
 		_:
 			return false
 
 
-## 判断堆叠是否按旧标识规则代表火把。
+## 火把通过精确分类或已配置 Torch 槽判断，避免名称片段误判。
 static func _is_torch_stack(stack: Variant) -> bool:
-	return _has_any_identifier(stack, ["flametorch", "torch"])
+	if _stack_is_empty(stack):
+		return false
+	var item: Resource = _stack_item(stack)
+	if bool(EQUIPMENT_DATA_COMPAT.call("is_equipment_resource", item)):
+		return EQUIPMENT_DATA_COMPAT.call("get_valid_slots", item).has(int(EQUIPMENT_TYPES.EquipmentSlot.Torch))
+	return ITEM_DATA_COMPAT.call("get_card_id", item) == &"flametorch" \
+		or _has_exact_tag(stack, &"flametorch") or _has_exact_tag(stack, &"torch")
 
 
 ## 判断 ItemTags 是否包含指定精确标签。
@@ -486,27 +472,3 @@ static func _has_exact_tag(stack: Variant, expected_tag: StringName) -> bool:
 	if _stack_is_empty(stack) or expected_tag == null or expected_tag.is_empty():
 		return false
 	return ITEM_DATA_COMPAT.call("get_item_tags", _stack_item(stack)).has(expected_tag)
-
-
-## 依次检查 CardId 和 ItemTags 是否包含任一忽略大小写的旧标识片段。
-static func _has_any_identifier(stack: Variant, fragments: Array) -> bool:
-	if _stack_is_empty(stack):
-		return false
-	var item: Resource = _stack_item(stack)
-	if _contains_any_fragment(ITEM_DATA_COMPAT.call("get_card_id", item), fragments):
-		return true
-	for tag in ITEM_DATA_COMPAT.call("get_item_tags", item):
-		if _contains_any_fragment(tag, fragments):
-			return true
-	return false
-
-
-## 对一个 StringName 执行忽略大小写的片段匹配。
-static func _contains_any_fragment(identifier: StringName, fragments: Array) -> bool:
-	if identifier == null or identifier.is_empty():
-		return false
-	var text: String = String(identifier).to_lower()
-	for fragment in fragments:
-		if text.contains(String(fragment).to_lower()):
-			return true
-	return false

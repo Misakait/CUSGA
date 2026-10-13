@@ -34,7 +34,7 @@ MaxAmount = 3
 
 [sub_resource type="Resource" id="Resource_rioi1"]
 script = ExtResource("5_c1j7r")
-Drops = Array[Resource]([SubResource("Resource_eojh3")])
+Drops = Array[ExtResource("4_ma4ou")]([SubResource("Resource_eojh3")])
 
 [sub_resource type="Resource" id="Resource_fp0dh"]
 script = ExtResource("6_4dqm4")
@@ -86,5 +86,5 @@ metadata/_custom_type_script = "uid://dbix1awqn51kd"
 
 [resource]
 script = ExtResource("9_533yj")
-TerrainPool = Array[Resource]([SubResource("Resource_21t0f"), SubResource("Resource_4dqm4")])
+TerrainPool = Array[ExtResource("8_cfcyb")]([SubResource("Resource_21t0f"), SubResource("Resource_4dqm4")])
 EncounterVarianceRange = SubResource("Resource_ridpl")

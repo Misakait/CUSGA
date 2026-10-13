@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://blfs6xdb35q66"]
 
 [ext_resource type="Texture2D" uid="uid://bs41dwqdck6ja" path="res://res/equip/GoldenBelt.png" id="1_benyn"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_wvwv2"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_wvwv2"]
 
 [resource]
 script = ExtResource("1_wvwv2")
+ValidSlots = Array[int]([14])
 BuyPrice = 630
 SellPrice = 315
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"GoldenBelt"
 CardName = "金腰带"
 CardIcon = ExtResource("1_benyn")
 Description = "闪！闪！发！光！"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

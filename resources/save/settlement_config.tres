@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SettlementConfig" format=3 uid="uid://frbs4s0xjj4n"]
+
+[ext_resource type="Script" uid="uid://dt7idgqliplym" path="res://resources/save/settlement_config.gd" id="1_config"]
+[ext_resource type="Resource" uid="uid://famuwpvx4nji" path="res://items/items/wheat.tres" id="1_v52jr"]
+
+[resource]
+script = ExtResource("1_config")

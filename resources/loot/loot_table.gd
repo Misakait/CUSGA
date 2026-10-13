@@ -7,6 +7,7 @@ class_name LootTableData
 
 ## 用于创建生产掉落结果的 GDScript 物品堆叠脚本。
 const ITEM_STACK_SCRIPT: GDScript = preload("res://resources/item/item_stack.gd")
+const EQUIPMENT_DATA_COMPAT: GDScript = preload("res://resources/item/equipment/equipment_data_compat.gd")
 
 ## 掉落条目列表；新增元素时创建 LootDrop，并配置物品、概率和数量。
 @export var Drops: Array[LootDrop] = []
@@ -43,10 +44,20 @@ func RollLoot(yield_growth: int) -> Array[RefCounted]:
 		var final_amount: int = base_amount + yield_growth
 		if final_amount <= 0:
 			continue
-		## 用统一的物品堆叠协议交给棋盘与库存消费。
-		var stack := ITEM_STACK_SCRIPT.new() as RefCounted
-		stack.call("SetItem", item, final_amount)
-		generated_loot.append(stack)
+		## 不可堆叠装备必须每件独立生成；普通物品保留原有单堆掉落形状。
+		if bool(EQUIPMENT_DATA_COMPAT.call("is_equipment_resource", item)):
+			var remaining: int = final_amount
+			while remaining > 0:
+				var equipment_stack := ITEM_STACK_SCRIPT.new() as RefCounted
+				equipment_stack.call("SetItem", item, 1)
+				equipment_stack.call("RollRandomStats")
+				generated_loot.append(equipment_stack)
+				remaining -= 1
+		else:
+			var stack := ITEM_STACK_SCRIPT.new() as RefCounted
+			stack.call("SetItem", item, final_amount)
+			stack.call("RollRandomStats")
+			generated_loot.append(stack)
 	return generated_loot
 
 

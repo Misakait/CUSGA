@@ -46,7 +46,12 @@ const PLAYER_WALLET_SCRIPT: GDScript = preload("res://core/autoloads/player_wall
 const PLAYER_PROGRESSION_SCRIPT: GDScript = preload("res://core/progression/player_progression.gd")
 const TIME_SYSTEM_SCRIPT: GDScript = preload("res://core/autoloads/time_system.gd")
 const PRODUCTION_PLAIN_ITEM_ASSET_PATH: String = "res://items/items/applecore.tres"
-const PRODUCTION_PLAIN_ITEM_COUNT: int = 103
+## 生产物品身份不因资源从普通物品迁为装备或工具而改变。
+const PRODUCTION_ITEM_SCRIPT_COUNTS: Dictionary = {
+	"res://resources/item/item_data.gd": 57,
+	"res://resources/item/equipment/equipment_data.gd": 38,
+	"res://resources/item/tool/tool_data.gd": 9,
+}
 const RESOURCE_CARD_ASSET_PATHS: Array[String] = [
 	"res://resources/item/card/res_cards/branch.tres",
 	"res://resources/item/card/res_cards/charcoal.tres",
@@ -69,6 +74,8 @@ const TOOL_DATA_SCRIPT: GDScript = preload("res://resources/item/tool/tool_data.
 const SET_BONUS_TIER_SCRIPT: GDScript = preload("res://resources/item/equipment/set_bonus_tier.gd")
 const EQUIPMENT_SET_DATA_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_set_data.gd")
 const EQUIPMENT_DATA_COMPAT_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_data_compat.gd")
+const EQUIPMENT_ATTRIBUTE_BONUS_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_attribute_bonus.gd")
+const EQUIPMENT_SET_ATTRIBUTE_BONUS_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_set_attribute_bonus.gd")
 const PRODUCTION_TOOL_ASSET_PATHS: Array[String] = [
 	"res://items/tool/Ax.tres",
 	"res://items/tool/Pickaxe.tres",
@@ -348,7 +355,7 @@ func test_gathering_interaction_build_ops_preserves_order() -> void:
 	assert_eq(table.received_extra_yield, 3, "掉落表必须收到原装备额外产量。")
 	assert_eq(ops.size(), 5, "有掉落的一次性采集必须生成五个操作。")
 	assert_eq(ops[0].get("type"), "pass_time", "一次性采集必须先推进时间。")
-	assert_eq(ops[0].get("amount"), 41, "一次性采集必须保持旧实现并使用资源自身耗时。")
+	assert_eq(ops[0].get("amount"), 9, "一次性采集必须使用长按开始时记录的耗时快照。")
 	assert_eq(ops[1].get("type"), "mark_harvested", "时间结算后必须标记地形已采集。")
 	assert_eq(ops[2].get("type"), "spawn_loot", "未采集地形必须在标记后生成掉落。")
 	assert_eq(ops[2].get("drops")[0], drop, "掉落操作必须保留掉落对象身份。")
@@ -1156,27 +1163,43 @@ func test_skill_card_data_gdscript_dynamic_contract() -> void:
 	assert_true(card.get("DisplayIcon") == legacy_fallback_icon, "C# 技能回退必须读取导出的 CardIcon。")
 
 
-## 验证全部普通生产物品切换到 GDScript，并保持稳定字段与 CardId 唯一性。
+## 验证普通物品、装备和工具全部使用正确资源类型，保留字段与全体 CardId 唯一性。
 func test_production_plain_item_assets_use_gdscript_item_data() -> void:
 	var item_paths: Array[String] = _collect_production_plain_item_paths("res://items")
-	assert_eq(item_paths.size(), PRODUCTION_PLAIN_ITEM_COUNT, "普通生产物品资产数量必须保持为 103。")
+	assert_eq(item_paths.size(), 104, "普通物品、装备与工具合计必须保留104个资产。")
 	var seen_card_ids: Dictionary = {}
+	var script_counts: Dictionary = {}
+	var script_uids: Dictionary = {
+		ITEM_DATA_SCRIPT_PATH: "uid://dypewmj21sddd",
+		"res://resources/item/equipment/equipment_data.gd": "uid://brrku88jpbiw5",
+		"res://resources/item/tool/tool_data.gd": "uid://d3ajy7b7py2kl",
+	}
 	for path: String in item_paths:
 		var source: String = FileAccess.get_file_as_string(path)
-		assert_true(source.contains('uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd"'), "%s 必须引用 GDScript ItemData UID。" % path)
-		assert_false(source.contains('script_class="ItemData"'), "%s 不得保留 C# 全局类型标头。" % path)
-		assert_true(source.contains('metadata/_custom_type_script = "uid://dypewmj21sddd"'), "%s 必须同步自定义脚本元数据。" % path)
-
 		var item := ResourceLoader.load(path, "Resource", ResourceLoader.CACHE_MODE_REPLACE) as Resource
 		assert_true(item != null, "%s 必须能够加载。" % path)
 		if item == null:
 			continue
-		assert_eq(item.get_script().resource_path, ITEM_DATA_SCRIPT_PATH, "%s 必须使用生产 ItemData GDScript。" % path)
+		var script_path: String = item.get_script().resource_path
+		assert_true(PRODUCTION_ITEM_SCRIPT_COUNTS.has(script_path), "%s 必须使用普通物品、装备或工具的生产脚本。" % path)
+		if not script_uids.has(script_path):
+			continue
+		script_counts[script_path] = int(script_counts.get(script_path, 0)) + 1
+		assert_true(source.contains('uid="%s" path="%s"' % [script_uids[script_path], script_path]), "%s 必须引用正确生产脚本UID。" % path)
+		if source.contains("metadata/_custom_type_script"):
+			assert_true(source.contains('metadata/_custom_type_script = "%s"' % script_uids[script_path]), "%s 的自定义脚本元数据必须与类型一致。" % path)
+		_assert_serialized_item_fields(item, source, path)
 		assert_true(bool(ITEM_DATA_COMPAT_SCRIPT.call("is_item_resource", item)), "%s 必须满足稳定物品字段协议。" % path)
 		var card_id: StringName = ITEM_DATA_COMPAT_SCRIPT.call("get_card_id", item, &"")
 		assert_false(card_id.is_empty(), "%s 的 CardId 不得丢失。" % path)
-		assert_false(seen_card_ids.has(card_id), "普通生产物品 CardId 必须唯一：%s。" % card_id)
+		assert_false(seen_card_ids.has(card_id), "三种生产物品共同使用的CardId必须唯一：%s。" % card_id)
 		seen_card_ids[card_id] = path
+		if script_path != ITEM_DATA_SCRIPT_PATH:
+			assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_equipment_resource", item)), "%s 必须满足装备协议。" % path)
+			assert_false(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_valid_slots", item).is_empty(), "%s 必须明确配置合法槽位。" % path)
+		if script_path.ends_with("tool_data.gd"):
+			assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_tool_resource", item)), "%s 必须满足工具协议。" % path)
+	assert_eq(script_counts, PRODUCTION_ITEM_SCRIPT_COUNTS, "普通物品57、装备38、工具9，分类数量及全体资产均不得丢失。")
 
 	var wood := ResourceLoader.load("res://items/element/wood.tres", "Resource", ResourceLoader.CACHE_MODE_REPLACE) as Resource
 	assert_true(wood != null, "代表性元素物品 wood.tres 必须能够加载。")
@@ -1219,9 +1242,32 @@ func test_resource_card_assets_use_gdscript_item_data() -> void:
 		assert_true(bool(ITEM_DATA_COMPAT_SCRIPT.call("is_item_resource", card)), "%s 必须满足通用物品字段协议。" % path)
 
 
-## 递归收集明确引用生产 GDScript ItemData 的普通物品资产。
+## 对比资产序列化字段与运行时值，防止类型迁移丢失名称、身份和价格。
+## 参数 item：已加载资源；参数 source：资产文本；参数 context：错误定位路径。
+## 返回值：无。
+func _assert_serialized_item_fields(item: Resource, source: String, context: String) -> void:
+	var defaults: Resource = item.get_script().new()
+	for field: String in ["CardId", "CardName", "Description", "MaxStackSize", "BuyPrice", "SellPrice"]:
+		var regex := RegEx.new()
+		# 描述可以是跨行字符串；按下一字段边界读取，避免只取首行形成未闭合字符串。
+		regex.compile("(?ms)^%s = (.*?)(?=\\r?\\n[A-Za-z_][A-Za-z0-9_/]* = |\\r?\\n\\[|\\z)" % field)
+		var result: RegExMatch = regex.search(source)
+		var expected: Variant = defaults.get(field)
+		if result != null:
+			var serialized := result.get_string(1).strip_edges()
+			if serialized.begins_with('&"'):
+				expected = StringName(JSON.parse_string(serialized.substr(1).replace("\r", "").replace("\n", "\\n")))
+			elif serialized.begins_with('"'):
+				expected = JSON.parse_string(serialized.replace("\r", "").replace("\n", "\\n"))
+			else:
+				expected = str_to_var(serialized)
+		assert_eq(item.get(field), expected, "%s 必须保留序列化字段或默认值 %s。" % [context, field])
+	assert_true(ResourceLoader.load(item.resource_path) == item, "%s 必须保留同路径加载的物品对象身份。" % context)
+
+
+## 递归收集明确引用生产 ItemData、EquipmentData 或 ToolData 的物品资产。
 ## 参数 dir_path：需要扫描的 res:// 目录。
-## 返回值：按路径排序的普通物品 .tres 列表。
+## 返回值：按路径排序的普通物品、装备及工具 .tres 列表。
 func _collect_production_plain_item_paths(dir_path: String) -> Array[String]:
 	var result: Array[String] = []
 	var dir: DirAccess = DirAccess.open(dir_path)
@@ -1236,8 +1282,10 @@ func _collect_production_plain_item_paths(dir_path: String) -> Array[String]:
 				result.append_array(_collect_production_plain_item_paths(full_path))
 			elif entry.ends_with(".tres"):
 				var source: String = FileAccess.get_file_as_string(full_path)
-				if source.contains('path="res://resources/item/item_data.gd"'):
-					result.append(full_path)
+				for script_path: String in PRODUCTION_ITEM_SCRIPT_COUNTS:
+					if source.contains('path="%s"' % script_path):
+						result.append(full_path)
+						break
 		entry = dir.get_next()
 	dir.list_dir_end()
 	result.sort()
@@ -1422,15 +1470,43 @@ func test_shop_catalog_resource_migrated() -> void:
 	)
 
 
-## 验证装备 Resource 保留槽位、套装、属性加成和标签字段的序列化契约。
+## 创建专用装备属性加成夹具。
+## 参数 attribute：已有属性枚举整数。
+## 参数 minimum：加成下界。
+## 参数 maximum：加成上界。
+## 返回值：配置后的专用装备属性加成资源。
+func _equipment_attribute_bonus(attribute: int, minimum: int, maximum: int) -> EquipmentAttributeBonus:
+	var bonus: EquipmentAttributeBonus = EQUIPMENT_ATTRIBUTE_BONUS_SCRIPT.new()
+	bonus.set("Attribute", attribute)
+	bonus.set("MinValue", minimum)
+	bonus.set("MaxValue", maximum)
+	return bonus
+
+
+## 创建套装固定加成夹具，保留原有浮点数值。
+## 参数 attribute：已有属性枚举整数。
+## 参数 value：固定增量。
+## 返回值：配置后的套装属性加成资源。
+func _set_attribute_bonus(attribute: int, value: float) -> EquipmentSetAttributeBonus:
+	var bonus: EquipmentSetAttributeBonus = EQUIPMENT_SET_ATTRIBUTE_BONUS_SCRIPT.new()
+	bonus.set("Attribute", attribute)
+	bonus.set("Value", value)
+	return bonus
+
+
+## 验证装备 Resource 保留槽位、多套装、属性资源数组和标签。
 func test_equipment_data_preserves_serialized_fields() -> void:
 	var equipment: Resource = EQUIPMENT_DATA_SCRIPT.new()
 	equipment.set("CardId", &"test_equipment")
 	equipment.set("CardName", "测试装备")
 	var equipment_slots: Array[int] = [4, 12]
 	equipment.set("ValidSlots", equipment_slots)
-	equipment.set("SetType", 2)
-	equipment.set("AttributeBonuses", {0: Vector2i(10, 20), 4: Vector2i(-2, -1)})
+	equipment.set("SetType", PackedStringArray(["stone_set", "explorer_set"]))
+	var equipment_bonuses: Array[EquipmentAttributeBonus] = [
+		_equipment_attribute_bonus(0, 10, 20),
+		_equipment_attribute_bonus(4, -2, -1),
+	]
+	equipment.set("AttributeBonuses", equipment_bonuses)
 	var equipment_tags: Array[StringName] = [&"test_tag"]
 	equipment.set("GrantedTags", equipment_tags)
 
@@ -1440,8 +1516,9 @@ func test_equipment_data_preserves_serialized_fields() -> void:
 	if valid_slots.size() == 2:
 		assert_eq(int(valid_slots[0]), 4, "装备第一个槽位必须保留旧枚举整数值。")
 		assert_eq(int(valid_slots[1]), 12, "装备第二个槽位必须保留旧枚举整数值。")
-	assert_eq(equipment.get("SetType"), 2, "套装枚举值必须保持 Stone=2。")
-	assert_eq(equipment.get("AttributeBonuses")[0], Vector2i(10, 20), "属性加成范围不得丢失。")
+	assert_eq(equipment.get("SetType"), PackedStringArray(["stone_set", "explorer_set"]), "装备必须保留多个套装字符串。")
+	assert_eq(equipment.get("AttributeBonuses")[0], equipment_bonuses[0], "属性加成必须保留专用资源身份。")
+	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_attribute_bonuses", equipment)[0], Vector2i(10, 20), "属性加成范围不得丢失。")
 	var granted_tags: Array = equipment.get("GrantedTags")
 	assert_eq(granted_tags.size(), 1, "装备标签数量必须保留。")
 	if granted_tags.size() == 1:
@@ -1470,8 +1547,8 @@ func test_tool_data_preserves_gathering_fields() -> void:
 ## 验证两张生产工具资产切换到 GDScript，并保持脚本、槽位和采集字段。
 func test_production_tool_assets_use_gdscript() -> void:
 	var expected: Dictionary = {
-		"Ax.tres": {"slot": 5, "tag": &"wood", "id": &"Ax", "name": "斧头"},
-		"Pickaxe.tres": {"slot": 6, "tag": &"earth", "id": &"Pickaxe", "name": "镐子"},
+		"Ax.tres": {"slot": 5, "tag": &"wood", "id": &"Ax", "name": "斧头", "reduction": 17},
+		"Pickaxe.tres": {"slot": 6, "tag": &"earth", "id": &"Pickaxe", "name": "镐子", "reduction": 10},
 	}
 	for path: String in PRODUCTION_TOOL_ASSET_PATHS:
 		var source: String = FileAccess.get_file_as_string(path)
@@ -1489,36 +1566,40 @@ func test_production_tool_assets_use_gdscript() -> void:
 		assert_eq(tool.get("ValidSlots"), [values.slot], "%s 必须保留原装备槽位。" % path)
 		assert_eq(tool.get("TargetGatheringTag"), values.tag, "%s 必须保留原采集标签。" % path)
 		assert_eq(int(tool.get("YieldGrowth")), 0, "%s 必须保持默认额外产量 0。" % path)
-		assert_eq(int(tool.get("GatheringTimeReduction")), 10, "%s 必须保留 10 点时间减免。" % path)
+		assert_eq(int(tool.get("GatheringTimeReduction")), int(values.reduction), "%s 必须保留用户当前的时间减免。" % path)
 		assert_eq(tool.get("CardId"), values.id, "%s 必须保留 CardId。" % path)
 		assert_eq(tool.get("CardName"), values.name, "%s 必须保留显示名称。" % path)
 		assert_true(bool(ITEM_DATA_COMPAT_SCRIPT.call("is_item_resource", tool)), "%s 必须通过 ItemData 兼容字段检查。" % path)
 
 
-## 验证套装配置保留阶级、属性、标签和套装枚举的序列化契约。
+## 验证套装配置保留阶级、固定属性、标签与字符串套装标识。
 func test_equipment_set_resources_preserve_contract() -> void:
-	var tier: Resource = SET_BONUS_TIER_SCRIPT.new()
+	var tier: EquipmentSetBonusTier = SET_BONUS_TIER_SCRIPT.new()
 	assert_eq(tier.get("RequiredPieces"), 0, "套装阶级的默认需求件数必须保持为 0。")
 	assert_true(tier.get("AttributeBonuses").is_empty(), "套装阶级的默认属性加成必须为空。")
 	assert_true(tier.get("GrantedTags").is_empty(), "套装阶级的默认标签必须为空。")
 
 	tier.set("RequiredPieces", 2)
-	tier.set("AttributeBonuses", {0: 5.5, 4: -1.25})
+	var fixed_bonuses: Array[EquipmentSetAttributeBonus] = [
+		_set_attribute_bonus(0, 5.5),
+		_set_attribute_bonus(4, -1.25),
+	]
+	tier.set("AttributeBonuses", fixed_bonuses)
 	var tier_tags: Array[StringName] = [&"set_bonus", &"wooden_set"]
 	tier.set("GrantedTags", tier_tags)
 
 	var set_data: Resource = EQUIPMENT_SET_DATA_SCRIPT.new()
-	assert_eq(set_data.get("SetType"), 0, "套装数据默认类型必须保持 None=0。")
+	assert_eq(set_data.get("SetType"), "", "套装数据默认标识必须为空。")
 	assert_true(set_data.get("Tiers").is_empty(), "套装数据默认阶级列表必须为空。")
-	set_data.set("SetType", 3)
-	var tiers: Array[Resource] = [tier]
+	set_data.set("SetType", "iron_set")
+	var tiers: Array[EquipmentSetBonusTier] = [tier]
 	set_data.set("Tiers", tiers)
 
 	assert_eq(tier.get("RequiredPieces"), 2, "套装阶级需求件数必须保留。")
-	assert_eq(tier.get("AttributeBonuses")[0], 5.5, "套装正向属性加成必须保留浮点值。")
-	assert_eq(tier.get("AttributeBonuses")[4], -1.25, "套装负向属性加成必须保留浮点值。")
+	assert_eq(tier.get("AttributeBonuses")[0].Value, 5.5, "套装正向属性加成必须保留浮点值。")
+	assert_eq(tier.get("AttributeBonuses")[1].Value, -1.25, "套装负向属性加成必须保留浮点值。")
 	assert_eq(tier.get("GrantedTags"), tier_tags, "套装阶级标签顺序和值必须保留。")
-	assert_eq(set_data.get("SetType"), 3, "套装枚举值必须保持 Iron=3。")
+	assert_eq(set_data.get("SetType"), "iron_set", "套装必须使用字符串标识。")
 	assert_eq(set_data.get("Tiers").size(), 1, "套装阶级数量必须保留。")
 	assert_true(set_data.get("Tiers")[0] == tier, "套装数据必须保留原阶级 Resource 引用。")
 
@@ -1530,8 +1611,9 @@ func test_equipment_data_compat_reads_both_language_resources() -> void:
 	gd_tool.set("CardName", "兼容工具")
 	var gd_slots: Array[int] = [5, 4]
 	gd_tool.set("ValidSlots", gd_slots)
-	gd_tool.set("SetType", 2)
-	gd_tool.set("AttributeBonuses", {0: Vector2i(3, 7)})
+	gd_tool.set("SetType", PackedStringArray(["stone_set", "explorer_set"]))
+	var gd_bonuses: Array[EquipmentAttributeBonus] = [_equipment_attribute_bonus(0, 3, 7)]
+	gd_tool.set("AttributeBonuses", gd_bonuses)
 	var gd_tags: Array[StringName] = [&"weapon", &"axe"]
 	gd_tool.set("GrantedTags", gd_tags)
 	gd_tool.set("TargetGatheringTag", &"wood")
@@ -1541,7 +1623,7 @@ func test_equipment_data_compat_reads_both_language_resources() -> void:
 	assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_equipment_resource", gd_tool)), "GDScript 工具必须被识别为装备。")
 	assert_true(bool(EQUIPMENT_DATA_COMPAT_SCRIPT.call("is_tool_resource", gd_tool)), "GDScript 工具必须被识别为工具。")
 	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_valid_slots", gd_tool), gd_slots, "GDScript 工具槽位必须保留顺序。")
-	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_set_type", gd_tool), 2, "GDScript 工具套装值必须保留。")
+	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_set_types", gd_tool), PackedStringArray(["stone_set", "explorer_set"]), "GDScript 工具多个套装标识必须保留。")
 	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_attribute_bonuses", gd_tool)[0], Vector2i(3, 7), "GDScript 工具属性范围必须保留。")
 	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_granted_tags", gd_tool), gd_tags, "GDScript 工具标签必须保留。")
 	assert_eq(EQUIPMENT_DATA_COMPAT_SCRIPT.call("get_target_gathering_tag", gd_tool), &"wood", "GDScript 工具采集标签必须保留。")
@@ -1922,14 +2004,56 @@ func test_shop_trade_bridge_parallel_contract() -> void:
 		var production_catalog := production_bridge.get("Catalog") as Resource
 		assert_true(production_catalog != null, "商店生产 Bridge 必须继续引用商品目录。")
 		if production_catalog != null:
+			# 编辑器中场景非tool脚本为占位实例，只核对挂载面；行为必须由真实脚本实例承担。
+			var production_behavior: Node = SHOP_TRADE_BRIDGE_SCRIPT.new()
+			production_behavior.set("Catalog", production_catalog)
 			var production_goods: Array = production_catalog.get("Goods")
 			assert_eq(production_goods.size(), 89, "商品目录的 89 个显式条目不得丢失。")
-			var gdscript_plain_item_count: int = 0
+			var production_type_counts: Dictionary = {}
+			var seen_ids: Dictionary = {}
+			var expected_stock: Array[Resource] = []
+			for listed: Resource in production_goods:
+				# 历史资产中的 null 读入 StringName 后可变为空字符串，货架按运行时非 null 字段筛选。
+				if listed != null and listed.get("CardId") != null and not expected_stock.has(listed):
+					expected_stock.append(listed)
+			var rebuilt_stock: Array = production_behavior.call("BuildStockList", [])
+			assert_eq(rebuilt_stock.size(), expected_stock.size(), "重建商店必须按非null CardId筛选并按对象身份去重。")
 			for production_good: Variant in production_goods:
-				if production_good is Resource and (production_good as Resource).get_script() != null:
-					if (production_good as Resource).get_script().resource_path == ITEM_DATA_SCRIPT_PATH:
-						gdscript_plain_item_count += 1
-			assert_eq(gdscript_plain_item_count, 86, "商品目录中的 86 个普通 ItemData 商品必须使用 GDScript。")
+				assert_true(production_good is Resource, "每个生产商品必须保留物品资源。")
+				if not (production_good is Resource):
+					continue
+				var good: Resource = production_good
+				assert_true(good.get_script() != null, "%s 必须有物品脚本。" % good.resource_path)
+				if good.get_script() == null:
+					continue
+				var script_path: String = good.get_script().resource_path
+				production_type_counts[script_path] = int(production_type_counts.get(script_path, 0)) + 1
+				assert_true(bool(ITEM_DATA_COMPAT_SCRIPT.call("is_item_resource", good)), "%s 必须保持可交易物品协议。" % good.resource_path)
+				var card_id: StringName = ITEM_DATA_COMPAT_SCRIPT.call("get_card_id", good, &"")
+				if card_id.is_empty():
+					assert_eq(good.resource_path, "res://resources/skill_cards/earth_magic_houtufenglingmai.tres", "缺失标识仅允许既有厚土封灵脉配置，本次迁移物品不能丢失标识。")
+					assert_eq(rebuilt_stock.has(good), good.get("CardId") != null, "既有空标识商品必须保持 Bridge 的非 null 筛选规则。")
+				else:
+					assert_false(seen_ids.has(card_id), "目录不能因类型迁移重复商品：%s。" % card_id)
+					seen_ids[card_id] = true
+					var index := expected_stock.find(good)
+					if index >= 0 and index < rebuilt_stock.size():
+						assert_true(rebuilt_stock[index] == good, "重建商品保留有效商品原顺序和对象身份。")
+				var buy_price := int(good.get("BuyPrice"))
+				if buy_price <= 0:
+					buy_price = int(production_catalog.get("DefaultBuyPrice"))
+				var sell_price := int(good.get("SellPrice"))
+				if sell_price <= 0:
+					sell_price = buy_price / 2
+				assert_eq(int(production_behavior.call("GetBuyPrice", good)), buy_price, "%s 应保留原买价及目录回退。" % good.resource_path)
+				assert_eq(int(production_behavior.call("GetSellPrice", good)), sell_price, "%s 应保留原卖价及折半回退。" % good.resource_path)
+			assert_eq(production_type_counts, {
+				ITEM_DATA_SCRIPT_PATH: 41,
+				"res://resources/item/equipment/equipment_data.gd": 38,
+				"res://resources/item/tool/tool_data.gd": 9,
+				SKILL_CARD_DATA_SCRIPT_PATH: 1,
+			}, "89个商品应覆盖41普通物品、38装备、9工具、1技能卡。")
+			production_behavior.free()
 		shop_root.free()
 
 	var item_script: GDScript = load(ITEM_DATA_SCRIPT_PATH)

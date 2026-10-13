@@ -241,7 +241,7 @@ func test_item_stack_protocol_matches_legacy() -> void:
 	if CS_OPTIONAL.present(PLAYER_CS):
 		assert_true(cs_text.contains("ItemStackProtocol.TryRead(stack, out Resource item, out int amount)"), "旧 C# 必须仍走 ItemStackProtocol。")
 		assert_true(cs_text.contains("_inventory.Call(\"AddItem\", item, amount).AsInt32() == 0"), "旧 C# 必须按未放入数量判定成功。")
-	assert_true(gd_text.contains("_inventory.call(\"AddItem\", fields[\"item\"], fields[\"amount\"])"), "GDScript 必须调用同一 AddItem 协议。")
+	assert_true(gd_text.contains("_inventory.call(\"AddItemStack\", stack)"), "GDScript 必须传递完整实例，保留掉落属性。")
 	for protocol: String in ["SetItem", "Clear", "Item", "Amount", "IsEmpty"]:
 		assert_true(gd_text.contains(protocol), "跨语言堆叠协议必须保留字段/方法：%s" % protocol)
 

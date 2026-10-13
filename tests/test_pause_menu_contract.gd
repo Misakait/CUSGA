@@ -5,7 +5,7 @@ extends McpTestSuite
 ##
 ## 暂停菜单挂在 Main/UI/HUDLayer/HUDRoot 下。该宿主是局外探索与局内战斗都存活的
 ## 唯一 UI 宿主，所以「暂停键是否还在这个宿主上」「ESC 是否还绑到暂停动作」
-## 「退出游戏是否先解除暂停再换场景」都会在真实对局里决定玩家能不能脱身。
+## 「退出游戏是否接入主动结束结算」都会在真实对局里决定玩家能不能脱身。
 ##
 ## 暂停映射（get_tree().paused 的取值与恢复）依赖 SceneTree 与真实 Main 实例，
 ## 编辑器进程里既没有 Main，也不会执行非 @tool 脚本的方法体，因此那部分按
@@ -258,7 +258,8 @@ func test_pause_mapping_records_and_restores_previous_state() -> void:
 
 	var close_body: String = _method_body(source, "func close_pause_menu")
 	assert_true(close_body.contains("_is_menu_open = false"), "关闭必须先清除展开状态。")
-	assert_true(close_body.contains("if not _was_paused_before_open:"), "关闭时只能归还本次打开造成的暂停。")
+	assert_true(close_body.contains("not _was_paused_before_open"), "关闭时只能归还本次打开造成的暂停。")
+	assert_true(close_body.contains("is_run_ending"), "结算已经接管时，关闭暂停菜单不能解除结算暂停。")
 	assert_true(close_body.contains("get_tree().paused = false"), "关闭菜单必须解除本次暂停。")
 
 	# 「继续游戏」必须复用同一条关闭路径，否则暂停的归还判据会出现第二份实现。
@@ -267,21 +268,24 @@ func test_pause_mapping_records_and_restores_previous_state() -> void:
 	assert_false(continue_body.contains("paused ="), "「继续游戏」不得自行改写全局暂停。")
 
 
-## 验证退出游戏接到的处理函数会先解除暂停、再换回主菜单场景，并有释放兜底。
+## 验证生产退出先请求主动结束结算，缺少经理的独立场景才使用主菜单兼容路径。
 ##
 ## 这里刻意不真的点击按钮：那会切换编辑器当前场景。断言改为源码顺序与常量值，
-## 共同锁住「换场景前必须解除暂停」这条契约——否则主菜单会带着 paused = true
-## 启动，表现为整屏无响应。
+## 共同锁住生产结算与独立场景兼容分支的顺序；真实暂停与导航由游戏冒烟验证。
 ## 返回值：无。
-func test_exit_releases_pause_before_switching_scene() -> void:
+func test_exit_requests_settlement_before_fallback_scene_switch() -> void:
 	var source: String = FileAccess.get_file_as_string(PAUSE_MENU_SCRIPT.resource_path)
 	var handler_body: String = _method_body(source, "func _on_exit_button_pressed")
 
 	var release_index: int = handler_body.find("paused = false")
 	var switch_index: int = handler_body.find("change_scene_to_file")
-	assert_gt(release_index, -1, "退出处理必须先解除全局暂停。")
-	assert_gt(switch_index, -1, "退出处理必须切换到主菜单场景。")
-	assert_true(release_index < switch_index, "解除暂停必须发生在切换场景之前。")
+	var settlement_index: int = handler_body.find('settlement.call("finish_run", "abandon"')
+	assert_gt(settlement_index, -1, "生产退出必须请求主动结束结算，不得按死亡赠送。")
+	assert_gt(release_index, settlement_index, "兼容分支必须位于结算请求之后。")
+	assert_gt(switch_index, release_index, "兼容分支解除暂停必须早于换场景。")
+	var return_index: int = handler_body.find("return", settlement_index)
+	assert_gt(return_index, settlement_index, "请求结算后必须结束当前退出处理。")
+	assert_true(return_index < release_index, "生产结算分支不得继续执行兼容导航。")
 
 	var target_path: String = str(
 		PAUSE_MENU_SCRIPT.get_script_constant_map()["MAIN_MENU_SCENE_PATH"]
@@ -293,6 +297,42 @@ func test_exit_releases_pause_before_switching_scene() -> void:
 	# paused = true 启动；_exit_tree 是这条路径的唯一兜底。
 	var exit_tree_body: String = _method_body(source, "func _exit_tree")
 	assert_true(exit_tree_body.contains("tree.paused = false"), "场景释放时必须兜底归还全局暂停。")
+
+
+## 验证立即死亡入口仅在局内实例启用，避免共享设置页把死亡操作暴露给主菜单。
+## 真实生命归零、结算与暂停接管依赖非工具脚本，必须补充 Main 游戏进程验证。
+## 返回值：无。
+func test_death_button_is_available_only_in_the_in_run_settings_instance() -> void:
+	var option_scene: PackedScene = ResourceLoader.load(
+		"res://scenes/ui_scenes/option_panel.tscn", "PackedScene", ResourceLoader.CACHE_MODE_REPLACE
+	) as PackedScene
+	var panel: Control = option_scene.instantiate() as Control
+	# 实例尚未入树时不使用唯一名解析；长会话还需替换场景缓存，以验证最新生产文件。
+	var button: Button = panel.get_node_or_null("Center/Panel/Margin/RootVBox/DeathButton") as Button
+	assert_true(button != null, "设置面板必须包含立即死亡按钮。")
+	if button != null:
+		assert_eq(button.text, "立即死亡", "按钮必须说明点击后的直接结果。")
+		assert_false(button.visible, "共享场景必须默认隐藏死亡入口，保护主菜单实例。")
+	panel.free()
+	var pause_text: String = FileAccess.get_file_as_string(PAUSE_MENU_SCENE_PATH)
+	var menu_text: String = FileAccess.get_file_as_string(EXPECTED_MAIN_MENU_SCENE_PATH)
+	assert_true(
+		_find_node_block(pause_text, "OptionPanel").contains("show_death_button = true"),
+		"暂停菜单实例必须明确启用死亡入口。"
+	)
+	assert_false(
+		_find_node_block(menu_text, "OptionPanel").contains("show_death_button = true"),
+		"主菜单实例不得启用死亡入口。"
+	)
+	var option_source: String = FileAccess.get_file_as_string("res://scripts/ui_scripts/UIOptionPanel.gd")
+	var death_body: String = _method_body(FileAccess.get_file_as_string(PAUSE_MENU_SCRIPT.resource_path), "func _on_death_requested")
+	assert_true(option_source.contains("death_requested.emit()"), "按钮必须向宿主发出意图而不直接改玩家状态。")
+	assert_true(
+		death_body.contains('health.call("TakeDamage", current_value, 0)'),
+		"宿主必须经生命组件正常伤害入口触发死亡。"
+	)
+	assert_true(death_body.contains("_pause_overlay.visible = false"), "死亡前必须收起暂停遮罩。")
+	assert_false(death_body.contains("close_pause_menu()"), "死亡请求不得调用会恢复游戏的菜单关闭路径。")
 
 
 ## 在场景文件全文里定位某个节点的声明行。

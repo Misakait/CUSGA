@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"GDScript、中文注释、职责边界与依赖检查"}
+{"file":".trellis/spec/backend/resource-data-guidelines.md","reason":"结算配置资源与稳定物品身份"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"autoload、存档协议与生命周期"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"结算各区域控制器、格子与提示框"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"Godot 编辑器验证与套件发现"}

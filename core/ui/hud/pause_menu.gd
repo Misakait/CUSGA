@@ -7,10 +7,10 @@ extends Control
 ## 因此一份实例就能覆盖两种状态，不需要新增 Autoload，也不需要在 `battle.tscn`
 ## 里重复一份（见 .trellis/spec/frontend/state-management.md「局内战斗的 UI 宿主」）。
 ##
-## 本组件只承担三个映射：「继续游戏」与「暂停/恢复」共同映射到 `SceneTree.paused`
-## 的开与关，「退出游戏」映射为一次场景切换。它不读写任何玩法状态——继续游戏只是
-## 解除全局暂停，不会改写时间、库存或战斗进度；退出游戏也只是换回主菜单场景，
-## 不在此处结算或保存任何东西。
+## 「继续游戏」与「暂停/恢复」共同映射到 `SceneTree.paused`
+## 的开与关，「退出游戏」请求主动结束并展示结算。实际发奖、存档和场景切换
+## 由 SettlementManager 统一完成，本组件不直接修改资产。
+## 参数设置的「立即死亡」通过当前玩家生命组件产生正常死亡事实。
 
 ## 暂停开关的输入动作名，在 project.godot 中注册并绑定 ESC。
 const PAUSE_ACTION: StringName = &"pause_game"
@@ -71,6 +71,8 @@ func _ready() -> void:
 	_exit_button.pressed.connect(_on_exit_button_pressed)
 	if _option_panel.has_signal(&"back_requested"):
 		_option_panel.connect(&"back_requested", _on_option_panel_back_requested)
+	if _option_panel.has_signal(&"death_requested"):
+		_option_panel.connect(&"death_requested", _on_death_requested)
 
 
 ## 场景被释放时归还全局暂停状态。
@@ -102,6 +104,9 @@ func _unhandled_input(event: InputEvent) -> void:
 ## 切换暂停菜单的展开状态。
 ## 返回值：无。
 func toggle_pause_menu() -> void:
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if settlement != null and bool(settlement.call("is_run_ending")):
+		return
 	if _is_menu_open:
 		close_pause_menu()
 	else:
@@ -113,6 +118,9 @@ func toggle_pause_menu() -> void:
 ## 重复调用是幂等的：已在展开状态时直接返回，不会重复记录暂停前状态。
 ## 返回值：无。
 func open_pause_menu() -> void:
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if settlement != null and bool(settlement.call("is_run_ending")):
+		return
 	if _is_menu_open:
 		return
 
@@ -135,7 +143,8 @@ func close_pause_menu() -> void:
 	_is_menu_open = false
 	_pause_overlay.visible = false
 	_show_main_menu_page()
-	if not _was_paused_before_open:
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if not _was_paused_before_open and not (settlement != null and bool(settlement.call("is_run_ending"))):
 		get_tree().paused = false
 
 
@@ -171,15 +180,41 @@ func _on_option_panel_back_requested() -> void:
 	_show_main_menu_page()
 
 
-## 退出游戏并回到主菜单。
+## 通过玩家生命组件的正常伤害协议制造死亡，复用原有死亡信号与结算去重。
 ##
-## 换场景前必须由本组件解除全局暂停：Main 被释放后不再有节点负责把它置回 false，
-## 主菜单会带着 `paused = true` 启动，表现为整屏无响应。
+## 参数无；仅在当前局仍可进行时处理，重复点击由参数面板禁用按钮并由结算阶段门禁拦截。
+## 返回值：无。
+func _on_death_requested() -> void:
+	if not _is_menu_open or not _option_panel.visible:
+		return
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if settlement != null and not bool(settlement.call("is_run_active")):
+		return
+	var current_scene: Node = get_tree().current_scene
+	var player: Node = current_scene.get_node_or_null("Player") if current_scene != null else null
+	var health: Node = player.get_node_or_null("Components/HealthComponent") if player != null else null
+	if health == null or not health.has_method("TakeDamage"):
+		push_warning("参数设置无法找到玩家生命组件，未执行死亡请求。")
+		return
+	var current_value: int = int(health.get("CurrentValue"))
+	if current_value > 0:
+		# 先收起本地浮层，但不归还暂停；生命归零后由结算接管，避免世界推进一帧。
+		_is_menu_open = false
+		_pause_overlay.visible = false
+		_show_main_menu_page()
+		health.call("TakeDamage", current_value, 0)
+
+
+## 主动结束本局并展示结算，不赠送死亡测试奖励。
 ## 返回值：无。
 func _on_exit_button_pressed() -> void:
 	# 先把菜单状态收起，避免 Main 释放后残留「开着的菜单」这一本地状态被复用。
 	_is_menu_open = false
 	_pause_overlay.visible = false
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if settlement != null:
+		settlement.call("finish_run", "abandon", "abandon", "主动结束")
+		return
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 

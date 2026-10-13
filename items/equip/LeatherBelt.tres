@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://t2vgpkoa7iyv"]
 
 [ext_resource type="Texture2D" uid="uid://b8k2x6b7llhji" path="res://res/equip/LeatherBelt.png" id="1_ir8rb"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_o16rl"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_o16rl"]
 
 [resource]
 script = ExtResource("1_o16rl")
+ValidSlots = Array[int]([14])
 BuyPrice = 72
 SellPrice = 36
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"LeatherBelt"
 CardName = "皮革腰带"
 CardIcon = ExtResource("1_ir8rb")
 Description = "穿上后感觉自己气派的不行"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://d11y8w6jxa37q"]
 
 [ext_resource type="Texture2D" uid="uid://b01eri1ji48a2" path="res://res/equip/GoldenHandguard_right.png" id="1_srr7g"]
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="2_swydq"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="2_swydq"]
 
 [resource]
 script = ExtResource("2_swydq")
+ValidSlots = Array[int]([9])
 BuyPrice = 490
 SellPrice = 245
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"GoldenHandguard_right"
 CardName = "金护手右"
 CardIcon = ExtResource("1_srr7g")
 Description = "一个由黄金做的护手，可以给你的右手穿戴"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

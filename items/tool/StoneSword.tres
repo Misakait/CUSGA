@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://l77q4v3wqe2j"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_lh7rn"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_lh7rn"]
 [ext_resource type="Texture2D" uid="uid://blcm8gqxk1ph3" path="res://res/tool/StoneSword.png" id="1_tdqd8"]
 
 [resource]
 script = ExtResource("1_lh7rn")
+ValidSlots = Array[int]([4])
 BuyPrice = 100
 SellPrice = 50
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"StoneSword"
 CardName = "石剑"
 CardIcon = ExtResource("1_tdqd8")
 Description = "一把石剑"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"

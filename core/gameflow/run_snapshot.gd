@@ -33,7 +33,9 @@ func _ready() -> void:
 		push_error("RunSnapshot: 未找到 SaveManager，局内快照不会保存。")
 		return
 	save_manager.call("register_participant", self)
-	var loaded: Dictionary = save_manager.call("get_loaded_run_data", SAVE_KEY)
+	# 轮回模式的 Main 永远建立全新局；本节点早于开局初始化 ready，
+	# 因此必须在这里阻止旧 DISK 快照先恢复地图和房间，再等待稍后的清局。
+	var loaded: Dictionary = {} if get_node_or_null("/root/SettlementManager") != null else save_manager.call("get_loaded_run_data", SAVE_KEY)
 	_pending = loaded.duplicate(true)
 	_has_pending = not _pending.is_empty()
 	# RuntimeState 排在地图和内容 View 之前，因此这里恢复仓库能让首次 3×3

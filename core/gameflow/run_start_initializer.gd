@@ -86,12 +86,18 @@ func Initialize() -> bool:
 		return false
 
 	_has_initialized = true
-	var run_snapshot: Node = get_node_or_null("../RuntimeState/RunSnapshot")
-	if run_snapshot != null and bool(run_snapshot.call("HasPendingRun")):
-		_restored_run = bool(run_snapshot.call("RestorePlayer", player, inventory, get_node_or_null("../PlayerChar")))
-		if _restored_run:
-			RunStartInitialized.emit()
-			return true
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if settlement != null:
+		# 轮回的新局必须先建立写入门禁，再消耗带入；不恢复已结束的旧局。
+		settlement.call("begin_run")
+	else:
+		# 独立测试及裁剪场景保留原快照协议，生产路径由轮回管理器接管。
+		var run_snapshot: Node = get_node_or_null("../RuntimeState/RunSnapshot")
+		if run_snapshot != null and bool(run_snapshot.call("HasPendingRun")):
+			_restored_run = bool(run_snapshot.call("RestorePlayer", player, inventory, get_node_or_null("../PlayerChar")))
+			if _restored_run:
+				RunStartInitialized.emit()
+				return true
 
 	# 新一局：把常驻的时间系统拨回开局状态。
 	# 必须早于昼夜滤镜的 _ready() 吸附，否则滤镜会先按上局的夜色着色再慢慢过渡过来。
@@ -112,6 +118,8 @@ func Initialize() -> bool:
 			% [cleared_count, installed_count]
 		)
 
+	if settlement != null:
+		settlement.call("complete_run_initialization")
 	RunStartInitialized.emit()
 	return true
 

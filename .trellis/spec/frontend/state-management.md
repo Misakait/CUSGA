@@ -106,7 +106,7 @@ if mode != "click" and mode != "drag":
 
 ### 1. Scope / Trigger
 
-当某个系统的状态需要**跨游戏重启保留**，或需要**为新一局重置**时，接入 `SaveManager` 参与者协议。存档层位于 `core/save/`（`save_manager.gd` + `save_slot_codec.gd`），只负责文件生命周期、作用域分流与分发，不认识任何玩法数据。
+当某个系统的状态需要**跨游戏重启保留**，或需要**为新一局重置**时，接入 `SaveManager` 参与者协议。存档层位于 `core/save/`（`save_manager.gd` + `save_slot_codec.gd`），处理文件生命周期、作用域与分发；另持有唯一纯数据 PlayerProfile，并以自身作为 `player_profile` 参与者编解码新增档案字段。旧库存、带入、钱包和容量等级仍由旧参与者负责，避免重复编码。
 
 ### 2. Signatures
 
@@ -131,7 +131,7 @@ SaveManager.clear_run_scope()
 - `save_scope()` 只返回 `"global"`（跨运行）或 `"run"`（仅本局）。
 - `apply_save_data()` 的语义是**先清空再写入**，不是叠加——存档是唯一真相源，叠加会产生「玩家已经挪走的物品重开游戏又出现」这类幽灵物品。
 - `request_save()` 是 0.5 秒防抖的合并请求；`apply()` 期间到达的变更请求被**丢弃**而非延迟（那是读档造成的回声，落盘只会重写相同内容并掩盖真实写入错误）。
-- 跨运行隔离靠开局调用 `clear_run_scope()`，**不是**靠不把 `run` 写进文件——`run` 数据要落盘，将来「继续本局」才有东西可读。
+- `clear_run_scope()` 显式清空局内数据；轮回结束后持续跳过仍在树里的旧局参与者采集，不能重新写回已结束世界。`begin_run_write_hold()` 在新局消费带入前打开写入门禁并清理旧快照/冻结标志，当前生产 Main 不恢复旧局。旧 `SESSION_ONLY` / `DISK` 协议不能绕过轮回门禁。
 - 不要用 `:=` 从 `Variant` 表达式推断类型：本项目把 `inference_on_variant` 当错误。跨脚本访问走 `call` / `get` / `has_method`；脚本引用用 `const X: GDScript = preload(...)` 再 `.call("静态方法", ...)`。
 - 参与者不要直接引用 autoload 标识符，用 `const X_PATH: NodePath = ^"/root/X"` + `get_node_or_null(X_PATH)`；否则 `test_run`（没有 autoload）连解析都过不去。
 - 数值字段必须过类型校验再 `int()`：JSON 解析出的数字统一是 `float`。
@@ -151,7 +151,7 @@ SaveManager.clear_run_scope()
 ### 5. Good / Base / Bad Cases
 
 - Good：`GlobalWarehouse` 在 `_ready()` 里注册，`apply_save_data` 先 `EnsureCapacityAtLeast` 再清空重写，存档槽位多于当前容量时自动扩容而不是丢弃物品。
-- Base：首次运行无存档，4 个参与者全部保持默认值（金币 1200、仓容 27、仓库与带入栏为空）。
+- Base：首次运行无存档，旧四个参与者保持金币 1200、仓容 27、空仓库与带入栏；新增 Profile 保持代币 0、收获容量 5 和空的已结算/待领取集合。默认测试策略只改内存。
 - Bad：直接给 `player_level.gd` 加协议、只存 `level` / `experience`。每局的属性组件会按基础值重建，于是「等级 50」与「属性点 0」共存，而等级已满又永远不会再发放点数——**永久销毁 147 点属性点**。等级属于局内概念，其跨运行保存必须先设计局内进度的重启语义（`player_level.gd` 目前没有任何清零入口）。
 
 ### 6. Tests Required
@@ -201,4 +201,23 @@ func save_scope() -> String:
 func save_change_signals() -> Array:
 	return ["GoldChanged"]
 ```
+
+## 轮回账本、持久化门禁与结算显示
+
+适用于 `RunSessionData`、`PlayerProfile`、`SettlementManager`、SaveManager 写入入口及 Settlement 场景。当前模块说明为 [轮回结算系统](../../../docs/轮回结算系统.md)，规则与数值唯一汇总为 [游戏机制与玩法内容](../../../docs/游戏机制与玩法内容.md)。
+
+- `RunSessionData` 是纯内存账本，只由 SettlementManager 持有；它不访问节点或文件。RunSnapshot 是世界采集/恢复协议，不能作为轮回资格或第二份收益账本。
+- Profile 是局外数据的唯一生产对象，由 SaveManager 最先创建/加载。钱包与升级适配绑定同一对象，沿用 `player_wallet` / `player_progression` 旧键；新增字段只用 `player_profile` 编码。单独未入树夹具可使用本地 Profile，不能在生产创建第二份可写余额或等级。
+- 持久化策略来自共享 `settlement_config.tres.persistence_enabled`，默认关闭，启动时锁定；不能运行中打开把测试收益带进真实存档。门禁必须覆盖 `request_save`、防抖、`save_now`、退出兜底、删除、损坏文件复制与最终原子写入；只在经理跳过一次保存不足以保证零写入。
+- 正式局内先调用 `begin_run_write_hold()` 再消费带入；战斗、拾取和退出不能写盘。结束后仓库、Profile 和入账编号一起提交，`data.run` 清空。保存失败只重试保存，不能再次注入测试奖励或重复入账。
+- 测试模式可读取旧档而不修改主档、备份、临时档或损坏现场。玩家偏好仍走 SettingsManager，不承载玩法收益；偏好文件不受玩法门禁控制。独立文件测试必须先使用 `configure_test_persistence("user://test_...", enabled)`，不得覆盖真实存档。
+- 普通战斗获胜不等于整局通关。死亡与战斗失败共用结束去重；结束后异步过场不能恢复输入或普通回世界。暂停菜单退出只请求主动结束，结算导航才解除暂停。
+- 立即死亡测试操作仅在暂停菜单实例的局内参数设置页显示。共享的 `option_panel.tscn` 默认关闭 `show_death_button`，登录菜单不覆盖此值；点击只发 `death_requested`，由 PauseMenu 调用玩家 `HealthComponent.TakeDamage(CurrentValue, 0)`。处理前收起暂停浮层但不恢复 `SceneTree.paused`，确保正常 `Depleted`/`player_died` 顺序进入唯一死亡结算。
+- 收获和死亡赠品都使用统一账本添加和 `GlobalWarehouse.AddItemStack`。仓库入口只读来源，返回余量，保留槽对象/资源身份和独立洗炼字典；满仓余量进入 Profile 待领取，不能静默截断。
+- 固定结果里的 ItemStack 必须逐项复制，`Dictionary.duplicate(true)` 不会自动复制 RefCounted 对象。显示不能绑定死亡玩家的可写背包，也不能通过结果格子再发一次物品。
+- 收获容量默认 5，空格照样生成；永久容量更新只影响下局，本局结果持有开局容量。面板容量刷新只负责显示。正式名单默认空，拾取统计和测试赠品不授予正式资格。
+- 建筑本期只保留资格/选择/取消/读取接口。选择与取消验证基础参数后明确返回未接入错误，无资产副作用；实际移转、容量、来源数量和重复请求规则由建筑任务确定，不能在本期预留接口里提前扣除或归还。
+- 面板根只协调区域与导航；Harvest、Data、Description、ButtonSection 各管理自身直接区域。`set_description` 替换，`add_description` 按顺序换行追加，空追加不生空行。两个导航按钮有独立脚本，保存失败禁用导航并显示重试入口。
+
+验证要求：数据用 `run_settlement_flow`、文件/兼容用 `settlement_persistence_contract` 与 `save_system_contract`、真实堆叠用 `settlement_warehouse_contract`。生产生命周期用 Godot MCP 运行 Main 与 Settlement，核验死亡去重、5 格空态、关闭/开启赠品、追加描述、暂停计时、满仓余量、保存失败重试、菜单和全新下一把；建筑占位调用前后源库存与账本必须相等。
 

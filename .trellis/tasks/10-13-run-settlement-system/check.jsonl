@@ -1,0 +1,4 @@
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"质量与接口文档检查"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"运行时验证与测试门禁"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"存档零写入和场景生命周期"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"5 格收获、选择与提示一致性"}

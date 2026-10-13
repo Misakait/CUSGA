@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3 uid="uid://ujmnmjtck3bs"]
+[gd_resource type="Resource" script_class="TerrainCardData" format=3 uid="uid://ujmnmjtck3bs"]
 
 [ext_resource type="Script" uid="uid://bg7i2r7823omv" path="res://resources/interaction/terrain_card_data.gd" id="1_1g886"]
 [ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="1_br5hh"]
@@ -6,7 +6,7 @@
 [ext_resource type="Resource" uid="uid://b5tdf8uxke014" path="res://items/element/water.tres" id="2_g0jrd"]
 [ext_resource type="Resource" uid="uid://cpm5luho4crhu" path="res://items/items/fish.tres" id="3_ls27w"]
 [ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="4_jjotv"]
-[ext_resource type="Script" path="res://resources/interaction/gathering_interaction.gd" id="5_tdn3y"]
+[ext_resource type="Script" uid="uid://b12x5ghy82no3" path="res://resources/interaction/gathering_interaction.gd" id="5_tdn3y"]
 
 [sub_resource type="Resource" id="Resource_k7ejw"]
 script = ExtResource("1_br5hh")

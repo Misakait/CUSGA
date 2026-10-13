@@ -7,6 +7,8 @@ class_name ReusableGatheringInteraction
 ## 与遭遇请求仍由 TerrainInteractionExecutor 通过操作描述执行，避免资源直
 ## 接依赖场景节点或棋盘端口。
 
+const EQUIPMENT_TYPES: GDScript = preload("res://core/constants/equipment_types.gd")
+
 ## 每次采集基础消耗的游戏时间点数。
 @export var TimeCost: int = 20
 
@@ -25,8 +27,8 @@ class_name ReusableGatheringInteraction
 ## 工具减免后允许保留的最短游戏时间点数。
 @export_range(1, 999, 1, "or_greater") var MinimumTimeCost: int = 1
 
-## 唯一允许提供采集时间减免的装备槽位，数值与 EquipmentSlot 枚举保持一致。
-@export var EffectiveToolSlot: int = 5
+## 唯一允许提供采集时间减免的装备槽位。
+@export var EffectiveToolSlot: EQUIPMENT_TYPES.EquipmentSlot = EQUIPMENT_TYPES.EquipmentSlot.Axe
 
 
 ## 根据装备快照计算本次采集实际消耗的游戏时间点数。
@@ -34,12 +36,13 @@ class_name ReusableGatheringInteraction
 ## 参数 equipment：玩家的装备组件；为空时不应用工具减免。
 ## 返回值：不低于 MinimumTimeCost 的有效采集耗时。
 func get_effective_time_cost(equipment: Object) -> int:
-	var reduction := 0
-	if equipment != null and not _has_empty_gathering_tag():
-		var value: Variant = equipment.call("GetGatheringTimeReduction", GatheringTag, EffectiveToolSlot)
-		if value is int or value is float:
-			reduction = maxi(int(value), 0)
-	return maxi(get_minimum_time_cost(), maxi(TimeCost, 0) - reduction)
+	return GatheringEffectCalculator.get_effective_time_cost(
+		equipment,
+		GatheringTag,
+		EffectiveToolSlot,
+		TimeCost,
+		get_minimum_time_cost()
+	)
 
 
 ## 根据装备快照计算长按所需的真实秒数。
@@ -127,14 +130,12 @@ func build_ops(player: Object, terrain: Object, effective_time_cost_override: Va
 			equipment = equipment_value
 
 	var effective_time_cost := get_effective_time_cost(equipment)
-	if effective_time_cost_override != null:
-		effective_time_cost = maxi(int(effective_time_cost_override), 1)
+	effective_time_cost = GatheringEffectCalculator.resolve_time_cost(
+		effective_time_cost_override,
+		effective_time_cost
+	)
 
-	var extra_yield := 0
-	if equipment != null and not _has_empty_gathering_tag():
-		var yield_value: Variant = equipment.call("GetGatheringYieldBonus", GatheringTag)
-		if yield_value is int or yield_value is float:
-			extra_yield = int(yield_value)
+	var extra_yield := GatheringEffectCalculator.get_yield_bonus(equipment, GatheringTag)
 
 	var loots: Array = []
 	if DropTable != null and DropTable.has_method("RollLoot"):

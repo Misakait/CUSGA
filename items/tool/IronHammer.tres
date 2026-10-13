@@ -1,10 +1,11 @@
 [gd_resource type="Resource" format=3 uid="uid://cq3vpwaa6gy6t"]
 
-[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="1_k7gul"]
+[ext_resource type="Script" uid="uid://brrku88jpbiw5" path="res://resources/item/equipment/equipment_data.gd" id="1_k7gul"]
 [ext_resource type="Texture2D" uid="uid://3qbv2fgepjd3" path="res://res/tool/IronHammer.png" id="1_pqcp6"]
 
 [resource]
 script = ExtResource("1_k7gul")
+ValidSlots = Array[int]([4])
 BuyPrice = 320
 SellPrice = 160
 MaxStackSize = 1
@@ -13,4 +14,4 @@ CardId = &"IronHammer"
 CardName = "铁锤"
 CardIcon = ExtResource("1_pqcp6")
 Description = "80！80！"
-metadata/_custom_type_script = "uid://dypewmj21sddd"
+metadata/_custom_type_script = "uid://brrku88jpbiw5"
