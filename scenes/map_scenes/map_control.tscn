@@ -5,8 +5,6 @@
 [ext_resource type="Script" uid="uid://dbafvwcesbb1j" path="res://scripts/map_scripts/UIMapWorldView.gd" id="3_map_instantiator"]
 [ext_resource type="Script" uid="uid://gvo2d2kl7n0t" path="res://scripts/map_scripts/UIMapLittle.gd" id="7_map_little"]
 [ext_resource type="Script" uid="uid://bnfqaryee5g5p" path="res://scripts/map_scripts/map_types.gd" id="8_map_types"]
-[ext_resource type="Script" uid="uid://bsnj0ei6cgwnh" path="res://scripts/map_scripts/UIMiniMap.gd" id="11_vuryw"]
-[ext_resource type="Script" uid="uid://c1ciohl63s1rv" path="res://scripts/map_scripts/UILargeMap.gd" id="13_mrmfi"]
 [ext_resource type="Script" uid="uid://i2jkixpsp4p4" path="res://resources/map/biome_definition.gd" id="22_biome"]
 [ext_resource type="Resource" uid="uid://1if71u0wx1x8" path="res://resources/map/biomes/normal_biome.tres" id="23_normal"]
 [ext_resource type="Script" uid="uid://dnt3p5445q5g6" path="res://core/map/map_world_model.gd" id="31_world_model"]
@@ -39,15 +37,6 @@ script = ExtResource("7_map_little")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=841791713]
 
-[node name="MiniMap" type="Control" parent="CanvasLayer" unique_id=1552620818 instance=ExtResource("33_minimap")]
-layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-grow_horizontal = 0
-mouse_filter = 2
-script = ExtResource("11_vuryw")
+[node name="MiniMap" parent="CanvasLayer" unique_id=1552620818 instance=ExtResource("33_minimap")]
 
-[node name="LargeMap" type="CanvasLayer" parent="." unique_id=633752329 instance=ExtResource("34_largemap")]
-layer = 3
-script = ExtResource("13_mrmfi")
+[node name="LargeMap" parent="." unique_id=633752329 instance=ExtResource("34_largemap")]

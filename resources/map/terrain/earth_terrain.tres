@@ -1,14 +1,14 @@
-[gd_resource type="Resource" format=3 uid="uid://c45r6hcgrdcit"]
+[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3 uid="uid://c45r6hcgrdcit"]
 
-[ext_resource type="Script" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="1_lix4h"]
+[ext_resource type="Script" uid="uid://ywb5murk6b7e" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="1_lix4h"]
 [ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="2_fcnkj"]
 [ext_resource type="Resource" uid="uid://sokcwukqcau4" path="res://resources/item/card/res_cards/stone.tres" id="3_3unss"]
 [ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="4_kuieb"]
 [ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="5_1sq63"]
-[ext_resource type="Script" path="res://resources/interaction/gathering_interaction.gd" id="6_rj5wv"]
-[ext_resource type="Script" path="res://resources/interaction/terrain_card_data.gd" id="7_6fdhq"]
-[ext_resource type="Script" path="res://core/map/room_terrain_pool_entry.gd" id="8_dx027"]
-[ext_resource type="Script" path="res://core/map/room_terrain_profile.gd" id="9_k15k0"]
+[ext_resource type="Script" uid="uid://b12x5ghy82no3" path="res://resources/interaction/gathering_interaction.gd" id="6_rj5wv"]
+[ext_resource type="Script" uid="uid://bg7i2r7823omv" path="res://resources/interaction/terrain_card_data.gd" id="7_6fdhq"]
+[ext_resource type="Script" uid="uid://dbix1awqn51kd" path="res://core/map/room_terrain_pool_entry.gd" id="8_dx027"]
+[ext_resource type="Script" uid="uid://tidg11kcaejh" path="res://core/map/room_terrain_profile.gd" id="9_k15k0"]
 
 [sub_resource type="Resource" id="Resource_2kl7r"]
 script = ExtResource("1_lix4h")
@@ -41,10 +41,10 @@ DropTable = SubResource("Resource_3khdx")
 
 [sub_resource type="Resource" id="Resource_kl3op"]
 script = ExtResource("7_6fdhq")
-InteractionBehavior = SubResource("Resource_eg11l")
 CardId = &"earth"
 CardName = "石材地形"
 CardIcon = ExtResource("2_fcnkj")
+InteractionBehavior = SubResource("Resource_eg11l")
 
 [sub_resource type="Resource" id="Resource_ibjiy"]
 script = ExtResource("8_dx027")
