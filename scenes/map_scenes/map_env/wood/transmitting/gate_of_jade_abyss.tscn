@@ -1183,15 +1183,6 @@ script = ExtResource("1_vjlth")
 scene_type = 4
 terrain_profile = ExtResource("2_ea0bv")
 
-[node name="Label" type="Label" parent="." unique_id=1794848154]
-top_level = true
-offset_left = 496.0
-offset_top = 304.0
-offset_right = 763.13043
-offset_bottom = 400.0
-theme_override_font_sizes/font_size = 40
-text = "界门·翠渊"
-
 [node name="MapContainer" type="Node2D" parent="." unique_id=1887464817]
 script = ExtResource("3_bl2mr")
 
@@ -1278,3 +1269,11 @@ script = ExtResource("10_bg22g")
 [node name="TileMapLayer" type="TileMapLayer" parent="MapContainer/Obstack" unique_id=1496961719]
 tile_map_data = PackedByteArray("AAAdAAoAAAADABMAAAAIAA8AAAADABMAAAAIAAoAAAACABMAAAAQABIAAAACABMAAAAPABIAAAACABMAAAA=")
 tile_set = SubResource("TileSet_v203p")
+
+[node name="Label" type="Label" parent="." unique_id=1794848154]
+offset_left = 496.0
+offset_top = 304.0
+offset_right = 763.13043
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 40
+text = "界门·翠渊"

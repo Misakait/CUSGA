@@ -1271,7 +1271,7 @@ tile_map_data = PackedByteArray("AAAdAAoAAAADABMAAAAIAA8AAAADABMAAAAIAAoAAAACABM
 tile_set = SubResource("TileSet_2hx4u")
 
 [node name="Label" type="Label" parent="." unique_id=56816064]
-top_level = true
+top_level = false
 offset_left = 496.0
 offset_top = 304.0
 offset_right = 763.13043

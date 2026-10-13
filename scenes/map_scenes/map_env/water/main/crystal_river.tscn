@@ -1184,7 +1184,7 @@ scene_type = 1
 terrain_profile = ExtResource("2_5e8yj")
 
 [node name="Label" type="Label" parent="." unique_id=497117747]
-top_level = true
+top_level = false
 offset_left = 496.0
 offset_top = 304.0
 offset_right = 763.13043

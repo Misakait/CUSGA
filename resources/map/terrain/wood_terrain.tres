@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://bg7i2r7823omv" path="res://resources/interaction/terrain_card_data.gd" id="7_q5g1j"]
 [ext_resource type="Script" uid="uid://dbix1awqn51kd" path="res://core/map/room_terrain_pool_entry.gd" id="8_n30x5"]
 [ext_resource type="Script" uid="uid://tidg11kcaejh" path="res://core/map/room_terrain_profile.gd" id="9_04ruy"]
+[ext_resource type="Script" uid="uid://dypewmj21sddd" path="res://resources/item/item_data.gd" id="9_wdka1"]
 
 [sub_resource type="Resource" id="Resource_r8j43"]
 script = ExtResource("1_5c1rx")
@@ -50,7 +51,57 @@ InteractionBehavior = SubResource("Resource_suer6")
 script = ExtResource("8_n30x5")
 TerrainData = SubResource("Resource_f4x0x")
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_gf884"]
+load_path = "res://.godot/imported/berry.png-2c58b6973d15cf111b686dbc02c817d6.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_nmjnw"]
+load_path = "res://.godot/imported/berry.png-2c58b6973d15cf111b686dbc02c817d6.ctex"
+
+[sub_resource type="Resource" id="Resource_sp6tn"]
+script = ExtResource("9_wdka1")
+MaxStackSize = 64
+ItemTags = Array[StringName]([&"berry"])
+BuyPrice = 20
+SellPrice = 10
+CardId = &"berry"
+CardName = "浆果"
+CardIcon = SubResource("CompressedTexture2D_nmjnw")
+Description = "吃完不会中毒吧？"
+metadata/_custom_type_script = "uid://dypewmj21sddd"
+
+[sub_resource type="Resource" id="Resource_jk3va"]
+script = ExtResource("4_nmjnw")
+Item = SubResource("Resource_sp6tn")
+MaxAmount = 3
+metadata/_custom_type_script = "uid://dso04gkfdac6i"
+
+[sub_resource type="Resource" id="Resource_q5g1j"]
+script = ExtResource("5_sp6tn")
+Drops = Array[ExtResource("4_nmjnw")]([SubResource("Resource_jk3va")])
+metadata/_custom_type_script = "uid://14ol6fqeh53g"
+
+[sub_resource type="Resource" id="Resource_n30x5"]
+script = ExtResource("6_jk3va")
+TimeCost = 10
+GatheringTag = &"berry"
+DropTable = SubResource("Resource_q5g1j")
+metadata/_custom_type_script = "uid://b12x5ghy82no3"
+
+[sub_resource type="Resource" id="Resource_04ruy"]
+script = ExtResource("7_q5g1j")
+CardId = &"berry"
+CardName = "浆果丛"
+CardIcon = SubResource("CompressedTexture2D_gf884")
+Description = "这是一个浆果丛"
+InteractionBehavior = SubResource("Resource_n30x5")
+metadata/_custom_type_script = "uid://bg7i2r7823omv"
+
+[sub_resource type="Resource" id="Resource_8ahih"]
+script = ExtResource("8_n30x5")
+TerrainData = SubResource("Resource_04ruy")
+metadata/_custom_type_script = "uid://dbix1awqn51kd"
+
 [resource]
 script = ExtResource("9_04ruy")
-TerrainPool = Array[ExtResource("8_n30x5")]([SubResource("Resource_1cpc1")])
+TerrainPool = Array[ExtResource("8_n30x5")]([SubResource("Resource_1cpc1"), SubResource("Resource_8ahih")])
 EncounterVarianceRange = SubResource("Resource_r8j43")

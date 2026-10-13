@@ -1271,10 +1271,10 @@ tile_map_data = PackedByteArray("AAAdAAoAAAADABMAAAAIAA8AAAADABMAAAAIAAoAAAACABM
 tile_set = SubResource("TileSet_0fu3y")
 
 [node name="Label" type="Label" parent="." unique_id=1297821976]
-top_level = true
+top_level = false
 offset_left = 496.0
 offset_top = 304.0
 offset_right = 763.13043
 offset_bottom = 400.0
 theme_override_font_sizes/font_size = 40
-text = "竹海风径"
+text = "竹海风径123"
