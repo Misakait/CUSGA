@@ -53,9 +53,11 @@ func _ready() -> void:
 	_recipe_controller.recipe_selected.connect(_select_recipe)
 	_recipe_controller.item_hovered.connect(_show_item_tooltip)
 	_recipe_controller.item_left.connect(_hide_tooltip)
+	_recipe_controller.selection_cancelled.connect(_hide_tooltip)
 	_ingredient_controller.item_selected.connect(_on_ingredient_selected)
 	_ingredient_controller.item_hovered.connect(_show_item_tooltip)
 	_ingredient_controller.item_left.connect(_hide_tooltip)
+	_ingredient_controller.selection_cancelled.connect(_hide_tooltip)
 	_recipe_controller.bind(recipe_grid, null)
 	_ingredient_controller.bind(ingredient_list, null)
 	_quantity = get_node_or_null(QUANTITY_PATH) as SpinBox
@@ -108,6 +110,11 @@ func _handle_open(crafting: Node) -> void:
 func Open(crafting: Node) -> void:
 	if crafting == null:
 		return
+	# 退出树时解除的取消订阅，要在重新打开复用界面时恢复。
+	if not _recipe_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_recipe_controller.selection_cancelled.connect(_hide_tooltip)
+	if not _ingredient_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_ingredient_controller.selection_cancelled.connect(_hide_tooltip)
 	_crafting = crafting
 	_disconnect_signal(_inventory, &"InventoryChanged", Callable(self, "_on_inventory_changed"))
 	_inventory = crafting.get("Inventory") as Node
@@ -237,6 +244,13 @@ func _disconnect_signal(source: Node, signal_name: StringName, callback: Callabl
 		source.disconnect(signal_name, callback)
 
 func _exit_tree() -> void:
+	# 区域是 RefCounted，不接收节点退出通知，必须由拥有它们的根节点解除输入订阅。
+	_recipe_controller.disconnect_input()
+	_ingredient_controller.disconnect_input()
+	if _recipe_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_recipe_controller.selection_cancelled.disconnect(_hide_tooltip)
+	if _ingredient_controller.selection_cancelled.is_connected(_hide_tooltip):
+		_ingredient_controller.selection_cancelled.disconnect(_hide_tooltip)
 	_disconnect_signal(_inventory, &"InventoryChanged", Callable(self, "_on_inventory_changed"))
 	_disconnect_signal(_gameplay_port, &"CraftingToggleRequested", Callable(self, "_handle_toggle"))
 	_disconnect_signal(_gameplay_port, &"CraftingOpenRequested", Callable(self, "_handle_open"))
