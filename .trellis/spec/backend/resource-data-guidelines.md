@@ -31,6 +31,17 @@
 
 资源结构变更后执行文件系统扫描、对应契约测试，并用实际使用该资源的场景冒烟；读取失败、空引用和错误脚本路径都必须在日志中可定位。
 
+### 装备与英文标签契约
+
+- 配置说明与重构图维护在 `docs/装备工具与标签系统.md`，玩法汇总链接到该入口。
+- `EquipmentData.ValidSlots` 为带枚举选项的整数数组，沿用槽位编号 0～15；`SetType` 为 `PackedStringArray`，每件内去重后计入所有套装。
+- 装备属性使用 `Array[EquipmentAttributeBonus]`（Attribute、MinValue、MaxValue）；套装阶级使用 `Array[EquipmentSetAttributeBonus]`（Attribute、Value）。属性编号沿用 0～14，不能重新排序。
+- 随机属性保存在 ItemStack.RolledAttributes；首次库存/掉落生成时计算，搬运、复制、穿脱与读档不能重新随机。装备通过 `_resolve_actual_max_stack_size()` 固定实际堆叠上限为1；仅在 `_init()` 设置默认值无法阻止旧资源或 Inspector 覆盖。批量掉落装备必须逐件生成独立实例。
+- 唯一英文标签源是 `resources/tags/default_tag_catalog.tres`，覆盖生产 `.tres` 与 `.tscn` 内嵌资源的既有标识；初始化目录和删除引用检查不能漏掉场景。标签选择器仅负责编辑原字符串字段，运行时不依赖 EditorPlugin；新增标签自动更新选项，删除已用标签必须保留原引用并提示。插件退出时必须停止轮询、断开 Timer 与标签源信号，避免旧监视器继续刷新。
+- 标签标识区分大小写，格式为 `[A-Za-z][A-Za-z0-9_]*`。物品标签、穿戴标签、工具目标、采集标签和采集遭遇标签均使用该来源；拖拽内部协议不属于该目录。
+- `GatheringInteraction` 和 `ReusableGatheringInteraction` 共用 GatheringEffectCalculator。开始长按时快照实际耗时，完成时消费同一数值；不能因新增耗时查询方法而将一次性行为误认成可重复行为。
+- 测试覆盖真实 Inspector 选择器、标签源动态增删、枚举/资源提示、多个套装、属性生成与存档往返，最后以新游戏进程补充验证，防止编辑器 preload 缓存掩盖问题。
+
 ### 地形物资编辑器类型契约
 
 适用范围：用户通过检查器创建房间候选物资、地形交互和采集掉落。具体用法见 `docs/地形物资配置.md`。

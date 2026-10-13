@@ -16,6 +16,8 @@ const EQUIPMENT_DATA_SCRIPT: GDScript = preload("res://resources/item/equipment/
 const TOOL_DATA_SCRIPT: GDScript = preload("res://resources/item/tool/tool_data.gd")
 const SET_BONUS_TIER_SCRIPT: GDScript = preload("res://resources/item/equipment/set_bonus_tier.gd")
 const EQUIPMENT_SET_DATA_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_set_data.gd")
+const SET_ATTRIBUTE_BONUS_SCRIPT: GDScript = preload("res://resources/item/equipment/equipment_set_attribute_bonus.gd")
+
 const EQUIPMENT_TYPES: GDScript = preload("res://core/constants/equipment_types.gd")
 const DRAGGABLE_DATA_SCRIPT: GDScript = preload("res://core/ui/draggable/draggable_data.gd")
 const ITEM_TOOLTIP_PRESENTER_SCRIPT: GDScript = preload("res://core/ui/item_tooltip_presenter.gd")
@@ -851,7 +853,7 @@ func test_equipment_component_production_tool_contract() -> void:
 	assert_true(equipped_stack != stack, "装备组件必须保存独立 ItemStack 副本。")
 	assert_true(equipped_stack.get("Item") == production_ax, "堆叠副本必须保留原 ToolData Resource 身份。")
 	assert_eq(equipment.GetGatheringYieldBonus(&"wood"), 0, "生产斧头默认额外产量必须保持 0。")
-	assert_eq(equipment.GetGatheringTimeReduction(&"wood", axe_slot), 10, "生产斧头必须减少 10 点采集时间。")
+	assert_eq(equipment.GetGatheringTimeReduction(&"wood", axe_slot), int(production_ax.get("GatheringTimeReduction")), "生产斧头必须读取当前配置的采集减免。")
 	assert_eq(equipment.GetGatheringTimeReduction(&"earth", axe_slot), 0, "采集标签不匹配时不得减免。")
 	assert_false(tags.HasTag(&"unused"), "未配置标签时不得注入额外标签。")
 	equipment.Unequip(axe_slot)
@@ -885,14 +887,18 @@ func test_equipment_component_item_and_set_effects() -> void:
 
 	var tier: Resource = SET_BONUS_TIER_SCRIPT.new()
 	tier.set("RequiredPieces", 2)
-	tier.set("AttributeBonuses", {4: 2.5})
+	var tier_bonus: EquipmentSetAttributeBonus = SET_ATTRIBUTE_BONUS_SCRIPT.new()
+	tier_bonus.Attribute = 4
+	tier_bonus.Value = 2.5
+	var tier_bonuses: Array[EquipmentSetAttributeBonus] = [tier_bonus]
+	tier.set("AttributeBonuses", tier_bonuses)
 	var tier_tags: Array[StringName] = [&"wooden_set_bonus"]
 	tier.set("GrantedTags", tier_tags)
 	var set_data: Resource = EQUIPMENT_SET_DATA_SCRIPT.new()
-	set_data.set("SetType", int(EQUIPMENT_TYPES.EquipmentSet.Wooden))
-	var tiers: Array[Resource] = [tier]
+	set_data.set("SetType", "wooden_set")
+	var tiers: Array[EquipmentSetBonusTier] = [tier]
 	set_data.set("Tiers", tiers)
-	var set_database: Array[Resource] = [set_data]
+	var set_database: Array[EquipmentSetData] = [set_data]
 	equipment.AllSetDatabase = set_database
 
 	var helmet: Resource = EQUIPMENT_DATA_SCRIPT.new()
@@ -919,7 +925,7 @@ func _set_equipment_fields(item: Resource, identifier: StringName, slot: int, ta
 	item.set("CardName", String(identifier))
 	var slots: Array[int] = [slot]
 	item.set("ValidSlots", slots)
-	item.set("SetType", int(EQUIPMENT_TYPES.EquipmentSet.Wooden))
+	item.set("SetType", PackedStringArray(["wooden_set"]))
 	var tags: Array[StringName] = [tag]
 	item.set("GrantedTags", tags)
 
@@ -1069,7 +1075,7 @@ func test_equipment_slot_ui_preserves_visual_and_drag_payload_contract() -> void
 	item.set("CardName", "界面武器")
 	item.set("Description", "装备槽提示")
 	item.set("CardIcon", icon_texture)
-	item.set("ValidSlots", [int(EQUIPMENT_TYPES.EquipmentSlot.Weapon)])
+	item.set("ValidSlots", [int(EQUIPMENT_TYPES.EquipmentSlot.Weapon)] as Array[int])
 	var stack: RefCounted = _new_stack(item) as RefCounted
 	assert_true(equipment.Equip(stack, int(EQUIPMENT_TYPES.EquipmentSlot.Weapon)), "夹具武器必须能装备到 Weapon 槽。")
 
@@ -1117,7 +1123,7 @@ func test_equipment_slot_ui_delegates_drop_rules_to_component() -> void:
 	var ring: Resource = EQUIPMENT_DATA_SCRIPT.new()
 	ring.set("CardId", &"ui_ring")
 	ring.set("CardName", "界面戒指")
-	ring.set("ValidSlots", [int(EQUIPMENT_TYPES.EquipmentSlot.Ring1), int(EQUIPMENT_TYPES.EquipmentSlot.Ring2)])
+	ring.set("ValidSlots", [int(EQUIPMENT_TYPES.EquipmentSlot.Ring1), int(EQUIPMENT_TYPES.EquipmentSlot.Ring2)] as Array[int])
 	inventory.TrySetStackAt(0, _new_stack(ring))
 
 	var ring_one_ui: PanelContainer = _new_equipment_slot_ui()
