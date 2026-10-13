@@ -2,9 +2,11 @@ extends Control
 
 ## 暂停菜单内的参数设置页。
 ##
-## 本页只读写 SettingsManager 中的地图偏好并发出返回请求，不直接查找 MiniMap。
+## 本页读写地图、背包和按键偏好，并把返回与局内死亡意图交给宿主，不直接修改玩家。
 
 signal back_requested
+## 局内设置请求玩家死亡；宿主负责调用玩家生命组件的正常伤害入口。
+signal death_requested
 
 const SETTINGS_SECTION: String = "map"
 const MINIMAP_ZOOM_KEY: String = "minimap_zoom"
@@ -39,6 +41,8 @@ const BINDING_SAVE_FAILED_TEXT: String = "键位已在本局生效，但保存�
 @export_range(0.01, 1.0, 0.01) var minimap_zoom_step: float = 0.05
 ## 没有本地偏好时使用的默认缩放倍率。
 @export_range(0.1, 6.0, 0.05) var default_minimap_zoom: float = 2.0
+## 是否在本实例显示局内测试用的立即死亡按钮；主菜单实例保持关闭。
+@export var show_death_button: bool = false
 
 @onready var _map_category_button: Button = %MapCategoryButton
 @onready var _inventory_category_button: Button = %InventoryCategoryButton
@@ -54,6 +58,7 @@ const BINDING_SAVE_FAILED_TEXT: String = "键位已在本局生效，但保存�
 @onready var _binding_list: VBoxContainer = %BindingList
 @onready var _binding_feedback_label: Label = %BindingFeedbackLabel
 @onready var _reset_all_bindings_button: Button = %ResetAllBindingsButton
+@onready var _death_button: Button = %DeathButton
 
 ## 按键绑定管理器；编辑器测试环境没有 autoload 时为 null。
 var _key_binding_manager: Node = null
@@ -80,6 +85,8 @@ func _ready() -> void:
 	_key_binding_settings.hide()
 	_key_binding_category_button.pressed.connect(_on_key_binding_category_pressed)
 	_reset_all_bindings_button.pressed.connect(_on_reset_all_bindings_pressed)
+	_death_button.visible = show_death_button
+	_death_button.pressed.connect(_on_death_button_pressed)
 	_build_binding_rows()
 	_connect_key_binding_manager()
 	_refresh_from_settings()
@@ -315,6 +322,16 @@ func _on_reset_all_bindings_pressed() -> void:
 		return
 	_key_binding_manager.call("reset_all_to_defaults")
 	_set_binding_feedback("")
+
+
+## 转发局内测试死亡请求；死亡事实由暂停菜单通过生命组件产生。
+## 返回值：无。
+func _on_death_button_pressed() -> void:
+	if not show_death_button or _death_button.disabled:
+		return
+	_cancel_binding_listening()
+	_death_button.disabled = true
+	death_requested.emit()
 
 
 ## 管理器广播某个动作改键成功时刷新列表。

@@ -450,6 +450,8 @@ func _read_card_name(card: Node2D) -> String:
 ## @param card 被点击的棋盘卡视图。
 ## @return 无返回值。
 func _on_board_card_clicked(card: Node2D) -> void:
+	if _is_run_ending():
+		return
 	var range_check: Dictionary = _try_get_interaction_range(card)
 	if not bool(range_check["ok"]):
 		_report_out_of_range_interaction(card, float(range_check["distance"]))
@@ -474,10 +476,17 @@ func _on_board_card_clicked(card: Node2D) -> void:
 ## @param stack 卡牌携带的物品堆叠。
 ## @return 无返回值。
 func _handle_loot_card_clicked(card: Node2D, stack: RefCounted) -> void:
+	if _is_run_ending():
+		return
 	var add_result: Variant = _gameplay_port.call("TryAddItemToInventory", stack)
 	var success: bool = add_result is bool and bool(add_result)
 	if not success:
 		return
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	var item: Resource = stack.get("Item")
+	if settlement != null and item != null:
+		# 成功拾取只记录统计；资格和实际带出始终由选择入口控制。
+		settlement.call("record_resource", str(item.get("CardId")), int(stack.get("Amount")))
 	var loot_id: int = int(card.get("LootId")) if card.has_method("SetRoomIdentity") else -1
 	if loot_id >= 0 and _loot_store != null:
 		var room: Vector2i = card.get("RoomPosition")
@@ -525,6 +534,8 @@ func _handle_terrain_card_clicked(card: Node2D, terrain: RefCounted) -> void:
 ## @param card 被按下的棋盘卡视图。
 ## @return 无返回值。
 func _on_board_card_pressed(card: Node2D) -> void:
+	if _is_run_ending():
+		return
 	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
 		return
 
@@ -976,7 +987,7 @@ func _get_night_encounter_chance_multiplier(equipment: Node) -> float:
 ## @param monsters 本场战斗生成的怪物数组。
 ## @return 成功进入战斗返回 true；已处于过场中时返回 false 且不产生任何变化。
 func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> bool:
-	if _is_transitioning or is_instance_valid(_active_battle):
+	if _is_run_ending() or _is_transitioning or is_instance_valid(_active_battle):
 		return false
 	var save_manager: Node = get_node_or_null("/root/SaveManager")
 	if save_manager != null and not bool(save_manager.call("freeze_run_before_battle")):
@@ -987,6 +998,8 @@ func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> b
 	_cancel_active_hold()
 	print("[WorldCombatScenePresenter] Entering Combat!")
 	await _fade_out()
+	if _is_run_ending():
+		return false
 
 	# 背景由战斗场景自身配置，避免探索房间的外观覆盖战斗画面。
 	var battle_instance: Node = _create_battle_instance(battle_deck, monsters)
@@ -998,6 +1011,8 @@ func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> b
 	_set_world_view_visible(false)
 
 	await _fade_in()
+	if _is_run_ending():
+		return false
 	_is_transitioning = false
 	return true
 
@@ -1018,8 +1033,10 @@ func _enter_combat_and_wait_for_result(
 	_battle_result_ready = false
 	if not await _enter_combat(battle_deck, monsters):
 		return false
-	while not _battle_result_ready:
+	while not _battle_result_ready and not _is_run_ending():
 		await get_tree().process_frame
+	if _is_run_ending():
+		return false
 
 	_battle_result_ready = false
 	return _battle_result
@@ -1031,12 +1048,23 @@ func _enter_combat_and_wait_for_result(
 ## @param battle_instance 结束的战斗场景实例。
 ## @return 无返回值。
 func _on_battle_ended(is_victory: bool, battle_instance: Node) -> void:
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	if not is_victory and settlement != null:
+		# 战斗失败可能先于全局死亡事件；两入口使用同一编号与结束门禁去重。
+		settlement.call("finish_run", "death")
+	if _is_run_ending():
+		_battle_result = false
+		_battle_result_ready = true
+		_cancel_active_hold()
+		return
 	if _is_transitioning:
 		return
 
 	_is_transitioning = true
 	print("[WorldCombatScenePresenter] Combat Ended! Victory: %s" % str(is_victory))
 	await _fade_out()
+	if _is_run_ending():
+		return
 
 	if is_instance_valid(battle_instance):
 		battle_instance.queue_free()
@@ -1049,12 +1077,20 @@ func _on_battle_ended(is_victory: bool, battle_instance: Node) -> void:
 
 	_set_world_view_visible(true)
 	await _fade_in()
+	if _is_run_ending():
+		return
 	var save_manager: Node = get_node_or_null("/root/SaveManager")
 	if save_manager != null:
 		save_manager.call("resume_run_after_battle")
 	_is_transitioning = false
 	_battle_result = is_victory
 	_battle_result_ready = true
+
+
+## 无参数；返回轮回流程是否已接管本局，防止异步战斗回调恢复输入。
+func _is_run_ending() -> bool:
+	var settlement: Node = get_node_or_null("/root/SettlementManager")
+	return settlement != null and bool(settlement.call("is_run_ending"))
 
 
 ## 实例化战斗场景并按需注入卡组与怪物数据。
@@ -1156,8 +1192,11 @@ func _run_screen_transition(method_name: String, completed_signal: StringName, a
 		state["done"] = true
 	_screen_transitions.connect(completed_signal, on_completed, CONNECT_ONE_SHOT)
 	_screen_transitions.callv(method_name, arguments)
-	while not bool(state["done"]):
+	while not bool(state["done"]) and not _is_run_ending():
 		await get_tree().process_frame
+	# 死亡会暂停动画；取消这一等待，避免旧异步流程永远挂在暂停的世界上。
+	if _screen_transitions.is_connected(completed_signal, on_completed):
+		_screen_transitions.disconnect(completed_signal, on_completed)
 
 
 ## 读取卡牌上的跨语言 RefCounted 返回值，等价旧 C# card.Call(...) as RefCounted。

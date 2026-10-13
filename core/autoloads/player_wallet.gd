@@ -1,9 +1,7 @@
 extends Node
 
-## 玩家金币 Autoload 的 GDScript 并行实现，同时是「局外存档」的参与者（key = player_wallet）。
-##
-## 本脚本保持旧 C# PlayerWallet 的公开字段、信号和数值规则。旧 C# PlayerWallet.cs
-## 继续保留为兼容垫片，生产 Autoload 通过稳定动态协议被各消费者使用。
+## 玩家金币的兼容入口，同时是局外存档参与者（键为 player_wallet）。
+## 保留现有 Gold、TrySpend、Add 和 GoldChanged 协议，实际余额只存在于 PlayerProfile。
 ##
 ## 存档为什么从 `SettingsManager` 搬到 `SaveManager`：`SettingsManager` 管的是**可丢弃的偏好**
 ## （操作模式、反馈强度），读坏了无痛回退默认值即可；金币是玩家资产，读坏了必须保留现场并
@@ -22,6 +20,9 @@ const SAVE_KEY: String = "player_wallet"
 
 ## 本参与者的作用域字面量，与 `SaveManager.SCOPE_GLOBAL` 同值（由契约套件断言）。
 const SAVE_SCOPE: String = "global"
+const PROFILE_SCRIPT: GDScript = preload("res://core/progression/player_profile.gd")
+## 未入树的测试夹具使用本地档案；生产就绪时绑定 SaveManager 的同一档案。
+var _profile: RefCounted = PROFILE_SCRIPT.new()
 
 ## 金币上限，与 C# `int.MaxValue` 保持一致，避免溢出成负数。
 const MaxGold: int = 2147483647
@@ -33,7 +34,11 @@ const DefaultGold: int = 1200
 signal GoldChanged(gold: int)
 
 ## 当前金币余额，始终保持为非负整数。
-var Gold: int = DefaultGold
+var Gold: int:
+	get:
+		return int(_profile.get("gold"))
+	set(value):
+		_profile.set("gold", value)
 
 
 ## 进入场景树时把自己注册进存档层。
@@ -54,6 +59,9 @@ func _register_with_save_manager() -> void:
 		push_error("PlayerWallet: 未找到 SaveManager，金币将不会跨运行保存。")
 		return
 
+	# 存档层先于参与者就绪；绑定之后，读档与消费方永远使用同一余额。
+	if save_manager.has_method("get_profile"):
+		_profile = save_manager.call("get_profile")
 	save_manager.call("register_participant", self)
 
 

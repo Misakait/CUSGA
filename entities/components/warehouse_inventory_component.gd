@@ -91,6 +91,47 @@ func save_change_signals() -> Array:
 	return ["InventoryChanged"]
 
 
+## 将完整物品堆叠加入局外仓库，保留资源身份与洗炼属性。
+## @param stack 来源 ItemStack；本方法只读取它，不消费或改写来源。
+## @return 无法放入的数量；空堆叠返回 0，不同洗炼属性不会合并。
+func AddItemStack(stack: Variant) -> int:
+	_ensure_initialized()
+	if not (stack is Object) or _stack_is_empty(stack):
+		return 0
+	var item: Resource = _stack_item(stack)
+	var amount: int = _stack_amount(stack)
+	var maximum: int = _max_stack_size(item)
+	if maximum <= 0 or not _can_store_item(item):
+		return amount
+	var rolled_raw: Variant = stack.get("RolledAttributes")
+	var rolled: Dictionary = rolled_raw if rolled_raw is Dictionary else {}
+	var remaining: int = amount
+	# 结算与待领取共用此入口；不能按物品名称合并而吞掉装备的独立属性。
+	for slot: Variant in Slots:
+		if _stack_is_empty(slot) or not _same_item(_stack_item(slot), item):
+			continue
+		if slot.get("RolledAttributes") != rolled or bool(slot.get("IsFull")):
+			continue
+		remaining = int(slot.call("Add", remaining))
+		if remaining == 0:
+			break
+	if remaining > 0:
+		for slot: Variant in Slots:
+			if not _stack_is_empty(slot):
+				continue
+			var placed: int = mini(remaining, maximum)
+			var copy: RefCounted = stack.call("Duplicate") as RefCounted
+			copy.set("Amount", placed)
+			# CopyFrom 保留目标槽对象，且将洗炼字典复制，防止来源结果与仓库互相污染。
+			slot.call("CopyFrom", copy)
+			remaining -= placed
+			if remaining == 0:
+				break
+	if remaining < amount:
+		_notify_inventory_changed()
+	return remaining
+
+
 ## 采集当前仓库槽位。
 ##
 ## 只落 CardId / 数量 / 洗炼属性，不落 Resource 路径或数值，理由见 `save_slot_codec.gd`。

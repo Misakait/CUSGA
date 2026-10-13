@@ -9,11 +9,21 @@
 [ext_resource type="Texture2D" uid="uid://busbhe3wcv2lm" path="res://res/UI/图标ui/背包/背包扣子1.png" id="5_cpq0e"]
 [ext_resource type="FontFile" uid="uid://bsn23eohydwu7" path="res://res/font/Uranus_Pixel_11Px.ttf" id="6_t0vsi"]
 [ext_resource type="Texture2D" uid="uid://cxu8t0gokde2n" path="res://res/UI/格子/格子1.png" id="9_lvnng"]
-[ext_resource type="PackedScene" uid="uid://bupnf6pmnnrxp" path="res://scenes/player_scenes/PlayerChar.tscn" id="9_v2pf1"]
+[ext_resource type="Texture2D" path="res://res/UI/卡牌模板.png" id="9_portrait_frame"]
+[ext_resource type="Texture2D" path="res://res/UI/Player_Char.png" id="9_portrait_image"]
 [ext_resource type="Texture2D" uid="uid://dkvtrnt8nqyn8" path="res://res/UI/图标ui/面板/面板组件1.png" id="10_cb8sa"]
 [ext_resource type="Texture2D" uid="uid://b0o1jn0v3fdaf" path="res://res/UI/图标ui/面板/小面板.png" id="12_y0p38"]
 [ext_resource type="Texture2D" uid="uid://cqjjf1ouymipa" path="res://res/UI/按钮/按钮3.png" id="13_y0p38"]
 [ext_resource type="Texture2D" uid="uid://d1wfqrre3lefv" path="res://res/UI/按钮/按钮2.png" id="14_ohejq"]
+[ext_resource type="Script" path="res://core/ui/settlement/settlement_controller.gd" id="15_root"]
+[ext_resource type="Script" path="res://core/ui/settlement/harvest_section_controller.gd" id="16_harvest"]
+[ext_resource type="Script" path="res://core/ui/settlement/statistics_section_controller.gd" id="17_statistics"]
+[ext_resource type="Script" path="res://core/ui/settlement/text_section_controller.gd" id="18_text"]
+[ext_resource type="Script" path="res://core/ui/settlement/description_container_controller.gd" id="19_description_container"]
+[ext_resource type="Script" path="res://core/ui/settlement/description_section_controller.gd" id="19_description"]
+[ext_resource type="Script" path="res://core/ui/settlement/button_section_controller.gd" id="20_buttons"]
+[ext_resource type="Script" path="res://core/ui/settlement/back_to_menu_button.gd" id="21_menu"]
+[ext_resource type="Script" path="res://core/ui/settlement/next_run_button.gd" id="22_next"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_35b51"]
 texture = ExtResource("13_y0p38")
@@ -30,11 +40,8 @@ texture_margin_right = 15.0
 texture_margin_bottom = 21.0
 modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_uud72"]
-load_path = "res://.godot/imported/按钮3.png-6fab670c65aed5988f04839e49814553.ctex"
-
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g6mrp"]
-texture = SubResource("CompressedTexture2D_uud72")
+texture = ExtResource("13_y0p38")
 texture_margin_left = 15.0
 texture_margin_top = 11.0
 texture_margin_right = 15.0
@@ -42,6 +49,14 @@ texture_margin_bottom = 21.0
 modulate_color = Color(1.353256, 1.353256, 1.353256, 1)
 
 [node name="Settlement" type="Node2D" unique_id=478083771]
+process_mode = 3
+script = ExtResource("15_root")
+
+[node name="InputBlocker" type="Control" parent="."]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 0
 
 [node name="Bg" type="Sprite2D" parent="." unique_id=1453435038]
 position = Vector2(638, 359.5)
@@ -60,6 +75,7 @@ texture = ExtResource("2_aend0")
 region_rect = Rect2(4, 13, 251, 228)
 
 [node name="NinePatchRect" type="NinePatchRect" parent="Harvest/bg" unique_id=1653011128]
+mouse_filter = 2
 offset_left = 719.0
 offset_top = 220.00002
 offset_right = 954.5
@@ -99,6 +115,7 @@ texture = ExtResource("5_cpq0e")
 flip_h = true
 
 [node name="Title" type="Label" parent="Harvest" unique_id=494555393]
+mouse_filter = 2
 offset_left = 768.0
 offset_top = 104.0
 offset_right = 1138.0
@@ -121,13 +138,24 @@ offset_left = 753.0
 offset_top = 268.0
 offset_right = 1155.0
 offset_bottom = 612.0
+horizontal_scroll_mode = 0
+
+[node name="SlotGrid" type="GridContainer" parent="Harvest/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 4
+script = ExtResource("16_harvest")
 
 [node name="Data" type="Node2D" parent="." unique_id=1671689082]
 position = Vector2(-5, -78)
+script = ExtResource("17_statistics")
 
 [node name="bg" type="Node2D" parent="Data" unique_id=38822748]
 
 [node name="bg1" type="NinePatchRect" parent="Data/bg" unique_id=1049130197]
+mouse_filter = 2
 offset_left = 38.0
 offset_top = 167.0
 offset_right = 236.66667
@@ -141,6 +169,7 @@ patch_margin_right = 14
 patch_margin_bottom = 14
 
 [node name="bg2" type="NinePatchRect" parent="Data/bg" unique_id=1813080862]
+mouse_filter = 2
 offset_left = 7.0
 offset_top = 112.0
 offset_right = 224.00002
@@ -151,6 +180,7 @@ patch_margin_left = 56
 patch_margin_right = 54
 
 [node name="格子1" type="NinePatchRect" parent="Data/bg" unique_id=242334344]
+mouse_filter = 2
 offset_left = 62.000008
 offset_top = 191.0
 offset_right = 131.6
@@ -174,14 +204,35 @@ scale = Vector2(3, 3)
 texture = ExtResource("10_cb8sa")
 flip_h = true
 
-[node name="PlayerChar" parent="Data/bg" unique_id=761419866 instance=ExtResource("9_v2pf1")]
+[node name="PlayerChar" type="Node2D" parent="Data/bg" unique_id=761419866]
 position = Vector2(151, 289)
-scale = Vector2(1, 1)
 
-[node name="Camera2D" parent="Data/bg/PlayerChar" index="2" unique_id=751446765]
-enabled = false
+[node name="PlayerView" type="NinePatchRect" parent="Data/bg/PlayerChar"]
+offset_left = -50.5
+offset_top = -70.5
+offset_right = 49.5
+offset_bottom = 69.5
+mouse_filter = 2
+texture = ExtResource("9_portrait_frame")
+region_rect = Rect2(0, 0, 100, 140)
+
+[node name="Label" type="Label" parent="Data/bg/PlayerChar/PlayerView"]
+offset_right = 99.0
+offset_bottom = 33.0
+mouse_filter = 2
+theme_override_fonts/font = ExtResource("6_t0vsi")
+theme_override_font_sizes/font_size = 28
+text = "Player"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="Data/bg/PlayerChar/PlayerView"]
+position = Vector2(50, 83)
+scale = Vector2(2, 2)
+texture = ExtResource("9_portrait_image")
 
 [node name="Title" type="Label" parent="Data" unique_id=887749216]
+mouse_filter = 2
 offset_left = 144.0
 offset_top = 99.0
 offset_right = 514.0
@@ -200,8 +251,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="TimeSection" type="Node2D" parent="Data" unique_id=1757871689]
+script = ExtResource("18_text")
 
 [node name="bg" type="NinePatchRect" parent="Data/TimeSection" unique_id=1708767042]
+mouse_filter = 2
 offset_left = 239.0
 offset_top = 210.0
 offset_right = 417.0
@@ -215,9 +268,10 @@ patch_margin_right = 6
 patch_margin_bottom = 8
 
 [node name="Label" type="Label" parent="Data/TimeSection" unique_id=1476567299]
+mouse_filter = 2
 offset_left = 247.0
 offset_top = 211.0
-offset_right = 509.0
+offset_right = 590.0
 offset_bottom = 262.0
 theme_override_colors/font_color = Color(1, 1, 0.92941177, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.3372549)
@@ -230,8 +284,10 @@ vertical_alignment = 1
 
 [node name="EndingSection" type="Node2D" parent="Data" unique_id=663824140]
 position = Vector2(0, 59)
+script = ExtResource("18_text")
 
 [node name="bg" type="NinePatchRect" parent="Data/EndingSection" unique_id=848646098]
+mouse_filter = 2
 offset_left = 239.0
 offset_top = 210.0
 offset_right = 417.0
@@ -245,9 +301,10 @@ patch_margin_right = 6
 patch_margin_bottom = 8
 
 [node name="Label" type="Label" parent="Data/EndingSection" unique_id=1177105368]
+mouse_filter = 2
 offset_left = 247.0
 offset_top = 211.0
-offset_right = 509.0
+offset_right = 590.0
 offset_bottom = 262.0
 theme_override_colors/font_color = Color(1, 1, 0.92941177, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.3372549)
@@ -260,8 +317,10 @@ vertical_alignment = 1
 
 [node name="Description" type="Node2D" parent="Data" unique_id=1787265540]
 position = Vector2(-163, 188)
+script = ExtResource("19_description_container")
 
 [node name="bg" type="NinePatchRect" parent="Data/Description" unique_id=1247909971]
+mouse_filter = 2
 offset_left = 233.0
 offset_top = 212.0
 offset_right = 495.0
@@ -279,28 +338,31 @@ offset_left = 246.0
 offset_top = 224.0
 offset_right = 746.0
 offset_bottom = 542.0
+horizontal_scroll_mode = 0
+script = ExtResource("19_description")
 
 [node name="Descript" type="Label" parent="Data/Description/ScrollContainer" unique_id=141182539]
-custom_minimum_size = Vector2(500, 205)
+custom_minimum_size = Vector2(480, 205)
 layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.3372549)
 theme_override_colors/font_outline_color = Color(0.40392157, 0.28627452, 0, 0.5176471)
 theme_override_constants/outline_size = 12
 theme_override_fonts/font = ExtResource("6_t0vsi")
 theme_override_font_sizes/font_size = 24
-text = "击败---敌人1
-击败---boss1
-见证生态更迭
-咕咕嘎嘎"
+text = ""
 autowrap_mode = 3
 
 [node name="ButtonSection" type="Node2D" parent="." unique_id=679199932]
 position = Vector2(61, 3)
+script = ExtResource("20_buttons")
 
 [node name="BackToMenu" type="Node2D" parent="ButtonSection" unique_id=590879125]
 position = Vector2(855, 616)
 
 [node name="Button" type="Button" parent="ButtonSection/BackToMenu" unique_id=2068205243]
+script = ExtResource("21_menu")
 offset_left = -158.0
 offset_top = 8.0
 offset_right = -73.5
@@ -311,6 +373,7 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_vaydt")
 theme_override_styles/hover = SubResource("StyleBoxTexture_g6mrp")
 
 [node name="Label" type="Label" parent="ButtonSection/BackToMenu" unique_id=56609730]
+mouse_filter = 2
 offset_left = -141.0
 offset_top = 16.0
 offset_right = -6.0
@@ -328,6 +391,7 @@ vertical_alignment = 1
 position = Vector2(1086, 617)
 
 [node name="Button" type="Button" parent="ButtonSection/BackToMenu2" unique_id=1751770578]
+script = ExtResource("22_next")
 offset_left = -158.0
 offset_top = 8.0
 offset_right = -73.5
@@ -338,6 +402,7 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_vaydt")
 theme_override_styles/hover = SubResource("StyleBoxTexture_g6mrp")
 
 [node name="Label" type="Label" parent="ButtonSection/BackToMenu2" unique_id=1082625985]
+mouse_filter = 2
 offset_left = -141.0
 offset_top = 16.0
 offset_right = -6.0
@@ -351,4 +416,27 @@ text = "再来一把"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[editable path="Data/bg/PlayerChar"]
+[node name="Status" type="Label" parent="ButtonSection"]
+visible = false
+offset_left = 672.0
+offset_top = 554.0
+offset_right = 1158.0
+offset_bottom = 582.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.5, 1)
+theme_override_fonts/font = ExtResource("6_t0vsi")
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="ButtonSection"]
+visible = false
+offset_left = 817.0
+offset_top = 585.0
+offset_right = 991.0
+offset_bottom = 615.0
+theme_override_fonts/font = ExtResource("6_t0vsi")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxTexture_35b51")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_vaydt")
+theme_override_styles/hover = SubResource("StyleBoxTexture_g6mrp")
+text = "重试保存"

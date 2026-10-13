@@ -121,3 +121,4 @@ text = "退出游戏"
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
+show_death_button = true

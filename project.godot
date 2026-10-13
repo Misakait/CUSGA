@@ -30,6 +30,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+SaveManager="*res://core/save/save_manager.gd"
 GlobalEventBus="*uid://f4acdsbh24f4"
 ItemsControl="*uid://b1nat1ps6dux8"
 GlobalWarehouse="*res://core/autoloads/global_warehouse.tscn"
@@ -38,11 +39,11 @@ ScreenTransitions="*uid://byi0pyqiabw0d"
 SettingsManager="*res://core/autoloads/SettingsManager.gd"
 KeyBindingManager="*res://core/input/key_binding_manager.gd"
 WeatherManager="*res://core/autoloads/weather_manager.gd"
-PlayerProgression="*res://core/progression/player_progression.gd"
 PlayerWallet="*res://core/autoloads/player_wallet.gd"
+PlayerProgression="*res://core/progression/player_progression.gd"
 TimeSystem="*res://core/autoloads/time_system.gd"
 PlayerLevel="*res://core/progression/player_level.gd"
-SaveManager="*res://core/save/save_manager.gd"
+SettlementManager="*res://core/gameflow/settlement_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

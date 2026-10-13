@@ -199,3 +199,11 @@ custom_minimum_size = Vector2(150, 42)
 layout_mode = 2
 size_flags_horizontal = 0
 text = "全部恢复默认"
+
+[node name="DeathButton" type="Button" parent="Center/Panel/Margin/RootVBox" unique_id=1139434289]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 42)
+layout_mode = 2
+size_flags_horizontal = 0
+visible = false
+text = "立即死亡"

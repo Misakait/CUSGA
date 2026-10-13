@@ -5,8 +5,8 @@ extends Node
 ## 职责边界（为什么这样切）：
 ## - 本节点只做四件事：文件生命周期（读 / 原子写 / 备份 / 版本）、参与者注册表与协议校验、
 ##   `global` / `run` 作用域分流、变更信号订阅与合并延迟落盘。
-## - 它**不认识**任何玩法数据：`data.global.<save_key>` 的内部结构完全由参与者自己决定。
-##   这样新增一个存档对象只需要新增一个参与者，不需要改存档层。
+## - 存档载荷由参与者决定；本节点兼任纯数据 PlayerProfile 的所有者与新增字段适配入口。
+##   旧钱包、升级、库存参与者继续沿用原有稳定存档键。
 ##
 ## 为什么必须注册成 `[autoload]` 的第一项：参与者要在自己的 `_ready()` 里注册，而注册会
 ## **同步**把存档分发下去（见 `register_participant`）。若 `SaveManager` 排在参与者之后，
@@ -47,6 +47,8 @@ const CORRUPT_SUFFIX: String = ".corrupt"
 
 ## 存档格式版本。结构发生不兼容变化时 +1，并在此处补迁移逻辑。
 const FORMAT_VERSION: int = 1
+const PROFILE_SCRIPT: GDScript = preload("res://core/progression/player_profile.gd")
+const ITEMS_CONTROL_SCRIPT: GDScript = preload("res://core/autoloads/ItemsControl.gd")
 
 ## 局外（跨运行）作用域：写进主存档的 `data.global`。
 const SCOPE_GLOBAL: String = "global"
@@ -79,6 +81,17 @@ const PARTICIPANT_METHODS: Array[String] = [
 @export var SaveFilePath: String = DEFAULT_SAVE_FILE_PATH
 ## 新安装时的默认保存模式，运行时设置优先于此资源。
 @export var RunConfig: Resource = preload("res://resources/save/run_persistence_config.tres")
+## 进程启动时固定持久化策略；运行中修改配置不会把测试收益写入正式存档。
+@export var SettlementSettings: SettlementConfig = preload("res://resources/save/settlement_config.tres")
+
+var _profile: RefCounted = PROFILE_SCRIPT.new()
+var _persistence_enabled: bool = false
+var _policy_locked: bool = false
+var _run_write_hold: bool = false
+var _run_scope_cleared: bool = false
+var _profile_items: Dictionary = {}
+## 测试夹具可注入物品查表函数；生产使用项目物品索引。
+var ProfileItemLookup: Callable = Callable()
 
 ## key → 参与者节点。
 var _participants: Dictionary = {}
@@ -127,6 +140,7 @@ var _frozen_run_data: Dictionary = {}
 ## @return 无返回值。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_lock_persistence_policy()
 	var settings: Node = get_node_or_null("/root/SettingsManager")
 	var default_mode: int = int(RunConfig.get("DefaultMode")) if RunConfig != null else SESSION_ONLY
 	_run_mode = default_mode
@@ -135,6 +149,95 @@ func _ready() -> void:
 		if saved_mode is int and int(saved_mode) in [SESSION_ONLY, DISK]:
 			_run_mode = int(saved_mode)
 	load_from_disk()
+	register_participant(self)
+
+
+## 获取唯一局外档案。无参数；返回进程内共享的纯数据对象。
+func get_profile() -> RefCounted:
+	return _profile
+
+
+## 查询进程启动时确定的持久化开关。无参数；返回是否允许正式玩法存档。
+func is_persistence_enabled() -> bool:
+	_lock_persistence_policy()
+	return _persistence_enabled
+
+
+## 开局前暂停所有玩法写入。无参数；无返回值，重复调用不叠加。
+func begin_run_write_hold() -> void:
+	_run_write_hold = true
+	_dirty = false
+	_dirty_elapsed = 0.0
+	# 全新一局只使用内存状态，旧磁盘快照不能重新水合到本局。
+	_run_scope_cleared = false
+	_run_frozen = false
+	_frozen_run_data.clear()
+	_loaded_data[SCOPE_RUN] = {}
+
+
+## 结算完成后解除写入暂停。无参数；无返回值，不主动保存，由结算入口提交整批资产。
+func end_run_write_hold() -> void:
+	_run_write_hold = false
+
+
+## 配置离树测试实例。参数 path 必须位于 user://test_ 目录，enabled 控制测试写盘；返回是否接受。
+## 必须先于首次加载或策略查询调用，不能用于运行中的正式存档切换。
+func configure_test_persistence(path: String, enabled: bool) -> bool:
+	var normalized: String = path.simplify_path()
+	if is_inside_tree() or _loaded or _policy_locked or not normalized.begins_with("user://test_"):
+		return false
+	SaveFilePath = normalized
+	_persistence_enabled = enabled
+	_policy_locked = true
+	return true
+
+
+## 返回档案的稳定存档键。无参数；返回 player_profile。
+func save_key() -> String:
+	return "player_profile"
+
+
+## 返回档案作用域。无参数；返回 global。
+func save_scope() -> String:
+	return SCOPE_GLOBAL
+
+
+## 返回新增档案字段的自动保存信号。无参数；返回空数组，结算统一提交。
+func save_change_signals() -> Array:
+	return []
+
+
+## 采集新增档案字段。无参数；返回可序列化字典，旧钱包和升级键仍由兼容入口采集。
+func capture_save_data() -> Dictionary:
+	return _profile.call("capture_extra_data")
+
+
+## 水合新增档案字段。参数 data 为 player_profile 载荷；返回是否成功。
+func apply_save_data(data: Dictionary) -> bool:
+	return bool(_profile.call("apply_extra_data", data, Callable(self, "_lookup_profile_item")))
+
+
+func _lock_persistence_policy() -> void:
+	if _policy_locked:
+		return
+	_persistence_enabled = SettlementSettings != null and SettlementSettings.persistence_enabled
+	_policy_locked = true
+
+
+func _can_write_gameplay() -> bool:
+	_lock_persistence_policy()
+	return _persistence_enabled and not _run_write_hold
+
+
+func _lookup_profile_item(id: StringName) -> Resource:
+	if ProfileItemLookup.is_valid():
+		return ProfileItemLookup.call(id) as Resource
+	# SaveManager 最先启动，ItemsControl 尚未建索引；复用其加载方法而不触发第二个 Autoload。
+	if _profile_items.is_empty():
+		var loader: Node = ITEMS_CONTROL_SCRIPT.new()
+		_profile_items = loader.call("load_all_items_from_items_folder")
+		loader.free()
+	return _profile_items.get(id) as Resource
 
 
 ## 查询当前局内保存模式。
@@ -151,7 +254,8 @@ func set_run_mode(mode: int) -> bool:
 	if mode not in [SESSION_ONLY, DISK]:
 		return false
 	_run_mode = mode
-	var settings: Node = get_node_or_null("/root/SettingsManager")
+	# 离树测试实例没有绝对节点路径，不能向引擎请求 /root。
+	var settings: Node = get_node_or_null("/root/SettingsManager") if is_inside_tree() else null
 	var saved: bool = settings != null and bool(settings.call("set_setting", SETTINGS_SECTION, SETTINGS_MODE_KEY, mode))
 	if mode == DISK:
 		# 以玩家眼前的本局覆盖旧局快照，避免切回磁盘模式时发生回滚。
@@ -164,7 +268,7 @@ func set_run_mode(mode: int) -> bool:
 func freeze_run_before_battle() -> bool:
 	if _run_frozen:
 		return true
-	if _run_mode == DISK and not save_now():
+	if _run_mode == DISK and _can_write_gameplay() and not save_now():
 		return false
 	_frozen_run_data = (capture().get(SCOPE_RUN, {}) as Dictionary).duplicate(true)
 	_run_frozen = true
@@ -184,7 +288,7 @@ func resume_run_after_battle() -> void:
 ## @return 对应快照字典或空字典。
 func get_loaded_run_data(key: String) -> Dictionary:
 	_refresh_run_mode_from_settings()
-	if _run_mode != DISK:
+	if _run_mode != DISK or _run_write_hold or _run_scope_cleared:
 		return {}
 	var run_data: Dictionary = _loaded_data.get(SCOPE_RUN, {})
 	return run_data.get(key, {}) as Dictionary
@@ -193,6 +297,8 @@ func get_loaded_run_data(key: String) -> Dictionary:
 ## 在参与者注册前读取已就绪的设置 Autoload；SaveManager 必须保持第一个启动顺序。
 ## @return 无返回值。
 func _refresh_run_mode_from_settings() -> void:
+	if not is_inside_tree():
+		return
 	var settings: Node = get_node_or_null("/root/SettingsManager")
 	if settings == null or not settings.has_method("get_setting"):
 		return
@@ -220,7 +326,7 @@ func _notification(what: int) -> void:
 ## @param delta 距上一帧的秒数。
 ## @return 无返回值。
 func _process(delta: float) -> void:
-	if not _dirty:
+	if not _can_write_gameplay() or not _dirty:
 		_dirty_elapsed = 0.0
 		return
 
@@ -496,6 +602,8 @@ func capture() -> Dictionary:
 		if not data.has(scope):
 			continue
 
+		if scope == SCOPE_RUN and _run_scope_cleared:
+			continue
 		var captured: Variant = participant.call("capture_save_data")
 		if not (captured is Dictionary):
 			push_error(
@@ -507,6 +615,8 @@ func capture() -> Dictionary:
 		var scope_data: Dictionary = data[scope]
 		scope_data[String(key)] = captured
 
+	if _run_scope_cleared:
+		data[SCOPE_RUN] = {}
 	return data
 
 
@@ -528,6 +638,7 @@ func apply(data: Dictionary) -> bool:
 ##
 ## @return 无返回值；结果通过 `has_save()` 与 `get_last_load_error()` 查询。
 func load_from_disk() -> void:
+	_lock_persistence_policy()
 	_loaded = true
 	_loaded_data = {SCOPE_GLOBAL: {}, SCOPE_RUN: {}}
 	_has_valid_save = false
@@ -543,9 +654,9 @@ func load_from_disk() -> void:
 		return
 
 	_last_load_error = primary_error
-	var corrupt_path: String = _preserve_corrupt_file()
+	var corrupt_path: String = _preserve_corrupt_file() if _can_write_gameplay() else SaveFilePath
 	push_error(
-		"SaveManager: 存档无法读取（%s），已保留为 %s，本次以默认值启动。"
+		"SaveManager: 存档无法读取（%s），原始内容保留于 %s，将尝试备份恢复。"
 		% [primary_error, corrupt_path]
 	)
 
@@ -565,7 +676,7 @@ func load_from_disk() -> void:
 ##
 ## @return 无返回值。
 func request_save() -> void:
-	if _is_applying:
+	if _is_applying or not _can_write_gameplay():
 		return
 	_dirty = true
 
@@ -577,11 +688,15 @@ func request_save() -> void:
 ##
 ## @return 写入成功时为 true。
 func save_now() -> bool:
+	if not _can_write_gameplay():
+		return false
 	_dirty = false
 	_dirty_elapsed = 0.0
 
 	var data: Dictionary = capture()
-	if _run_mode == SESSION_ONLY:
+	if _run_scope_cleared:
+		data[SCOPE_RUN] = {}
+	elif _run_mode == SESSION_ONLY:
 		# 仅写局外进度，磁盘上的旧 run 快照原样保留供后续显式切换。
 		data[SCOPE_RUN] = (_loaded_data.get(SCOPE_RUN, {}) as Dictionary).duplicate(true)
 	elif _run_frozen:
@@ -608,6 +723,8 @@ func save_now() -> bool:
 ##
 ## @return 无残留文件时为 true。
 func erase_save() -> bool:
+	if not _can_write_gameplay():
+		return false
 	var all_removed: bool = true
 	for path: String in [
 		SaveFilePath,
@@ -637,6 +754,9 @@ func erase_save() -> bool:
 ##
 ## @return 无返回值。
 func clear_run_scope() -> void:
+	_run_scope_cleared = true
+	_run_frozen = false
+	_frozen_run_data.clear()
 	var run_data: Dictionary = _loaded_data.get(SCOPE_RUN, {}) as Dictionary
 	if run_data == null:
 		run_data = {}
@@ -678,7 +798,7 @@ func _apply_to_participant(participant: Node, key: String) -> bool:
 		scope_data = {}
 
 	var payload: Dictionary = {}
-	if scope == SCOPE_RUN and _run_mode == SESSION_ONLY:
+	if scope == SCOPE_RUN and (_run_mode == SESSION_ONLY or _run_write_hold or _run_scope_cleared):
 		scope_data = {}
 	if scope_data.has(key) and scope_data[key] is Dictionary:
 		payload = scope_data[key]
@@ -811,6 +931,8 @@ func _adopt_document(document: Dictionary) -> void:
 ##
 ## @return 损坏现场文件路径；复制失败时返回空字符串。
 func _preserve_corrupt_file() -> String:
+	if not _can_write_gameplay():
+		return ""
 	var corrupt_path: String = get_corrupt_file_path()
 	if FileAccess.file_exists(corrupt_path):
 		DirAccess.remove_absolute(corrupt_path)
@@ -830,6 +952,8 @@ func _preserve_corrupt_file() -> String:
 ## @param text 要写入的 JSON 文本。
 ## @return 写入成功时为 true。
 func _write_atomically(text: String) -> bool:
+	if not _can_write_gameplay():
+		return false
 	var save_directory: String = get_save_directory()
 	var directory_error: Error = DirAccess.make_dir_recursive_absolute(save_directory)
 	if directory_error != OK and directory_error != ERR_ALREADY_EXISTS:
