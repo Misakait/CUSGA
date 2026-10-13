@@ -26,8 +26,29 @@ CUSGA 使用 `tests/godot/` 下的 GDScript 测试和真实场景冒烟测试。
   ```
 
   只把文件放进 `tests/godot/` 会得到 `No suite named '...' is registered (N discovered)`。补壳文件后重新 `filesystem_manage(op="scan")` 即可被发现；重载插件**不会**刷新该缓存。
+- **套件必须覆写 `suite_name()`**：`McpTestSuite.suite_name()` 的默认返回值是 `"unnamed"`，不覆写就会以 `unnamed` 注册，`test_run(suite="xxx")` 永远报 `No suite named 'xxx' is registered`。此时错误信息里的 `suites_available` 会含一个 `unnamed` 条目——那通常就是刚写的套件，不要被它误导成「发现被截断」。正确形状：
+
+  ```gdscript
+  ## 提供 GodotAI 使用的稳定套件名称。
+  func suite_name() -> String:
+  	return "xxx_contract"
+  ```
+
+  名字与文件名去掉 `test_` 前缀后一致，便于按套件名过滤。
 - **`tests/godot/` 下并非每个文件都是套件**：其中十多个是 `extends SceneTree` 的独立运行脚本（如 `world_hold_interaction_tests.gd`、`passage_guard_tests.gd`），它们不注册为 `McpTestSuite`，`test_run` 永远发现不到，而项目又禁止用命令行 `--script` 运行（无法加载 autoload）。**改动波及这些文件里的断言时，不要声称已通过测试**：把相关断言等价复刻进一个可运行的套件，或在场景冒烟里用 `game_eval` 实证。
 - **编辑器测试的边界**：`PackedScene.instantiate()` 对非 `@tool` 的生产脚本只会得到占位实例，方法不可调用。这类行为（贴图切换、节点生命周期）不要硬塞进 `test_run`，改为在冒烟阶段用 `game_eval` 断言真实运行期结果；套件侧只保留数据契约与源码形状断言，并在套件注释里写明该限制。
+- **`find_symbols` / `resource_manage(op="load")` 不是解析检查**：两者都会命中 GDScript 的缓存解析结果。实测出现过 `find_symbols` 正常返回全部函数、`resource_manage(op="load")` 返回合法 GDScript，而文件里实际存在 `Identifier "point" not declared in the current scope.` 的情况。该错误只在 `project_run` 里以 `Could not resolve class "res://..."` 的形式暴露，且报错行指向**引用方**的 `extends` 行，极易被误判成缓存问题。**判断脚本能否解析，只认游戏运行或扫描后的 `logs_read(source="editor")`。**
+- **否定断言不要用 `contains()` 匹配标识符**：脚本里解释「不要写 X」的注释本身包含 X，会让 `assert_false(source.contains("X"))` 直接失败。改成只看真正的声明行：
+
+  ```gdscript
+  func _has_declaration_line(text: String, keyword: String) -> bool:
+  	for line: String in text.split("\n"):
+  		if line.strip_edges().begins_with(keyword):
+  			return true
+  	return false
+  ```
+
+- **套件失效时会静默退化为「零断言」**：`building_system_tests.tscn` 曾因夹具缺少一个信号而在 `_ready()` 抛错，整个场景中断，**一项断言都不执行**，但运行时只看到一条普通错误。改动这类自包含场景后，必须确认日志里出现了它的汇总行（例如 `[BuildingSystem] 建筑测试：72 项断言，14 项失败`），看不到汇总行就等于没跑过。
 
 ### 场景冒烟测试
 

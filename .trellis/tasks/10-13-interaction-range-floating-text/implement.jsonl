@@ -1,0 +1,15 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "UI 组件与共享表现的硬约束：全屏覆盖层的 CanvasLayer 层级与 mouse_filter=IGNORE 陷阱、共享表现参数放在无状态配置脚本中避免复制数值，以及「复用已有提示节点、不要为同一种提示创建第二套全局系统」这条（本次用户明确选择新建独立浮字节点，取舍与代价必须记录在案）。"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "autoload 相关硬约束：SaveManager 必须是 [autoload] 第一项；test_run 环境没有 autoload，参与者不得直接引用 autoload 标识符，必须用 const NodePath + get_node_or_null，否则脚本连解析都过不去。本次新增 FloatingText autoload 与两个调用方都要遵守。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "GDScript 风格与 Godot 验证口径：制表符缩进、显式返回类型、@export 与 get_node_or_null 用法、新建 class_name 后先 scan、缺少必需依赖用 push_error 而可降级依赖用 push_warning。以及「编辑器必须保持打开、结束时只 stop 不关编辑器」的验证要求。"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "决定新增文件放哪：可复用 UI 视图放 core/ui/ 子目录，autoload 需先检查 project.godot 的 [autoload]，测试放 tests/godot/。本次新增 core/ui/feedback/ 与 core/autoloads/ 两个位置的依据。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "处理 CanvasItem/Control/Node2D 的 Variant 边界与动态 call 的类型安全写法，以及协调器与建筑控制器里既有大量动态协议调用（has_method + call）的规范依据。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "跨层数据流与边界识别：本次改动跨「输入 → 控制器 → 表现组件」三层，且把建筑的提示职责从底部 Label 迁到全局服务，需按该指南核对单一职责与调用边界。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复用判断：工程内已有浮字节点 CombatFeedbackPopup，本次经用户确认选择不复用，因此必须按该指南把「为什么不复用、代价是什么、何时收敛」写成可追溯的技术债，而不是静默重复实现。"}
+{"file": ".trellis/spec/guides/minimal-feature-start.md", "reason": "最小改动起步与避免过度设计的口径：本次只接两条入口、不做美术资源化、不改任何数值、不做浮字系统收敛，符合最小功能面原则。"}
+{"file": "tests/godot/test_world_interaction_coordinator_contract.gd", "reason": "被改动文件的既有契约套件。test_interaction_range_gate 锁定：两处入口都必须先做距离判定、必须保留 [WorldInteraction] 日志文本、协调器源码不得出现 _card_display_name( 字面量。改动后必须继续全绿。"}
+{"file": "core/ui/hud/world_hold_progress_indicator.gd", "reason": "本项目已验证的「世界目标 → 屏幕坐标」换算范式（get_screen_transform），飘字服务沿用同一口径以避免重复踩全屏 Control 尺寸与相机变换的坑。"}
+{"file": "core/building/building_controller.gd", "reason": "本次改动面最大的文件：8 处 _show_feedback 改飘字、删除 FeedbackSeconds/_feedback/_feedback_left 计时器、拆出 _is_record_in_range 区分距离与遮挡、简化 _hint 的三处 _feedback 引用。必须逐段确认既有调用方语义不变。"}
+{"file": "core/building/building_service.gd", "reason": "提示文案的来源：message 同时承载成功（已放置/已拆除）与失败（这里已有建筑/这座建筑不能拆除），因此飘字必须按 success 分色，不能一律用红色。"}
+{"file": "tests/godot/building_system_tests.gd", "reason": "建筑回归场景，会 preload 并继承 building_controller.gd，注入真实 HintPath Label 并直接调用 _unhandled_input/_input/_begin_demolition/_process/_placement_failure/_complete_demolition。必须确认改动后仍 0 项失败，且它不受 _feedback 移除影响。"}
+{"file": "docs/建筑系统.md", "reason": "文档漂移点：第 37 行记录了 FeedbackSeconds 参数，删除该导出后必须同步更新，否则留下失效参数说明。"}
+{"file": "scripts/battle_scripts/combat_feedback_popup.gd", "reason": "工程内已有的浮字节点（class_name CombatFeedbackPopup）。本次不复用它，但要记录其能力边界（字体未设置、描边色硬编码、对象池持有、不自行释放）作为技术债依据，并在契约测试中断言它零改动。"}

@@ -115,3 +115,17 @@
 - 覆盖层必须设 `mouse_filter = MOUSE_FILTER_IGNORE`（枚举值 `2`），否则会吞掉其下方所有输入。
 - 乘法混合的 `CanvasItemMaterial` 用 `blend_mode = BLEND_MODE_MUL`，枚举值是 **`3`** 而不是 `1`（`1` 是 `BLEND_MODE_ADD`）；写错不会报错，只会得到发白的画面。
 - 全屏覆盖层的入场应直接吸附到当前应有的状态（而非播放入场动画），否则场景切换时会看到一次多余的渐变或闪烁。
+
+## 飘字提示（FloatingText）
+
+离散结果的即时反馈（距离不足、放置/拆除失败）走全局飘字服务，不要挤进底部状态标签。底部标签保留**每帧实时状态**（当前交互提示、落点是否合法、进行中进度）。
+
+- **服务与组件分离**：`core/autoloads/floating_text.gd`（autoload `FloatingText`）负责承载层、坐标换算与去重；`core/ui/feedback/floating_text_label.gd` 负责单条飘字的样式与生命周期。服务不判断「该不该提示」，组件不知道「为什么提示」。
+- **调用方零耦合**：交互目标（棋盘卡视图、建筑视图）不需要为实现提示新增任何接口——服务用 `CanvasItem.get_screen_transform()` 自行读取目标坐标。这是刻意的设计约束：给目标加 `get_anchor_position()` 之类的接口会把表现需求渗进领域对象。
+- **飘字必须在暂停时继续推进**：`Tween` 默认跟随宿主节点的处理状态，场景树暂停时 Tween 一起停，飘字会**永久停在屏幕上**且不释放。此时 `SceneTreeTimer` 默认 `process_always = true` 不受暂停影响——计时器正常、Tween 冻住，现象很具迷惑性。飘字节点必须设 `process_mode = Node.PROCESS_MODE_ALWAYS`。
+- **去重要覆盖同一次点击的多路信号**：`BoardCardView` 在一次左键里先后发出 `Pressed` 与 `Clicked`，两条路径都会走到同一个提示函数。服务侧用「同文案 + 同位置 + 时间窗」抑制重复，不要把去重逻辑散到各调用点。
+- **字体与描边由调用方传入**：组件不设默认字体，避免工程里出现第二处字体参数来源。本项目唯一字体是 `res://res/font/Uranus_Pixel_11Px.ttf`，字号 `28`、描边 `6`、描边色纯黑。
+- **不要用 `LabelSettings`**：它会整体覆盖 `theme_override` 的颜色，调用方传入的颜色会失效。一律用 `add_theme_font_override` / `add_theme_font_size_override` / `add_theme_color_override` / `add_theme_constant_override`。
+- **锚点语义**：`show_at_world` 用 `viewport.get_canvas_transform() * world_position`；`show_at_target` 用 `get_screen_transform()`（已含相机变换与画布偏移）。**拆除成功的飘字必须用 `show_at_world` 并传入拆除前捕获的坐标**——`TryDemolish` 成功会同步触发 `BuildingsChanged` 重建视图，此时传入的视图节点已失效，`show_at_target` 会退回鼠标位置。
+- **颜色按结果语义分**：服务的 `message` 同时承载成功（「已放置/已拆除」）与失败文案，调用方必须按 `success` 分色，不能一律用失败红。
+- 验证口径：一次 `game_eval` 内断言 `label.position + label.size * 0.5` 等于锚点（而不是目视截图），并在暂停状态下断言它仍会淡出（`modulate.a` 推进）且最终 `is_instance_valid` 为 false、宿主子节点数回到 0。

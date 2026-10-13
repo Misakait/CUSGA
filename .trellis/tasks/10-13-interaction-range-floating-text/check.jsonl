@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "质量门口径：Godot 验证必须走编辑器 MCP（filesystem_manage scan、test_run、project_run、logs_read、game_eval、editor_screenshot），结束时只 project_manage(op=stop) 不关编辑器；以及脚本、场景、资源引用的搜索要求。"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "验收飘字组件的可复用性与层级正确性：CanvasLayer 层级必须与既有 0/1/2 错开、全屏 Control 的 mouse_filter 必须为 IGNORE。同时用于复核「新建第二套浮字节点」这个有意识取舍是否已被记录为技术债。"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "验收 autoload 改动：SaveManager 仍是 [autoload] 第一项、FloatingText 顺序正确、两个调用方全部走 NodePath 而非裸标识符（test_run 无 autoload）。"}
+{"file": ".trellis/spec/guides/index.md", "reason": "修改前硬规则清单：先搜索引用再改公开脚本路径与节点名、先确定所有者再决定状态放哪。用于复核本次是否越界改了目标代码，以及删除 FeedbackSeconds 是否漏了引用点。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "复核「不修改目标代码」这条约束是否真的做到：飘字能力是否全部收敛在服务与表现组件，调用方是否只做转发；以及建筑提示职责迁移后是否留下双写或悬空引用。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复核技术债是否被如实记录：工程内两个浮字节点（CombatFeedbackPopup 与 FloatingTextLabel）的边界、收敛路径与不收敛理由。"}
+{"file": "tests/godot/test_world_interaction_coordinator_contract.gd", "reason": "回归验收的必跑套件，特别是 test_interaction_range_gate 的六条断言（导出范围、单一距离助手、两处入口、日志文本、不得出现 _card_display_name(）。"}
+{"file": "tests/godot/building_system_tests.gd", "reason": "建筑回归的必跑场景（不是 test_run 套件，必须 project_run 该 .tscn）。验收目标是输出「0 项失败」且断言数不低于基线，覆盖 _begin_demolition、_complete_demolition、_placement_failure、_unhandled_input 等被改动路径。"}
+{"file": "core/board/board_card_view.gd", "reason": "验收 AC-8「目标零改动」的对照文件：其 _input_event 同帧双发 Pressed 与 Clicked，是去重需求的证据来源，也是必须确认未被修改的对象。"}
+{"file": "core/building/building_view.gd", "reason": "验收 AC-8「建筑视图脚本零改动」的对照文件：建筑提示改用世界坐标后不应再需要视图暴露任何新接口。"}
