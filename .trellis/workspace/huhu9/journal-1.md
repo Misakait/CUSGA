@@ -39,3 +39,36 @@
 - 当前改动仍未提交、未推送；任务保持 `in_progress`，等待用户按本地协作规则决定是否提交。
 - 用户最终指定大地图改为 T 键：`project.godot/open_map` 绑定物理 T，`UILargeMap.open_map_action` 导出到 Inspector，生产脚本不硬编码按键。运行时确认 M 不触发，T 可开关，并正确恢复打开前的暂停状态。
 
+
+
+## Session 1: 修复 CraftingUI 合成按钮无效
+<!-- trellis-session: v=2 fp=e988d25d1496f0af -->
+
+**Date**: 2026-10-14
+**Task**: 修复 CraftingUI 合成按钮无效
+**Branch**: `main`
+
+### Summary
+
+任务已完成并归档，代码未提交：修正控件路径和正整数次数；结构7断言及真实游戏29检查通过，Main鼠标点击正确合成火把。
+
+### Main Changes
+
+- 控制器修复按钮/数量绑定、默认1次、文本提交与空配方禁用；增加制作UI回归套件。
+- 同步建筑文档、机制汇总和UI规范，修正实际篝火配方为1树枝产1牌。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] Godot 4.7.1：crafting_ui_contract 7结构断言、29运行检查通过；Main实际鼠标合成正确。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 按需由用户审阅并决定Git提交；旧test_item_room_content解析及公共协议lint命名是既有问题，未修。

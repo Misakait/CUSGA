@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Godot UI 验证与引用核对"}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"中文文档注释与改动范围"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"真实运行和有意义的回归测试"}
+{"file":".trellis/tasks/10-13-crafting-ui-craft-fix/research.md","reason":"根因、范围与验收依据"}
