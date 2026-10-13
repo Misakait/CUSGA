@@ -117,10 +117,16 @@ class PortProbe extends Node:
 class MapViewProbe extends Node2D:
 	## 房间切换广播。
 	signal on_entered_room(position: Vector2i, scene: Node2D)
+	## 邻房就绪广播；生产控制器用它实时建立建筑视图。
+	signal room_activated(position: Vector2i, scene: Node2D)
+	## 房间释放广播；生产控制器用它丢弃该房间的建筑视图索引。
+	signal room_deactivating(position: Vector2i, scene: Node2D)
 	## 当前地图坐标。
 	var current_position: Vector2i = Vector2i.ZERO
 	## 当前房间实体。
 	var current_scene: Node2D
+	## 已实例化房间的坐标到场景映射；生产控制器的首帧绑定会读取它。
+	var active_instances: Dictionary = {}
 
 
 ## 提供地图尺寸协议。
