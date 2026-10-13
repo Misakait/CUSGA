@@ -44,6 +44,7 @@ PlayerProgression="*res://core/progression/player_progression.gd"
 TimeSystem="*res://core/autoloads/time_system.gd"
 PlayerLevel="*res://core/progression/player_level.gd"
 SettlementManager="*res://core/gameflow/settlement_manager.gd"
+FloatingText="*res://core/autoloads/floating_text.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

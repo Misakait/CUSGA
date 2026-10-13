@@ -54,6 +54,15 @@ const REUSABLE_GATHERING_TIME_COST_INDEX: int = 0
 ## 可采集判定协议在方法名数组中的下标。
 const REUSABLE_GATHERING_CAN_HARVEST_INDEX: int = 1
 
+## 飘字服务 Autoload 的固定挂载路径。
+## 必须走 NodePath 而不是直接写 FloatingText 标识符：test_run 环境没有 autoload，
+## 裸标识符会让整个脚本以「Identifier not found」解析失败，而不是运行时报错。
+const FLOATING_TEXT_PATH: NodePath = ^"/root/FloatingText"
+## 距离不足时在交互目标处显示的文案。
+const OUT_OF_RANGE_TEXT: String = "距离不够！"
+## 飘字服务的公开入口方法名；动态协议名集中定义，避免字符串散落到调用点。
+const FLOATING_TEXT_SHOW_AT_TARGET: StringName = &"show_at_target"
+
 ## 驻守战斗结束后向地图通道控制器回传结果。
 signal PassageGuardEncounterFinished(is_victory: bool)
 ## 局外长按完成时通知 GDScript 地图拥有者执行其保留的业务流程。
@@ -110,6 +119,8 @@ var _loot_store: Node = null
 var _encounter_manager: Node = null
 ## 时间 Autoload；以稳定 Node 协议持有，兼容旧 C# 与生产 GDScript 实现。
 var _time_system: Node = null
+## 飘字服务 Autoload；缺失时静默降级为「只有调试日志、没有画面提示」。
+var _floating_text: Node = null
 ## 过场 Autoload。
 var _screen_transitions: Node = null
 ## 世界根节点。
@@ -167,6 +178,10 @@ func _ready() -> void:
 	_encounter_manager = get_node(EncounterManagerPath)
 	_time_system = get_node_or_null(TIME_SYSTEM_PATH)
 	_screen_transitions = get_node_or_null(ScreenTransitionsPath)
+	_floating_text = get_node_or_null(FLOATING_TEXT_PATH)
+	if _floating_text == null:
+		# 可降级依赖：没有飘字服务时距离判定照常生效，只是玩家看不到画面反馈。
+		push_warning("WorldInteractionCoordinator 未找到 FloatingText Autoload，距离不足将只输出调试日志：%s" % FLOATING_TEXT_PATH)
 	_world_root = get_node(WorldRootPath)
 	_hold_interaction_controller = get_node(HoldInteractionControllerPath)
 
@@ -423,6 +438,26 @@ func _report_out_of_range_interaction(card: Node2D, distance: float) -> void:
 		"[WorldInteraction] 拒绝超出范围的交互：目标 %s，距离 %.1f 像素，当前 InteractionRange = %.1f 像素。"
 		% [_read_card_name(card), distance, InteractionRange]
 	)
+	_show_out_of_range_floating_text(card)
+
+
+## 在交互目标处提示距离不足。
+##
+## 画面反馈与调试日志共用同一个漏斗函数：点击与长按两个鼠标入口都会走到
+## _report_out_of_range_interaction，因此不需要在两个入口各接一次提示。
+##
+## 服务缺失时静默降级：只保留调试日志，不报错、也不影响交互判定本身。
+## 这里用 has_method + call 而不是 preload 服务脚本，使协调器与飘字服务之间没有编译期耦合；
+## 卡牌坐标由服务自行读取，卡牌视图不需要为实现提示而新增任何接口。
+##
+## @param card 被拒绝交互的卡牌视图。
+## @return 无返回值。
+func _show_out_of_range_floating_text(card: Node2D) -> void:
+	if _floating_text == null or not is_instance_valid(_floating_text):
+		return
+	if not _floating_text.has_method(FLOATING_TEXT_SHOW_AT_TARGET):
+		return
+	_floating_text.call(FLOATING_TEXT_SHOW_AT_TARGET, card, OUT_OF_RANGE_TEXT)
 
 
 ## 读取卡牌显示名，等价旧 C# card.Call("GetCardDisplayName")。

@@ -9,6 +9,21 @@ const DEFAULT_VIEW: PackedScene = preload("res://scenes/building/building_view.t
 const SERVICE_SCRIPT: GDScript = preload("res://core/building/building_service.gd")
 ## 表现扩展基类，避免配置一个只有同名方法但不兼容的场景。
 const VIEW_SCRIPT: GDScript = preload("res://core/building/building_view.gd")
+## 飘字服务 Autoload 的固定挂载路径。
+## 必须走 NodePath 而不是直接写 FloatingText 标识符：test_run 环境没有 autoload，
+## 裸标识符会让整个脚本以「Identifier not found」解析失败，而不是运行时报错。
+const FLOATING_TEXT_PATH: NodePath = ^"/root/FloatingText"
+## 飘字服务的两个公开入口方法名；动态协议名集中定义，避免字符串散落到调用点。
+const FLOATING_TEXT_SHOW_AT_TARGET: StringName = &"show_at_target"
+const FLOATING_TEXT_SHOW_AT_WORLD: StringName = &"show_at_world"
+## 距离不足时显示的文案；与棋盘卡共用同一措辞，让「距离不够」在全工程只有一种说法。
+const OUT_OF_RANGE_TEXT: String = "距离不够！"
+## 建筑成功提示的颜色。
+## 刻意在本文件定义而不从飘字服务读取：飘字服务是可选依赖（缺失时必须静默降级），
+## 调用方一旦 preload 服务脚本就会重新引入编译期耦合，从而失去这个降级能力。
+const SUCCESS_TEXT_COLOR: Color = Color(1.0, 1.0, 1.0, 1.0)
+## 建筑失败提示的颜色；与飘字服务的默认红保持同一语义。
+const FAILURE_TEXT_COLOR: Color = Color(1.0, 0.25, 0.2, 1.0)
 ## 玩家实体路径；与承载数值的 Player 节点分离。
 @export var PlayerBodyPath: NodePath = ^"../../PlayerChar"
 ## 玩家上下文端口路径。
@@ -33,8 +48,6 @@ const VIEW_SCRIPT: GDScript = preload("res://core/building/building_view.gd")
 @export_flags_2d_physics var ObstacleMask: int = 32
 ## 玩家脚下预留半径，防止建筑实体把角色卡在占地内。
 @export_range(1.0, 100.0) var PlayerClearance: float = 20.0
-## 成功或失败提示的可见秒数，运行时可调整。
-@export_range(0.1, 10.0) var FeedbackSeconds: float = 2.5
 
 ## 规则服务实例。
 var _service: RefCounted = SERVICE_SCRIPT.new()
@@ -68,12 +81,10 @@ var _preview: Node2D
 var _views: Dictionary = {}
 ## 活动房间各自持有建筑视图索引；交互仍只读取当前房间的 _views。
 var _views_by_room: Dictionary = {}
-## 最近一次反馈文本。
-var _feedback: String = ""
-## 反馈剩余真实秒数。
-var _feedback_left: float = 0.0
 ## 当前正在拆除的实例标识，负数表示没有活动拆除；一次按下仅选定一栋。
 var _demolition_id: int = -1
+## 飘字服务 Autoload；缺失时静默降级为「不显示提示」，不影响任何交互判定。
+var _floating_text: Node = null
 
 
 ## 解析场景依赖并连接意图；无参数，无返回值。
@@ -93,6 +104,10 @@ func _ready() -> void:
 	_map_view.connect("room_deactivating", _on_room_deactivating)
 	_store.connect("BuildingsChanged", _on_buildings_changed)
 	get_window().focus_exited.connect(_cancel_demolition)
+	_floating_text = get_node_or_null(FLOATING_TEXT_PATH)
+	if _floating_text == null:
+		# 可降级依赖：没有飘字服务时全部交互判定照常生效，只是玩家看不到提示。
+		push_warning("BuildingController 未找到 FloatingText Autoload，建筑提示将不会显示：%s" % FLOATING_TEXT_PATH)
 	# Gameplay 先于 MapSystem 初始化，延后一帧才能读取初始房间。
 	call_deferred("_bind_initial_room")
 
@@ -150,7 +165,6 @@ func BeginPlacement(data: Resource) -> void:
 	_preview = DEFAULT_VIEW.instantiate() as Node2D
 	_buildings_root.add_child(_preview)
 	_preview.call("Configure", data, true)
-	_feedback_left = 0.0
 
 
 ## 取消预览；无参数，无返回值，不消耗库存或行动值。
@@ -215,12 +229,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	_cancel_world_hold()
 	# 建筑效果与时间只经服务结算一次。
 	var result: Dictionary = _service.call("TryInteract", record, _context(), get_node(TimeSystemPath))
-	_show_feedback(String(result.get("message", "")))
+	_show_building_result(int(record["id"]), result)
 
 
-## 每帧刷新落点与最近建筑提示；delta 为真实帧间隔，无返回值。
-func _process(delta: float) -> void:
-	_feedback_left = maxf(0.0, _feedback_left - delta)
+## 每帧刷新落点与最近建筑提示；_delta 为真实帧间隔，无返回值。
+##
+## 这里只维护「持续状态」：落点预览说明、拆除进行中、F 交互提示。
+## 离散的成功/失败结果改由飘字服务播报，因此不再需要反馈倒计时。
+func _process(_delta: float) -> void:
 	if not _world_available() or _has_open_overlay():
 		CancelPlacement()
 		_cancel_demolition()
@@ -237,7 +253,7 @@ func _process(delta: float) -> void:
 		_preview.call("SetPlacementValid", reason.is_empty())
 		_hint.text = "左键放置 %s · 右键 / Esc 取消\n%s" % [
 			_placing_data.get("CardName"),
-			_feedback if _feedback_left > 0.0 else ("可以放置" if reason.is_empty() else reason)]
+			"可以放置" if reason.is_empty() else reason]
 		_set_focus(-1)
 		return
 	if _demolition_id >= 0:
@@ -252,7 +268,7 @@ func _process(delta: float) -> void:
 	# 目标同时决定高亮与文案，防止提示一栋却操作另一栋。
 	var record: Dictionary = _nearest_building()
 	_set_focus(int(record.get("id", -1)))
-	_hint.text = _feedback if _feedback_left > 0.0 else _interaction_prompt(record)
+	_hint.text = _interaction_prompt(record)
 	_hint.visible = not _hint.text.is_empty()
 
 
@@ -263,12 +279,14 @@ func _confirm_placement() -> void:
 	# 本次预检的失败原因；空字符串表示可以继续。
 	var reason: String = _placement_failure(point)
 	if not reason.is_empty():
-		_show_feedback(reason)
+		# 飘字只挂真实左键提交入口：_placement_failure 每帧被 _process 调用做落点预览，
+		# 在那里提示会每秒刷出几十条飘字。
+		_show_world_floating_text(point, reason, FAILURE_TEXT_COLOR)
 		return
 	# 自定义场景先校验协议，损坏的场景不能吞掉库存牌。
 	var view: Node2D = _create_view(_placing_data)
 	if view == null:
-		_show_feedback("建筑场景配置无效")
+		_show_world_floating_text(point, "建筑场景配置无效", FAILURE_TEXT_COLOR)
 		return
 	view.free()
 	# 确认时重查仓库、库存，预览合法不代表提交必然合法。
@@ -276,7 +294,7 @@ func _confirm_placement() -> void:
 		_room_scene.to_local(point), _room_bounds(), _inventory(), _store, _placement_blockers())
 	if bool(result.get("success", false)):
 		CancelPlacement()
-	_show_feedback(String(result.get("message", "")))
+	_show_world_result(point, result)
 
 
 ## 预检可达性、占地和物理障碍；point 为世界落点，返回失败原因。
@@ -352,12 +370,24 @@ func _nearest_building() -> Dictionary:
 	return nearest
 
 
-## 检查距离与遮挡；record 为当前仓库记录，返回是否允许使用或拆除。
-func _is_record_reachable(record: Dictionary) -> bool:
+## 检查建筑是否在交互距离内。
+##
+## 与遮挡判定分离，使「距离不够」提示能只按距离原因触发；距离口径与原内联判定逐字相同。
+##
+## @param record 建筑仓库记录。
+## @return 玩家与建筑中心的世界距离不超过 InteractionRadius 时为 true。
+func _is_record_in_range(record: Dictionary) -> bool:
 	# 交互与拆除共享同一距离门禁，不允许隔墙远程破坏。
 	var point: Vector2 = _room_scene.to_global(record["position"])
-	if _player_body.global_position.distance_to(point) > float(record["data"].get("InteractionRadius")):
+	return _player_body.global_position.distance_to(point) <= float(record["data"].get("InteractionRadius"))
+
+
+## 检查距离与遮挡；record 为当前仓库记录，返回是否允许使用或拆除。
+func _is_record_reachable(record: Dictionary) -> bool:
+	if not _is_record_in_range(record):
 		return false
+	# 射线需要目标中心的世界坐标，因此这里独立求一次，不复用距离入口的局部变量。
+	var point: Vector2 = _room_scene.to_global(record["position"])
 	# 排除目标自身碰撞，但其它建筑与墙体仍阻挡射线。
 	var view: Node2D = _views.get(int(record["id"])) as Node2D
 	if not is_instance_valid(view) or not view.is_visible_in_tree():
@@ -419,23 +449,27 @@ func _begin_demolition(record: Dictionary) -> void:
 	if not _world_available() or _has_open_overlay() or _placing_data != null:
 		return
 	if not _is_record_reachable(record):
-		_show_feedback("请靠近建筑，并确保中间没有障碍")
+		# 距离不足统一用与棋盘卡相同的文案；纯遮挡只讲障碍，
+		# 避免距离其实充足时旧合并文案还叫玩家「靠近建筑」。
+		if _is_record_in_range(record):
+			_show_building_failure(int(record["id"]), "中间有障碍，无法拆除")
+		else:
+			_show_building_failure(int(record["id"]), OUT_OF_RANGE_TEXT)
 		return
 	# 只读建筑配置决定能否拆除和长按秒数。
 	var data: Resource = record["data"]
 	if not data.has_method("CanDemolish") or not bool(data.call("CanDemolish")):
-		_show_feedback("这座建筑不能拆除")
+		_show_building_failure(int(record["id"]), "这座建筑不能拆除")
 		return
 	# 生成掉落必须有有效棋盘，不能先删建筑再发现掉落端口缺失。
 	var board: Node = _buildings_root.get_parent()
 	# 所有世界长按共用同一计时端口，防止同时完成多个交互。
 	var hold: Node = _world_hold()
 	if hold == null or not hold.has_method("begin_timed_hold") or not board.has_method("SpawnLootCards"):
-		_show_feedback("暂时无法拆除")
+		_show_building_failure(int(record["id"]), "暂时无法拆除")
 		return
 	_cancel_world_hold()
 	_demolition_id = int(record["id"])
-	_feedback_left = 0.0
 	# 圆环锚定可见图标，随相机移动保持贴合目标。
 	var view: Node2D = _views[_demolition_id]
 	hold.call("begin_timed_hold", self, float(data.get("DemolitionHoldSeconds")),
@@ -459,6 +493,9 @@ func _complete_demolition() -> void:
 		return
 	# 取消长按会清理控制器标识，因此先固定待提交的实例。
 	var instance_id: int = _demolition_id
+	# 飘字锚点必须在提交前固定：拆除成功会同步重建 _views 并释放旧视图，
+	# 事后既取不到该建筑节点，也拿不到它的世界坐标。
+	var anchor_position: Vector2 = _building_world_position(instance_id)
 	# 掉落使用棋盘公开接口，和地形掉落共用拾取流程。
 	var board: Node = _buildings_root.get_parent()
 	_cancel_demolition()
@@ -468,7 +505,7 @@ func _complete_demolition() -> void:
 	var result: Dictionary = _service.call("TryDemolish", _room, instance_id, _store)
 	if bool(result.get("success", false)):
 		board.call("SpawnLootCards", result["drops"], _room_scene.to_global(result["position"]))
-	_show_feedback(String(result.get("message", "")))
+	_show_world_floating_text(anchor_position, String(result.get("message", "")), _result_text_color(result))
 
 
 ## 仅取消本建筑控制器持有的长按，不干扰随后接管圆环的其它交互。
@@ -615,7 +652,89 @@ func _world_hold() -> Node:
 	return _coordinator.get_node_or_null("WorldHoldInteractionController")
 
 
-## 设置短暂反馈，随后自动恢复靠近提示。
-func _show_feedback(message: String) -> void:
-	_feedback = message
-	_feedback_left = FeedbackSeconds
+## 在世界坐标处显示飘字；服务不可用或文案为空时静默跳过。
+##
+## @param world_position 世界坐标锚点。
+## @param message 显示文案。
+## @param text_color 正文颜色。
+## @return 无返回值。
+func _show_world_floating_text(world_position: Vector2, message: String, text_color: Color) -> void:
+	if message.is_empty() or not _has_floating_text():
+		return
+	_floating_text.call(FLOATING_TEXT_SHOW_AT_WORLD, world_position, message, text_color)
+
+
+## 在建筑处显示飘字。
+##
+## @param instance_id 建筑实例标识。
+## @param message 显示文案。
+## @param text_color 正文颜色。
+## @return 无返回值。
+func _show_building_floating_text(instance_id: int, message: String, text_color: Color) -> void:
+	_show_world_floating_text(_building_world_position(instance_id), message, text_color)
+
+
+## 在世界落点处按服务结果分色显示提示。
+##
+## @param world_position 世界落点。
+## @param result 服务返回的 success/message 字典。
+## @return 无返回值。
+func _show_world_result(world_position: Vector2, result: Dictionary) -> void:
+	_show_world_floating_text(world_position, String(result.get("message", "")), _result_text_color(result))
+
+
+## 在建筑处按服务结果分色显示提示。
+##
+## @param instance_id 建筑实例标识。
+## @param result 服务返回的 success/message 字典。
+## @return 无返回值。
+func _show_building_result(instance_id: int, result: Dictionary) -> void:
+	_show_building_floating_text(instance_id, String(result.get("message", "")), _result_text_color(result))
+
+
+## 在建筑处显示固定失败文案。
+##
+## @param instance_id 建筑实例标识。
+## @param message 失败文案。
+## @return 无返回值。
+func _show_building_failure(instance_id: int, message: String) -> void:
+	_show_building_floating_text(instance_id, message, FAILURE_TEXT_COLOR)
+
+
+## 返回服务结果对应的提示颜色。
+##
+## 服务的 message 同时承载成功（已放置 / 已拆除）与失败（这里已有建筑 / 不能拆除）文案，
+## 因此不能一律用红色，否则「已放置」这类成功提示会被显示成报错。
+##
+## @param result 服务返回的 success/message 字典。
+## @return 成功为白色，失败为红色。
+func _result_text_color(result: Dictionary) -> Color:
+	return SUCCESS_TEXT_COLOR if bool(result.get("success", false)) else FAILURE_TEXT_COLOR
+
+
+## 读取建筑的世界坐标。
+##
+## 飘字锚点用世界坐标而不是建筑视图节点：拆除成功会同步重建 _views 并释放旧节点，
+## 传节点会让提示回退到鼠标位置，而不是停在被拆的建筑处。
+##
+## @param instance_id 建筑实例标识。
+## @return 建筑中心的世界坐标；记录已不存在时退回房间原点。
+func _building_world_position(instance_id: int) -> Vector2:
+	if not is_instance_valid(_room_scene) or not is_instance_valid(_store):
+		return Vector2.ZERO
+	for record: Dictionary in _store.call("GetBuildings", _room):
+		if int(record["id"]) == instance_id:
+			return _room_scene.to_global(record["position"])
+	return _room_scene.global_position
+
+
+## 判断飘字服务是否可用。
+##
+## 用 has_method 做鸭子类型，使服务缺失或版本不匹配时只降级提示、不影响交互判定本身。
+##
+## @return 服务存在且实现了两个飘字入口时为 true。
+func _has_floating_text() -> bool:
+	if _floating_text == null or not is_instance_valid(_floating_text):
+		return false
+	return _floating_text.has_method(FLOATING_TEXT_SHOW_AT_TARGET) \
+		and _floating_text.has_method(FLOATING_TEXT_SHOW_AT_WORLD)
