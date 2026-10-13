@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3 uid="uid://d12wclmkkm3uo"]
+[gd_resource type="Resource" script_class="RoomTerrainProfile" format=3 uid="uid://d12wclmkkm3uo"]
 
 [ext_resource type="Script" uid="uid://ywb5murk6b7e" path="res://resources/encounters/monster_stat_multiplier_range.gd" id="1_0gpsb"]
 [ext_resource type="Texture2D" uid="uid://dohmdu5g5goyh" path="res://res/environment/tree.png" id="2_kmtei"]
