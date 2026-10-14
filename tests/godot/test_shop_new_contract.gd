@@ -147,7 +147,8 @@ func test_scene_wiring_and_explicit_input_boundaries() -> void:
 	assert_true(buy.contains("_button.pressed.connect(request_purchase)"))
 	assert_true(buy.contains("_quantity.apply()"))
 	assert_true(sell.contains("_quantity.apply()"))
-	assert_false(buy.contains("value_changed.connect"))
+	# 购买数量现在允许刷新价签，但不能把数量信号接到交易提交入口。
+	assert_false(buy.contains("value_changed.connect(request_purchase)"))
 	assert_false(sell.contains("value_changed.connect"))
 	var icon: String = FileAccess.get_file_as_string("res://core/ui/shop/shop_sell_icon.gd")
 	assert_true(icon.contains("NOTIFICATION_DRAG_BEGIN"))

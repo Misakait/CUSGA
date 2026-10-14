@@ -145,6 +145,7 @@ func refresh() -> void:
 
 func _refresh_money() -> void:
 	var gold: int = int(_wallet.get("Gold"))
+	_buy.call("update_budget", gold)
 	(get_node("Shop/CoinPanel/CoinCount") as Label).text = str(gold)
 	var cost: int = int(_progression.call("GetWarehouseNextCost"))
 	var maximum: bool = bool(_progression.call("IsWarehouseMaxLevel"))
@@ -181,7 +182,7 @@ func _on_slot_clicked(slot: Button) -> void:
 	if side == &"goods" and index >= 0 and index < _catalog.size():
 		_goods_list.call("select", index)
 		var item: Resource = _catalog[index]
-		_buy.call("show_item", item, int(_bridge.call(BUY_PRICE, item)))
+		_buy.call("show_item", item, int(_bridge.call(BUY_PRICE, item)), int(_wallet.get("Gold")))
 	elif side == &"warehouse":
 		_warehouse_list.call("select", index)
 
