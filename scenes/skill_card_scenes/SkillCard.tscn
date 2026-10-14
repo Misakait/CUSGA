@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ca8m4rlwkbbvq"]
 
 [ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/skill_card.gd" id="1_wvnnh"]
-[ext_resource type="Texture2D" uid="uid://dnjy64ygxba7l" path="res://res/skillcard/技能卡模板2.png" id="2_wvnnh"]
+[ext_resource type="Texture2D" uid="uid://8frcsmvgisa5" path="res://res/Card/skillcardboard/技能卡模板-红.png" id="2_78v1l"]
 [ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="3_78v1l"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
@@ -13,7 +13,7 @@ script = ExtResource("1_wvnnh")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=801007691]
 scale = Vector2(1.5, 1.5)
-texture = ExtResource("2_wvnnh")
+texture = ExtResource("2_78v1l")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1777527990]
 
@@ -28,9 +28,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -46.0
-offset_top = -59.5
+offset_top = -54.5
 offset_right = 88.0
-offset_bottom = -26.0
+offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_78v1l")
@@ -45,9 +45,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -88.0
-offset_top = -59.5
+offset_top = -54.5
 offset_right = -42.0
-offset_bottom = -26.0
+offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_78v1l")
@@ -68,7 +68,8 @@ offset_bottom = 59.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_78v1l")
-text = "标签"
+text = "标签
+标签"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -88,12 +89,13 @@ grow_vertical = 2
 autowrap_mode = 3
 
 [node name="CardCost" type="Label" parent="." unique_id=822735793]
-offset_left = 40.0
+offset_left = 32.0
 offset_top = -16.0
-offset_right = 80.0
+offset_right = 72.0
 offset_bottom = 65.0
 theme = ExtResource("3_78v1l")
-text = "10"
+text = "10
+攻击"
 horizontal_alignment = 1
 vertical_alignment = 1
 

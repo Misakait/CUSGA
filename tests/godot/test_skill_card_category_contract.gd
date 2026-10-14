@@ -7,7 +7,9 @@ extends McpTestSuite
 ## 1）类别常量与默认值（未分类 0 / 攻击 1 / 防御 2 / 状态 3）；
 ## 2）生产技能卡都带**显式**类别行——证明回填确实落盘，而不是被默认值悄然吞掉；
 ## 3）卡面脚本的类别→贴图映射指向正确的模板，并保留未分类兜底；
-## 4）卡面的类别镜像常量与数据脚本的类别常量数值一致，防止两处各自演化。
+## 4）卡面的类别镜像常量与数据脚本的类别常量数值一致，防止两处各自演化；
+## 5）卡面「能耗 + 类别」标签：类别文字与数据脚本 @export_enum 标签逐字一致，
+##    且文字与底板颜色共用同一份类别判定（否则会出现「红底写未分类」的卡面）。
 ##
 ## 环境限制：真实卡面 `SkillCard` 是非 `@tool` 的 Node2D 脚本，编辑器测试里
 ## `PackedScene.instantiate()` 只能得到占位实例、方法不可调用（与
@@ -37,9 +39,18 @@ const FRAME_ROWS: Array = [
 
 ## 卡面镜像常量 → 数据脚本常量；两侧数值必须一致。
 const MIRROR_ROWS: Array = [
+	["CATEGORY_UNCLASSIFIED", "CARD_CATEGORY_UNCLASSIFIED"],
 	["CATEGORY_ATTACK", "CARD_CATEGORY_ATTACK"],
 	["CATEGORY_DEFENSE", "CARD_CATEGORY_DEFENSE"],
 	["CATEGORY_STATUS", "CARD_CATEGORY_STATUS"],
+]
+
+## 卡面类别文字常量名 → 期望文本；顺序必须与数据脚本 @export_enum 的标签顺序一致。
+const CATEGORY_TEXT_ROWS: Array = [
+	["CATEGORY_UNCLASSIFIED", "未分类"],
+	["CATEGORY_ATTACK", "攻击"],
+	["CATEGORY_DEFENSE", "防御"],
+	["CATEGORY_STATUS", "状态"],
 ]
 
 ## 代表性生产卡：普通纯伤害卡 + 攻防数值相等的平局卡（按规则归攻击牌）。
@@ -192,3 +203,79 @@ func test_representative_cards_expose_category() -> void:
 		if card == null:
 			continue
 		assert_eq(card.get("CardCategory"), 1, "%s 的类别应为攻击牌（1）。" % path)
+
+
+## CardCost 必须写成「能耗 + 类别」两行，且类别文字与底板配色共用同一份判定。
+##
+## 真实卡面是非 `@tool` 脚本，编辑器测试无法实例化出可调用的行为（见文件头环境限制），
+## 因此这里锁定源码形状；「运行时确实渲染出两行文字」由冒烟阶段的 `game_eval` 断言。
+func test_cost_label_carries_energy_and_category() -> void:
+	var source: String = _read(SKILL_CARD_GD)
+	assert_gt(source.length(), 0, "卡面脚本必须可读。")
+
+	# 只写能耗会让场景里的占位类别留在卡面上，出现与实际数据不符的假类别。
+	assert_true(
+		source.contains('$CardCost.text = "%s\\n%s" % [str(data.cost), _resolve_card_category_text(card_data)]'),
+		"init_card_data 必须把「能耗 + 类别」两行文本写给 CardCost。"
+	)
+	assert_true(
+		source.contains("func _resolve_card_category_text(card_data) -> String:"),
+		"卡面脚本必须提供类别→文字的解析函数。"
+	)
+	# 文字与底板颜色必须同源：各写一份判定迟早会出现「红底写着未分类」的卡面。
+	assert_true(
+		source.contains("func _resolve_card_category(card_data) -> int:"),
+		"类别判定必须只有一份实现。"
+	)
+	assert_true(
+		source.contains("match _resolve_card_category(card_data):"),
+		"类别→贴图的解析必须复用同一份类别判定。"
+	)
+
+
+## 卡面类别文字必须与数据脚本 @export_enum 的标签逐项、逐字一致。
+##
+## 数据侧用这套词描述类别，卡面再用另一套词就会让同一张卡在两个地方「叫法不同」。
+func test_face_category_text_matches_data_enum_labels() -> void:
+	var script: Script = load(SKILL_CARD_DATA_GD) as Script
+	assert_true(script != null, "技能卡数据脚本必须可加载。")
+	if script == null:
+		return
+	var instance: Resource = script.new() as Resource
+	assert_true(instance != null, "技能卡数据脚本必须可实例化。")
+	if instance == null:
+		return
+
+	# 枚举标签只存在于属性提示串里，常量表读不到，因此从实例的属性列表取。
+	var enum_labels: PackedStringArray = PackedStringArray()
+	for property_info: Dictionary in instance.get_property_list():
+		if StringName(property_info.get("name", "")) == &"CardCategory":
+			enum_labels = String(property_info.get("hint_string", "")).split(",")
+			break
+	assert_eq(
+		enum_labels.size(),
+		CATEGORY_TEXT_ROWS.size(),
+		"CardCategory 的枚举标签数量必须与卡面文字表一致，实际：%s。" % str(enum_labels)
+	)
+
+	var face_constants: Dictionary = _constants_of(SKILL_CARD_GD)
+	var names: Variant = face_constants.get("CATEGORY_DISPLAY_NAMES")
+	assert_true(names is Dictionary, "卡面脚本必须声明 CATEGORY_DISPLAY_NAMES 文字表。")
+	if not (names is Dictionary):
+		return
+	var display_names: Dictionary = names
+
+	for index in CATEGORY_TEXT_ROWS.size():
+		var row: Array = CATEGORY_TEXT_ROWS[index]
+		var category_value: Variant = face_constants.get(row[0])
+		assert_eq(
+			display_names.get(category_value),
+			row[1],
+			"类别 %s 的卡面文字必须是「%s」。" % [row[0], row[1]]
+		)
+		if index < enum_labels.size():
+			assert_eq(
+				enum_labels[index],
+				row[1],
+				"数据脚本 @export_enum 第 %d 项必须与卡面文字一致。" % index
+			)

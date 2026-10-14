@@ -31,9 +31,24 @@ const CARD_FRAME_UNCLASSIFIED: Texture2D = preload("res://res/skillcard/技能�
 ## 反而把编译期能发现的错误推迟到运行时。这里沿用项目既有的「镜像常量 + 契约测试锁死」
 ## 做法（参见 scripts/shop/shop_control.gd 的 FAILURE_* 镜像），由
 ## tests/godot/test_skill_card_category_contract.gd 断言两侧数值一致，防止两处漂移。
+const CATEGORY_UNCLASSIFIED: int = 0
 const CATEGORY_ATTACK: int = 1
 const CATEGORY_DEFENSE: int = 2
 const CATEGORY_STATUS: int = 3
+
+## 类别取值 → 卡面类别行文本。
+##
+## 文字必须与 skill_card_data.gd 的 @export_enum("未分类", "攻击", "防御", "状态") 标签逐字一致：
+## 同一张卡在数据侧和卡面上必须叫同一个名字，否则玩家会把类别理解成两套概念。
+## 未分类同样给出文字而不是留空：CardCost 是「能耗 + 类别」两行标签，
+## 第二行留空既像是卡面渲染缺内容，也让人分不清是漏配类别还是别的类别。
+const CATEGORY_DISPLAY_NAMES := {
+	CATEGORY_UNCLASSIFIED: "未分类",
+	CATEGORY_ATTACK: "攻击",
+	CATEGORY_DEFENSE: "防御",
+	CATEGORY_STATUS: "状态",
+}
+
 const ELEMENT_DISPLAY_NAMES := {
 	0: "无",
 	1: "木",
@@ -99,10 +114,43 @@ func init_card_data(card_data: Resource) -> void:
 	# 通过稳定显示属性获取标签，多个标签继续以换行分隔。
 	$CardTag.text = data.DisplayTag
 	$CardTag.visible = not $CardTag.text.is_empty()
-	$CardCost.text = str(data.cost)
+	# CardCost 现在是「能耗 + 类别」两行标签（见 scenes/skill_card_scenes/SkillCard.tscn）：
+	# 只写能耗会把场景里的占位类别留在卡面上，出现与实际数据不符的假类别，
+	# 因此能耗与类别必须在同一个绑定入口里一次写全。
+	$CardCost.text = "%s\n%s" % [str(data.cost), _resolve_card_category_text(card_data)]
 	# 底板贴图与上面这些文本同源：文字说的是哪张卡，颜色就必须说同一件事，
 	# 因此换色放在唯一的绑定入口里，而不是让各复用界面自己判断。
 	$Sprite2D.texture = _resolve_card_frame(card_data)
+
+## 解析卡牌类别取值。
+##
+## 参数 card_data：技能卡资源；允许为空，也允许是缺少 CardCategory 字段的旧资源。
+## 返回值：CARD_CATEGORY_* 对应的取值；字段缺失、为空或类型不符时返回未分类（0）。
+func _resolve_card_category(card_data) -> int:
+	if card_data == null:
+		return CATEGORY_UNCLASSIFIED
+
+	# 类别字段是手工配置项，旧资源或缺字段的资源会返回 null，这里必须按值判定而不是直接转换。
+	var category: Variant = card_data.get("CardCategory")
+	if not (category is int):
+		return CATEGORY_UNCLASSIFIED
+
+	return int(category)
+
+## 解析卡面「类别」行文本。
+##
+## 与 _resolve_card_frame 共用 _resolve_card_category：文字和底板颜色必须说同一件事，
+## 各写一份判定迟早会出现「红底写着未分类」这类自相矛盾的卡面。
+##
+## 参数 card_data：技能卡资源；允许为空，也允许是缺少 CardCategory 字段的旧资源。
+## 返回值：类别显示名，永不为空字符串。
+func _resolve_card_category_text(card_data) -> String:
+	var category: int = _resolve_card_category(card_data)
+	if CATEGORY_DISPLAY_NAMES.has(category):
+		return CATEGORY_DISPLAY_NAMES[category]
+
+	# 未知取值与未分类同处理，与 _resolve_card_frame 的兜底分支保持一致。
+	return CATEGORY_DISPLAY_NAMES[CATEGORY_UNCLASSIFIED]
 
 ## 按卡牌类别选择卡面底板贴图。
 ##
@@ -112,15 +160,8 @@ func init_card_data(card_data: Resource) -> void:
 ## 参数 card_data：技能卡资源；允许为空，也允许是缺少 CardCategory 字段的旧资源。
 ## 返回值：应显示的底板贴图，永不为 null。
 func _resolve_card_frame(card_data) -> Texture2D:
-	if card_data == null:
-		return CARD_FRAME_UNCLASSIFIED
-
-	# 类别字段是手工配置项，旧资源或缺字段的资源会返回 null，这里必须按值判定而不是直接转换。
-	var category: Variant = card_data.get("CardCategory")
-	if not (category is int):
-		return CARD_FRAME_UNCLASSIFIED
-
-	match int(category):
+	# 类别判定只有 _resolve_card_category 一份实现，这里只负责把取值映射到贴图。
+	match _resolve_card_category(card_data):
 		CATEGORY_ATTACK:
 			return CARD_FRAME_ATTACK
 		CATEGORY_DEFENSE:
