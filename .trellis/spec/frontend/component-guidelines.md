@@ -11,6 +11,7 @@
 ### 合成控件绑定与验证
 
 - 新 `CraftingUI.tscn` 的数量框为 `DetailSection/OutPutCount/SpinBox`，按钮为 `DetailSection/OutPutCount/Craft/CraftButton`。控制器修改节点路径前检查场景实际结构；必需控件不能依靠 `get_node_or_null` 后跳过连接来隐藏路径错误。
+- CraftingUI 的 DetailSection 材料格仅由 mouse_entered / mouse_exited 显示和隐藏提示；item_selected 不得接到提示显示入口。左键仍记录材料浏览选择，右键仍可取消，配方区的选择与提示行为保持独立，不改变当前制作配方、次数和材料预览。
 - 数量为配方执行次数，默认、最小、步进均为 1；上限来自 `MaxCraftableQuantity(recipe)`，没有配方或上限为 0 时禁用编辑与按钮。按钮只把 `recipe, quantity` 交给 `TryCraftWithReason`，不在 View 内扣料。
 - 回归验证必须使用真实场景按钮的 `pressed` 事件并断言库存消耗与产物数量。直接调用服务无法发现节点路径或事件连接错误；编辑器内非 `@tool` 场景脚本的占位实例不能替代游戏进程验证。
 

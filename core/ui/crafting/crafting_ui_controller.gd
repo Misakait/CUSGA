@@ -54,7 +54,7 @@ func _ready() -> void:
 	_recipe_controller.item_hovered.connect(_show_item_tooltip)
 	_recipe_controller.item_left.connect(_hide_tooltip)
 	_recipe_controller.selection_cancelled.connect(_hide_tooltip)
-	_ingredient_controller.item_selected.connect(_on_ingredient_selected)
+	# 材料提示只由悬停驱动，点击浏览不能重新显示或固定提示。
 	_ingredient_controller.item_hovered.connect(_show_item_tooltip)
 	_ingredient_controller.item_left.connect(_hide_tooltip)
 	_ingredient_controller.selection_cancelled.connect(_hide_tooltip)
@@ -139,9 +139,6 @@ func _select_recipe(recipe: Variant, _slot: BaseButton = null) -> void:
 	_recipe_controller.set_selected(recipe)
 	_show_item_tooltip(_resource(recipe, "OutputItem"), _slot)
 	_refresh_details()
-
-func _on_ingredient_selected(item: Resource, slot: BaseButton) -> void:
-	_show_item_tooltip(item, slot)
 
 func _refresh_details() -> void:
 	var max_quantity: int = 0
