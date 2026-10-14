@@ -10,8 +10,9 @@ var _item: Resource
 var _quantity: SpinBox
 var _button: Button
 var _icon: TextureRect
+var _unit_price: int = 0
 
-## 绑定现有购买区。参数 view 为 BuyArea；返回无，仅首次绑定时连接按钮。
+## 绑定现有购买区。参数 view 为 BuyArea；返回无，连接提交和价格刷新信号。
 func bind(view: Node) -> void:
 	if _view == view:
 		return
@@ -19,8 +20,16 @@ func bind(view: Node) -> void:
 		_button.pressed.disconnect(request_purchase)
 	if is_instance_valid(_icon) and _icon.gui_input.is_connected(_on_icon_gui_input):
 		_icon.gui_input.disconnect(_on_icon_gui_input)
+	if is_instance_valid(_quantity) and _quantity.value_changed.is_connected(_on_quantity_changed):
+		_quantity.value_changed.disconnect(_on_quantity_changed)
 	_view = view
 	_quantity = view.get_node("BuyCount/SpinBox") as SpinBox
+	_quantity.min_value = 0
+	_quantity.step = 1
+	_quantity.rounded = true
+	_quantity.allow_greater = false
+	_quantity.allow_lesser = false
+	_quantity.value_changed.connect(_on_quantity_changed)
 	_button = view.get_node("Buy/BuyButton") as Button
 	_button.pressed.connect(request_purchase)
 	_icon = view.get_node("ItemIcon") as TextureRect
@@ -31,21 +40,47 @@ func bind(view: Node) -> void:
 		_icon.gui_input.connect(_on_icon_gui_input)
 	clear()
 
-## 显示所选商品。参数 item 为原资源、unit_price 为原桥接单价；返回无，不触发购买。
-func show_item(item: Resource, unit_price: int) -> void:
+## 显示所选商品。参数 item 为原资源、unit_price 为桥接单价、gold 为当前金币；返回无，不触发购买。
+func show_item(item: Resource, unit_price: int, gold: int) -> void:
 	_item = item
+	_unit_price = unit_price
 	(_view.get_node("ItemIcon") as TextureRect).texture = COMPAT.call("get_display_icon", item, null) as Texture2D
 	(_view.get_node("NameContainer/NameLabel") as Label).text = String(COMPAT.call("get_display_name", item, "请选择商品"))
-	(_view.get_node("PriceContainer/PriceLabel") as Label).text = "单价：%d" % unit_price if item != null else "单价：—"
 	(_view.get_node("DescriptionContainer/DescriptionLabel") as Label).text = String(COMPAT.call("get_display_description", item, ""))
 	_button.disabled = item == null or unit_price <= 0
+	update_budget(gold)
+	_quantity.value = 1 if _quantity.max_value >= 1 else 0
+	_refresh_price()
+
+## 更新可购买数量。参数 gold 为当前权威金币；返回无，只收窄超出余额的数量，不重置用户选择。
+func update_budget(gold: int) -> void:
+	var maximum: int = 0
+	if _item != null and _unit_price > 0:
+		maximum = floori(float(maxi(gold, 0)) / float(_unit_price))
+	# Range 的上下限同时约束按钮、滚轮和提交后的文本，避免只拦截一种输入方式。
+	_quantity.max_value = maximum
+	_quantity.editable = maximum > 0
+	_quantity.value = clampi(int(_quantity.value), 0, maximum)
+	_refresh_price()
+
+func _on_quantity_changed(_value: float) -> void:
+	# 数量变化仅更新价签，交易仍只能由购买按钮提交。
+	_refresh_price()
+
+func _refresh_price() -> void:
+	var label: Label = _view.get_node("PriceContainer/PriceLabel") as Label
+	if _item == null:
+		label.text = "单价：—"
+		return
+	var quantity: int = int(_quantity.value)
+	label.text = "单价：%d" % _unit_price if quantity <= 1 else "总价：%d" % (_unit_price * quantity)
 
 ## 清除临时商品和数量；返回无。
 func clear() -> void:
 	if not is_instance_valid(_view):
 		return
 	_quantity.value = 0
-	show_item(null, 0)
+	show_item(null, 0, 0)
 
 ## 提交购买意图；返回无，先吸收尚未失焦的文本，数量为零也交给协调者显示提示。
 func request_purchase() -> void:
