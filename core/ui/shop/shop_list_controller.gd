@@ -30,9 +30,13 @@ func refresh(entries: Array) -> void:
 		_grid.remove_child(removed)
 		removed.queue_free()
 	for index: int in entries.size():
-		var callback: Callable = Callable(_controller, "_on_slot_selection_cancelled")
-		if not slots[index].is_connected("selection_cancelled", callback):
-			slots[index].connect("selection_cancelled", callback)
+		var slot: Button = slots[index]
+		# 缓存场景重入时格子仍存在，刷新必须恢复退出时解除的悬停和取消订阅。
+		for binding: Array in _selection_input_bindings(slot):
+			var signal_name: StringName = binding[0]
+			var callback: Callable = binding[1]
+			if not slot.is_connected(signal_name, callback):
+				slot.connect(signal_name, callback)
 		slots[index].call("bind_content", entries[index])
 
 ## 同步本区单选。参数 index 为位置、-1 为取消；返回无。
@@ -40,9 +44,20 @@ func select(index: int) -> void:
 	for position: int in slots.size():
 		slots[position].call("set_selected", position == index)
 
-## 解除本区新增的取消浏览订阅。无参数；返回无，宿主退出时调用。
+## 解除本区取消浏览与悬停订阅。无参数；返回无，宿主退出时调用。
 func disconnect_selection_input() -> void:
-	var callback: Callable = Callable(_controller, "_on_slot_selection_cancelled")
 	for slot: Button in slots:
-		if is_instance_valid(slot) and slot.is_connected("selection_cancelled", callback):
-			slot.disconnect("selection_cancelled", callback)
+		if not is_instance_valid(slot):
+			continue
+		for binding: Array in _selection_input_bindings(slot):
+			var signal_name: StringName = binding[0]
+			var callback: Callable = binding[1]
+			if slot.is_connected(signal_name, callback):
+				slot.disconnect(signal_name, callback)
+
+func _selection_input_bindings(slot: Button) -> Array:
+	return [
+		[&"selection_cancelled", Callable(_controller, "_on_slot_selection_cancelled")],
+		[&"mouse_entered", Callable(_controller, "_on_slot_mouse_entered").bind(slot)],
+		[&"mouse_exited", Callable(_controller, "_on_slot_mouse_exited").bind(slot)],
+	]

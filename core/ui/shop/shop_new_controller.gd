@@ -129,8 +129,9 @@ func refresh() -> void:
 	for item: Resource in _catalog:
 		goods.append({"item": item, "price": int(_bridge.call(BUY_PRICE, item))})
 	_goods_list.call("refresh", goods)
-	# 详情框展示的是来源格当前物品，外部库存变化后不能继续显示已经消失的物品。
-	if _tooltip_item != null and not is_instance_valid(_tooltip_slot):
+	# 悬停来源可能在刷新时被移除或清空，不能继续显示已经消失的物品。
+	if _tooltip_item != null and (not is_instance_valid(_tooltip_slot) \
+		or not _tooltip_slot.is_inside_tree() or _tooltip_slot.is_queued_for_deletion() or _tooltip_slot.disabled):
 		_hide_tooltip()
 	elif is_instance_valid(_tooltip_slot) and _tooltip_slot.get("side") == &"warehouse":
 		var selected_entry: Dictionary = SOURCE.call("snapshot", _warehouse, int(_tooltip_slot.get("slot_index")))
@@ -167,24 +168,31 @@ func _on_slot_selection_cancelled(slot: Button) -> void:
 		return
 	# 浏览状态不拥有购买商品、数量和待售来源，右键取消不能清空交易区。
 	_clear_slot_selection()
-	_hide_tooltip()
 
 func _on_slot_clicked(slot: Button) -> void:
 	if not _active or _trading:
 		return
 	var side: StringName = slot.get("side")
 	var index: int = int(slot.get("slot_index"))
+	_clear_slot_selection()
 	if side == &"goods":
-		clear_selection()
-	else:
-		_clear_slot_selection()
+		# 点击只更新交易区，提示框的显示期限由鼠标进出决定，不能变成固定详情。
+		_buy.call("clear")
 	if side == &"goods" and index >= 0 and index < _catalog.size():
 		_goods_list.call("select", index)
 		var item: Resource = _catalog[index]
 		_buy.call("show_item", item, int(_bridge.call(BUY_PRICE, item)))
-		_show_tooltip(item, slot)
 	elif side == &"warehouse":
 		_warehouse_list.call("select", index)
+
+func _on_slot_mouse_entered(slot: Button) -> void:
+	if not _active or _trading or slot.disabled or get_viewport().gui_is_dragging():
+		return
+	var side: StringName = slot.get("side")
+	var index: int = int(slot.get("slot_index"))
+	if side == &"goods" and index >= 0 and index < _catalog.size():
+		_show_tooltip(_catalog[index], slot)
+	elif side == &"warehouse":
 		var entry: Dictionary = SOURCE.call("snapshot", _warehouse, index)
 		var warehouse_item: Resource = entry.get("item") as Resource
 		if warehouse_item != null and int(entry.get("amount", 0)) > 0:
@@ -192,16 +200,17 @@ func _on_slot_clicked(slot: Button) -> void:
 		else:
 			_hide_tooltip()
 
+func _on_slot_mouse_exited(slot: Button) -> void:
+	# 离开旧格子的信号不能收起刚进入新格子时显示的内容。
+	if _tooltip_slot == slot:
+		_hide_tooltip()
+
 func _show_tooltip(item: Resource, slot: Button) -> void:
 	if _presenter == null or item == null:
 		return
 	_tooltip_slot = slot
 	_tooltip_item = item
 	_presenter.call("Show", item)
-	var anchor: Vector2 = slot.get_global_transform_with_canvas() * Vector2(slot.size.x, 0.0)
-	var tooltip: Node = get_node_or_null("TooltipLayer/TooltipPanel")
-	if tooltip != null:
-		tooltip.call("set_fixed_anchor", anchor)
 
 func _hide_tooltip() -> void:
 	_tooltip_slot = null

@@ -152,3 +152,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: 右键取消任务提交后收尾
+<!-- trellis-session: v=2 fp=2644a2c7a27ec65f -->
+
+**Date**: 2026-10-14
+**Task**: 右键取消任务提交后收尾
+**Branch**: `main`
+
+### Summary
+
+用户已提交四界面右键取消实现；完成任务归档。收尾仅更新Trellis记录，保留用户agent.local.md，不创建新提交。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e94ac05` | fix：选取格子后，右键取消选取 |
+
+### Status
+
+[OK] **Completed**
