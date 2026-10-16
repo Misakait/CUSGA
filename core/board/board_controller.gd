@@ -161,13 +161,20 @@ func SpawnTerrainCardForRoom(room: Vector2i, terrain_instance: RefCounted, local
 	return card
 
 
-## 根据仓库记录重建一张掉落卡，可选择播放首次散射。
+## 根据仓库记录重建一张掉落卡，直接显示在记录位置。
+##
+## 本方法**不**播放掉落飞出动画：调用方是房间流式恢复，这些掉落物不是「刚被破坏产出」，
+## 直接出现在记录位置才是正确表现。破坏产出需要飞出动画时改用 SpawnLootRecordWithScatter。
+##
+## 注意：不要在签名末尾再加「可选散射起点」这类参数。早期版本把「落在哪里」和「是否播
+## 飞出动画」两种语义挤在同一个可选参数里，读代码的人无从判断调用方该走哪条路径；拆成
+## 两个方法之后语义才明确，也才看得清房间恢复路径本就不该有动画。
+##
 ## @param room 房间坐标。
 ## @param record 含 id、stack、position 的仓库记录。
 ## @param root 房间内容根节点。
-## @param scatter_origin 散射世界起点；不传时直接显示最终落点。
 ## @return 掉落卡视图或 null。
-func SpawnLootRecord(room: Vector2i, record: Dictionary, root: Node2D, scatter_origin: Variant = null) -> Node2D:
+func SpawnLootRecord(room: Vector2i, record: Dictionary, root: Node2D) -> Node2D:
 	if root == null:
 		return null
 	var id: int = int(record.get("id", -1))
@@ -184,8 +191,35 @@ func SpawnLootRecord(room: Vector2i, record: Dictionary, root: Node2D, scatter_o
 	card.call("SetRoomIdentity", room, id)
 	_room_by_card[card] = room
 	_loot_cards_by_id[id] = card
-	if scatter_origin is Vector2:
-		card.call("PlayScatterFrom", scatter_origin, target)
+	return card
+
+
+## 根据仓库记录生成一张掉落卡，并播放「从破坏点飞到最终落点」的掉落动画。
+##
+## 与 SpawnLootRecord 的唯一区别是是否播放飞出动画：本方法用于破坏物品（采集、拆除）
+## 产出掉落物的场合，掉落物必须可见地从原物品位置飞出，而不是凭空出现在落点。
+##
+## 起点声明为**必填的强类型 Vector2 形参**：破坏产出必然有起点，不留默认值可以让漏传
+## 在编译期就暴露，而不是静默退化成「直接出现在最终落点」这种难以察觉的表现。
+##
+## @param room 房间坐标。
+## @param record 含 id、stack、position 的仓库记录。
+## @param root 房间内容根节点。
+## @param scatter_origin 散射起点（原物品所在位置）的全局坐标。
+## @return 掉落卡视图；记录无效时返回 null。
+func SpawnLootRecordWithScatter(room: Vector2i, record: Dictionary, root: Node2D, scatter_origin: Vector2) -> Node2D:
+	# SpawnLootRecord 对同一 id 会返回已在场的卡，而不是新建：RoomLootStore.AddLoot 会
+	# 同步发出 LootAdded，UIRoomBoardPresenter 监听后已经抢先生成过一次卡。两次生成发生在
+	# 同一个调用栈内、中间不渲染任何一帧，所以这里拿到的那张卡对玩家而言仍是「刚出现」的，
+	# 必须照常播放飞出动画。早期实现判断「卡已存在就跳过散射」，结果散射被这次早退整个吞掉，
+	# 掉落物就直接停在了最终落点。
+	var card: Node2D = SpawnLootRecord(room, record, root)
+	if card == null:
+		return null
+	# 项目里存在遗留的 BoardCardView 视图，动态调用必须先确认目标实现了该方法。
+	if card.has_method("PlayScatterFrom"):
+		# card.global_position 就是记录换算后的最终落点，无需在这里重做 to_global。
+		card.call("PlayScatterFrom", scatter_origin, card.global_position)
 	return card
 
 
@@ -226,7 +260,7 @@ func SpawnLootCards(stacks: Array, spawn_origin: Vector2) -> void:
 					var local_target: Vector2 = _safe_loot_position(local_origin)
 					var record: Dictionary = _loot_store.call("AddLoot", room, stack, local_target)
 					if not record.is_empty():
-						SpawnLootRecord(room, record, root, spawn_origin)
+						SpawnLootRecordWithScatter(room, record, root, spawn_origin)
 				return
 	# Godot 的 Array 是值类型，跨语言传入 null 会被封送成空数组，因此这里只需遍历。
 	for value: Variant in stacks:

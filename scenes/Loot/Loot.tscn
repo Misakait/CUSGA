@@ -18,7 +18,7 @@ texture = ExtResource("2_card")
 region_rect = Rect2(0, 0, 99, 139)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
-size = Vector2(93, 137)
+size = Vector2(37.2, 54.8)
 
 [sub_resource type="Animation" id="Animation_idle"]
 resource_name = "Idle"

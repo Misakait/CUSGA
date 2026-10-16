@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "验证矩阵：纯 GDScript 改动走扫描 + test_run；动态 call 与字符串信号必须用聚焦测试或 game_eval 验证真实调用链"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "GDScript 风格、文档注释与依赖检查的验收要求"}
+{"file": ".trellis/spec/guides/index.md", "reason": "修改前硬规则：先搜引用再改公开脚本路径/节点名/信号名/资源字段"}

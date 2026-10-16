@@ -87,12 +87,22 @@ var ScreenTransitionsPath: NodePath = ^"/root/ScreenTransitions"
 
 @export_group("Interaction")
 ## 玩家可交互的最远世界距离（像素），取值范围 1～1000。
-## 作用范围：棋盘地形卡的采集/破坏与掉落卡拾取，超出的点击与长按一律被拒绝。
+## 作用范围：棋盘地形卡的采集/破坏。超出的点击与长按一律被拒绝。
 ## 比较口径是「玩家节点中心 → 卡牌中心」的世界坐标距离，与 1280×720 的房间拼接世界坐标同一空间。
 ## 默认值 160 的由来：地形卡命中矩形约 93×137 像素，玩家贴到卡牌外缘时中心距约 80～160 像素，
 ## 取 160 可以让玩家在卡牌四周一个身位内正常交互，同时挡住站在房间另一端的隔空交互。
 ## 该值只在检查器中调整用于调试，运行时不做动态改写；改小会让玩家必须贴得更近，改大则重新放开隔空交互。
+## 掉落物已改为靠近自动拾取、不再走鼠标入口，因此本值不再参与拾取判定，改由 AutoPickupRange 控制。
 @export_range(1.0, 1000.0, 1.0) var InteractionRange: float = 160.0
+
+@export_group("Auto Pickup")
+## 掉落物自动拾取半径（世界像素），取值范围 1～1000。
+## 玩家节点中心与掉落卡中心的世界坐标距离不超过本值时，掉落物自动入包，不需要任何鼠标操作。
+## 与 InteractionRange 分离而不复用：地形交互距离和拾取手感需要能各自单独调；而且地形超范围要飘字提示，
+## 掉落物超范围必须完全静默，共用一个判定会诱导把提示逻辑带进拾取路径。
+## 默认 60 的语义是「必须贴到掉落物附近才拾取」，比地形交互的 160 更近。
+## 该值只在检查器中调整用于调试，运行时不做动态改写。
+@export_range(1.0, 1000.0, 1.0) var AutoPickupRange: float = 60.0
 
 @export_group("World View")
 ## 世界根节点路径；战斗场景实例挂在其下。
@@ -210,11 +220,22 @@ func _ready() -> void:
 		_time_system.connect(TIME_CHANGED_SIGNAL, _time_changed_callable)
 
 
-## 键盘方向输入优先于正在进行的棋盘地形长按。
+## 每帧推进局外世界的持续性逻辑。
 ##
-## @param _delta 本帧间隔秒数。
+## 顺序无关但职责分离：自动拾取只看玩家与掉落物的当前距离，地形长按只看键盘是否接管，
+## 两者互不依赖，拆成独立入口便于分别阅读与单点验证。
+##
+## @param _delta 本帧间隔秒数；两个子逻辑都按「当前状态」判定，不使用帧间隔。
 ## @return 无返回值。
 func _process(_delta: float) -> void:
+	_process_auto_pickup()
+	_process_terrain_hold_input()
+
+
+## 键盘方向输入优先于正在进行的棋盘地形长按。
+##
+## @return 无返回值。
+func _process_terrain_hold_input() -> void:
 	if _active_terrain_hold_card == null:
 		return
 	if not is_instance_valid(_active_terrain_hold_card):
@@ -477,24 +498,105 @@ func _read_card_name(card: Node2D) -> String:
 	return String(card.call("GetCardDisplayName"))
 
 
-## 处理棋盘卡牌点击：先尝试拾取掉落卡，再处理地形交互。
+## 每帧扫描棋盘上的掉落卡，把落在自动拾取半径内的掉落物收入背包。
 ##
-## 距离判定放在最前面：超范围时连掉落拾取与零耗时地形交互都不进入，
-## 保证「只能交互玩家周围的目标」对全部棋盘卡交互一致生效。
+## 触发源从「鼠标点击」改为「玩家靠近」后，本函数是唯一的拾取入口。
+## 门禁复用 CanUseWorld()：它已覆盖「在场景树内、未暂停、非过场、棋盘可见」四个条件，
+## 与建筑系统共用同一套「什么时候允许局外操作」的定义；另外补 _is_run_ending()，
+## 因为结算收尾不属于过场，CanUseWorld() 覆盖不到。
+##
+## 拾取失败（背包放不下）不在这里拦：_handle_loot_card_pickup 第一步入包失败就直接返回，
+## 不产生任何副作用；下一帧仍会重试，因此玩家腾出空间后无需走开再回来。
+##
+## @return 无返回值。
+func _process_auto_pickup() -> void:
+	if _is_run_ending() or not CanUseWorld():
+		return
+	if not is_instance_valid(_player_char) or not is_instance_valid(_board_controller):
+		return
+
+	var snapshot: Variant = _board_controller.call("GetActiveCardsSnapshot")
+	if not (snapshot is Array):
+		return
+
+	for card_variant: Variant in snapshot:
+		if not (card_variant is Node2D):
+			continue
+		var card: Node2D = card_variant
+		if not _should_auto_pickup(card):
+			continue
+		var stack: RefCounted = _read_ref_counted_property(card, "GetLootStackOrNull")
+		if stack == null:
+			continue
+		_handle_loot_card_pickup(card, stack)
+
+
+## 判断一张卡牌是否为掉落卡。
+##
+## @param card 待判断的棋盘卡视图。
+## @return 携带可读物品堆叠时为 true；地形卡、空卡或已释放的卡返回 false。
+func _is_loot_card(card: Node2D) -> bool:
+	return _read_ref_counted_property(card, "GetLootStackOrNull") != null
+
+
+## 判断掉落卡当前是否应该被自动拾取。
+##
+## 纯判定，不产生任何副作用：背包是否放得下由 _handle_loot_card_pickup 里的入包调用决定，
+## 因此「背包满」不会在这里被拦下，也就不会留下「判定通过但结算失败」的半成品状态。
+##
+## @param card 待判定的棋盘卡视图。
+## @return 是掉落卡、仍可拾取且玩家在 AutoPickupRange 内时为 true。
+func _should_auto_pickup(card: Node2D) -> bool:
+	if not is_instance_valid(card):
+		return false
+	if not _is_loot_card(card):
+		return false
+	# 飞入过程中的掉落卡仍留在棋盘快照里（DetachForFlight 只 reparent，不移除登记），
+	# 必须跳过，否则会对同一张卡重复入包与重复记账。
+	# 兼容缺失该协议的视图（遗留 BoardCardView 与测试假视图）：没有协议时按「可拾取」处理。
+	if card.has_method("IsPickupAvailable") and not bool(card.call("IsPickupAvailable")):
+		return false
+
+	return _is_loot_within_auto_pickup_range(card)
+
+
+## 判断掉落卡是否落在玩家的自动拾取半径内。
+##
+## 与 _try_get_interaction_range 分开而不复用，原因有三：
+## 1. 契约测试把 _try_get_interaction_range 的调用次数锁定为恰好 2 次（点击入口 + 长按入口）；
+## 2. 地形交互距离与拾取手感需要各自独立可调（InteractionRange 160 / AutoPickupRange 60）；
+## 3. 地形超范围要飘字提示，掉落物超范围必须静默，共用一个判定会诱导把提示逻辑带进拾取路径。
+##
+## @param card 待判定的掉落卡视图。
+## @return 玩家节点有效且距离不超过 AutoPickupRange 时为 true。
+func _is_loot_within_auto_pickup_range(card: Node2D) -> bool:
+	if not is_instance_valid(_player_char) or not is_instance_valid(card):
+		return false
+
+	return _player_char.global_position.distance_to(card.global_position) <= AutoPickupRange
+
+
+## 处理棋盘卡牌点击：掉落物不再响应点击，地形卡继续走采集/破坏交互。
+##
+## 掉落物必须在这里就被吞掉，不能落到下面的距离判定：拾取已改为靠近自动触发，
+## 点击掉落物若还走距离门禁，会在远处点它时弹出「距离不够！」，
+## 而那条提示对「本来就不能点着拾取」的目标毫无意义。
+##
+## 距离判定仍放在地形分支之前：超范围时连零耗时地形交互都不进入，
+## 保证「只能交互玩家周围的目标」对地形卡一致生效。
 ##
 ## @param card 被点击的棋盘卡视图。
 ## @return 无返回值。
 func _on_board_card_clicked(card: Node2D) -> void:
 	if _is_run_ending():
 		return
+	# 掉落物点击被完全吞掉：既不拾取，也不做距离提示。
+	if _is_loot_card(card):
+		return
+
 	var range_check: Dictionary = _try_get_interaction_range(card)
 	if not bool(range_check["ok"]):
 		_report_out_of_range_interaction(card, float(range_check["distance"]))
-		return
-
-	var loot: RefCounted = _read_ref_counted_property(card, "GetLootStackOrNull")
-	if loot != null:
-		_handle_loot_card_clicked(card, loot)
 		return
 
 	var terrain: RefCounted = _read_ref_counted_property(card, "GetTerrainInstanceOrNull")
@@ -507,10 +609,15 @@ func _on_board_card_clicked(card: Node2D) -> void:
 
 ## 拾取掉落卡：库存成功后立即删除房间记录并关闭命中，视觉追随角色。
 ##
-## @param card 被点击的掉落卡。
+## 由 _process_auto_pickup 在玩家进入 AutoPickupRange 时调用，不再由鼠标点击触发。
+## 「背包满不触发拾取」由这里的入包结果决定：TryAddItemToInventory 会先用 CanAddItemStack
+## 做只读预检查（不修改库存），放不下时返回 false，本函数随即返回，
+## 因此记账、删仓库记录、关闭命中、飞行动画与删卡全都不会发生，掉落物原样留在原地。
+##
+## @param card 被拾取的掉落卡。
 ## @param stack 卡牌携带的物品堆叠。
 ## @return 无返回值。
-func _handle_loot_card_clicked(card: Node2D, stack: RefCounted) -> void:
+func _handle_loot_card_pickup(card: Node2D, stack: RefCounted) -> void:
 	if _is_run_ending():
 		return
 	var add_result: Variant = _gameplay_port.call("TryAddItemToInventory", stack)
@@ -562,6 +669,10 @@ func _handle_terrain_card_clicked(card: Node2D, terrain: RefCounted) -> void:
 
 ## 处理棋盘卡牌按下：可长按的地形开始统一长按，其余卡牌不响应。
 ##
+## 掉落物不再支持任何鼠标交互，因此在距离判定之前就被吞掉：
+## 本函数的距离判定原本先于「能否长按」的判断执行，按下掉落物也会弹出「距离不够！」，
+## 而拾取已改为靠近自动触发，那条提示对掉落物是误报。
+##
 ## 超出交互范围时连长按进度环都不开始，避免玩家在远处看到「能填满却不会结算」的反馈。
 ## 开始长按后玩家移动会被屏蔽（键盘方向输入会取消长按），因此本次交互在完成时仍处于同一位置，
 ## 完成入口不需要重复距离判定。
@@ -572,6 +683,9 @@ func _on_board_card_pressed(card: Node2D) -> void:
 	if _is_run_ending():
 		return
 	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
+		return
+	# 掉落物按下被完全吞掉：不做距离判定，也不开始长按。
+	if _is_loot_card(card):
 		return
 
 	var range_check: Dictionary = _try_get_interaction_range(card)

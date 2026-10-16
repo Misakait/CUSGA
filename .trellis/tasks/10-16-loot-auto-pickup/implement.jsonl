@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/gameplay-system-patterns.md", "reason": "库存/掉落/交互/时间的 Model-View-Controller 边界：掉落抽样后由领域服务提交给库存或拾取入口，View 不先行改数值"}
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "套件必须在 tests/ 顶层有壳文件且覆写 suite_name；非 @tool 脚本的编辑器占位实例方法不可调用，运行期行为只能走 game_eval"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "View 只上报意图、Controller 决定是否允许；编辑器内非 @tool 场景脚本的占位实例不能替代游戏进程验证"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "动态协议用 has_method 守卫、方法名集中为常量；从 Variant 取值需显式类型收敛"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "信号连接前检查 is_connected、退出树用同一 Callable 断开、清理缓存前判 is_instance_valid"}

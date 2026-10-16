@@ -117,7 +117,8 @@ const MAIN_SCENE: String = "res://scenes/Main.tscn"
 const MAIN_SCENE_SCRIPT_ID: String = "7_nxtc6"
 
 ## 必须逐字保留在 GDScript 生产脚本里的导出。
-## 前 9 个是迁移对照面（旧 C# 协调器的导出），最后 1 个是迁移后新增的棋盘卡交互距离门禁。
+## 前 9 个是迁移对照面（旧 C# 协调器的导出），后 2 个是迁移后新增的棋盘卡门禁：
+## InteractionRange 管地形卡交互距离，AutoPickupRange 管掉落物自动拾取半径。
 const GD_EXPORTS: Array[String] = [
 	"@export var BoardControllerPath: NodePath = NodePath(\"\")",
 	"@export var GameplayPortPath: NodePath = NodePath(\"\")",
@@ -129,6 +130,7 @@ const GD_EXPORTS: Array[String] = [
 	"@export var MapCanvasLayerPath: NodePath = NodePath(\"../../MapSystem/CanvasLayer\")",
 	"@export var HudLayerPath: NodePath = NodePath(\"../../UI/HUDLayer\")",
 	"@export_range(1.0, 1000.0, 1.0) var InteractionRange: float = 160.0",
+	"@export_range(1.0, 1000.0, 1.0) var AutoPickupRange: float = 60.0",
 ]
 
 ## 必须逐字保留的 2 个信号声明。
@@ -475,12 +477,19 @@ func test_interaction_range_gate() -> void:
 		coordinator.contains('return {"ok": distance <= InteractionRange, "distance": distance}'),
 		"只有距离不超过 InteractionRange 时才允许交互。"
 	)
-	# 掉落拾取与零耗时地形交互共用 _on_board_card_clicked，可长按地形走 _on_board_card_pressed；
+	# 地形卡的两个鼠标入口：点击走 _on_board_card_clicked，可长按地形走 _on_board_card_pressed；
 	# 两处都必须接入判定，否则仍能隔着房间交互。
+	# 掉落物已改为靠近自动拾取，在距离判定之前就被 _is_loot_card 吞掉，因此不占用这两个调用点，
+	# 计数仍为 2；自动拾取的半径判定走独立的 AutoPickupRange 与 _is_loot_within_auto_pickup_range。
 	assert_eq(
 		_count_occurrences(coordinator, "var range_check: Dictionary = _try_get_interaction_range(card)"),
 		2,
-		"点击与长按两个交互入口都必须先做距离判定。"
+		"点击与长按两个地形交互入口都必须先做距离判定。"
+	)
+	# 掉落物点击/按下不再走距离门禁，否则会在远处点它时弹出对自动拾取毫无意义的「距离不够！」。
+	assert_true(
+		coordinator.contains("if _is_loot_card(card):"),
+		"两个鼠标入口都必须在距离判定之前排除掉落物。"
 	)
 	assert_true(
 		coordinator.contains("[WorldInteraction] 拒绝超出范围的交互："),

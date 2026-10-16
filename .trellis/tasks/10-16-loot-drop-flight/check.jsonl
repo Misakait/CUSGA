@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "真机 game_eval 验证手法、编译/运行错误会冻结游戏、Tween 需 custom_step 推进等约束"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "跨层数据流检查：破坏点如何从交互层经棋盘层传到视图层"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "早退分支与守卫的错误处理一致性检查"}

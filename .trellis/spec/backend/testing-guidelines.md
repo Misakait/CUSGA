@@ -68,9 +68,14 @@ CUSGA 使用 `tests/godot/` 下的 GDScript 测试和真实场景冒烟测试。
 
 - **不要用 `get_tree()`**：在 eval 的执行上下文里它返回 `null`，`get_tree().process_frame` 会触发 `Invalid access to property or key 'process_frame' on a base object of type 'null instance'` 并让游戏进入 break。改用 `Engine.get_main_loop() as SceneTree`，再经 `tree.root` 取节点。
 - **`await` 只在主循环推进时可用**：游戏窗口被后台化或最小化时主循环会冻结（`game_manage(op="debug_status")` 的 `loop_live` 为 false、`tree_paused` 为 true），此时任何 `await ...process_frame` 都会挂到 `EVAL_HUNG`，`editor_screenshot` 也会返回 `stale_frame: true`。
-- **eval 里的运行时错误会冻结游戏**：出错后 helper 仍在注册但不再服务，后续 eval 只能拿到 `EVAL_GAME_NOT_READY`。恢复方式是 `project_manage(op="stop")` 后重新 `project_run`；`game_manage(op="resume")` 对这种冻结无效。
+- **eval 里的编译错误与运行时错误都会冻结游戏**：`EVAL_COMPILE_ERROR` 和 `EVAL_RUNTIME_ERROR` 之后 helper 仍在注册但不再服务，后续 eval 只能拿到 `EVAL_GAME_NOT_READY`。恢复方式是 `project_manage(op="stop")` 后重新 `project_run`；`game_manage(op="resume")` 对这种冻结无效。最常见的两个触发点是下面两条（声明函数/多行 lambda）与对 `null` 调用方法（例如把 `get_node_or_null` 的结果直接拿去 `.get()`）。一次 eval 只放一组断言，出错时能立刻定位是哪一组，不必反复重启。
+- **eval 脚本里不能声明函数，也不能用多行 lambda**：`func ...` 与多行 lambda 都会直接编译失败。eval 体必须是线性语句；需要复用逻辑时先把值算好再使用，或拆成多次 eval（游戏状态在 eval 之间保留，只有 eval 内部的局部变量不保留）。
+- **eval 的缩进必须是制表符**：GDScript 的缩进规则在 eval 里同样生效，混入空格会静默变成 `EVAL_COMPILE_ERROR`，且错误文本只能去编辑器面板看。
 - **验证计时或动画时长用 `Tween.custom_step(delta)`**：同步 eval 执行期间场景树不会推进帧，因此在一次 eval 内 `custom_step` 的推进量完全可控，可以精确断言「推进 0.4 秒时仍在进行、推进到 0.6 秒时已完成」，既不受帧率抖动影响，也是窗口被后台化时唯一可行的办法。
+- **非 Tween 的逐帧动画改为直接调用 `_process(delta)` 推进**：`custom_step` 只对 `Tween` 有效。像掉落物飞入这种在 `_process(delta)` 里按 `_flight_elapsed / duration` 自行计算进度的实现，可以在一次 eval 内直接 `node.call("_process", 0.15)` 精确推进，并断言中间态与终态（例如缩放 `0.2 → 0.1 → 0`），同样不依赖帧率、也不受窗口后台化影响。
 - **UI 布局用几何数据核验**：当前模型可能无法读取 `editor_screenshot` 返回的图片；此时用 `get_global_rect()` / `size` 断言控件已真实布局（尺寸非零、落在视口内、相对顺序正确），比目视截图更客观。
+- **排查「参数丢失」时，诊断日志必须能区分调用来源**：同一条 `print` 会被多条调用路径命中。本项目曾把 `origin=<null>` 判定为「第 4 个形参收不到实参」，实际那些 `null` 来自**另一个信号监听者发出的 3 参调用**（第 4 参取默认值），4 参调用本身一直正常；据此错误结论又设计了整套无用方案。打印形参时要一并打印能把调用者区分开的信息（例如「该 id 是否已在索引里」），或给不同调用方加不同前缀。
+- **不要直接对运行中的单例仓库造测试数据**：`RoomLootStore.AddLoot` 这类接口会同步发信号、拉起监听者并写入索引，在 `game_eval` 里直接调用会与生产路径互相污染——本次就因新记录 id 与「房间恢复出来的旧卡」撞号，让新记录命中同 id 早退分支，测到的其实是那张旧卡。造数据前先断言该 id 不在索引中，必要时用不冲突的高位 id（如 `90001` 起），并在结果里回读实际拿到的 id。
 
 ### 全局静态状态
 

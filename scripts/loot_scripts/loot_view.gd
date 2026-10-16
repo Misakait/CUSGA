@@ -16,6 +16,12 @@ signal HoverEnded(card: Node2D)
 
 ## 动画参数资源；每个掉落实例复制动画库，避免运行时修改共享资源。
 @export var MotionConfig: Resource = preload("res://resources/interaction/item_motion_config.tres")
+## 掉落物视觉基准倍率，取值 1 表示使用场景原始大小。
+## 待机、悬停、散射入场与飞入四种表现都以本值为基准：待机与悬停的动画关键帧由它派生，
+## 散射从零补间到它，飞入从它补间到零，因此只需要改这一处就能整体缩放掉落物。
+## 本值**不**影响鼠标命中区域：命中形状是 Loot.tscn 里独立的 RectangleShape2D_interaction，
+## 与视觉节点 Visuals 是兄弟关系，缩放 Visuals 不会带动它，需要同步调整时直接改场景里的形状尺寸。
+@export_range(0.05, 2.0, 0.01) var LootVisualScale: float = 0.4
 
 ## 房间坐标，由 BoardController 在生成时登记。
 var RoomPosition: Vector2i = Vector2i.ZERO
@@ -83,7 +89,9 @@ func InitializeLoot(loot_stack: RefCounted) -> void:
 		return
 	_loot_stack = loot_stack
 	_card_data = loot_stack.get("Item") as Resource
-	_base_visual_scale = Vector2.ONE
+	# 必须先确立视觉基准再重建动画库：_configure_motion 会用 _base_visual_scale 重写 Idle/Hover
+	# 两段动画的关键帧，顺序颠倒会让动画回到场景原始大小，出现「待机变小但悬停弹回 100%」。
+	_base_visual_scale = Vector2.ONE * LootVisualScale
 	collision_layer = 0
 	collision_mask = 0
 	_configure_motion()
@@ -125,6 +133,17 @@ func IsLootCard() -> bool:
 ## @return 始终为 false。
 func IsTerrainCard() -> bool:
 	return false
+
+
+## 判断该掉落物当前是否还能被拾取。
+##
+## 用途：自动拾取每帧扫描棋盘快照，而 BoardController.DetachForFlight 只把飞行中的卡片
+## reparent、**不**从 _active_cards 移除，因此飞入过程中的掉落物仍会出现在快照里。
+## 没有这道判据就会对同一张卡重复入包与重复记账。
+##
+## @return 已绑定堆叠、未被禁用且不在飞入过程中时为 true。
+func IsPickupAvailable() -> bool:
+	return _loot_stack != null and not _interaction_disabled and _flight_target == null
 
 
 ## 提供拾取进度或交互提示的稳定锚点。

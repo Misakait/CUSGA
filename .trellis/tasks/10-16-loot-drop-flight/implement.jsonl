@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/gameplay-system-patterns.md", "reason": "掉落物/棋盘/库存的既有系统模式与不变量，本次修改 board_controller 的掉落生成入口必须遵守"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "视图组件（loot_view 的 PlayScatterFrom）约定，散射动画只在视图侧实现一次"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "动态调用（call/has_method）必须加守卫的要求，PlayScatterFrom 走的是动态调用"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "确认 board_controller 与 loot_view 的目录归属与分层职责"}
