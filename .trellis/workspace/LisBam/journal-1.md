@@ -585,3 +585,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Next Steps
 
 - 任务已归档；若要收敛工程内并存的 FloatingTextLabel 与 CombatFeedbackPopup 两个浮字节点，需另开任务
+
+
+## Session 20: 掉落物多张卡牌化与随机落点
+<!-- trellis-session: v=2 fp=d557f504099687b2 -->
+
+**Date**: 2026-10-18
+**Task**: 掉落物多张卡牌化与随机落点
+**Branch**: `main`
+
+### Summary
+
+在 BoardController.SpawnLootCards 增加逐单位展开与最小间距随机落点：掉落 N 件生成 N 张各承载 1 件的卡，不再用右下角数字表示数量；不改 LootTableData.RollLoot 的产出形状，掉落表数值契约与装备逐件洗炼不变。新增 tests/godot/test_loot_multi_card_scatter.gd（9 用例 / 39 断言），并把「世界掉落卡恒为单件」不变量与 tree_paused 冻结 Tween、多编辑器会话需先锁定 CUSGA 等验证经验写入 .trellis/spec。运行期实证 3 件到 3 卡（记录最小间距 68.98/99.18）、1 件到 1 卡、恢复入口按记录位置重建不重新随机。发现既有损坏两处未修：campfire_recipe.tres 的 Inputs 只有 1 项导致 building_system_tests.gd:178 越界崩溃（篝火掉落断言零执行），test_item_room_content.gd 无法实例化。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `028dddc` | feat: 掉落物按实际数量生成多张卡牌并各自随机落点 |
+
+### Status
+
+[OK] **Completed**
