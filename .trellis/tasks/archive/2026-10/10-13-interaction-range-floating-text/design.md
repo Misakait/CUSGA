@@ -726,7 +726,7 @@ func _spawn(text: String, anchor: FloatingTextAnchor, text_color: Color,
 
 ---
 
-# 增量三 Design（2026-10-14 第三轮）— 世界坐标定位
+# 增量三 Design（2026-10-17 第三轮）— 世界坐标定位
 
 > 本节**取代**第 13～17 节的全部设计结论（那三节描述的是「锚点 + 每帧重算」，已废弃）。
 > 第 8～12 节（提示圈本身）除「半径换算」一处外仍然有效。
