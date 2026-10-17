@@ -159,6 +159,9 @@ func RefreshView() -> void:
 		return
 	_label.text = String(_card_data.get("CardName"))
 	_icon.texture = _card_data.get("CardIcon") as Texture2D
+	# 掉落卡现在一张只承载一件物品，数量由卡牌张数表达，因此下面的数量分支暂时不生效。
+	# 保留而不是删除：旧局快照里可能仍有 amount > 1 的记录，恢复时会按记录原样建卡，
+	# 那时只有这条分支能让玩家看见真实数量，避免数量被静默吞掉。
 	var amount: int = int(_loot_stack.get("Amount")) if _loot_stack != null else 0
 	_amount.visible = amount > 1
 	_amount.text = str(amount) if amount > 1 else ""

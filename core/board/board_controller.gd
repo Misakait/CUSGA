@@ -39,6 +39,16 @@ const VIEW_PRESSED_SIGNAL: StringName = &"Pressed"
 const VIEW_RELEASED_SIGNAL: StringName = &"Released"
 const VIEW_HOVER_STARTED_SIGNAL: StringName = &"HoverStarted"
 const VIEW_HOVER_ENDED_SIGNAL: StringName = &"HoverEnded"
+## 掉落堆叠脚本；仅在没有 Duplicate 协议的遗留堆叠上用于重建单件堆叠。
+const LOOT_STACK_SCRIPT: GDScript = preload("res://resources/item/item_stack.gd")
+## 单个落点的最大随机重试次数；用尽后接受当前候选，而不是丢掉这次掉落。
+const SCATTER_PLACEMENT_ATTEMPTS: int = 16
+## 掉落卡允许出现的房间局部坐标下界，四边都留出可点击的安全带。
+const LOOT_AREA_MIN: Vector2 = Vector2(90.0, 90.0)
+## 掉落卡允许出现的房间局部坐标上界。
+const LOOT_AREA_MAX: Vector2 = Vector2(1190.0, 630.0)
+## 六边形最密排布下每个圆心占用的面积系数，单位是「最小间距的平方」。
+const CIRCLE_PACKING_AREA_FACTOR: float = 0.866
 
 ## 地形卡视图预制体；主场景绑定 Item.tscn。
 @export var TerrainViewScene: PackedScene = null
@@ -56,6 +66,11 @@ const VIEW_HOVER_ENDED_SIGNAL: StringName = &"HoverEnded"
 @export var ScatterRadiusMin: float = 40.0
 ## 掉落散射的最大半径。
 @export var ScatterRadiusMax: float = 90.0
+## 同一批掉落中两张卡牌落点的最小圆心距。
+##
+## 默认 56 来自掉落卡的实际可视尺寸：`Loot.tscn` 的 `PlayerView` 为 100×140，
+## 运行时按 `LootVisualScale`(0.4) 缩放后约为 40×56，取较长边保证两张卡不会叠成一张。
+@export var LootMinSeparation: float = 56.0
 
 ## 卡牌视图父节点。
 var _cards_root: Node2D = null
@@ -240,34 +255,39 @@ func SpawnLootCard(stack: RefCounted, global_position: Vector2) -> Node2D:
 	return _spawn_card(state, global_position)
 
 
-## 从同一原点散射生成一组跨语言物品堆叠对应的掉落卡。
+## 从同一原点散射生成一组掉落卡，一张卡只承载一件物品。
+##
+## 掉落表仍按玩法需要返回带数量的堆叠；本入口在登记仓库记录与建卡之前先展开成
+## 逐单位堆叠，因此「卡牌张数 = 实际掉落数量」，不再用卡面数字表达数量。
 ##
 ## @param stacks 旧 C# 与 GDScript ItemStack 可混合组成的数组。
-## @param spawn_origin 散射动画的全局起点。
+## @param spawn_origin 散射动画的全局起点，同一批卡牌共用，看起来像从原物一起炸开。
 ## @return 无返回值。
 func SpawnLootCards(stacks: Array, spawn_origin: Vector2) -> void:
+	var units: Array[RefCounted] = _expand_loot_units(stacks)
+	if units.is_empty():
+		return
 	if _loot_store != null and _map_view != null:
 		var room: Vector2i = _map_view.get("current_position")
 		var scene: Node2D = (_map_view.get("active_instances") as Dictionary).get(room) as Node2D
 		if scene != null:
 			var root: Node2D = scene.get_node_or_null("RoomContentRoot") as Node2D
 			if root != null:
-				for value: Variant in stacks:
-					var stack: RefCounted = value as RefCounted
-					if stack == null or not _is_readable_item_stack(stack):
-						continue
-					var local_origin: Vector2 = root.to_local(spawn_origin)
-					var local_target: Vector2 = _safe_loot_position(local_origin)
-					var record: Dictionary = _loot_store.call("AddLoot", room, stack, local_target)
+				# 仓库记录保存的是房间局部坐标，因此落点也在局部空间里分配。
+				var local_origin: Vector2 = root.to_local(spawn_origin)
+				var local_targets: Array[Vector2] = _plan_loot_positions(local_origin, units.size(), true)
+				for index: int in range(units.size()):
+					var record: Dictionary = _loot_store.call("AddLoot", room, units[index], local_targets[index])
 					if not record.is_empty():
 						SpawnLootRecordWithScatter(room, record, root, spawn_origin)
 				return
 	# Godot 的 Array 是值类型，跨语言传入 null 会被封送成空数组，因此这里只需遍历。
-	for value: Variant in stacks:
-		# 非泛型数组是跨语言封送边界；这里只接纳两种实现共同继承的 RefCounted。
-		var stack: RefCounted = value as RefCounted
-		if stack != null and _is_readable_item_stack(stack):
-			_spawn_single_loot_with_scatter(stack, spawn_origin)
+	# 无仓库时保持独立测试场景的旧生成行为：直接在控制器下建卡。
+	var world_targets: Array[Vector2] = _plan_loot_positions(spawn_origin, units.size(), false)
+	for index: int in range(units.size()):
+		var card: Node2D = SpawnLootCard(units[index], world_targets[index])
+		if card != null:
+			card.call("PlayScatterFrom", spawn_origin, world_targets[index])
 
 
 ## 移除指定卡牌并撤销其索引、信号与视图。
@@ -392,20 +412,117 @@ func GetActiveCardsSnapshot() -> Array[Node2D]:
 	return snapshot
 
 
-## 生成一张掉落卡并播放从原点到落点的散射动画。
+## 把一批掉落堆叠展开成「一张卡牌一件物品」的单位堆叠数组。
 ##
-## @param stack 掉落卡持有的物品堆叠。
-## @param spawn_origin 散射动画的全局起点。
-## @return 无返回值。
-func _spawn_single_loot_with_scatter(stack: RefCounted, spawn_origin: Vector2) -> void:
-	var target: Vector2 = (
-		spawn_origin + _random_direction() * _rng.randf_range(ScatterRadiusMin, ScatterRadiusMax)
-	)
+## 世界掉落卡恒为单件是本系统的硬约束：掉落表按玩法需要返回带数量的堆叠，
+## 由这里在登记仓库记录与建卡之前展开，因此一条记录、一张卡天然对应一件物品。
+##
+## @param stacks 旧 C# 与 GDScript ItemStack 可混合组成的数组。
+## @return 数量均为 1 的堆叠数组；不满足堆叠协议的条目被跳过。
+func _expand_loot_units(stacks: Array) -> Array[RefCounted]:
+	var units: Array[RefCounted] = []
+	for value: Variant in stacks:
+		# 非泛型数组是跨语言封送边界；这里只接纳两种实现共同继承的 RefCounted。
+		var stack: RefCounted = value as RefCounted
+		if stack == null or not _is_readable_item_stack(stack):
+			continue
+		var amount: int = int(stack.get("Amount"))
+		if amount <= 1:
+			# 掉落表已对装备逐件生成；数量为 1 时原样复用引用，避免无谓的对象拷贝。
+			units.append(stack)
+			continue
+		for _unit_index: int in range(amount):
+			units.append(_create_unit_stack(stack))
+	return units
 
-	var card: Node2D = SpawnLootCard(stack, target)
-	if card == null:
-		return
-	card.call("PlayScatterFrom", spawn_origin, target)
+
+## 由带数量的堆叠创建一个只含一件物品的等价堆叠。
+##
+## 不修改来源堆叠：调用方（例如建筑拆除服务）仍持有原始掉落数组，
+## 就地改写 Amount 会让上层看到被掏空的掉落。
+##
+## @param stack 数量大于 1 的有效来源堆叠。
+## @return 数量为 1 的新堆叠；来源缺少复制协议时回退为新建同物品堆叠。
+func _create_unit_stack(stack: RefCounted) -> RefCounted:
+	# Duplicate 会保留 RolledAttributes，并把「首次属性生成」标记为已完成，
+	# 因此后续 RollRandomStats 不会重随机，掉落实例属性与逐件掉落保持一致。
+	if stack.has_method("Duplicate"):
+		var duplicated: Variant = stack.call("Duplicate")
+		if duplicated is RefCounted:
+			(duplicated as RefCounted).set("Amount", 1)
+			return duplicated as RefCounted
+	var fallback: RefCounted = LOOT_STACK_SCRIPT.new() as RefCounted
+	if fallback == null:
+		return stack
+	fallback.call("SetItem", stack.get("Item"), 1)
+	var rolled: Variant = stack.get("RolledAttributes")
+	if rolled is Dictionary:
+		fallback.set("RolledAttributes", (rolled as Dictionary).duplicate(true))
+	return fallback
+
+
+## 为一批掉落卡分配互不重叠的随机落点。
+##
+## @param origin 散射原点，与返回值使用同一坐标空间。
+## @param count 需要分配的落点数量。
+## @param use_room_bounds 为 true 时把候选点夹取到房间安全区域内。
+## @return 长度为 count 的落点数组；count 小于等于 0 时返回空数组。
+func _plan_loot_positions(origin: Vector2, count: int, use_room_bounds: bool) -> Array[Vector2]:
+	var positions: Array[Vector2] = []
+	if count <= 0:
+		return positions
+	var minimum_separation: float = maxf(LootMinSeparation, 0.0)
+	var outer_radius: float = _resolve_scatter_outer_radius(count, minimum_separation)
+	for _index: int in range(count):
+		var candidate: Vector2 = origin
+		for _attempt: int in range(SCATTER_PLACEMENT_ATTEMPTS):
+			candidate = origin + _random_direction() * _rng.randf_range(ScatterRadiusMin, outer_radius)
+			if use_room_bounds:
+				candidate = Vector2(
+					clampf(candidate.x, LOOT_AREA_MIN.x, LOOT_AREA_MAX.x),
+					clampf(candidate.y, LOOT_AREA_MIN.y, LOOT_AREA_MAX.y)
+				)
+			# 必须夹取之后再判间距：贴边候选会被压到同一条边界线上，
+			# 只有夹完才能看出两张卡是否真的落在了同一个点。
+			if _far_enough_from_all(candidate, positions, minimum_separation):
+				break
+		# 重试用尽就接受当前候选。原点贴近房间角落时环带彼此重叠，硬性间距无法满足，
+		# 这里保底让每件掉落都拿到落点，而不是把它们全堆在原点或直接丢弃。
+		positions.append(candidate)
+	return positions
+
+
+## 按张数推算散射外半径，保证环带面积容得下全部落点。
+##
+## 环带面积 π(Rmax² − Rmin²) 至少要容纳 count 个直径 d 的圆盘；六边形最密排布下
+## 每个圆心占 0.866·d²。代入默认最小间距 56 后，1~7 张仍等于 ScatterRadiusMax(90)，
+## 只有 8 张起才放大（8 张 92.3、12 张 109.4），因此普通掉落散射手感与改动前一致。
+##
+## @param count 落点数量。
+## @param minimum_separation 最小圆心距，也就是圆盘直径 d。
+## @return 本次实际使用的散射外半径。
+func _resolve_scatter_outer_radius(count: int, minimum_separation: float) -> float:
+	if count <= 1 or minimum_separation <= 0.0:
+		return ScatterRadiusMax
+	var required_area: float = float(count) * CIRCLE_PACKING_AREA_FACTOR * minimum_separation * minimum_separation
+	var required_outer: float = sqrt(ScatterRadiusMin * ScatterRadiusMin + required_area / PI)
+	return maxf(ScatterRadiusMax, required_outer)
+
+
+## 判断候选落点与已接受落点的距离是否都不小于最小间距。
+##
+## @param candidate 待判定的落点。
+## @param accepted 已经接受的落点数组。
+## @param minimum_separation 最小圆心距。
+## @return 与全部已接受落点都足够远时返回 true。
+func _far_enough_from_all(candidate: Vector2, accepted: Array[Vector2], minimum_separation: float) -> bool:
+	if minimum_separation <= 0.0:
+		return true
+	for accepted_position: Vector2 in accepted:
+		# 用平方距离比较，避免每个候选点都做一次开方。
+		if candidate.distance_squared_to(accepted_position) < minimum_separation * minimum_separation:
+			return false
+	return true
 
 
 ## 实例化视图并按状态初始化，随后连接信号并广播生成事件。
@@ -557,14 +674,6 @@ func _on_card_hover_ended(card: Node2D) -> void:
 func _random_direction() -> Vector2:
 	var angle: float = _rng.randf_range(0.0, TAU)
 	return Vector2(cos(angle), sin(angle))
-
-
-## 在房间内部留出边缘和桥口安全带，避免掉落卡生成在不可点击的边界上。
-## @param origin 掉落的房间局部起点。
-## @return 经房间矩形约束的局部落点。
-func _safe_loot_position(origin: Vector2) -> Vector2:
-	var candidate: Vector2 = origin + _random_direction() * _rng.randf_range(ScatterRadiusMin, ScatterRadiusMax)
-	return Vector2(clampf(candidate.x, 90.0, 1190.0), clampf(candidate.y, 90.0, 630.0))
 
 
 ## 精确断开卡牌视图上的指定信号连接。

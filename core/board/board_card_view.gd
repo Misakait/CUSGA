@@ -143,6 +143,9 @@ func RefreshView() -> void:
 	_title_label.text = String(_card_data.get("CardName"))
 	_icon_sprite.texture = _card_data.get("CardIcon") as Texture2D
 	scale = _get_resting_scale()
+	# 与生产视图 loot_view.gd 保持一致：掉落卡已被展开成单件，数量标签暂时不生效。
+	# 保留这段分支是为了旧快照恢复出的多件记录，以及不经过棋盘拆分入口的调用方，
+	# 让它们仍然能显示数量，而不是把数量静默丢掉。
 	var amount: int = _read_stack_amount(_loot_stack)
 	if IsLootCard() and amount > 1:
 		_amount_label.visible = true

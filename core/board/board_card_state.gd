@@ -86,6 +86,10 @@ func GetStackAmount() -> int:
 
 
 ## 判断是否应该显示掉落数量标签。
+##
+## 当前掉落链路会在棋盘生成前把堆叠展开成单件，因此本判断暂时恒为 false。
+## 保留它是为了让旧快照恢复出的多件记录、以及不经过拆分入口的调用方仍能显示数量。
+##
 ## @return 数量大于 1 时返回 true。
 func CanShowAmount() -> bool:
 	return IsLoot() and GetStackAmount() > 1

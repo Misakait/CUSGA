@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/gameplay-system-patterns.md", "reason": "掉落/库存/交互系统的分层边界与既有掉落协议约束"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "GDScript 风格、中文注释与 Godot MCP 验证要求"}
