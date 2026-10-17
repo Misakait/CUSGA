@@ -15,6 +15,8 @@ extends McpTestSuite
 const SERVICE_GD: String = "res://core/autoloads/floating_text.gd"
 ## 单条飘字表现组件。
 const LABEL_GD: String = "res://core/ui/feedback/floating_text_label.gd"
+## 「所需交互范围」提示圈表现组件。
+const RING_GD: String = "res://core/ui/feedback/interaction_range_ring.gd"
 ## 棋盘卡交互协调器。
 const COORDINATOR_GD: String = "res://core/gameflow/world_interaction_coordinator.gd"
 ## 建筑输入协调器。
@@ -92,13 +94,24 @@ func test_service_api_shape() -> void:
 		assert_true(service.contains(literal), "飘字服务缺少公开入口：%s" % literal)
 
 	# 交互目标（棋盘卡视图、建筑视图）不得为实现提示而新增任何接口。
+	# 取的是**世界坐标**：宿主层跟随相机变换，写一次即可，不需要每帧换算。
 	assert_true(
-		service.contains("_resolve_target_screen_position(target)"),
-		"目标坐标必须由服务自行换算，调用方不需要目标实现任何接口。"
+		service.contains("_resolve_target_world_position(target)"),
+		"目标坐标必须由服务自行读取，调用方不需要目标实现任何接口。"
 	)
 	assert_true(
-		service.contains("target.get_screen_transform().origin"),
-		"Node2D 目标必须用 get_screen_transform 换算屏幕坐标。"
+		service.contains("target.get_global_transform().origin"),
+		"Node2D 目标必须直接取世界坐标。"
+	)
+	# 「每帧把世界坐标换算成屏幕坐标」是已废弃的方案：它需要 _process、
+	# 需要晚于相机的处理优先级，还得处理目标中途失效。世界画布定位后全都不需要。
+	assert_false(
+		service.contains("get_screen_transform()"),
+		"不得再取屏幕坐标：那是已废弃的「每帧重算」方案的前提。"
+	)
+	assert_false(
+		service.contains("func _process("),
+		"服务不得每帧推进：飘字写一次世界坐标就够了。"
 	)
 
 
@@ -124,14 +137,23 @@ func test_service_layer_font_and_mouse_passthrough() -> void:
 		service.contains("const OUTLINE_COLOR: Color = Color(0.0, 0.0, 0.0, 1.0)"),
 		"描边必须是纯黑，才能在任意地形贴图上保证对比度。"
 	)
-	# 全屏 Control 宿主漏掉 IGNORE 会吞掉其下方所有输入，且不会有任何报错。
+	# 宿主漏掉 IGNORE 会吞掉其下方所有输入，且不会有任何报错。
 	assert_true(
 		service.contains("_host.mouse_filter = Control.MOUSE_FILTER_IGNORE"),
-		"全屏宿主必须忽略鼠标，否则会吞掉其下方所有输入。"
+		"宿主必须忽略鼠标，否则会吞掉其下方所有输入。"
+	)
+	# 这一行就是「飘字固定在世界里、且不需要每帧重算坐标」的全部实现。
+	assert_true(
+		service.contains("_layer.follow_viewport_enabled = true"),
+		"承载层必须跟随视口相机变换，子节点的 position 才等于世界坐标。"
 	)
 	assert_true(
-		service.contains("_host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)"),
-		"宿主必须铺满视口，飘字子节点的 position 才等于屏幕坐标。"
+		service.contains("_host.position = Vector2.ZERO"),
+		"宿主必须固定在原点：它只做定位父级，任何偏移都会整体平移所有飘字。"
+	)
+	assert_false(
+		service.contains("set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)"),
+		"不得再用全屏 preset 定位宿主：跟随相机变换后 anchorable_rect 不再固定，会平移子节点。"
 	)
 
 
@@ -250,6 +272,191 @@ func test_building_controller_migrates_discrete_feedback() -> void:
 	assert_true(
 		building.contains("_hint.text = _interaction_prompt(record)"),
 		"底部实时状态提示必须保留。"
+	)
+
+
+## 验证「所需交互范围」提示圈是一个独立的、自释放的空心圈表现组件。
+##
+## @return 无返回值。
+func test_range_ring_component_shape() -> void:
+	var ring: String = FileAccess.get_file_as_string(RING_GD)
+
+	assert_true(ring.contains("class_name InteractionRangeRing"), "提示圈必须提供 class_name 以便复用。")
+	assert_true(
+		ring.contains("extends Node2D"),
+		"提示圈必须是 Node2D：不参与布局，且天然不参与 GUI 命中测试。"
+	)
+	assert_true(ring.contains("signal finished"), "提示圈必须在释放前广播 finished。")
+	# 与浮字同理：Tween 默认跟随宿主处理状态，暂停时冻住的圈会永久停在画面上。
+	assert_true(
+		ring.contains("process_mode = Node.PROCESS_MODE_ALWAYS"),
+		"提示圈必须在暂停时继续推进动画，否则会永久残留。"
+	)
+	# draw_arc 只描边不填充，因此天然是空心圈；draw_circle 会画出实心圆。
+	assert_true(ring.contains("draw_arc("), "提示圈必须用 draw_arc 画空心圈。")
+	assert_false(ring.contains("draw_circle("), "提示圈不得用 draw_circle，那会画出实心圆。")
+	# 节点进树时半径还是 0；不显式重绘会得到一个永远画不出东西、也不报错的空节点。
+	assert_true(
+		ring.contains("queue_redraw()"),
+		"半径写入后必须 queue_redraw，否则圈永远不可见且不报错。"
+	)
+	assert_true(ring.contains('"modulate:a"'), "提示圈必须淡出。")
+	assert_true(ring.contains("queue_free()"), "提示圈必须自释放，否则会永久堆积。")
+	# 圈心是世界坐标，宿主画布带着相机变换，因此组件不需要每帧重算。
+	assert_false(
+		ring.contains("func _process("),
+		"提示圈不得每帧重算位置：写一次世界坐标就够了。"
+	)
+
+
+## 验证飘字服务把提示圈接进同一次生成，并把世界坐标与世界半径直接交给它。
+##
+## @return 无返回值。
+func test_service_wires_range_ring() -> void:
+	var service: String = FileAccess.get_file_as_string(SERVICE_GD)
+
+	assert_true(
+		service.contains('preload("res://core/ui/feedback/interaction_range_ring.gd")'),
+		"服务必须预载提示圈组件。"
+	)
+	assert_true(
+		service.contains("const RANGE_RING_COLOR: Color = Color(0.62, 0.62, 0.66, 0.5)"),
+		"提示圈必须是灰色半透明。"
+	)
+	assert_true(
+		service.contains("const RANGE_RING_WIDTH: float = 3.0"),
+		"提示圈的线宽必须显式定义。"
+	)
+	# 半径就是世界半径，不做任何像素换算：宿主层已经带相机变换。
+	assert_true(
+		service.contains("ring.call(\"play\", world_position, world_radius,"),
+		"服务必须把同一个世界坐标与世界半径直接交给提示圈。"
+	)
+	assert_true(
+		service.contains("world_radius: float = 0.0"),
+		"提示圈半径必须是 _spawn 的可选尾参，既有调用点才能保持可用。"
+	)
+	# 不得用目标自身的缩放求半径：地形卡有入场缩放与散布动画，
+	# 而交互距离是「玩家中心 → 目标中心」的世界距离，与目标的表现缩放无关。
+	assert_false(
+		service.contains("get_screen_transform().get_scale()"),
+		"不得用目标自身的缩放求半径，那会让圈随卡面动画胀缩。"
+	)
+	# 圈与字必须在同一次 _spawn 内生成：_is_duplicate 是唯一的去重门禁，
+	# 把画圈拆成第二次调用会让同帧双发（Pressed + Clicked）叠出两个圈。
+	assert_eq(
+		_count_occurrences(service, "RING_SCRIPT.new()"),
+		1,
+		"提示圈必须只在 _spawn 里生成一次，否则同帧双发会叠出两个圈。"
+	)
+	# 圈不做上飘，否则「所需范围」的语义会随动画漂移。
+	assert_false(
+		service.contains('tween_property(ring, "position:y"'),
+		"提示圈不得参与上飘，必须始终以目标为中心。"
+	)
+
+
+## 验证两条「距离不够！」路径都把所需距离作为半径传给提示圈。
+##
+## @return 无返回值。
+func test_range_radius_comes_from_interaction_distance() -> void:
+	var coordinator: String = FileAccess.get_file_as_string(COORDINATOR_GD)
+	var building: String = FileAccess.get_file_as_string(BUILDING_GD)
+
+	# 服务把半径排在颜色之后，因此调用点必须显式给出颜色；权威定义仍在服务里。
+	assert_true(
+		coordinator.contains("const FAILURE_TEXT_COLOR: Color = Color(1.0, 0.25, 0.2, 1.0)"),
+		"协调器必须给出与服务同值的失败色，才可能只追加半径实参。"
+	)
+	assert_true(
+		coordinator.contains("FAILURE_TEXT_COLOR, InteractionRange)"),
+		"棋盘卡必须把 InteractionRange 作为提示圈半径传入。"
+	)
+	assert_true(
+		building.contains("func _show_building_out_of_range(record: Dictionary) -> void:"),
+		"建筑必须为「距离不够」单独走一条带半径的提示入口。"
+	)
+	assert_true(
+		building.contains("_record_interaction_radius(record)"),
+		"建筑提示圈的半径必须取该建筑自己的 InteractionRadius。"
+	)
+	# 只有距离不足才画圈；纯遮挡必须继续走不带圈的文字提示。
+	assert_true(
+		building.contains('_show_building_failure(int(record["id"]), "中间有障碍，无法拆除")'),
+		"纯遮挡分支必须继续走不带圈的文字提示。"
+	)
+
+
+## 验证飘字与提示圈是「写一次世界坐标」，而不是「每帧重算屏幕坐标」。
+##
+## 这是核心回归护栏。交互目标会随跟随玩家的 Camera2D 持续改变屏幕坐标，
+## 而「每帧在世界坐标与屏幕坐标之间来回换算」是一整套脆弱方案：需要 _process、
+## 需要晚于相机的处理优先级、还要处理目标中途失效与缓存坐标。
+## 把飘字放进带相机变换的宿主层后，这些都消失了，本用例锁死这一点。
+##
+## @return 无返回值。
+func test_hints_are_world_anchored_not_resolved_per_frame() -> void:
+	var label: String = FileAccess.get_file_as_string(LABEL_GD)
+	var ring: String = FileAccess.get_file_as_string(RING_GD)
+	var service: String = FileAccess.get_file_as_string(SERVICE_GD)
+
+	for pair: Array in [["飘字", label], ["提示圈", ring]]:
+		var name: String = pair[0]
+		var source: String = pair[1]
+		assert_false(
+			source.contains("func _process("),
+			"%s不得每帧重算位置：世界坐标写一次就够了。" % name
+		)
+		assert_false(
+			source.contains("_anchor") or source.contains("_refresh"),
+			"%s不得残留锚点与每帧刷新：那是已废弃方案的结构。" % name
+		)
+
+	# 宿主层跟随相机变换，是「只写一次坐标」能成立的全部原因。
+	assert_true(
+		service.contains("_layer.follow_viewport_enabled = true"),
+		"承载层必须跟随视口相机变换，否则飘字又会变成屏幕空间。"
+	)
+	# 圈与字必须同源于 _spawn 的参数，才谈得上同心、同生共死。
+	assert_true(
+		service.contains("ring.call(\"play\", world_position, world_radius,"),
+		"圈必须直接拿到世界坐标。"
+	)
+	assert_true(
+		service.contains("OUTLINE_COLOR, world_position, RISE_DISTANCE, DURATION)"),
+		"字必须拿到与圈同源的那个世界坐标。"
+	)
+	assert_false(
+		service.contains("PROCESS_PRIORITY_LATE"),
+		"不得再引入处理优先级：没有每帧求值就不需要与相机抢求值顺序。"
+	)
+	assert_false(
+		service.contains("_world_to_screen_scale"),
+		"服务不得再做「世界 → 屏幕」的缩放换算。"
+	)
+
+	# 位置只写一次，因此上飘可以恢复成直接 Tween position:y，不存在第二条写入路径。
+	assert_true(
+		label.contains('tween_property(self, "position:y"'),
+		"上飘必须直接 Tween position:y；位置只写一次，不存在覆盖问题。"
+	)
+	assert_false(
+		label.contains('tween_property(self, "_rise"'),
+		"不得再引入标量偏移：那是每帧合成位置的配套设计，已随方案废弃。"
+	)
+	assert_true(
+		label.contains("position = center - size * 0.5"),
+		"飘字必须只在生成时按世界坐标写一次位置。"
+	)
+
+	# 半径本身就是世界单位，直接交给圈子，不存在像素换算。
+	assert_true(
+		ring.contains("position = center"),
+		"提示圈必须只在生成时写一次世界坐标。"
+	)
+	assert_false(
+		ring.contains("world_scale"),
+		"提示圈不得做世界缩放换算：半径本身就是世界单位。"
 	)
 
 

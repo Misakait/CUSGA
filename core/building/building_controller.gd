@@ -454,7 +454,9 @@ func _begin_demolition(record: Dictionary) -> void:
 		if _is_record_in_range(record):
 			_show_building_failure(int(record["id"]), "中间有障碍，无法拆除")
 		else:
-			_show_building_failure(int(record["id"]), OUT_OF_RANGE_TEXT)
+			# 距离不足复用棋盘卡文案，并叠加该建筑自己的所需交互范围圈，
+			# 让玩家直接看到该站到哪个范围内。
+			_show_building_out_of_range(record)
 		return
 	# 只读建筑配置决定能否拆除和长按秒数。
 	var data: Resource = record["data"]
@@ -657,11 +659,15 @@ func _world_hold() -> Node:
 ## @param world_position 世界坐标锚点。
 ## @param message 显示文案。
 ## @param text_color 正文颜色。
+## @param world_radius 所需交互范围的世界半径；大于 0 时在该坐标处叠加同心的提示圈，
+##     0 表示只飘字。参数顺序与飘字服务逐位对齐，这里刻意不换序，避免静默传错。
 ## @return 无返回值。
-func _show_world_floating_text(world_position: Vector2, message: String, text_color: Color) -> void:
+func _show_world_floating_text(world_position: Vector2, message: String, text_color: Color,
+		world_radius: float = 0.0) -> void:
 	if message.is_empty() or not _has_floating_text():
 		return
-	_floating_text.call(FLOATING_TEXT_SHOW_AT_WORLD, world_position, message, text_color)
+	_floating_text.call(FLOATING_TEXT_SHOW_AT_WORLD, world_position, message,
+		text_color, world_radius)
 
 
 ## 在建筑处显示飘字。
@@ -699,6 +705,31 @@ func _show_building_result(instance_id: int, result: Dictionary) -> void:
 ## @return 无返回值。
 func _show_building_failure(instance_id: int, message: String) -> void:
 	_show_building_floating_text(instance_id, message, FAILURE_TEXT_COLOR)
+
+
+## 读取建筑的交互半径；配置缺失或非法时返回 0.0，此时只飘字、不画范围圈。
+##
+## @param record 建筑仓库记录。
+## @return 该建筑的 InteractionRadius（世界像素），不可读时为 0.0。
+func _record_interaction_radius(record: Dictionary) -> float:
+	var data: Resource = record.get("data") as Resource
+	if data == null:
+		return 0.0
+	# 取 maxf 兜底：配置写错成负数时宁可退回「不画圈」，也不要让服务收到负半径。
+	return maxf(0.0, float(data.get("InteractionRadius")))
+
+
+## 在建筑处显示「距离不够！」，并叠加该建筑的所需交互范围提示圈。
+##
+## 半径取建筑自己的 InteractionRadius：交互距离是「玩家中心 → 建筑中心」的世界距离，
+## 圈的半径因此就是「玩家需要站进的范围」，与 _is_record_in_range 的判定口径完全一致，
+## 不引入第二处距离来源。
+##
+## @param record 因距离不足被拒绝拆除的建筑记录。
+## @return 无返回值。
+func _show_building_out_of_range(record: Dictionary) -> void:
+	_show_world_floating_text(_room_scene.to_global(record["position"]),
+		OUT_OF_RANGE_TEXT, FAILURE_TEXT_COLOR, _record_interaction_radius(record))
 
 
 ## 返回服务结果对应的提示颜色。

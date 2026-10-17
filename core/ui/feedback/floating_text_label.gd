@@ -4,6 +4,9 @@ extends Label
 ## 职责边界：只负责「怎么画、怎么动、何时释放」。字体、描边、颜色与时长全部由调用方传入，
 ## 组件自身不持有业务规则、不做坐标换算、也不依赖任何 autoload，因此可被任意系统复用。
 ##
+## 位置是一个**世界坐标**：宿主画布带着相机变换（follow_viewport_enabled），
+## 因此生成时把坐标写一次就够了，相机移动由引擎负责，组件不需要 _process。
+##
 ## 生命周期是 fire-and-forget：play() 播放结束后自己 queue_free，调用方不需要回收或登记。
 class_name FloatingTextLabel
 
@@ -28,7 +31,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-## 在指定屏幕锚点配置并启动一次飘字；播放结束后自动释放自身。
+## 在指定世界坐标处配置并启动一次飘字；播放结束后自动释放自身。
 ##
 ## @param text 显示文案。
 ## @param text_color 正文颜色。
@@ -36,13 +39,13 @@ func _ready() -> void:
 ## @param font_size 字号（像素）。
 ## @param outline_size 描边宽度（像素）。
 ## @param outline_color 描边颜色。
-## @param anchor_position 屏幕坐标锚点；文字以该点为中心展开。
+## @param center 目标的世界坐标；文字以该点为中心展开，相机移动时由宿主画布带着一起走。
 ## @param rise_distance 向上飘升的像素距离。
 ## @param duration 动画总时长（秒）。
 ## @return void 无返回值。
 func play(text: String, text_color: Color, font: Font, font_size: int,
 		outline_size: int, outline_color: Color,
-		anchor_position: Vector2, rise_distance: float, duration: float) -> void:
+		center: Vector2, rise_distance: float, duration: float) -> void:
 	_stop_tween()
 
 	self.text = text
@@ -55,14 +58,15 @@ func play(text: String, text_color: Color, font: Font, font_size: int,
 	add_theme_constant_override("outline_size", outline_size)
 	add_theme_color_override("font_outline_color", outline_color)
 
-	# 先按当前字体收缩到文字实际尺寸，再把锚点换算成左上角，
+	# 先按当前字体收缩到文字实际尺寸，再把世界坐标换算成左上角，
 	# 使飘字以交互目标为中心展开，而不是从目标处向右下溢出。
 	reset_size()
-	position = anchor_position - size * 0.5
+	position = center - size * 0.5
 	modulate = Color.WHITE
 
 	_tween = create_tween()
 	_tween.set_parallel(true)
+	# 位置只在上面写过一次，之后唯一的写入者就是这条 Tween，不存在互相覆盖。
 	_tween.tween_property(self, "position:y", position.y - rise_distance, duration) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(self, "modulate:a", 0.0, duration) \

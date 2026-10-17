@@ -63,6 +63,13 @@ const OUT_OF_RANGE_TEXT: String = "距离不够！"
 ## 飘字服务的公开入口方法名；动态协议名集中定义，避免字符串散落到调用点。
 const FLOATING_TEXT_SHOW_AT_TARGET: StringName = &"show_at_target"
 
+## 失败提示的正文色，与服务 `DEFAULT_TEXT_COLOR` 同值。
+##
+## 之所以要在调用方也写一份：服务的签名把「所需交互范围半径」排在颜色之后，
+## 只想传半径时就必须先给出颜色。权威定义仍在服务的 `DEFAULT_TEXT_COLOR`，
+## 这里只是镜像；`building_controller.gd` 的 `FAILURE_TEXT_COLOR` 是同一做法的既有先例。
+const FAILURE_TEXT_COLOR: Color = Color(1.0, 0.25, 0.2, 1.0)
+
 ## 驻守战斗结束后向地图通道控制器回传结果。
 signal PassageGuardEncounterFinished(is_victory: bool)
 ## 局外长按完成时通知 GDScript 地图拥有者执行其保留的业务流程。
@@ -462,7 +469,7 @@ func _report_out_of_range_interaction(card: Node2D, distance: float) -> void:
 	_show_out_of_range_floating_text(card)
 
 
-## 在交互目标处提示距离不足。
+## 在交互目标处提示距离不足，并叠加「所需交互范围」提示圈。
 ##
 ## 画面反馈与调试日志共用同一个漏斗函数：点击与长按两个鼠标入口都会走到
 ## _report_out_of_range_interaction，因此不需要在两个入口各接一次提示。
@@ -478,7 +485,12 @@ func _show_out_of_range_floating_text(card: Node2D) -> void:
 		return
 	if not _floating_text.has_method(FLOATING_TEXT_SHOW_AT_TARGET):
 		return
-	_floating_text.call(FLOATING_TEXT_SHOW_AT_TARGET, card, OUT_OF_RANGE_TEXT)
+	# 第 4 个实参是提示圈的**世界半径**：圈心是卡牌、半径是玩家的可交互距离，
+	# 玩家因此能一眼看出「该站到哪个范围内」。半径直接取 InteractionRange，
+	# 与 _try_get_interaction_range 的判定口径完全相同，不引入第二处距离来源。
+	# 颜色必须显式给出：服务把半径排在颜色之后，省略颜色就无法只传半径。
+	_floating_text.call(FLOATING_TEXT_SHOW_AT_TARGET, card, OUT_OF_RANGE_TEXT,
+		FAILURE_TEXT_COLOR, InteractionRange)
 
 
 ## 读取卡牌显示名，等价旧 C# card.Call("GetCardDisplayName")。

@@ -137,12 +137,39 @@
 
 离散结果的即时反馈（距离不足、放置/拆除失败）走全局飘字服务，不要挤进底部状态标签。底部标签保留**每帧实时状态**（当前交互提示、落点是否合法、进行中进度）。
 
-- **服务与组件分离**：`core/autoloads/floating_text.gd`（autoload `FloatingText`）负责承载层、坐标换算与去重；`core/ui/feedback/floating_text_label.gd` 负责单条飘字的样式与生命周期。服务不判断「该不该提示」，组件不知道「为什么提示」。
-- **调用方零耦合**：交互目标（棋盘卡视图、建筑视图）不需要为实现提示新增任何接口——服务用 `CanvasItem.get_screen_transform()` 自行读取目标坐标。这是刻意的设计约束：给目标加 `get_anchor_position()` 之类的接口会把表现需求渗进领域对象。
+- **服务与组件分离**：`core/autoloads/floating_text.gd`（autoload `FloatingText`）负责承载层、世界坐标读取与去重；`core/ui/feedback/floating_text_label.gd` 负责单条飘字的样式与生命周期。服务不判断「该不该提示」，组件不知道「为什么提示」。
+- **调用方零耦合**：交互目标（棋盘卡视图、建筑视图）不需要为实现提示新增任何接口——服务用 `CanvasItem.get_global_transform()` 自行读取目标的**世界坐标**。这是刻意的设计约束：给目标加 `get_anchor_position()` 之类的接口会把表现需求渗进领域对象。
 - **飘字必须在暂停时继续推进**：`Tween` 默认跟随宿主节点的处理状态，场景树暂停时 Tween 一起停，飘字会**永久停在屏幕上**且不释放。此时 `SceneTreeTimer` 默认 `process_always = true` 不受暂停影响——计时器正常、Tween 冻住，现象很具迷惑性。飘字节点必须设 `process_mode = Node.PROCESS_MODE_ALWAYS`。
 - **去重要覆盖同一次点击的多路信号**：`BoardCardView` 在一次左键里先后发出 `Pressed` 与 `Clicked`，两条路径都会走到同一个提示函数。服务侧用「同文案 + 同位置 + 时间窗」抑制重复，不要把去重逻辑散到各调用点。
 - **字体与描边由调用方传入**：组件不设默认字体，避免工程里出现第二处字体参数来源。本项目唯一字体是 `res://res/font/Uranus_Pixel_11Px.ttf`，字号 `28`、描边 `6`、描边色纯黑。
 - **不要用 `LabelSettings`**：它会整体覆盖 `theme_override` 的颜色，调用方传入的颜色会失效。一律用 `add_theme_font_override` / `add_theme_font_size_override` / `add_theme_color_override` / `add_theme_constant_override`。
-- **锚点语义**：`show_at_world` 用 `viewport.get_canvas_transform() * world_position`；`show_at_target` 用 `get_screen_transform()`（已含相机变换与画布偏移）。**拆除成功的飘字必须用 `show_at_world` 并传入拆除前捕获的坐标**——`TryDemolish` 成功会同步触发 `BuildingsChanged` 重建视图，此时传入的视图节点已失效，`show_at_target` 会退回鼠标位置。
+- **坐标语义**：飘字的坐标一律是**世界坐标**。`show_at_target` 用 `_resolve_target_world_position()` 读取一次目标的世界坐标（`Control` 取尺寸中心、`Node2D` 取原点），`show_at_world` 原样使用传入的世界坐标。**拆除成功的飘字必须用 `show_at_world` 并传入拆除前捕获的坐标**——`TryDemolish` 成功会同步触发 `BuildingsChanged` 重建视图，此时传入的视图节点已失效，`show_at_target` 会退回鼠标位置。
 - **颜色按结果语义分**：服务的 `message` 同时承载成功（「已放置/已拆除」）与失败文案，调用方必须按 `success` 分色，不能一律用失败红。
-- 验证口径：一次 `game_eval` 内断言 `label.position + label.size * 0.5` 等于锚点（而不是目视截图），并在暂停状态下断言它仍会淡出（`modulate.a` 推进）且最终 `is_instance_valid` 为 false、宿主子节点数回到 0。
+- 验证口径：一次 `game_eval` 内断言飘字的**世界坐标**等于目标的世界坐标（而不是目视截图），并在暂停状态下断言它仍会淡出（`modulate.a` 推进）且最终 `is_instance_valid` 为 false、宿主子节点数回到 0。
+
+### 飘字与提示圈必须「锁在目标处」（世界坐标，不要每帧换算）
+
+交互目标会随着跟随玩家的 `PlayerChar/Camera2D` 持续改变**屏幕**坐标，而飘字层是 `CanvasLayer(10)`。不做处理的话，飘字会留在原地、从目标身上滑走。这里有一条正确的路，和一条看起来能用、实际上自找麻烦的路。
+
+- **正确做法：让承载层跟随相机变换，世界坐标只写一次。** 服务在自己的 `CanvasLayer` 上开 `follow_viewport_enabled = true`（实测该层的画布变换与 `viewport.get_canvas_transform()` **完全相等**），于是子节点的 `position` **直接就是世界坐标**。飘字与提示圈在 `play()` 里把坐标写一次就结束，相机怎么移动由引擎负责。实测：相机平移 `(-120, -80)` 后，圈存的世界坐标**一字未改**，而它的屏幕坐标与目标**逐位相等、漂移 `0.0px`**。
+- **反模式：留在屏幕空间，却每帧把世界坐标换算成屏幕坐标。** 这条路也能修好「滑走」，但会连带引出一整套脆弱机制：组件必须加 `_process`；必须把上飘从 `Tween position:y` 改成「驱动标量 + 每帧合成位置」，否则两条写位置的路径互相覆盖；必须处理「autoload 的 `_process` 早于主场景」而给节点设晚于相机的 `process_priority`；还必须为「目标中途失效」缓存最后一次有效坐标。**这些复杂性全是自找的**——只要把飘字放进带相机变换的层，它们一个都不存在。本项目曾经实现过这一版（`FloatingTextAnchor` 值对象 + 逐帧 `resolve()`），已整体删除，不要重新引入。
+- **`CanvasLayer` 要保留，不要改成挂进世界画布的某个节点下。** 保留层是为了绘制顺序：`layer = 10` 必须高于 `UI/HUDLayer(2)` 与昼夜滤镜层(0)，否则飘字会被 HUD 面板遮住、或被昼夜滤镜染色。`follow_viewport_enabled` 让「世界坐标定位」与「独立层级」同时成立，不必二选一。
+- **宿主必须固定在原点**：宿主 `Control` 只做定位父级，用 `_host.position = Vector2.ZERO`。**不要**再用 `set_anchors_and_offsets_preset(PRESET_FULL_RECT)`——anchors 以父级 CanvasItem 的 `anchorable_rect` 为参考，而跟随相机变换后该矩形不再固定在屏幕上，反而会把所有飘字整体平移。实测宿主画布变换与视口一致、且飘字世界坐标与目标完全相等，证明无偏移。
+- **目标中途失效不需要任何处理**：世界坐标在生成时就已确定，目标随后被 `queue_free()` 也不影响这个已写好的位置，飘字自然停在原处淡出。实测目标释放后圈的世界坐标不变、游戏日志无任何报错。
+- **相机 `zoom` 不是保留屏幕空间的理由**：本项目没有任何代码修改 `PlayerChar/Camera2D.zoom`（全部 `zoom` 命中都属小地图与大地图平移缩放），所以「世界空间的字会随 zoom 缩放」在这里并不成立；即便将来加了 zoom，随世界一起缩放也是世界内标注的正确行为。
+- **判定释放必须用 `is_instance_valid`，不能在延迟求值的表达式里写 `node == null`**：Godot 中已释放对象与 `null` 比较会**返回相等**，于是「等到函数末尾才求值的字典字面量」会把「当时明明生成成功」误报成失败（实测连续踩到两次，`first_non_null` 假报 `false`）。布尔结果必须在调用当下就取下来。
+- 验证口径：移动相机后断言飘字的**世界坐标没有变化**、而**屏幕坐标与目标逐位相等（漂移 `0.0px`）**；再用 `ring.is_processing() == false` 与源码中不含 `func _process(` 证明组件确实没有每帧逻辑。
+
+### 所需交互范围提示圈（InteractionRangeRing）
+
+「距离不够！」除了文字，还要画出**该站进哪个范围**：以交互目标为中心、半径等于所需交互距离的空心圈。组件是 `core/ui/feedback/interaction_range_ring.gd`（`class_name InteractionRangeRing`，`extends Node2D`）。
+
+- **圈与字必须由同一次调用产出**：半径是 `show_at_target` / `show_at_world` 的**尾参** `world_radius`（默认 `0.0` 表示只飘字），由 `_spawn` 在**去重门禁之后**与 `Label` 同一个函数体里生成。`_is_duplicate` 是唯一的去重门禁，把画圈拆成第二次公开调用会让同帧双发（`Pressed` + `Clicked`）叠出**两个圈**，也失去「要么都有、要么都没有」的结构性保证。新增半径时**不要**改成调用方各调两次。
+- **半径是世界距离，直接交给组件，不做像素换算**：宿主层已带相机变换，`world_radius` 本身就是世界单位下的半径。**不要**用目标自身的 `scale` 或 `get_screen_transform().get_scale()` 去换算：地形卡有入场缩放与散布动画（`board_card_view.gd` 的 resting scale、`scale` Tween），而交互距离是「玩家中心 → 目标中心」的**世界距离**，与目标的表现缩放无关。实测：传 `160` 得到半径 `160`。
+- **圈不做上飘**：上飘只作用于 `Label`（位置只写一次，因此可以直接 Tween `position:y`）。圈一旦跟着升，「所需范围」的语义就随动画漂移了。
+- **同步淡出**：圈与字各自持有 Tween，但用**同一个 `DURATION`** 与**同一条曲线**（`TRANS_SINE` / `EASE_IN`）驱动 `modulate:a → 0`，并保证同一帧创建。实测半程两者 alpha 完全相同（差值 `0.0`）。
+- **两个静默故障点**：① `play()` 里写完半径必须 `queue_redraw()`——`_draw()` 只在进树与 `queue_redraw()` 之后执行，进树时半径还是 `0`，漏掉会得到一个**永远画不出东西也不报错**的节点；② 圈也要设 `process_mode = Node.PROCESS_MODE_ALWAYS`，理由与飘字相同，只给字设而漏掉圈会让圈在暂停时永久残留。
+- **空心而非实心**：用 `draw_arc`（只描边不填充），不要用 `draw_circle`。样式常量在服务里：`RANGE_RING_COLOR = (0.62, 0.62, 0.66, 0.5)`（灰色半透明）、`RANGE_RING_WIDTH = 3.0`。
+- **只有「距离不够！」才画圈**：建筑的成功、遮挡、不能拆除等提示不传半径（默认 `0.0`）。建造落点超 `PlacementRadius` 的文案是「离角色太远了」，不属于该组件。
+- **参数顺序的约束**：`world_radius` 排在 `text_color` **之后**，因此调用方只传半径时必须显式给出颜色（协调器为此保有一个与服务 `DEFAULT_TEXT_COLOR` 同值的镜像常量）。这样建筑的飘字漏斗 `_show_world_floating_text` 与服务参数顺序逐位对齐，不存在静默换序点。
+- 验证口径：除目视截图外，用 `SubViewport` + `transparent_bg` 光栅化后采样像素——圈心、圈内、圈外三处 alpha 必须为 `0`（证明空心），只在半径处有中性灰的半透明像素（证明线色与半径）。
