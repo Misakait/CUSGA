@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 18
-- **Last Active**: 2026-09-27
+- **Total Sessions**: 19
+- **Last Active**: 2026-10-17
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~546 | Active |
+| `journal-1.md` | ~587 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 19 | 2026-10-17 | 交互距离不足提示圈与飘字世界坐标重构 | `ecf5950` | `main` |
 | 18 | 2026-09-27 | 昼夜动态屏幕滤镜 | `b593b0d` | `main` |
 | 17 | 2026-09-26 | 长按速度倍率与技能卡类别标签收尾 | `70fdab2`, `7a3a34c` | `main` |
 | 16 | 2026-09-24 | 跨运行存档系统：局外仓库与玩家进度持久化 | `0e46bf4`, `5cd8886` | `main` |

@@ -544,3 +544,44 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 19: 交互距离不足提示圈与飘字世界坐标重构
+<!-- trellis-session: v=2 fp=534a3f0fdb4388b1 -->
+
+**Date**: 2026-10-17
+**Task**: 交互距离不足提示圈与飘字世界坐标重构
+**Branch**: `main`
+
+### Summary
+
+为「距离不够！」飘字新增一个附加组件：以交互目标为中心画出所需交互范围的空心半透明圈，与文字同批产出、同曲线淡出、一起自释放，覆盖棋盘卡与建筑两条入口。随后按用户意见整体重构定位方式：飘字承载层改为跟随相机变换，坐标成为世界坐标且只在生成时写一次，从而删除全部每帧重算逻辑。
+
+### Main Changes
+
+- 新增「所需交互范围」提示圈组件 InteractionRangeRing（空心 draw_arc、灰色半透明、自释放）
+- PCB 棋盘卡与建筑的距离不足提示同时显示范围圈，半径分别取 InteractionRange 与建筑数据的 InteractionRadius
+- 飘字承载层启用 follow_viewport_enabled，圈与字的位置改为世界坐标且只在生成时写入一次
+- 移除 FloatingTextAnchor 值对象、两个组件的 _process/_refresh、PROCESS_PRIORITY_LATE 与「世界到屏幕」缩放换算
+- 契约测试新增「不得每帧重算」反向护栏，同步更新建筑系统与游戏机制文档及前端组件规范
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ecf5950` | feat：交互距离不足时显示所需交互范围提示圈 |
+
+### Testing
+
+- [OK] test_run(suite=floating_text_contract)：11/11 通过
+- [OK] test_run(suite=world_interaction_coordinator_contract)：6 通过 / 3 失败 / 1 跳过，3 条失败为改动前既有，与本次无关
+- [OK] Main 场景冒烟 status=live、游戏日志无报错；game_eval 实测相机平移 (120,80) 后圈的世界坐标一字未改、屏幕漂移 0.0px
+- [OK] 运行期断言 ring.is_processing() 与 label.is_processing() 均为 false，证明组件已无每帧逻辑
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 任务已归档；若要收敛工程内并存的 FloatingTextLabel 与 CombatFeedbackPopup 两个浮字节点，需另开任务
