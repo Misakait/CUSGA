@@ -560,7 +560,7 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Main Changes
 
 - 新增「所需交互范围」提示圈组件 InteractionRangeRing（空心 draw_arc、灰色半透明、自释放）
-- PCB 棋盘卡与建筑的距离不足提示同时显示范围圈，半径分别取 InteractionRange 与建筑数据的 InteractionRadius
+- 棋盘卡与建筑的距离不足提示同时显示范围圈，半径分别取 InteractionRange 与建筑数据的 InteractionRadius
 - 飘字承载层启用 follow_viewport_enabled，圈与字的位置改为世界坐标且只在生成时写入一次
 - 移除 FloatingTextAnchor 值对象、两个组件的 _process/_refresh、PROCESS_PRIORITY_LATE 与「世界到屏幕」缩放换算
 - 契约测试新增「不得每帧重算」反向护栏，同步更新建筑系统与游戏机制文档及前端组件规范
