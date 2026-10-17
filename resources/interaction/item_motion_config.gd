@@ -1,6 +1,6 @@
 extends Resource
 
-## Item 的视觉动作参数；只影响 Visuals，不改变实体与鼠标命中形状。
+## 卡牌与建筑的视觉动作参数；只影响视觉表现节点，不改变实体与鼠标命中形状。
 
 ## 待机呼吸循环时长，单位为真实秒。
 @export_range(0.2, 10.0, 0.05) var IdleDuration: float = 1.8
@@ -22,3 +22,8 @@ extends Resource
 @export_range(0.05, 2.0, 0.01) var ScatterDuration: float = 0.35
 ## 拾取飞入玩家的时长，单位为真实秒。
 @export_range(0.05, 2.0, 0.01) var PickupDuration: float = 0.30
+## 长按破坏期间贴图抖动的随机偏移半径，单位为贴图节点本地像素。
+## 建筑视图复用同一资产，因此这里的值同时决定建筑拆除的抖动幅度。
+@export_range(0.0, 24.0, 0.5) var DestroyShakeAmplitude: float = 3.0
+## 长按破坏期间两次随机偏移之间的等待时间，单位为真实秒；越小抖得越快。
+@export_range(0.01, 0.5, 0.005) var DestroyShakeStepSeconds: float = 0.045

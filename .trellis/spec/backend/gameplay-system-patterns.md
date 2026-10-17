@@ -193,6 +193,10 @@
 - 需要长按确认的操作由共享长按 Controller 管理开始、取消、完成和进度显示。
 - 完成回调只能在进度达到终点后触发；取消、场景退出和 owner 失效都必须清理 Tween 与缓存引用。
 - 时间扣除、掉落和库存写入由 Model 的一次业务操作完成，View 不先行修改任何数值。
+- **进度圆环的锚点必须落在不参与抖动的节点上**：圆环对 `Sprite2D` 目标取点用的是 `sprite.get_screen_transform() * sprite.get_rect().end`，而 `position` 与 `offset` 都会改变这个乘积。因此「只抖贴图节点」并不能让圆环保持静止——破坏期间必须把 `progress_target` 指向一个与图标同级、自身不参与抖动的 `Marker2D ProgressAnchor`，其坐标由 `icon.position + icon.scale * icon.get_rect().end` 复刻图标静止时的右下角。`Marker2D` 既不是 `Sprite2D` 也不是 `Control`，指示器会落到 `_hold_target.get_screen_transform().origin` 分支，屏幕位置与旧实现逐像素一致（`anchor.get_screen_transform().origin` 与旧公式 `is_equal_approx`）。
+- 锚点必须在**每次可能改变图标纹理或缩放之后**重算（`RefreshView()`、`Configure()`），否则圆环会停在旧尺寸图标的右下角。无纹理时 `Sprite2D.get_rect()` 退化为 `Size2(1, 1)`，锚点仍与指示器同源，不需要额外特判。
+- 破坏抖动放在视图的 `SetDestroying(bool)` 里，不要塞进共享长按 Controller：后者是多条世界长按（地形破坏、建筑拆除、地图方向等）共用的计时与圆环端口，公开签名已被契约测试逐字锁定，加参数会连带改动无关链路。
+- 抖动必须在 `begin_hold` / `begin_timed_hold` **之前**启动：零成本或零秒的长按会在该调用内同步走完成回调，之后再启动就会留下一个永不停止的 Tween。停止侧同理，必须在清空 `_demolition_id` / `_active_terrain_hold_card` **之前**取出视图引用，并先 `is_instance_valid()` 验活（卡片可能在长按期间被房间重建或结算清场释放）。
 
 ## 库存、制作与掉落
 

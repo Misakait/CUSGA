@@ -38,6 +38,7 @@ CUSGA 使用 `tests/godot/` 下的 GDScript 测试和真实场景冒烟测试。
   名字与文件名去掉 `test_` 前缀后一致，便于按套件名过滤。
 - **`tests/godot/` 下并非每个文件都是套件**：其中十多个是 `extends SceneTree` 的独立运行脚本（如 `world_hold_interaction_tests.gd`、`passage_guard_tests.gd`），它们不注册为 `McpTestSuite`，`test_run` 永远发现不到，而项目又禁止用命令行 `--script` 运行（无法加载 autoload）。**改动波及这些文件里的断言时，不要声称已通过测试**：把相关断言等价复刻进一个可运行的套件，或在场景冒烟里用 `game_eval` 实证。
 - **编辑器测试的边界**：`PackedScene.instantiate()` 对非 `@tool` 的生产脚本只会得到占位实例，方法不可调用。这类行为（贴图切换、节点生命周期）不要硬塞进 `test_run`，改为在冒烟阶段用 `game_eval` 断言真实运行期结果；套件侧只保留数据契约与源码形状断言，并在套件注释里写明该限制。
+- **同一进程内 `load()` 可能拿到被 `preload` 缓存过的旧场景**：`building_view.tscn` 被 `building_controller.gd` 的 `const DEFAULT_VIEW = preload(...)` 缓存，改了场景后 `test_run` 里实例化出来的仍是旧节点树——实测同一轮里 `has_node("ProgressAnchor")` 返回 false，而未被 preload 的 `Item.tscn` 立刻就是新的；`filesystem_manage(op="scan")` 也刷不掉它（这正是 `test_run` 的 `cache_warning` 所指）。**场景结构一律用 `FileAccess.get_file_as_string()` 读文本断言，实例化验证留给运行期 `game_eval`。**
 - **`find_symbols` / `resource_manage(op="load")` 不是解析检查**：两者都会命中 GDScript 的缓存解析结果。实测出现过 `find_symbols` 正常返回全部函数、`resource_manage(op="load")` 返回合法 GDScript，而文件里实际存在 `Identifier "point" not declared in the current scope.` 的情况。该错误只在 `project_run` 里以 `Could not resolve class "res://..."` 的形式暴露，且报错行指向**引用方**的 `extends` 行，极易被误判成缓存问题。**判断脚本能否解析，只认游戏运行或扫描后的 `logs_read(source="editor")`。**
 - **否定断言不要用 `contains()` 匹配标识符**：脚本里解释「不要写 X」的注释本身包含 X，会让 `assert_false(source.contains("X"))` 直接失败。改成只看真正的声明行：
 

@@ -7,6 +7,8 @@ script = ExtResource("1_view")
 
 [node name="Icon" type="Sprite2D" parent="."]
 
+[node name="ProgressAnchor" type="Marker2D" parent="."]
+
 [node name="Body" type="StaticBody2D" parent="."]
 collision_layer = 0
 collision_mask = 16

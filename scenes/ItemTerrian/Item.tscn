@@ -152,6 +152,9 @@ vertical_alignment = 1
 position = Vector2(50, 83)
 scale = Vector2(2, 2)
 
+[node name="ProgressAnchor" type="Marker2D" parent="Visuals/PlayerView" unique_id=1304926715]
+position = Vector2(50, 83)
+
 [node name="Amount" type="Label" parent="Visuals/PlayerView" unique_id=846697619]
 visible = false
 layout_mode = 0

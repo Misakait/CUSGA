@@ -434,7 +434,12 @@ func _set_player_mouse_movement_blocked(blocked: bool) -> void:
 func _clear_active_terrain_hold() -> void:
 	if _active_terrain_hold_card == null:
 		return
+	# 卡片可能在长按期间被移除（房间重建、结算清场），调用前必须验活，
+	# 否则会对着已释放实例调 SetDestroying。
+	var released_card: Node2D = _active_terrain_hold_card
 	_active_terrain_hold_card = null
+	if is_instance_valid(released_card) and released_card.has_method("SetDestroying"):
+		released_card.call("SetDestroying", false)
 	_set_player_mouse_movement_blocked(false)
 
 
@@ -715,6 +720,10 @@ func _on_board_card_pressed(card: Node2D) -> void:
 	if _active_terrain_hold_card != null and _active_terrain_hold_card != card:
 		_cancel_active_hold()
 	_active_terrain_hold_card = card
+	# 抖动必须在 begin_hold 之前启动：零行动值的长按会同步走完成回调，
+	# 若在 begin_hold 之后启动，完成回调已经清过状态，会留下永不停的抖动。
+	if card.has_method("SetDestroying"):
+		card.call("SetDestroying", true)
 	_set_player_mouse_movement_blocked(true)
 	if Input.get_vector("move_left", "move_right", "move_up", "move_down") != Vector2.ZERO:
 		_clear_active_terrain_hold()

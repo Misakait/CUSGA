@@ -472,10 +472,17 @@ func _begin_demolition(record: Dictionary) -> void:
 		return
 	_cancel_world_hold()
 	_demolition_id = int(record["id"])
-	# 圆环锚定可见图标，随相机移动保持贴合目标。
+	# 圆环锚定不参与抖动的 ProgressAnchor：图标在拆除期间会抖，
+	# 直接锚定 Icon 会让圆环跟着一起抖。旧视图缺少锚点时退回图标，保持兼容。
 	var view: Node2D = _views[_demolition_id]
+	var anchor: Node = view.get_node_or_null("ProgressAnchor")
+	var progress_target: Node = view.get_node("Icon") if anchor == null else anchor
+	# 抖动必须在 begin_timed_hold 之前启动：零秒拆除会同步完成并走 _cancel_demolition，
+	# 若在之后启动，取消流程已经执行过，会留下永不停的抖动。
+	if view.has_method("SetDestroying"):
+		view.call("SetDestroying", true)
 	hold.call("begin_timed_hold", self, float(data.get("DemolitionHoldSeconds")),
-		Callable(self, "_complete_demolition"), view.get_node("Icon"))
+		Callable(self, "_complete_demolition"), progress_target)
 
 
 ## 检查完成瞬间的输入及目标状态，避免 Tween 比下一帧门禁先结算。
@@ -512,7 +519,11 @@ func _complete_demolition() -> void:
 
 ## 仅取消本建筑控制器持有的长按，不干扰随后接管圆环的其它交互。
 func _cancel_demolition() -> void:
+	# 必须在清空 _demolition_id 之前取出视图：清空后就找不到要停抖的建筑了。
+	var cancelled_view: Node2D = _views.get(_demolition_id) as Node2D
 	_demolition_id = -1
+	if is_instance_valid(cancelled_view) and cancelled_view.has_method("SetDestroying"):
+		cancelled_view.call("SetDestroying", false)
 	# 按拥有者取消，避免中断已经由其它世界交互接管的圆环。
 	var hold: Node = _world_hold()
 	if hold != null:

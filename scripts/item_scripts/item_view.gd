@@ -22,11 +22,15 @@ var _card_data: Resource = null
 var _interaction_disabled: bool = false
 var _hovered: bool = false
 var _base_visual_scale: Vector2 = Vector2.ONE
+## 长按破坏期间的贴图抖动；在 _ready 中按动作参数构造，节点未就绪时保持为空。
+var _shake: DestroyShake = null
 
 @onready var _visuals: Sprite2D = $Visuals
 @onready var _button: Button = $Visuals/PlayerView
 @onready var _label: Label = $Visuals/PlayerView/Label
 @onready var _icon: Sprite2D = $Visuals/PlayerView/Icon
+## 不参与抖动的进度锚点；长按圆环锚定它而不是 _icon，否则图标一抖圆环就会跟着抖。
+@onready var _progress_anchor: Marker2D = $Visuals/PlayerView/ProgressAnchor
 @onready var _collision: CollisionShape2D = $Collision
 @onready var _interaction: Area2D = $Interaction
 @onready var _animation_player: AnimationPlayer = $AnimationPlayer
@@ -45,7 +49,21 @@ func _ready() -> void:
 	_interaction.mouse_exited.connect(_on_mouse_exited)
 	_configure_motion()
 	_animation_player.play("Idle")
+	# 抖动参数走与 Idle/Hover 相同的动作参数资产；资产缺失时由组件自带兜底值接管。
+	_shake = DestroyShake.new(
+		_icon,
+		_motion_float("DestroyShakeAmplitude", DestroyShake.DEFAULT_AMPLITUDE),
+		_motion_float("DestroyShakeStepSeconds", DestroyShake.DEFAULT_STEP_SECONDS)
+	)
+	DestroyShake.SyncAnchor(_icon, _progress_anchor)
 	_update_pickable()
+
+
+## 退出时终止抖动，避免 Tween 与贴图偏移残留到下一次复用。
+## @return 无返回值。
+func _exit_tree() -> void:
+	if _shake != null:
+		_shake.Stop()
 
 
 ## 按房间坐标登记掉落身份；地形的实例 ID 由局部网格坐标决定。
@@ -118,9 +136,9 @@ func IsLootCard() -> bool:
 
 
 ## 提供长按进度条的稳定锚点。
-## @return 图标节点。
+## @return 不参与破坏抖动的 ProgressAnchor 节点；其屏幕位置等于图标静止时的右下角。
 func GetProgressAnchor() -> Node:
-	return _icon
+	return _progress_anchor
 
 
 ## 按绑定资源刷新外观，不改写碰撞或房间位置。
@@ -130,6 +148,8 @@ func RefreshView() -> void:
 		return
 	_label.text = String(_card_data.get("CardName"))
 	_icon.texture = _card_data.get("CardIcon") as Texture2D
+	# 锚点位置由图标纹理尺寸推导，纹理变化后必须重算，否则圆环会停在旧图标的右下角。
+	DestroyShake.SyncAnchor(_icon, _progress_anchor)
 	_base_visual_scale = Vector2.ONE * TerrainVisualScale
 	_visuals.visible = true
 	_visuals.scale = _base_visual_scale
@@ -144,6 +164,22 @@ func SetInteractionDisabled(disabled: bool) -> void:
 	_update_pickable()
 	if is_node_ready():
 		_visuals.self_modulate = Color(0.48, 0.48, 0.48) if disabled else Color.WHITE
+
+
+## 切换「正在被长按破坏」的抖动表现；重复调用同一状态不产生额外影响。
+##
+## 只抖图标节点的本地 position，不改变根节点位置、旋转、碰撞形状与鼠标命中区域，
+## 因此独立的进度锚点在抖动期间保持逐帧静止。
+##
+## @param destroying 是否正在被破坏。
+## @return 无返回值。
+func SetDestroying(destroying: bool) -> void:
+	if _shake == null:
+		return
+	if destroying:
+		_shake.Start()
+	else:
+		_shake.Stop()
 
 
 ## 保留棋盘卡旧高亮入口；悬停动画已经提供视觉反馈。
