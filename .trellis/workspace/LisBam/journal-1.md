@@ -607,3 +607,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 21: 长按破坏抖动反馈
+<!-- trellis-session: v=2 fp=6ed00249fa2063b5 -->
+
+**Date**: 2026-10-18
+**Task**: 长按破坏抖动反馈
+**Branch**: `main`
+
+### Summary
+
+长按破坏（地形采集/破坏、建筑拆除）期间给目标贴图加循环 Tween 抖动，并向视图暴露幂等 SetDestroying(bool)。关键设计：进度圆环对 Sprite2D 取点用 get_screen_transform() * get_rect().end，position 与 offset 都会改变该乘积，因此「只抖贴图」无法让圆环静止——新增与图标同级、不参与抖动的 Marker2D ProgressAnchor，由 DestroyShake.SyncAnchor 复刻图标静止右下角，Marker2D 走指示器的 origin 分支，圆环屏幕位置与旧实现逐像素一致。抖动放在视图而非共享长按端口（其签名被契约测试逐字锁定），且必须在 begin_hold/begin_timed_hold 之前启动、在清空 _demolition_id/_active_terrain_hold_card 之前取出视图引用。新增 tests/godot/test_destroy_hold_shake.gd（6 用例 62 断言）全绿；全量 580 通过 / 12 失败，逐条核对均为既有失败。运行期 game_eval 证实：200 次抖动步进中锚点屏幕坐标精确不变而图标 200 次全动，1.2 秒内 28 个不同位置、最大偏移 2.99 ≤ 幅度 3，根节点/旋转/命中区域不动，建筑拆除走真实 _begin_demolition 启停正常，地图方向长按共用圆环但不触发抖动。顺带记录两条编辑器测试陷阱（非 @tool 视图是 placeholder instance；被 preload 的场景在同一进程内不可见）并已写入 spec。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `86f59e5` | feat: 长按破坏物品时目标抖动，进度圆环保持稳定 |
+
+### Status
+
+[OK] **Completed**

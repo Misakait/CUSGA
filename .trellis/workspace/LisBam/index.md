@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 20
+- **Total Sessions**: 21
 - **Last Active**: 2026-10-18
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~609 | Active |
+| `journal-1.md` | ~631 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 21 | 2026-10-18 | 长按破坏抖动反馈 | `86f59e5` | `main` |
 | 20 | 2026-10-18 | 掉落物多张卡牌化与随机落点 | `028dddc` | `main` |
 | 19 | 2026-10-17 | 交互距离不足提示圈与飘字世界坐标重构 | `ecf5950` | `main` |
 | 18 | 2026-09-27 | 昼夜动态屏幕滤镜 | `b593b0d` | `main` |
