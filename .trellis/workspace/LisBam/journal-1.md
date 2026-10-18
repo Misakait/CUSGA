@@ -651,3 +651,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 23: 归档件同步整卡抖动
+<!-- trellis-session: v=2 fp=299acca129211921 -->
+
+**Date**: 2026-10-18
+**Task**: 归档件同步整卡抖动
+**Branch**: `main`
+
+### Summary
+
+上一轮把 10-18-destroy-hold-shake 归档时，抖动方案还是错的「只抖卡内 Icon」，所以归档件里的 prd.md（R1、验收标准 1/3、层级说明）、design.md（D2 锚点挂载位置、D3 接口签名、D4、风险表、回滚形状、验证策略）、implement.md（阶段 1/2 的节点路径与构造参数、验证证据表、运行期证据、全量回归数字、回滚点）与 task.json 的 description 全都在描述已作废的方案。本轮把这四处同步到现行方案，并在每份文件顶部加「修正记录（第二轮）」明确记下改了什么、为什么改——保留第一轮方案及其否决理由作为历史，不假装一直是对的。要点：抖动目标是整个可见节点（地形卡 Visuals、建筑 Icon）；ProgressAnchor 必须落在被抖子树之外（地形卡移到 Item 根节点）；SyncAnchor 因此从静态方法改为实例方法，跨父节点用全局变换换算，并在抖动期间按静止状态取点以免把当前偏移烘进锚点。验证证据补入第二轮实测值：真实卡牌 200 步中卡牌/卡框/卡内图标三者全动而锚点世界坐标逐位不变、max_shift 2.4179、真实长按 40 帧锚点逐位不变、建筑 max_shift 2.9976、地图方向长按完全不抖；测试表更新为 7 用例 77 断言并列出新增的 test_anchor_sync_during_shake_does_not_drift。全量回归数字更新为 580/12/40/632，并写明跳过数 39→40 是 test_vital_component_contract 因编辑器未打开场景走 skip 分支的环境差异，不是回归。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `073a84b` | docs(task): 归档件同步到整卡抖动方案 |
+
+### Status
+
+[OK] **Completed**
