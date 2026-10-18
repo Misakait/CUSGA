@@ -673,3 +673,43 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 24: 长按期间在范围内移动不再打断交互（地形 + 建筑）
+<!-- trellis-session: v=2 fp=b12680603facfd44 -->
+
+**Date**: 2026-10-18
+**Task**: 长按期间在范围内移动不再打断交互（地形 + 建筑）
+**Branch**: `main`
+
+### Summary
+
+长按的取消条件从「玩家在动」改为「离开交互范围」；建筑侧用鼠标屏幕坐标区分玩家操作与相机漂移，遮挡只在完成瞬间拦。
+
+### Main Changes
+
+- 地形：_process_terrain_hold_input 不再读方向键，只比玩家与卡牌的世界距离；越界按拥有者 cancel_hold_for 并给出「距离不够！」+ 范围提示圈。
+- 建筑：去掉逐帧重新命中鼠标指向，改用鼠标屏幕坐标是否变化判定（_mouse_screen_position 经 get_canvas_transform 往返，基准每帧前移）；逐帧门禁只判距离，遮挡留给 _can_complete_demolition。
+- 两条长按的完成入口都再复查一次距离，挡住「越界那一帧恰好填满」的结算。
+- 新增 tests/godot/test_hold_move_within_range.gd（4 用例 36 断言）；building_system_tests.gd 补范围内移动不取消的断言；同步两份 docs 与 backend spec 的「交互与时间」。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d7fb56a` | feat(interaction): 长按期间在范围内移动不再打断交互 |
+
+### Testing
+
+- [OK] test_run(suite=hold_move_within_range)：4 passed / 0 failed / 36 assertions。
+- [OK] 全量 test_run：585 passed / 12 failed / 39 skipped / 636 total / 76 suites；基线 581/12/39/632/75，失败集合逐条一致，零新增失败。
+- [OK] Main 场景 game_eval 实证：建筑漂移免疫、越界取消+反馈、遮挡只在完成拦；地形范围内存活、越界取消+反馈、完成入口正负对照。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 既有的 building_system_tests.gd:181 越界错误（campfire_recipe 的 Inputs 只剩 1 项）会让整个建筑回归场景一项断言都不执行，需单独修。
+- 本地领先 origin/main，尚未 push。

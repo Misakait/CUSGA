@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 23
+- **Total Sessions**: 24
 - **Last Active**: 2026-10-18
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~675 | Active |
+| `journal-1.md` | ~715 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 24 | 2026-10-18 | 长按期间在范围内移动不再打断交互（地形 + 建筑） | `d7fb56a` | `main` |
 | 23 | 2026-10-18 | 归档件同步整卡抖动 | `073a84b` | `main` |
 | 22 | 2026-10-18 | 破坏抖动改为整卡 | `8571b54` | `main` |
 | 21 | 2026-10-18 | 长按破坏抖动反馈 | `86f59e5` | `main` |
