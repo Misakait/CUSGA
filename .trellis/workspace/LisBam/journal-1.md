@@ -629,3 +629,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 22: 破坏抖动改为整卡
+<!-- trellis-session: v=2 fp=b1d2fd0c4222e8bb -->
+
+**Date**: 2026-10-18
+**Task**: 破坏抖动改为整卡
+**Branch**: `main`
+
+### Summary
+
+修正上一轮的抖动目标：原先只抖卡内 Icon，实际要抖整张卡牌。地形卡改为抖 Visuals（卡框、卡名、卡内图标一起动），建筑仍抖 Icon（建筑的可见内容就只有它）。连带影响：ProgressAnchor 原本挂在 Visuals/PlayerView 下，位于被抖子树内，必须移到 Item 根节点才不会被带走，坐标由实测的卡框原点 (-50,-70) 反推为 (2,15)（无纹理 Sprite2D 的 get_rect() 是 Rect2(0,0,1,1) 而非居中矩形）。DestroyShake.SyncAnchor 因此从静态方法改为实例方法：它需要组件持有的静止位置，用 icon.get_global_transform() * get_rect().end 取点后经 anchor.get_parent().to_local() 落到锚点自己的父空间，并在抖动期间调用时先扣掉 _target.position - 静止位置（经父节点 basis_xform 转全局），避免长按中刷新视图把当前偏移烘进锚点。测试夹具同步改成跨父节点层级并新增 test_anchor_sync_during_shake_does_not_drift；7 用例 77 断言全绿。运行期实测：真实卡牌 200 步抖动中卡牌节点/卡框/卡内图标三者全动而锚点世界坐标逐位不变，屏幕位置与旧的锚定图标公式一致，max_shift 2.99≤3，停止精确复位；真实长按经 _on_board_card_pressed 启动、圆环锚定锚点且 40 帧内世界坐标逐位不变，释放后停止并隐藏圆环；建筑经真实 building_data 实例 + Configure 验证 max_shift 2.9976；地图方向长按共用圆环端口但完全不触发抖动。全量 580 通过 / 12 失败，与修正前同一失败集合（跳过数 39→40 系编辑器未打开场景导致 test_vital_component_contract 走 skip 分支）。另修正 spec 与文档中「只抖图标/与图标同级」的错误表述，并记录 Control 不能 as Node2D 的坑。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8571b54` | fix: 破坏抖动改为抖整张卡牌，圆环锚点移出被抖子树 |
+
+### Status
+
+[OK] **Completed**
