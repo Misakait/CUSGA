@@ -2,7 +2,7 @@
   "id": "destroy-hold-shake",
   "name": "destroy-hold-shake",
   "title": "长按破坏时的目标抖动反馈",
-  "description": "长按破坏地形卡或拆除建筑时，给目标的贴图节点新增持续抖动效果表示正在被破坏；右下角长按进度圆环必须保持稳定不随抖动。",
+  "description": "长按破坏地形卡或拆除建筑时，给目标的整个可见节点新增持续抖动效果表示正在被破坏（地形卡抖整张卡牌：卡框+卡名+卡内物品；建筑抖图标）；右下角长按进度圆环必须保持稳定不随抖动。",
   "status": "completed",
   "dev_type": null,
   "scope": null,
