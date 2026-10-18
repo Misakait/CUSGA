@@ -24,6 +24,11 @@ const OUT_OF_RANGE_TEXT: String = "距离不够！"
 const SUCCESS_TEXT_COLOR: Color = Color(1.0, 1.0, 1.0, 1.0)
 ## 建筑失败提示的颜色；与飘字服务的默认红保持同一语义。
 const FAILURE_TEXT_COLOR: Color = Color(1.0, 0.25, 0.2, 1.0)
+## 鼠标屏幕位移超过该像素值才认定为玩家主动移动鼠标，避免浮点误差与系统级抖动触发目标复查。
+##
+## 单位是视口像素：_mouse_screen_position() 把世界坐标乘回画布变换后得到的就是屏幕坐标，
+## 因此该容差与相机缩放无关。
+const DEMOLITION_MOUSE_MOVE_TOLERANCE: float = 0.5
 ## 玩家实体路径；与承载数值的 Player 节点分离。
 @export var PlayerBodyPath: NodePath = ^"../../PlayerChar"
 ## 玩家上下文端口路径。
@@ -83,6 +88,8 @@ var _views: Dictionary = {}
 var _views_by_room: Dictionary = {}
 ## 当前正在拆除的实例标识，负数表示没有活动拆除；一次按下仅选定一栋。
 var _demolition_id: int = -1
+## 上一次采样的鼠标屏幕坐标；用于区分「玩家自己动了鼠标」与「相机跟随造成的世界坐标漂移」。
+var _demolition_mouse_screen: Vector2 = Vector2.ZERO
 ## 飘字服务 Autoload；缺失时静默降级为「不显示提示」，不影响任何交互判定。
 var _floating_text: Node = null
 
@@ -260,10 +267,14 @@ func _process(_delta: float) -> void:
 		# 目标、鼠标、世界状态持续有效才允许进度完成；外部取消长按也清理提示。
 		var hold: Node = _world_hold()
 		if not _can_continue_demolition() or hold == null or not bool(hold.get("is_holding")):
+			# 只有「按住时走出交互范围」需要解释原因；暂停、界面、战斗、松键、移开鼠标保持静默。
+			var out_of_range_record: Dictionary = _out_of_range_demolition_record()
 			_cancel_demolition()
+			if not out_of_range_record.is_empty():
+				_show_building_out_of_range(out_of_range_record)
 		else:
 			_set_focus(_demolition_id)
-			_hint.text = "正在拆除 · 松开左键或移开鼠标取消"
+			_hint.text = "正在拆除 · 松开左键、移开鼠标或走出交互范围取消"
 			return
 	# 目标同时决定高亮与文案，防止提示一栋却操作另一栋。
 	var record: Dictionary = _nearest_building()
@@ -472,6 +483,8 @@ func _begin_demolition(record: Dictionary) -> void:
 		return
 	_cancel_world_hold()
 	_demolition_id = int(record["id"])
+	# 记录本帧鼠标屏幕坐标，作为「玩家是否自己动过鼠标」的比较基准。
+	_demolition_mouse_screen = _mouse_screen_position()
 	# 圆环锚定不参与抖动的 ProgressAnchor：图标在拆除期间会抖，
 	# 直接锚定 Icon 会让圆环跟着一起抖。旧视图缺少锚点时退回图标，保持兼容。
 	var view: Node2D = _views[_demolition_id]
@@ -485,19 +498,77 @@ func _begin_demolition(record: Dictionary) -> void:
 		Callable(self, "_complete_demolition"), progress_target)
 
 
-## 检查完成瞬间的输入及目标状态，避免 Tween 比下一帧门禁先结算。
+## 拆除长按的公共输入与世界门禁；每帧门禁与完成门禁共用，避免两组条件漂移。
+##
+## @return 左键仍按住、未在放置、无界面遮挡且世界可用时为 true。
+func _is_demolition_input_available() -> bool:
+	return _demolition_id >= 0 and _is_demolition_button_pressed() and _world_available() \
+		and _placing_data == null and not _has_open_overlay() \
+		and get_viewport().gui_get_hovered_control() == null
+
+
+## 复查本次拆除的目标是否仍被玩家选中。
+##
+## 相机跟随玩家平移时，屏幕光标不动、世界坐标却会漂移；如果每帧都按光标重新命中，
+## 「在范围内移动」就会被误判成「移开鼠标」。因此只在玩家自己动过鼠标的那一帧才重新命中，
+## 其余帧沿用开始长按时锁定的目标。
+##
+## @return 目标未被切换时为 true。
+func _is_demolition_target_kept() -> bool:
+	var mouse_screen: Vector2 = _mouse_screen_position()
+	var mouse_moved: bool = mouse_screen.distance_to(_demolition_mouse_screen) > DEMOLITION_MOUSE_MOVE_TOLERANCE
+	# 采样基准每帧前移：只比较相邻两帧，因此慢速拖动也会在光标离开建筑的那一帧被发现。
+	_demolition_mouse_screen = mouse_screen
+	if not mouse_moved:
+		return true
+	# 玩家自己动了鼠标：沿用既有的光标命中口径，「移开鼠标」与「切换目标」都取消。
+	var pointed: Dictionary = _building_under_pointer()
+	return not pointed.is_empty() and int(pointed["id"]) == _demolition_id
+
+
+## 按实例标识取回当前房间的建筑记录；记录已不存在时返回空字典。
+##
+## 鼠标未移动时用它沿用开始长按时锁定的目标，不再按光标重新命中。
+##
+## @param instance_id 建筑实例标识。
+## @return 该实例的记录；仓库不可用或记录已删除时返回空字典。
+func _record_for_instance(instance_id: int) -> Dictionary:
+	if not is_instance_valid(_store):
+		return {}
+	for record: Dictionary in _store.call("GetBuildings", _room):
+		if int(record["id"]) == instance_id:
+			return record
+	return {}
+
+
+## 检查拆除长按是否仍可继续；每帧门禁只看距离，遮挡留到完成瞬间再判。
+##
+## 玩家在交互范围内移动（含相机跟随造成的建筑位移、走到墙后）都不该打断拆除，
+## 因此这里不判遮挡；「不允许隔墙远程破坏」由 _can_complete_demolition 把关。
+##
+## @return 仍可继续时为 true。
 func _can_continue_demolition() -> bool:
-	if _demolition_id < 0 or not _is_demolition_button_pressed() or not _world_available() \
-		or _placing_data != null or _has_open_overlay() or get_viewport().gui_get_hovered_control() != null:
+	if not _is_demolition_input_available() or not _is_demolition_target_kept():
 		return false
-	# 重新命中当前鼠标目标，不能沿用开始长按时的旧引用。
-	var record: Dictionary = _building_under_pointer()
-	return not record.is_empty() and int(record["id"]) == _demolition_id and _is_record_reachable(record)
+	var record: Dictionary = _record_for_instance(_demolition_id)
+	return not record.is_empty() and _is_record_in_range(record)
+
+
+## 检查拆除完成瞬间的输入及目标状态，避免 Tween 比下一帧门禁先结算。
+##
+## 比每帧门禁多一条遮挡判定：长按期间允许移动，但进度填满时仍不能隔墙远程拆除。
+##
+## @return 允许结算拆除时为 true。
+func _can_complete_demolition() -> bool:
+	if not _is_demolition_input_available() or not _is_demolition_target_kept():
+		return false
+	var record: Dictionary = _record_for_instance(_demolition_id)
+	return not record.is_empty() and _is_record_reachable(record)
 
 
 ## 长按完成后再次校验，先移除实例，再经现有棋盘掉落链生成物品卡。
 func _complete_demolition() -> void:
-	if not _can_continue_demolition():
+	if not _can_complete_demolition():
 		_cancel_demolition()
 		return
 	# 取消长按会清理控制器标识，因此先固定待提交的实例。
@@ -535,9 +606,38 @@ func _mouse_world_position() -> Vector2:
 	return _buildings_root.get_global_mouse_position()
 
 
+## 读取鼠标的屏幕坐标。
+##
+## 必须回到屏幕空间比较：相机跟随玩家平移时屏幕光标不动、世界坐标却会漂移，
+## 只有屏幕坐标才能区分「玩家自己动了鼠标」与「相机动了」。
+##
+## 实现上先经 _mouse_world_position() 取世界坐标再乘本节点所在画布的变换，而不是直接读
+## get_viewport().get_mouse_position()：前者沿用回归场景已经覆写的鼠标采样接口，
+## 不必为漂移判定再加一个替身接口。
+##
+## @return 鼠标在屏幕空间的位置。
+func _mouse_screen_position() -> Vector2:
+	return _buildings_root.get_canvas_transform() * _mouse_world_position()
+
+
 ## 读取当前左键是否仍按住，避免失焦或丢失释放事件导致误拆。
 func _is_demolition_button_pressed() -> bool:
 	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+
+
+## 返回「拆除只因玩家走出交互范围而失效」时的建筑记录；其它原因返回空字典。
+##
+## 暂停、打开界面、进入战斗、松键、移开鼠标等原因不该弹「距离不够」，因此必须把范围单独判出来。
+##
+## @return 只因超出交互范围而失效时的记录；否则返回空字典。
+func _out_of_range_demolition_record() -> Dictionary:
+	# 必须先确认左键仍按住：松键取消不该被误报成距离不足。
+	if _demolition_id < 0 or not _is_demolition_button_pressed():
+		return {}
+	var record: Dictionary = _record_for_instance(_demolition_id)
+	if record.is_empty() or _is_record_in_range(record):
+		return {}
+	return record
 
 
 ## 当前房间有增删时刷新，其他房间保持纯数据状态。

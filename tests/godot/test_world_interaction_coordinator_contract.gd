@@ -477,14 +477,15 @@ func test_interaction_range_gate() -> void:
 		coordinator.contains('return {"ok": distance <= InteractionRange, "distance": distance}'),
 		"只有距离不超过 InteractionRange 时才允许交互。"
 	)
-	# 地形卡的两个鼠标入口：点击走 _on_board_card_clicked，可长按地形走 _on_board_card_pressed；
-	# 两处都必须接入判定，否则仍能隔着房间交互。
-	# 掉落物已改为靠近自动拾取，在距离判定之前就被 _is_loot_card 吞掉，因此不占用这两个调用点，
-	# 计数仍为 2；自动拾取的半径判定走独立的 AutoPickupRange 与 _is_loot_within_auto_pickup_range。
+	# 地形卡现在有三个接入点：点击走 _on_board_card_clicked，按下开始长按走 _on_board_card_pressed，
+	# 长按完成瞬间还要复查一次（Tween 可能比 _process 的范围门禁先结算）。
+	# 三处都必须接入判定，否则仍能隔着房间交互或结算。
+	# 掉落物已改为靠近自动拾取，在距离判定之前就被 _is_loot_card 吞掉，因此不占用这些调用点；
+	# 自动拾取的半径判定走独立的 AutoPickupRange 与 _is_loot_within_auto_pickup_range。
 	assert_eq(
 		_count_occurrences(coordinator, "var range_check: Dictionary = _try_get_interaction_range(card)"),
-		2,
-		"点击与长按两个地形交互入口都必须先做距离判定。"
+		3,
+		"点击、长按开始与长按完成三个地形交互入口都必须先做距离判定。"
 	)
 	# 掉落物点击/按下不再走距离门禁，否则会在远处点它时弹出对自动拾取毫无意义的「距离不够！」。
 	assert_true(

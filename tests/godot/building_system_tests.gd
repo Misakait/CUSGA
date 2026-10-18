@@ -81,6 +81,9 @@ class BoardProbe extends Node2D:
 
 
 ## 只替换外部鼠标采样，目标选择和拆除业务仍执行生产实现。
+##
+## 鼠标屏幕坐标由 `_mouse_world_position()` 换算而来，因此改 `pointer` 等价于「玩家自己动了鼠标」；
+## 保持 `pointer` 不变则等价于「玩家没碰鼠标、只有相机在跟随漂移」，两种场景都能在这里复刻。
 class ControllerInputProbe extends "res://core/building/building_controller.gd":
 	## 确定的鼠标世界坐标，避免测试移动真实桌面鼠标。
 	var pointer: Vector2 = Vector2.ZERO
@@ -443,6 +446,11 @@ func _test_controller_inputs() -> void:
 	_check(not hold.get("is_holding"), "移开鼠标或换目标必须取消拆除")
 	controller.pointer = Vector2(300, 200)
 	controller.call("_begin_demolition", target)
+	# 相机跟随玩家平移时屏幕光标不动、世界坐标却会漂移；这不该被误判成「移开鼠标」。
+	body.position = Vector2(240, 220)
+	controller.call("_process", 0.01)
+	_check(hold.get("is_holding"), "鼠标不动时在范围内移动不得取消拆除")
+	body.position = Vector2(200, 200)
 	modal.show()
 	await get_tree().create_timer(0.08).timeout
 	_check(board.spawned_drops.is_empty(), "完成瞬间打开界面也不能误拆")

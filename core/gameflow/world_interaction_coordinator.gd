@@ -229,7 +229,7 @@ func _ready() -> void:
 
 ## 每帧推进局外世界的持续性逻辑。
 ##
-## 顺序无关但职责分离：自动拾取只看玩家与掉落物的当前距离，地形长按只看键盘是否接管，
+## 顺序无关但职责分离：自动拾取只看玩家与掉落物的当前距离，地形长按只看玩家是否还在交互范围内，
 ## 两者互不依赖，拆成独立入口便于分别阅读与单点验证。
 ##
 ## @param _delta 本帧间隔秒数；两个子逻辑都按「当前状态」判定，不使用帧间隔。
@@ -239,7 +239,10 @@ func _process(_delta: float) -> void:
 	_process_terrain_hold_input()
 
 
-## 键盘方向输入优先于正在进行的棋盘地形长按。
+## 复查正在进行的棋盘地形长按是否仍然有效。
+##
+## 移动本身不再打断交互：玩家可以在交互范围内边走边保持长按，只有走出 InteractionRange 才取消。
+## 判定复用 _try_get_interaction_range，与按下时的门槛完全同源，不引入第二处距离口径。
 ##
 ## @return 无返回值。
 func _process_terrain_hold_input() -> void:
@@ -248,16 +251,19 @@ func _process_terrain_hold_input() -> void:
 	if not is_instance_valid(_active_terrain_hold_card):
 		_cancel_active_hold()
 		return
-	if Input.get_vector("move_left", "move_right", "move_up", "move_down") == Vector2.ZERO:
-		return
-	if _hold_interaction_controller == null or not is_instance_valid(_hold_interaction_controller):
-		_clear_active_terrain_hold()
+
+	var range_check: Dictionary = _try_get_interaction_range(_active_terrain_hold_card)
+	if bool(range_check["ok"]):
 		return
 
-	var is_holding: Variant = _hold_interaction_controller.get("is_holding")
-	if is_holding is bool and bool(is_holding):
-		_hold_interaction_controller.call("cancel_hold_for", _active_terrain_hold_card)
-		_clear_active_terrain_hold()
+	# 先固定待提交的引用：_clear_active_terrain_hold 会清空记录，之后就找不到飘字锚点了。
+	var out_of_range_card: Node2D = _active_terrain_hold_card
+	if _hold_interaction_controller != null and is_instance_valid(_hold_interaction_controller):
+		# 只按拥有者取消，避免中断已经由其它世界交互接管的圆环。
+		_hold_interaction_controller.call("cancel_hold_for", out_of_range_card)
+	_clear_active_terrain_hold()
+	# 走出范围必须说明原因，否则玩家会以为是自己松了手。
+	_report_out_of_range_interaction(out_of_range_card, float(range_check["distance"]))
 
 
 ## 退出场景树时解除全部信号连接并取消未完成的长按。
@@ -691,8 +697,11 @@ func _handle_terrain_card_clicked(card: Node2D, terrain: RefCounted) -> void:
 ## 而拾取已改为靠近自动触发，那条提示对掉落物是误报。
 ##
 ## 超出交互范围时连长按进度环都不开始，避免玩家在远处看到「能填满却不会结算」的反馈。
-## 开始长按后玩家移动会被屏蔽（键盘方向输入会取消长按），因此本次交互在完成时仍处于同一位置，
-## 完成入口不需要重复距离判定。
+## 开始长按后玩家可以自由移动，但一旦走出交互范围就会在 _process 里立即取消。
+## 键盘方向输入与长按无关：按下时正在移动不再阻止长按开始。
+##
+## 完成回调仍要复查一次距离：进度环由 Tween 驱动，同一帧里 Tween 的完成回调与 _process 的
+## 取消判定谁先执行并不确定，只有复查才能挡住「越界那一帧恰好填满」的结算。
 ##
 ## @param card 被按下的棋盘卡视图。
 ## @return 无返回值。
@@ -725,9 +734,6 @@ func _on_board_card_pressed(card: Node2D) -> void:
 	if card.has_method("SetDestroying"):
 		card.call("SetDestroying", true)
 	_set_player_mouse_movement_blocked(true)
-	if Input.get_vector("move_left", "move_right", "move_up", "move_down") != Vector2.ZERO:
-		_clear_active_terrain_hold()
-		return
 
 	# 圆环锚定在地形图标上；图标缺失时退回卡片自身，保持旧 C# 的兜底目标。
 	var icon: Node = card.call("GetProgressAnchor") as Node if card.has_method("GetProgressAnchor") else card.get_node_or_null("Icon") as Node
@@ -848,6 +854,13 @@ func _complete_terrain_hold(
 	if not is_instance_valid(card):
 		return
 	if card.call("GetTerrainInstanceOrNull") != terrain:
+		return
+
+	# Tween 可能比 _process 的范围复查先结算，因此完成瞬间按同一判定再复查一次；
+	# 超范围时按「走出范围」处理，不消耗行动值、不生成掉落。
+	var range_check: Dictionary = _try_get_interaction_range(card)
+	if not bool(range_check["ok"]):
+		_report_out_of_range_interaction(card, float(range_check["distance"]))
 		return
 
 	if _is_reusable_gathering(interaction):

@@ -201,6 +201,11 @@
 - 破坏抖动放在视图的 `SetDestroying(bool)` 里，不要塞进共享长按 Controller：后者是多条世界长按（地形破坏、建筑拆除、地图方向等）共用的计时与圆环端口，公开签名已被契约测试逐字锁定，加参数会连带改动无关链路。
 - 抖动必须在 `begin_hold` / `begin_timed_hold` **之前**启动：零成本或零秒的长按会在该调用内同步走完成回调，之后再启动就会留下一个永不停止的 Tween。停止侧同理，必须在清空 `_demolition_id` / `_active_terrain_hold_card` **之前**取出视图引用，并先 `is_instance_valid()` 验活（卡片可能在长按期间被房间重建或结算清场释放）。
 - 地形卡的 `Visuals/PlayerView` 是 `Button`（`Control`），**不是** `Node2D`。用 `as Node2D` 取它会静默得到 `null`，随后任何 `get_screen_transform()` 都报「Cannot call method on a null value」。写运行时校验脚本时按 `CanvasItem` 取它。
+- **长按的「移动」判定只能看距离，不能看键盘输入**：逐帧复查必须只比较「玩家中心 → 目标中心」的世界距离（地形用 `InteractionRange`，建筑用该实例的 `InteractionRadius`），不要读 `Input.get_vector("move_*")` 之类的方向输入。读输入会把「玩家恰好在长按时按了方向键」误判成取消，而玩家在范围内移动本来就不该打断交互；只有走出范围才取消。
+- **逐帧门禁与完成门禁必须分开**：逐帧复查只判距离（外加「输入仍有效」「目标仍是同一实例」），把遮挡、视线这类昂贵或易抖的判定留给完成瞬间。地形与建筑两条链路都要在完成回调里**再复查一次**距离——进度环由 Tween 驱动，同一帧里 Tween 的完成回调与 `_process` 的复查谁先执行并不确定，不复查就会放过「越界那一帧恰好填满」的结算。反过来，遮挡只在完成时判，拆到一半被墙挡住不应中断。
+- **「玩家是否移开了鼠标」要按屏幕坐标判定，不能按世界坐标**：相机跟随角色平移时 `get_global_mouse_position()` 会变，但玩家的手没动。正确判据是把世界坐标经 `get_canvas_transform()` 换回屏幕坐标（`_buildings_root.get_canvas_transform() * _mouse_world_position()`）后，与按下时记录的基准比较；基准要**每帧前移**（只比相邻两帧），否则缓慢拖动鼠标会拖到离开建筑之后才被发现。这样 `_mouse_world_position()` 这类既有测试接缝可以原样复用，不必新增桩接口。
+- **取消必须是单一出口，并负责把视图状态一起复位**：地形走 `_clear_active_terrain_hold()`、建筑走 `_cancel_demolition()`；两条出口都要 `SetDestroying(false)` 并解除鼠标移动屏蔽（`EndWorldInteraction`），否则破坏抖动或鼠标屏蔽会泄漏到长按结束之后。取消是终态，不做进度续接。
+- **共享长按 Controller 的取消要按 owner 限定**：只取消本次长按的拥有者时用 `cancel_hold_for(owner)`；`cancel_active_hold()` 是无条件取消，只用在「按下另一项交互」这类确实要抢占的场景。取消后必须同时清掉协调器自己记录的 `_active_terrain_hold_card`，否则下一帧复查会拿着一个已取消的目标继续判定。
 
 ## 库存、制作与掉落
 
