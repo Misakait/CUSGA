@@ -16,9 +16,9 @@ var _preview: bool = false
 var _valid: bool = true
 ## 当前是否为最近可交互目标；决定高亮轮廓。
 var _focused: bool = false
-## 拆除长按期间的贴图抖动；在 _ready 中按动作参数构造。
+## 拆除长按期间的整体抖动；在 _ready 中按动作参数构造。
 var _shake: DestroyShake = null
-## 建筑图标；拆除抖动的目标。
+## 建筑图标；建筑的全部可见内容就是它，因此它也是拆除抖动的目标。
 var _icon: Sprite2D = null
 ## 不参与抖动的进度锚点；拆除圆环锚定它而不是 _icon，否则图标一抖圆环就会跟着抖。
 var _progress_anchor: Marker2D = null
@@ -35,7 +35,7 @@ func _ready() -> void:
 		_motion_float("DestroyShakeAmplitude", DestroyShake.DEFAULT_AMPLITUDE),
 		_motion_float("DestroyShakeStepSeconds", DestroyShake.DEFAULT_STEP_SECONDS)
 	)
-	DestroyShake.SyncAnchor(_icon, _progress_anchor)
+	_shake.SyncAnchor(_icon, _progress_anchor)
 
 
 ## 退出时终止抖动，避免 Tween 与贴图偏移残留到下一次房间重建。
@@ -47,8 +47,8 @@ func _exit_tree() -> void:
 
 ## 切换「正在被拆除」的抖动表现；重复调用同一状态不产生额外影响。
 ##
-## 只抖图标节点的本地 position，不改变根节点位置、旋转、碰撞层与占地轮廓，
-## 因此独立的进度锚点在抖动期间保持逐帧静止。
+## 建筑的可见内容就是 `Icon` 本身，所以抖图标等价于抖整栋建筑；
+## 不改变根节点位置、旋转、碰撞层与占地轮廓，因此独立的进度锚点在抖动期间保持逐帧静止。
 ##
 ## 参数 destroying：是否正在被拆除，无返回值。
 func SetDestroying(destroying: bool) -> void:
@@ -74,8 +74,8 @@ func Configure(data: Resource, preview: bool = false) -> void:
 		var texture_size: Vector2 = icon.texture.get_size()
 		icon.scale = Vector2.ONE * minf(footprint.x / texture_size.x, footprint.y / texture_size.y)
 	# 锚点位置由图标纹理与缩放共同推导，二者都在上面才确定，因此必须在这里重算，
-	# 否则圆环会停在旧尺寸建筑的右下角。
-	DestroyShake.SyncAnchor(icon, _progress_anchor)
+	# 否则圆环会停在旧尺寸建筑的右下角。_ready 先于 Configure 执行，此处 _shake 必定可用。
+	_shake.SyncAnchor(icon, _progress_anchor)
 	# 每个实体创建独立形状，避免修改共享子资源影响同类建筑。
 	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = footprint

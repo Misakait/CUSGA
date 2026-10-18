@@ -193,10 +193,14 @@
 - 需要长按确认的操作由共享长按 Controller 管理开始、取消、完成和进度显示。
 - 完成回调只能在进度达到终点后触发；取消、场景退出和 owner 失效都必须清理 Tween 与缓存引用。
 - 时间扣除、掉落和库存写入由 Model 的一次业务操作完成，View 不先行修改任何数值。
-- **进度圆环的锚点必须落在不参与抖动的节点上**：圆环对 `Sprite2D` 目标取点用的是 `sprite.get_screen_transform() * sprite.get_rect().end`，而 `position` 与 `offset` 都会改变这个乘积。因此「只抖贴图节点」并不能让圆环保持静止——破坏期间必须把 `progress_target` 指向一个与图标同级、自身不参与抖动的 `Marker2D ProgressAnchor`，其坐标由 `icon.position + icon.scale * icon.get_rect().end` 复刻图标静止时的右下角。`Marker2D` 既不是 `Sprite2D` 也不是 `Control`，指示器会落到 `_hold_target.get_screen_transform().origin` 分支，屏幕位置与旧实现逐像素一致（`anchor.get_screen_transform().origin` 与旧公式 `is_equal_approx`）。
-- 锚点必须在**每次可能改变图标纹理或缩放之后**重算（`RefreshView()`、`Configure()`），否则圆环会停在旧尺寸图标的右下角。无纹理时 `Sprite2D.get_rect()` 退化为 `Size2(1, 1)`，锚点仍与指示器同源，不需要额外特判。
+- **破坏抖动要抖「整个可见节点」，圆环锚点必须落在被抖子树之外**：地形卡抖 `Visuals`（卡框、卡名、卡内图标一起动），建筑抖 `Icon`（建筑的可见内容就是它）。只抖卡内 `Icon` 会让玩家以为只有物品在抖，与「卡牌正在被破坏」的语义不符。
+- **进度圆环的锚点必须落在不参与抖动的节点上**：圆环对 `Sprite2D` 目标取点用的是 `sprite.get_screen_transform() * sprite.get_rect().end`，而 `position` 与 `offset` 都会改变这个乘积。因此只要圆环还锚在被抖节点（或其子树）上，就一定会跟着抖。破坏期间必须把 `progress_target` 指向一个 `Marker2D ProgressAnchor`，它在**被抖子树之外**（地形卡挂在 `Item` 根节点下，不是 `Visuals/PlayerView` 下），坐标由图标静止时的右下角复刻。`Marker2D` 既不是 `Sprite2D` 也不是 `Control`，指示器会落到 `_hold_target.get_screen_transform().origin` 分支，屏幕位置与旧实现逐像素一致（`anchor.get_screen_transform().origin` 与旧公式 `is_equal_approx`）。
+- 锚点与图标**允许处于不同父节点**（锚点在根下、图标在 `Visuals/PlayerView/Icon`），因此 `DestroyShake.SyncAnchor(icon, anchor)` 必须用 `icon.get_global_transform() * icon.get_rect().end` 取点、再 `anchor.get_parent().to_local(point)` 落到锚点自己的父空间；不要写成只对「同父节点」成立的手写坐标加法。
+- `SyncAnchor` 取点必须按**静止状态**换算：抖动期间调用（例如长按中刷新视图）要先扣掉当前抖动偏移 `_target.position - 静止位置`（经 `_target.get_parent().get_global_transform().basis_xform()` 转到全局空间），否则会把这一帧的偏移烘进锚点，圆环跟着抖一下。这也是把 `SyncAnchor` 做成实例方法而不是静态方法的原因——它需要抖动组件持有的静止位置。
+- 锚点必须在**每次可能改变图标纹理或缩放之后**重算（`RefreshView()`、`Configure()`），否则圆环会停在旧尺寸图标的右下角。无纹理时 `Sprite2D.get_rect()` 退化为 `Rect2(0, 0, 1, 1)`（不是居中矩形），锚点仍与指示器同源，不需要额外特判。
 - 破坏抖动放在视图的 `SetDestroying(bool)` 里，不要塞进共享长按 Controller：后者是多条世界长按（地形破坏、建筑拆除、地图方向等）共用的计时与圆环端口，公开签名已被契约测试逐字锁定，加参数会连带改动无关链路。
 - 抖动必须在 `begin_hold` / `begin_timed_hold` **之前**启动：零成本或零秒的长按会在该调用内同步走完成回调，之后再启动就会留下一个永不停止的 Tween。停止侧同理，必须在清空 `_demolition_id` / `_active_terrain_hold_card` **之前**取出视图引用，并先 `is_instance_valid()` 验活（卡片可能在长按期间被房间重建或结算清场释放）。
+- 地形卡的 `Visuals/PlayerView` 是 `Button`（`Control`），**不是** `Node2D`。用 `as Node2D` 取它会静默得到 `null`，随后任何 `get_screen_transform()` 都报「Cannot call method on a null value」。写运行时校验脚本时按 `CanvasItem` 取它。
 
 ## 库存、制作与掉落
 

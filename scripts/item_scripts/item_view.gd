@@ -22,15 +22,16 @@ var _card_data: Resource = null
 var _interaction_disabled: bool = false
 var _hovered: bool = false
 var _base_visual_scale: Vector2 = Vector2.ONE
-## 长按破坏期间的贴图抖动；在 _ready 中按动作参数构造，节点未就绪时保持为空。
+## 长按破坏期间的整卡抖动；在 _ready 中按动作参数构造，节点未就绪时保持为空。
 var _shake: DestroyShake = null
 
 @onready var _visuals: Sprite2D = $Visuals
 @onready var _button: Button = $Visuals/PlayerView
 @onready var _label: Label = $Visuals/PlayerView/Label
 @onready var _icon: Sprite2D = $Visuals/PlayerView/Icon
-## 不参与抖动的进度锚点；长按圆环锚定它而不是 _icon，否则图标一抖圆环就会跟着抖。
-@onready var _progress_anchor: Marker2D = $Visuals/PlayerView/ProgressAnchor
+## 不参与抖动的进度锚点；长按圆环锚定它而不是 _icon，否则整张卡牌一抖圆环就会跟着抖。
+## 它挂在根节点下而不是 Visuals 子树里，因为被抖动的正是 Visuals。
+@onready var _progress_anchor: Marker2D = $ProgressAnchor
 @onready var _collision: CollisionShape2D = $Collision
 @onready var _interaction: Area2D = $Interaction
 @onready var _animation_player: AnimationPlayer = $AnimationPlayer
@@ -49,13 +50,14 @@ func _ready() -> void:
 	_interaction.mouse_exited.connect(_on_mouse_exited)
 	_configure_motion()
 	_animation_player.play("Idle")
+	# 抖整张卡牌：抖 Visuals 让卡框、卡名与卡内图标一起动，而不是只抖卡里的物品图标。
 	# 抖动参数走与 Idle/Hover 相同的动作参数资产；资产缺失时由组件自带兜底值接管。
 	_shake = DestroyShake.new(
-		_icon,
+		_visuals,
 		_motion_float("DestroyShakeAmplitude", DestroyShake.DEFAULT_AMPLITUDE),
 		_motion_float("DestroyShakeStepSeconds", DestroyShake.DEFAULT_STEP_SECONDS)
 	)
-	DestroyShake.SyncAnchor(_icon, _progress_anchor)
+	_shake.SyncAnchor(_icon, _progress_anchor)
 	_update_pickable()
 
 
@@ -149,7 +151,8 @@ func RefreshView() -> void:
 	_label.text = String(_card_data.get("CardName"))
 	_icon.texture = _card_data.get("CardIcon") as Texture2D
 	# 锚点位置由图标纹理尺寸推导，纹理变化后必须重算，否则圆环会停在旧图标的右下角。
-	DestroyShake.SyncAnchor(_icon, _progress_anchor)
+	if _shake != null:
+		_shake.SyncAnchor(_icon, _progress_anchor)
 	_base_visual_scale = Vector2.ONE * TerrainVisualScale
 	_visuals.visible = true
 	_visuals.scale = _base_visual_scale
@@ -168,8 +171,9 @@ func SetInteractionDisabled(disabled: bool) -> void:
 
 ## 切换「正在被长按破坏」的抖动表现；重复调用同一状态不产生额外影响。
 ##
-## 只抖图标节点的本地 position，不改变根节点位置、旋转、碰撞形状与鼠标命中区域，
-## 因此独立的进度锚点在抖动期间保持逐帧静止。
+## 抖的是整张卡牌（`Visuals` 及其子节点）的本地 position，卡框、卡名与卡内图标一起动；
+## 不改变根节点位置、旋转、碰撞形状与鼠标命中区域，因此挂在根节点下、位于被抖子树之外的
+## 进度锚点在抖动期间保持逐帧静止。
 ##
 ## @param destroying 是否正在被破坏。
 ## @return 无返回值。
