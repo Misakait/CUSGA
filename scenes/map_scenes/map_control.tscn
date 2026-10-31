@@ -28,7 +28,7 @@ script = ExtResource("3_117lk")
 min_branches = 7
 max_branches = 13
 min_branch_length = 1
-max_branch_length = 3
+max_branch_length = 1
 
 [node name="MapWorldModel" type="Node" parent="." unique_id=764927777]
 script = ExtResource("31_world_model")

@@ -32,4 +32,3 @@ func validate_room_context(context: RoomContext) -> bool:
 		if layer == null or layer.tile_set == null or layer.get_used_cells().is_empty():
 			return false
 	return true
-
