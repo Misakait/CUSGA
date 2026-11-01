@@ -1,0 +1,296 @@
+{
+  "passed": true,
+  "scene_count": 12,
+  "checked_scenes": 12,
+  "bridge_combinations": 192,
+  "runtime_tested": false,
+  "method": "实际场景资源与碰撞多边形，玩家胶囊包围盒保守膨胀，8像素采样；不是物理引擎验证",
+  "scope_changes": [
+    "scenes/map_scenes/map_env/fire/main/ash_plain.tscn",
+    "scenes/map_scenes/map_env/fire/main/lava_riverside.tscn",
+    "scenes/map_scenes/map_env/fire/main/obsidian_cliff.tscn",
+    "scenes/map_scenes/map_env/fire/main/sulfur_rift.tscn",
+    "scenes/map_scenes/map_env/fire/main/volcanic_foothills.tscn",
+    "scenes/map_scenes/map_env/fire/market/scorched_wilds_exchange.tscn",
+    "scenes/map_scenes/map_env/fire/secondary/ash_hill.tscn",
+    "scenes/map_scenes/map_env/fire/secondary/geothermal_valley.tscn",
+    "scenes/map_scenes/map_env/fire/secondary/igneous_cliff.tscn",
+    "scenes/map_scenes/map_env/fire/secondary/lava_plateau.tscn",
+    "scenes/map_scenes/map_env/fire/secondary/sulfur_passage.tscn",
+    "scenes/map_scenes/map_env/fire/transmitting/gate_of_scorched_wilds.tscn"
+  ],
+  "scenes": [
+    {
+      "scene": "scenes/map_scenes/map_env/fire/main/ash_plain.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6864,
+      "obstacle_groups": {
+        "1": 2,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 53,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "9f544016951a9c4be14097f28142d927eafa897bcc924f11099dd85fd9866502"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/main/lava_riverside.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6026,
+      "obstacle_groups": {
+        "0": 1,
+        "2": 1,
+        "3": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 59,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "1838f38afabce78402c4edac58e1493fabda0c97f782fcebd228b87f3b91623d"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/main/obsidian_cliff.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6180,
+      "obstacle_groups": {
+        "1": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 22,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "031da8eb84213cb5089d458f4343ff51ef24c245a4040fef95259ef9bd68702e"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/main/sulfur_rift.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6524,
+      "obstacle_groups": {
+        "0": 1,
+        "1": 1,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 65,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "508cf8db101f847dbaf6dc766ee89336a714f615b636efdf1f8abac47934d0b7"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/main/volcanic_foothills.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6324,
+      "obstacle_groups": {
+        "0": 1,
+        "2": 1,
+        "3": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 65,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "53dfe6719c7cc1d0b0f090376ec7405a8bffaa135e0407b5c4531de02864d349"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/market/scorched_wilds_exchange.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 7102,
+      "obstacle_groups": {
+        "1": 2,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 17,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "2f5fa42b48ba536a2d40f5227b33eddf460be3616080d90dddc1321cc747ab91"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/secondary/ash_hill.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6520,
+      "obstacle_groups": {
+        "1": 2,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 70,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "18a4caf350d8435356e1974423ead08b302baa1ea4d6dd546101cdca57ecdd05"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/secondary/geothermal_valley.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6504,
+      "obstacle_groups": {
+        "0": 1,
+        "2": 1,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 78,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "543491fac6bc8f07347d59bfef19065829042a11d93f564d047ebac9b160f61e"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/secondary/igneous_cliff.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 5764,
+      "obstacle_groups": {
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 58,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "f2f886a3301353c4c55242dd9218f19a20c03c1ade7b0dddbcbb7109c449149e"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/secondary/lava_plateau.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6204,
+      "obstacle_groups": {
+        "0": 1,
+        "2": 1,
+        "3": 1,
+        "5": 1
+      },
+      "special_corner_tiles": 25,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "00fe8cac361d90e65cc687af23fb5937b3ffbd94b88966755db116332a3373a0"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/secondary/sulfur_passage.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 5060,
+      "obstacle_groups": {
+        "0": 1,
+        "1": 1,
+        "4": 1
+      },
+      "special_corner_tiles": 27,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "c2a78b8453a7f71c720e98d3aa69168ebd216b4bdf33b869d5ca32248aacb4c0"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/fire/transmitting/gate_of_scorched_wilds.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6184,
+      "obstacle_groups": {
+        "1": 2,
+        "2": 1,
+        "3": 1
+      },
+      "special_corner_tiles": 66,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "c1c2c0a7b49749b7c4d67fe16614cf8d4d0ccdcbaff164b9bf5736c498096780"
+    }
+  ],
+  "errors": []
+}

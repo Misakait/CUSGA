@@ -1,0 +1,111 @@
+{
+  "editor_version": "4.7.1-stable",
+  "project": "CUSGA",
+  "runtime_started": false,
+  "scene_count": 12,
+  "scenes": [
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/main/lava_riverside.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/main/obsidian_cliff.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/main/sulfur_rift.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/main/volcanic_foothills.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/market/scorched_wilds_exchange.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/secondary/ash_hill.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/secondary/geothermal_valley.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/secondary/igneous_cliff.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/secondary/lava_plateau.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/secondary/sulfur_passage.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/transmitting/gate_of_scorched_wilds.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/fire/main/ash_plain.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    }
+  ],
+  "editor_logs": {
+    "before_count": 316,
+    "after_count": 316,
+    "added": []
+  },
+  "final_scene": "res://scenes/map_scenes/map_env/fire/main/ash_plain.tscn",
+  "notes": "全部场景经Godot编辑器强制重载并检查节点；历史316条日志保留，新增0条。不启动游戏，不构成物理引擎或游玩验证。"
+}

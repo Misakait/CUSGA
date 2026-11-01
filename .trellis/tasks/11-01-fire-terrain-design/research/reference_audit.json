@@ -1,0 +1,221 @@
+{
+  "reference": "ash_plain.before.tscn",
+  "layers": [
+    {
+      "header": "[node name=\"LeftBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1593241383]",
+      "tileset": "TileSet_namal",
+      "atlas": "TileSetAtlasSource_vjgek",
+      "tile_count": 6,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"LeftBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1593241383]\ntile_set = SubResource(\"TileSet_namal\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"RightBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1979273259]",
+      "tileset": "TileSet_05ysv",
+      "atlas": "TileSetAtlasSource_7c4dv",
+      "tile_count": 6,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"RightBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1979273259]\nrotation = 1.4218699e-05\ntile_set = SubResource(\"TileSet_05ysv\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"UpBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1997763951]",
+      "tileset": "TileSet_giyd2",
+      "atlas": "TileSetAtlasSource_2ti8u",
+      "tile_count": 5,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"UpBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1997763951]\ntile_set = SubResource(\"TileSet_giyd2\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"DownBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=847832085]",
+      "tileset": "TileSet_b5v3y",
+      "atlas": "TileSetAtlasSource_kh6gw",
+      "tile_count": 5,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"DownBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=847832085]\ntile_set = SubResource(\"TileSet_b5v3y\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"LeftBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=164700677]",
+      "tileset": "TileSet_s3c3b",
+      "atlas": "TileSetAtlasSource_k1gew",
+      "tile_count": 4,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"LeftBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=164700677]\ntile_set = SubResource(\"TileSet_s3c3b\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"RightBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=321757452]",
+      "tileset": "TileSet_achly",
+      "atlas": "TileSetAtlasSource_4lppq",
+      "tile_count": 4,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"RightBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=321757452]\nrotation = 1.4218699e-05\ntile_set = SubResource(\"TileSet_achly\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"UpBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=93428297]",
+      "tileset": "TileSet_auqpb",
+      "atlas": "TileSetAtlasSource_fsp3m",
+      "tile_count": 4,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"UpBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=93428297]\ntile_set = SubResource(\"TileSet_auqpb\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"DownBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=2114203692]",
+      "tileset": "TileSet_p8cx6",
+      "atlas": "TileSetAtlasSource_j6ax2",
+      "tile_count": 4,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"DownBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=2114203692]\ntile_set = SubResource(\"TileSet_p8cx6\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Boundary\" unique_id=19698822]",
+      "tileset": "TileSet_v675b",
+      "atlas": "TileSetAtlasSource_uimeg",
+      "tile_count": 90,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Boundary\" unique_id=19698822]\ntile_set = SubResource(\"TileSet_v675b\")\n\n",
+      "collision_polygons": 135
+    },
+    {
+      "header": "[node name=\"LeftBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=1658251157]",
+      "tileset": "TileSet_yx3yw",
+      "atlas": "TileSetAtlasSource_kap1a",
+      "tile_count": 12,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"LeftBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=1658251157]\ntile_set = SubResource(\"TileSet_yx3yw\")\n\n",
+      "collision_polygons": 0
+    },
+    {
+      "header": "[node name=\"RightBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=136284767]",
+      "tileset": "TileSet_1x5rj",
+      "atlas": "TileSetAtlasSource_237e6",
+      "tile_count": 12,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"RightBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=136284767]\ntile_set = SubResource(\"TileSet_1x5rj\")\n\n",
+      "collision_polygons": 0
+    },
+    {
+      "header": "[node name=\"UpBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=180127944]",
+      "tileset": "TileSet_r8e0j",
+      "atlas": "TileSetAtlasSource_7cynv",
+      "tile_count": 10,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"UpBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=180127944]\ntile_set = SubResource(\"TileSet_r8e0j\")\n\n",
+      "collision_polygons": 0
+    },
+    {
+      "header": "[node name=\"DownBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=954877925]",
+      "tileset": "TileSet_ox3vb",
+      "atlas": "TileSetAtlasSource_lns4v",
+      "tile_count": 10,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"DownBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=954877925]\ntile_set = SubResource(\"TileSet_ox3vb\")\n\n",
+      "collision_polygons": 0
+    },
+    {
+      "header": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Ground\" unique_id=1005744874]",
+      "tileset": "TileSet_kxulm",
+      "atlas": "TileSetAtlasSource_425op",
+      "tile_count": 760,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Ground\" unique_id=1005744874]\ntile_set = SubResource(\"TileSet_kxulm\")\n\n",
+      "collision_polygons": 0
+    },
+    {
+      "header": "[node name=\"TileMapLayer2\" type=\"TileMapLayer\" parent=\"MapContainer/Ground\" unique_id=779711842]",
+      "tileset": "TileSet_vi0mc",
+      "atlas": "TileSetAtlasSource_whesy",
+      "tile_count": 44,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"TileMapLayer2\" type=\"TileMapLayer\" parent=\"MapContainer/Ground\" unique_id=779711842]\ntile_set = SubResource(\"TileSet_vi0mc\")\n\n",
+      "collision_polygons": 0
+    },
+    {
+      "header": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Obstack\" unique_id=2107753051]",
+      "tileset": "TileSet_xsb7k",
+      "atlas": "TileSetAtlasSource_vkhk1",
+      "tile_count": 5,
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "configuration": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Obstack\" unique_id=2107753051]\ntile_set = SubResource(\"TileSet_xsb7k\")\n\n",
+      "collision_polygons": 49
+    }
+  ],
+  "obstacle_groups": [
+    {
+      "index": 0,
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "defined_tiles": 16,
+      "collider_tiles": 4
+    },
+    {
+      "index": 1,
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "defined_tiles": 16,
+      "collider_tiles": 4
+    },
+    {
+      "index": 2,
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "defined_tiles": 16,
+      "collider_tiles": 13
+    },
+    {
+      "index": 3,
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "defined_tiles": 16,
+      "collider_tiles": 12
+    },
+    {
+      "index": 4,
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "defined_tiles": 16,
+      "collider_tiles": 8
+    },
+    {
+      "index": 5,
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "defined_tiles": 16,
+      "collider_tiles": 8
+    }
+  ]
+}

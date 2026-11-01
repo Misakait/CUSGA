@@ -1,0 +1,731 @@
+{
+  "ash_plain": [
+    {
+      "group": 2,
+      "cell": [
+        18,
+        13
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 2,
+      "cell": [
+        61,
+        29
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        58,
+        10
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        15,
+        30
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "lava_riverside": [
+    {
+      "group": 1,
+      "cell": [
+        17,
+        12
+      ],
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 3,
+      "cell": [
+        28,
+        9
+      ],
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 4,
+      "cell": [
+        60,
+        29
+      ],
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        16,
+        28
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "obsidian_cliff": [
+    {
+      "group": 2,
+      "cell": [
+        20,
+        9
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 4,
+      "cell": [
+        61,
+        12
+      ],
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        17,
+        29
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        58,
+        33
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "sulfur_rift": [
+    {
+      "group": 1,
+      "cell": [
+        17,
+        12
+      ],
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 2,
+      "cell": [
+        62,
+        13
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        17,
+        30
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        60,
+        31
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "volcanic_foothills": [
+    {
+      "group": 3,
+      "cell": [
+        25,
+        9
+      ],
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 4,
+      "cell": [
+        62,
+        29
+      ],
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 1,
+      "cell": [
+        14,
+        29
+      ],
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        59,
+        12
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "scorched_wilds_exchange": [
+    {
+      "group": 2,
+      "cell": [
+        17,
+        9
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 2,
+      "cell": [
+        60,
+        9
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        15,
+        31
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        60,
+        32
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "ash_hill": [
+    {
+      "group": 2,
+      "cell": [
+        18,
+        13
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 2,
+      "cell": [
+        60,
+        30
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        17,
+        30
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        59,
+        12
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "geothermal_valley": [
+    {
+      "group": 1,
+      "cell": [
+        25,
+        9
+      ],
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 3,
+      "cell": [
+        59,
+        11
+      ],
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        15,
+        29
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        58,
+        35
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "igneous_cliff": [
+    {
+      "group": 4,
+      "cell": [
+        18,
+        16
+      ],
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 3,
+      "cell": [
+        60,
+        12
+      ],
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        15,
+        30
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        59,
+        31
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "lava_plateau": [
+    {
+      "group": 3,
+      "cell": [
+        27,
+        9
+      ],
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 1,
+      "cell": [
+        60,
+        12
+      ],
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 4,
+      "cell": [
+        59,
+        31
+      ],
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 6,
+      "cell": [
+        17,
+        29
+      ],
+      "atlas_origin": [
+        4,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "sulfur_passage": [
+    {
+      "group": 2,
+      "cell": [
+        26,
+        9
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 1,
+      "cell": [
+        59,
+        16
+      ],
+      "atlas_origin": [
+        0,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 5,
+      "cell": [
+        18,
+        28
+      ],
+      "atlas_origin": [
+        0,
+        4
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ],
+  "gate_of_scorched_wilds": [
+    {
+      "group": 3,
+      "cell": [
+        16,
+        28
+      ],
+      "atlas_origin": [
+        8,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 4,
+      "cell": [
+        59,
+        28
+      ],
+      "atlas_origin": [
+        12,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 2,
+      "cell": [
+        25,
+        9
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    },
+    {
+      "group": 2,
+      "cell": [
+        51,
+        9
+      ],
+      "atlas_origin": [
+        4,
+        0
+      ],
+      "size": [
+        4,
+        4
+      ]
+    }
+  ]
+}

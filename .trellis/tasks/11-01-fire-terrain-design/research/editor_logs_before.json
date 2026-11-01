@@ -1,0 +1,2544 @@
+{
+  "source": "editor",
+  "lines": [
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 85,
+      "path": "res://resources/item/item_data_compat.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer division. Decimal part will be discarded."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 76,
+      "path": "res://resources/item/equipment/equipment_data_compat.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The variable \"range\" has the same name as a built-in function."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 3,
+      "path": "res://core/autoloads/GlobalEventBus.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"player_died\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 4,
+      "path": "res://core/autoloads/GlobalEventBus.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"on_player_acquired_talent\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 6,
+      "path": "res://core/autoloads/GlobalEventBus.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"on_status_changed\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 7,
+      "path": "res://core/autoloads/GlobalEventBus.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"on_entity_dropped\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 8,
+      "path": "res://core/autoloads/GlobalEventBus.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"on_entered_vault\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 10,
+      "path": "res://core/autoloads/GlobalEventBus.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"scene_requested\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 160,
+      "path": "res://core/input/key_binding_registry.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer used when an enum value is expected. If this is intended, cast the integer to the enum type using the \"as\" keyword."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 161,
+      "path": "res://core/input/key_binding_registry.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer used when an enum value is expected. If this is intended, cast the integer to the enum type using the \"as\" keyword."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 92,
+      "path": "res://core/autoloads/time_system.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer division. Decimal part will be discarded."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 93,
+      "path": "res://core/autoloads/time_system.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer division. Decimal part will be discarded."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 46,
+      "path": "res://core/ui/feedback/floating_text_label.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"text\" is shadowing an already-declared property in the base class \"Label\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 383,
+      "path": "res://core/ui/dev/dev_settings_ui.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer division. Decimal part will be discarded."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 129,
+      "path": "res://core/board/board_controller.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"global_position\" is shadowing an already-declared property in the base class \"Node2D\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 246,
+      "path": "res://core/board/board_controller.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"global_position\" is shadowing an already-declared property in the base class \"Node2D\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 533,
+      "path": "res://core/board/board_controller.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"global_position\" is shadowing an already-declared property in the base class \"Node2D\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 23,
+      "path": "res://core/application/gameplay_port.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"InventoryToggleRequested\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 27,
+      "path": "res://core/application/gameplay_port.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"CraftingToggleRequested\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 29,
+      "path": "res://core/application/gameplay_port.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"CraftingOpenRequested\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 37,
+      "path": "res://core/application/gameplay_port.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The signal \"WarehouseRequested\" is declared but never explicitly used in the class."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 378,
+      "path": "res://core/gameflow/world_interaction_coordinator.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"owner\" is shadowing an already-declared property in the base class \"Node\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 398,
+      "path": "res://core/gameflow/world_interaction_coordinator.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"owner\" is shadowing an already-declared property in the base class \"Node\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 409,
+      "path": "res://core/gameflow/world_interaction_coordinator.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"owner\" is shadowing an already-declared property in the base class \"Node\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 574,
+      "path": "res://entities/components/attribute_component.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local variable \"owner\" is shadowing an already-declared property in the base class \"Node\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 52,
+      "path": "res://core/crafting/crafting_service.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer division. Decimal part will be discarded."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 59,
+      "path": "res://core/crafting/crafting_service.gd",
+      "source": "editor",
+      "text": "GDScript::reload: Integer division. Decimal part will be discarded."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 335,
+      "path": "res://entities/components/damage_receiver_component.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local function parameter \"owner\" is shadowing an already-declared property in the base class \"Node\"."
+    },
+    {
+      "function": "login_menu_controller.gd:143 @ _start_game()",
+      "level": "warn",
+      "line": 143,
+      "path": "res://core/ui/login_menu_controller.gd",
+      "source": "editor",
+      "text": "login_menu_controller.gd:143 @ _start_game(): res://scenes/Main.tscn:15 - ext_resource, invalid UID: uid://dsd1o2wuaxalx - using text path instead: res://scenes/inventory/OpenBackpack.tscn"
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 79,
+      "path": "res://scripts/card_scripts/skill_card.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The parameter \"delta\" is never used in the function \"_process()\". If this is intended, prefix it with an underscore: \"_delta\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 154,
+      "path": "res://core/gameflow/run_snapshot.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The parameter \"player\" is never used in the function \"RestorePlayer()\". If this is intended, prefix it with an underscore: \"_player\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 390,
+      "path": "res://core/gameflow/run_snapshot.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The local variable \"name\" is shadowing an already-declared property in the base class \"Node\"."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 127,
+      "path": "res://core/map/room_terrain_layout_generator.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The function parameter \"range\" has the same name as a built-in function."
+    },
+    {
+      "function": "GDScript::reload",
+      "level": "warn",
+      "line": 323,
+      "path": "res://core/map/room_terrain_layout_generator.gd",
+      "source": "editor",
+      "text": "GDScript::reload: The function parameter \"range\" has the same name as a built-in function."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): Cannot create tile. The tile is outside the texture or tiles are already present in the space the tile would cover."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (10, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (10, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 2)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (10, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (10, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 3)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (10, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (10, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 4)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 10)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 11)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (4, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (4, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 12)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 13)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 14)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 15)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (4, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (4, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 16)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (4, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (4, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 17)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (4, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (4, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (5, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (5, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (6, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (6, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (7, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (7, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (8, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (8, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (9, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (9, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (11, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (11, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (12, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (12, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (13, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (13, 18)."
+    },
+    {
+      "function": "",
+      "level": "error",
+      "line": 0,
+      "path": "",
+      "source": "editor",
+      "text": "Too many errors! Ignoring errors for up to 1 second."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (14, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (14, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (15, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (15, 18)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (0, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (0, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (1, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (1, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (2, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (2, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (3, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (3, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): The TileSetAtlasSource atlas has no tile at (4, 19)."
+    },
+    {
+      "function": "map_world_model.gd:333 @ _get_packed_scene()",
+      "level": "error",
+      "line": 333,
+      "path": "res://core/map/map_world_model.gd",
+      "source": "editor",
+      "text": "map_world_model.gd:333 @ _get_packed_scene(): TileSetAtlasSource has no tile at (4, 19)."
+    }
+  ],
+  "total_count": 316,
+  "returned_count": 316,
+  "offset": 0,
+  "limit": 400,
+  "has_more": false,
+  "run_id": "",
+  "is_running": false,
+  "dropped_count": 0,
+  "stale_run_id": false,
+  "next_cursor": 0,
+  "appended_total": 0
+}
