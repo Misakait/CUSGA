@@ -1,0 +1,142 @@
+{
+  "passed": true,
+  "scene_count": 12,
+  "bridge_combinations": 192,
+  "runtime_tested": false,
+  "scope_changes": [
+    "scenes/map_scenes/map_env/water/main/coral_shoal.tscn",
+    "scenes/map_scenes/map_env/water/main/crystal_river.tscn",
+    "scenes/map_scenes/map_env/water/main/deep_sea_rift.tscn",
+    "scenes/map_scenes/map_env/water/main/frozen_lake.tscn",
+    "scenes/map_scenes/map_env/water/main/waterfall_cave.tscn",
+    "scenes/map_scenes/map_env/water/market/abyss_sea_market.tscn",
+    "scenes/map_scenes/map_env/water/secondary/crystal_shoal.tscn",
+    "scenes/map_scenes/map_env/water/secondary/deep_sea_undercurrent.tscn",
+    "scenes/map_scenes/map_env/water/secondary/frozen_lake_shore.tscn",
+    "scenes/map_scenes/map_env/water/secondary/shallow_reef.tscn",
+    "scenes/map_scenes/map_env/water/secondary/waterfall_pool.tscn",
+    "scenes/map_scenes/map_env/water/transmitting/gate_of_surging_sea.tscn"
+  ],
+  "scenes": [
+    {
+      "scene": "scenes/map_scenes/map_env/water/main/coral_shoal.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 7764,
+      "special_corner_tiles": 57
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/main/crystal_river.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 6264,
+      "special_corner_tiles": 38
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/main/deep_sea_rift.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 6776,
+      "special_corner_tiles": 53
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/main/frozen_lake.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 7420,
+      "special_corner_tiles": 54
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/main/waterfall_cave.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 7864,
+      "special_corner_tiles": 52
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/market/abyss_sea_market.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 7176,
+      "special_corner_tiles": 17
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/secondary/crystal_shoal.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 5376,
+      "special_corner_tiles": 60
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/secondary/deep_sea_undercurrent.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 6928,
+      "special_corner_tiles": 75
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/secondary/frozen_lake_shore.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 6720,
+      "special_corner_tiles": 26
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/secondary/shallow_reef.tscn",
+      "layer_count": 18,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 6012,
+      "special_corner_tiles": 97
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/secondary/waterfall_pool.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 7576,
+      "special_corner_tiles": 50
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/water/transmitting/gate_of_surging_sea.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "reference_configuration": "unchanged",
+      "resource_slots": 24,
+      "reachable_samples": 6160,
+      "special_corner_tiles": 78
+    }
+  ]
+}

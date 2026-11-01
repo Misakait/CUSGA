@@ -1,0 +1,107 @@
+{
+  "editor_version": "4.7.1-stable",
+  "project": "CUSGA",
+  "runtime_started": false,
+  "scene_count": 12,
+  "scenes": [
+    {
+      "path": "main/coral_shoal",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "main/crystal_river",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "main/deep_sea_rift",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "main/frozen_lake",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "main/waterfall_cave",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30
+    },
+    {
+      "path": "market/abyss_sea_market",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30
+    },
+    {
+      "path": "secondary/crystal_shoal",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "secondary/deep_sea_undercurrent",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "secondary/frozen_lake_shore",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "secondary/shallow_reef",
+      "loaded": true,
+      "nodes": 58,
+      "tile_layers": 18,
+      "decorations": 30
+    },
+    {
+      "path": "secondary/waterfall_pool",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30
+    },
+    {
+      "path": "transmitting/gate_of_surging_sea",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30
+    }
+  ],
+  "editor_logs": {
+    "source": "editor",
+    "lines": [],
+    "total_count": 0,
+    "returned_count": 0,
+    "offset": 0,
+    "limit": 50,
+    "has_more": false,
+    "run_id": "",
+    "is_running": false,
+    "dropped_count": 0,
+    "stale_run_id": false,
+    "next_cursor": 0,
+    "appended_total": 0
+  }
+}

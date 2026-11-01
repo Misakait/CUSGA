@@ -1,0 +1,455 @@
+{
+  "reference_sha256": "93aa3442aeccbcb6dd2f88332cb6e8879274ef483bea83ae2f936712148ab3d8",
+  "atlas_size": [
+    256,
+    256
+  ],
+  "layers": [
+    {
+      "node": "MapContainer/BridgeWithBoundary/LeftBridgeWithBoundary",
+      "tileset": "TileSet_lo0b6",
+      "atlas": "TileSetAtlasSource_tiywi",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 6,
+      "bounds": [
+        1,
+        8,
+        1,
+        13
+      ],
+      "configuration_without_cells": "[node name=\"LeftBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1566495238]\ntile_set = SubResource(\"TileSet_lo0b6\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeWithBoundary/RightBridgeWithBoundary",
+      "tileset": "TileSet_gynad",
+      "atlas": "TileSetAtlasSource_3ufk8",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 6,
+      "bounds": [
+        38,
+        8,
+        38,
+        13
+      ],
+      "configuration_without_cells": "[node name=\"RightBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=975736889]\nrotation = 1.4218699e-05\ntile_set = SubResource(\"TileSet_gynad\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeWithBoundary/UpBridgeWithBoundary",
+      "tileset": "TileSet_35ab5",
+      "atlas": "TileSetAtlasSource_f5daq",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 5,
+      "bounds": [
+        16,
+        1,
+        20,
+        1
+      ],
+      "configuration_without_cells": "[node name=\"UpBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1396010483]\ntile_set = SubResource(\"TileSet_35ab5\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeWithBoundary/DownBridgeWithBoundary",
+      "tileset": "TileSet_owtex",
+      "atlas": "TileSetAtlasSource_cmm08",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 5,
+      "bounds": [
+        16,
+        20,
+        20,
+        20
+      ],
+      "configuration_without_cells": "[node name=\"DownBridgeWithBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeWithBoundary\" unique_id=1565804570]\ntile_set = SubResource(\"TileSet_owtex\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeBoundary/LeftBridgeBoundary",
+      "tileset": "TileSet_n0otq",
+      "atlas": "TileSetAtlasSource_ht6xa",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 4,
+      "bounds": [
+        0,
+        8,
+        1,
+        13
+      ],
+      "configuration_without_cells": "[node name=\"LeftBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=1371862614]\ntile_set = SubResource(\"TileSet_n0otq\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeBoundary/RightBridgeBoundary",
+      "tileset": "TileSet_kc4t1",
+      "atlas": "TileSetAtlasSource_fjkvs",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 4,
+      "bounds": [
+        38,
+        8,
+        39,
+        13
+      ],
+      "configuration_without_cells": "[node name=\"RightBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=57503133]\nrotation = 1.4218699e-05\ntile_set = SubResource(\"TileSet_kc4t1\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeBoundary/UpBridgeBoundary",
+      "tileset": "TileSet_hwiml",
+      "atlas": "TileSetAtlasSource_puj7v",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 4,
+      "bounds": [
+        16,
+        0,
+        20,
+        1
+      ],
+      "configuration_without_cells": "[node name=\"UpBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=1465226515]\ntile_set = SubResource(\"TileSet_hwiml\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeBoundary/DownBridgeBoundary",
+      "tileset": "TileSet_4umq5",
+      "atlas": "TileSetAtlasSource_g0km6",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 4,
+      "bounds": [
+        16,
+        21,
+        20,
+        22
+      ],
+      "configuration_without_cells": "[node name=\"DownBridgeBoundary\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeBoundary\" unique_id=384825147]\ntile_set = SubResource(\"TileSet_4umq5\")\n\n"
+    },
+    {
+      "node": "MapContainer/Boundary/TileMapLayer",
+      "tileset": "TileSet_s52i5",
+      "atlas": "TileSetAtlasSource_3t47a",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 135,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 90,
+      "bounds": [
+        1,
+        1,
+        38,
+        20
+      ],
+      "configuration_without_cells": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Boundary\" unique_id=627116178]\ntile_set = SubResource(\"TileSet_s52i5\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeContainer/LeftBridge",
+      "tileset": "TileSet_7euoh",
+      "atlas": "TileSetAtlasSource_j1lu1",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 0,
+      "physics": [],
+      "cells": 12,
+      "bounds": [
+        0,
+        8,
+        1,
+        13
+      ],
+      "configuration_without_cells": "[node name=\"LeftBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=1593734176]\ntile_set = SubResource(\"TileSet_7euoh\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeContainer/RightBridge",
+      "tileset": "TileSet_id6po",
+      "atlas": "TileSetAtlasSource_7oltm",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 0,
+      "physics": [],
+      "cells": 12,
+      "bounds": [
+        38,
+        8,
+        39,
+        13
+      ],
+      "configuration_without_cells": "[node name=\"RightBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=617740989]\ntile_set = SubResource(\"TileSet_id6po\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeContainer/UpBridge",
+      "tileset": "TileSet_1rssy",
+      "atlas": "TileSetAtlasSource_w6h2p",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 0,
+      "physics": [],
+      "cells": 10,
+      "bounds": [
+        16,
+        0,
+        20,
+        1
+      ],
+      "configuration_without_cells": "[node name=\"UpBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=861383574]\ntile_set = SubResource(\"TileSet_1rssy\")\n\n"
+    },
+    {
+      "node": "MapContainer/BridgeContainer/DownBridge",
+      "tileset": "TileSet_gi16n",
+      "atlas": "TileSetAtlasSource_g455f",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 0,
+      "physics": [],
+      "cells": 10,
+      "bounds": [
+        16,
+        21,
+        20,
+        22
+      ],
+      "configuration_without_cells": "[node name=\"DownBridge\" type=\"TileMapLayer\" parent=\"MapContainer/BridgeContainer\" unique_id=232052936]\ntile_set = SubResource(\"TileSet_gi16n\")\n\n"
+    },
+    {
+      "node": "MapContainer/Ground/TileMapLayer",
+      "tileset": "TileSet_ocjeo",
+      "atlas": "TileSetAtlasSource_tybbu",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 0,
+      "physics": [],
+      "cells": 760,
+      "bounds": [
+        1,
+        1,
+        38,
+        20
+      ],
+      "configuration_without_cells": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Ground\" unique_id=500647724]\ntile_set = SubResource(\"TileSet_ocjeo\")\n\n"
+    },
+    {
+      "node": "MapContainer/Ground/TileMapLayer2",
+      "tileset": "TileSet_a7d7s",
+      "atlas": "TileSetAtlasSource_2gayb",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 0,
+      "physics": [],
+      "cells": 44,
+      "bounds": [
+        11,
+        6,
+        25,
+        14
+      ],
+      "configuration_without_cells": "[node name=\"TileMapLayer2\" type=\"TileMapLayer\" parent=\"MapContainer/Ground\" unique_id=1666765983]\ntile_set = SubResource(\"TileSet_a7d7s\")\n\n"
+    },
+    {
+      "node": "MapContainer/Obstack/TileMapLayer",
+      "tileset": "TileSet_ql8i6",
+      "atlas": "TileSetAtlasSource_eb60t",
+      "tile_size": "16 default",
+      "region_size": "16 default",
+      "tiles_defined": 224,
+      "collision_polygons": 89,
+      "physics": [
+        "physics_layer_0/collision_layer = 32",
+        "physics_layer_0/collision_mask = 16"
+      ],
+      "cells": 5,
+      "bounds": [
+        8,
+        10,
+        29,
+        18
+      ],
+      "configuration_without_cells": "[node name=\"TileMapLayer\" type=\"TileMapLayer\" parent=\"MapContainer/Obstack\" unique_id=1595269649]\ntile_set = SubResource(\"TileSet_ql8i6\")\n\n"
+    }
+  ],
+  "decorations": [
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/01_reeds.png",
+      "size": [
+        20,
+        28
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/02_lily_pad.png",
+      "size": [
+        22,
+        13
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/03_lotus.png",
+      "size": [
+        18,
+        20
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/04_kelp.png",
+      "size": [
+        16,
+        26
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/05_wet_rock.png",
+      "size": [
+        24,
+        17
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/06_driftwood.png",
+      "size": [
+        29,
+        12
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/07_fish.png",
+      "size": [
+        20,
+        12
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/08_crab.png",
+      "size": [
+        20,
+        15
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/09_jellyfish.png",
+      "size": [
+        16,
+        24
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/10_frog.png",
+      "size": [
+        18,
+        13
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/11_dragonfly.png",
+      "size": [
+        26,
+        15
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/12_shell.png",
+      "size": [
+        16,
+        14
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/13_starfish.png",
+      "size": [
+        18,
+        17
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/14_buoy.png",
+      "size": [
+        13,
+        20
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/15_bubbles.png",
+      "size": [
+        18,
+        23
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/16_whirlpool.png",
+      "size": [
+        25,
+        17
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/17_ripple.png",
+      "size": [
+        25,
+        14
+      ]
+    },
+    {
+      "path": "res/UI/生态图集/水-生态/装饰物/18_ice_shard.png",
+      "size": [
+        16,
+        21
+      ]
+    }
+  ]
+}
