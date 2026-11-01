@@ -1,0 +1,111 @@
+{
+  "editor_version": "4.7.1-stable",
+  "project": "CUSGA",
+  "runtime_started": false,
+  "scene_count": 12,
+  "scenes": [
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/main/gear_wasteland.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/main/golden_sand_plain.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/main/iron_ridge_canyon.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/main/magnetite_mine.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/market/steel_dome_exchange.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/transmitting/gate_steel_dome.tscn",
+      "loaded": true,
+      "nodes": 60,
+      "tile_layers": 20,
+      "decorations": 30,
+      "has_more": false
+    },
+    {
+      "path": "res://scenes/map_scenes/map_env/gold/main/copper_rust_forest.tscn",
+      "loaded": true,
+      "nodes": 59,
+      "tile_layers": 19,
+      "decorations": 30,
+      "has_more": false
+    }
+  ],
+  "editor_logs": {
+    "before_count": 34,
+    "after_count": 34,
+    "added": []
+  },
+  "final_scene": "res://scenes/map_scenes/map_env/gold/main/copper_rust_forest.tscn",
+  "notes": "逐图打开并核对节点。copper_rust_forest初次切回时仍为旧缓存25节点/0装饰，在其成为当前场景后再次force_reload，确认最终59节点/19层/30装饰；未保存旧缓存。历史34条日志无新增。未运行游戏，不构成物理引擎或游玩验证。"
+}

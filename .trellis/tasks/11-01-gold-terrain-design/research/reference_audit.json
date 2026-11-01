@@ -1,0 +1,160 @@
+[
+  {
+    "path": "MapContainer/BridgeWithBoundary/LeftBridgeWithBoundary",
+    "config": "tile_set = SubResource(\"TileSet_td8aa\")",
+    "cells": 6,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeWithBoundary/RightBridgeWithBoundary",
+    "config": "rotation = 1.4218699e-05\ntile_set = SubResource(\"TileSet_2ehdy\")",
+    "cells": 6,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeWithBoundary/UpBridgeWithBoundary",
+    "config": "tile_set = SubResource(\"TileSet_w6qds\")",
+    "cells": 5,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeWithBoundary/DownBridgeWithBoundary",
+    "config": "tile_set = SubResource(\"TileSet_uxnmb\")",
+    "cells": 5,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeBoundary/LeftBridgeBoundary",
+    "config": "tile_set = SubResource(\"TileSet_jts8b\")",
+    "cells": 4,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeBoundary/RightBridgeBoundary",
+    "config": "rotation = 1.4218699e-05\ntile_set = SubResource(\"TileSet_sxu3q\")",
+    "cells": 4,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeBoundary/UpBridgeBoundary",
+    "config": "tile_set = SubResource(\"TileSet_4odl6\")",
+    "cells": 4,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeBoundary/DownBridgeBoundary",
+    "config": "tile_set = SubResource(\"TileSet_u78iw\")",
+    "cells": 4,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/Boundary/TileMapLayer",
+    "config": "tile_set = SubResource(\"TileSet_mrmfi\")",
+    "cells": 90,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeContainer/LeftBridge",
+    "config": "tile_set = SubResource(\"TileSet_4l0n4\")",
+    "cells": 12,
+    "polygons": 0,
+    "physics": [],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeContainer/RightBridge",
+    "config": "tile_set = SubResource(\"TileSet_yd83j\")",
+    "cells": 12,
+    "polygons": 0,
+    "physics": [],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeContainer/UpBridge",
+    "config": "tile_set = SubResource(\"TileSet_8d7ix\")",
+    "cells": 10,
+    "polygons": 0,
+    "physics": [],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/BridgeContainer/DownBridge",
+    "config": "tile_set = SubResource(\"TileSet_7vwjb\")",
+    "cells": 10,
+    "polygons": 0,
+    "physics": [],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/Ground/TileMapLayer",
+    "config": "tile_set = SubResource(\"TileSet_pbes4\")",
+    "cells": 760,
+    "polygons": 0,
+    "physics": [],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/Ground/TileMapLayer2",
+    "config": "tile_set = SubResource(\"TileSet_g36n5\")",
+    "cells": 44,
+    "polygons": 0,
+    "physics": [],
+    "defined_tiles": 135
+  },
+  {
+    "path": "MapContainer/Obstack/TileMapLayer",
+    "config": "tile_set = SubResource(\"TileSet_5xs8v\")",
+    "cells": 5,
+    "polygons": 135,
+    "physics": [
+      "physics_layer_0/collision_layer = 32",
+      "physics_layer_0/collision_mask = 16"
+    ],
+    "defined_tiles": 135
+  }
+]

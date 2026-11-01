@@ -21,7 +21,7 @@ canvas_layer = NodePath("CanvasLayer")
 
 [node name="MapTypes" type="Node2D" parent="." unique_id=498826768]
 script = ExtResource("2_oq6ca")
-biomes = Array[Object]([ExtResource("3_4pmc0"), ExtResource("4_mrmfi"), ExtResource("5_1iq7d"), ExtResource("6_bl6s4"), ExtResource("7_00bk6")])
+biomes = Array[Object]([ExtResource("7_00bk6"), ExtResource("3_4pmc0"), ExtResource("4_mrmfi"), ExtResource("5_1iq7d"), ExtResource("6_bl6s4")])
 
 [node name="MapPositionCreate" type="Node2D" parent="." unique_id=311386952]
 script = ExtResource("3_117lk")

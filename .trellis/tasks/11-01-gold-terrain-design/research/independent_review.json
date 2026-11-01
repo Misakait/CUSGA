@@ -1,0 +1,241 @@
+{
+  "passed": true,
+  "scene_count": 12,
+  "checked_scenes": 12,
+  "bridge_combinations": 192,
+  "runtime_tested": false,
+  "method": "实际场景资源与碰撞多边形，玩家胶囊包围盒保守膨胀，8像素采样；不是物理引擎验证",
+  "scope_changes": [
+    "scenes/map_scenes/map_env/gold/main/copper_rust_forest.tscn",
+    "scenes/map_scenes/map_env/gold/main/gear_wasteland.tscn",
+    "scenes/map_scenes/map_env/gold/main/golden_sand_plain.tscn",
+    "scenes/map_scenes/map_env/gold/main/iron_ridge_canyon.tscn",
+    "scenes/map_scenes/map_env/gold/main/magnetite_mine.tscn",
+    "scenes/map_scenes/map_env/gold/market/steel_dome_exchange.tscn",
+    "scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn",
+    "scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn",
+    "scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn",
+    "scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn",
+    "scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn",
+    "scenes/map_scenes/map_env/gold/transmitting/gate_steel_dome.tscn"
+  ],
+  "scenes": [
+    {
+      "scene": "scenes/map_scenes/map_env/gold/main/copper_rust_forest.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6664,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 71,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "eb32e64d25bd9f8ca4fea46e7697439914e7a4597f2be7859790860d341f5deb"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/main/gear_wasteland.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6880,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 24,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "0224b39837d43f95746ff260f36ae5fbc8d78a5c4d467d7c125f99027f5268e1"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/main/golden_sand_plain.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6460,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 57,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "029bc821f8d865d2bfeec6e1a3c238b1681dc04a7c654122e900798f939df207"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/main/iron_ridge_canyon.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6296,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 64,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "2b27390aa485b5d19b8de48c2bb2fa95a48b940d23331ab283cab72413ae9f5b"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/main/magnetite_mine.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6484,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 56,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "24e8b0d5af624da53216081c36114a5045772be2ab9c336544330069ba5f8ff2"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/market/steel_dome_exchange.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 7244,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 39,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "d278581c4593223ef191c2c4754c7700149fde1f8dfe3039ec3d63e964919cdf"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6512,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 92,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "d6f7180fc7a68aad7eea46a6d59c49c313b5efcc85f3853a7ca2b7e98c5ca74e"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6312,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 74,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "b933b5bc002d312e0391b02e0d4371e3a24d2f61cffa8dc94889c078e4186ef4"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn",
+      "layer_count": 19,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6428,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 67,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "14a1a2628c6e2151da74e816945b141c90d6d4c3b5dbaa94bf8dcbdd115e27bd"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6712,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 61,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "19351572afa1a07fd3413df64b3e6e651c7848e2ab6e232a123f96f3a8b2adf3"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6588,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 23,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "aa3997089af900fec376973c570354107231ff20d006e4822ecf213f23d45ab0"
+    },
+    {
+      "scene": "scenes/map_scenes/map_env/gold/transmitting/gate_steel_dome.tscn",
+      "layer_count": 20,
+      "decorations": 30,
+      "bridge_combinations": 16,
+      "resource_slots": 24,
+      "minimum_reachable_samples": 6308,
+      "obstacle_tiles": 0,
+      "special_corner_tiles": 25,
+      "bridge_lengths_tiles": {
+        "Up": 3,
+        "Right": 3,
+        "Down": 3,
+        "Left": 3
+      },
+      "all_ground_layers_seam_checked": true,
+      "outline_signature": "73a5b24ab6d0ac952e70dee6ded3625be83c0687e8d087dd1419eb0aa9965010"
+    }
+  ],
+  "errors": []
+}
