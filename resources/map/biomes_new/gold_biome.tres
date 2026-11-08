@@ -63,56 +63,6 @@ script = ExtResource("1_23xf7")
 scene_name = "smelting_ruins_t1"
 scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn"
 
-[sub_resource type="Resource" id="Resource_i880f"]
-script = ExtResource("1_23xf7")
-scene_name = "alloy_rift_valley_t2"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn"
-
-[sub_resource type="Resource" id="Resource_e3y1s"]
-script = ExtResource("1_23xf7")
-scene_name = "magnetite_hills_t2"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn"
-
-[sub_resource type="Resource" id="Resource_g6cnh"]
-script = ExtResource("1_23xf7")
-scene_name = "ore_vein_field_t2"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn"
-
-[sub_resource type="Resource" id="Resource_2h4y2"]
-script = ExtResource("1_23xf7")
-scene_name = "rusted_plains_t2"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn"
-
-[sub_resource type="Resource" id="Resource_soa3y"]
-script = ExtResource("1_23xf7")
-scene_name = "smelting_ruins_t2"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn"
-
-[sub_resource type="Resource" id="Resource_o7pn5"]
-script = ExtResource("1_23xf7")
-scene_name = "alloy_rift_valley_t3"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/alloy_rift_valley.tscn"
-
-[sub_resource type="Resource" id="Resource_fpgq6"]
-script = ExtResource("1_23xf7")
-scene_name = "magnetite_hills_t3"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/magnetite_hills.tscn"
-
-[sub_resource type="Resource" id="Resource_hilbl"]
-script = ExtResource("1_23xf7")
-scene_name = "ore_vein_field_t3"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/ore_vein_field.tscn"
-
-[sub_resource type="Resource" id="Resource_j8pkk"]
-script = ExtResource("1_23xf7")
-scene_name = "rusted_plains_t3"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/rusted_plains.tscn"
-
-[sub_resource type="Resource" id="Resource_v7jde"]
-script = ExtResource("1_23xf7")
-scene_name = "smelting_ruins_t3"
-scene_dir = "res://scenes/map_scenes/map_env/gold/secondary/smelting_ruins.tscn"
-
 [sub_resource type="Resource" id="Resource_v38ni"]
 script = ExtResource("1_23xf7")
 scene_name = "gate_steel_dome"
@@ -130,5 +80,5 @@ scene_dir = "res://scenes/map_scenes/map_env/gold/market/steel_dome_exchange.tsc
 [resource]
 script = ExtResource("3_2k83w")
 biome_name = "gold"
-main_scenes = Array[ExtResource("1_23xf7")]([SubResource("Resource_kt5bt"), SubResource("Resource_4xkx5"), SubResource("Resource_cswr5"), SubResource("Resource_cveji"), SubResource("Resource_41d1a"), SubResource("Resource_8smyo"), SubResource("Resource_npxqm"), SubResource("Resource_8gwdb"), SubResource("Resource_j3dv8"), SubResource("Resource_2u8om"), SubResource("Resource_i880f"), SubResource("Resource_e3y1s"), SubResource("Resource_g6cnh"), SubResource("Resource_2h4y2"), SubResource("Resource_soa3y"), SubResource("Resource_o7pn5"), SubResource("Resource_fpgq6"), SubResource("Resource_hilbl"), SubResource("Resource_j8pkk"), SubResource("Resource_v7jde")])
+main_scenes = Array[ExtResource("1_23xf7")]([SubResource("Resource_kt5bt"), SubResource("Resource_4xkx5"), SubResource("Resource_cswr5"), SubResource("Resource_cveji"), SubResource("Resource_41d1a"), SubResource("Resource_8smyo"), SubResource("Resource_npxqm"), SubResource("Resource_8gwdb"), SubResource("Resource_j3dv8"), SubResource("Resource_2u8om")])
 special_scenes = Array[ExtResource("1_23xf7")]([SubResource("Resource_v38ni"), SubResource("Resource_ctvjx")])

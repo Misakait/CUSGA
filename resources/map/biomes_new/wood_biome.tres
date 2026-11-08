@@ -64,56 +64,6 @@ script = ExtResource("1_1r3vh")
 scene_name = "tree_shadow_path_t1"
 scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/tree_shadow_path.tscn"
 
-[sub_resource type="Resource" id="Resource_e7ajo"]
-script = ExtResource("1_1r3vh")
-scene_name = "ancient_root_tunnel_t2"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/ancient_root_tunnel.tscn"
-
-[sub_resource type="Resource" id="Resource_duo8c"]
-script = ExtResource("1_1r3vh")
-scene_name = "bamboo_wind_path_t2"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/bamboo_wind_path.tscn"
-
-[sub_resource type="Resource" id="Resource_75gdn"]
-script = ExtResource("1_1r3vh")
-scene_name = "honey_meadow_t2"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/honey_meadow.tscn"
-
-[sub_resource type="Resource" id="Resource_raem5"]
-script = ExtResource("1_1r3vh")
-scene_name = "mossy_valley_t2"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/mossy_valley.tscn"
-
-[sub_resource type="Resource" id="Resource_tkj0f"]
-script = ExtResource("1_1r3vh")
-scene_name = "tree_shadow_path_t2"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/tree_shadow_path.tscn"
-
-[sub_resource type="Resource" id="Resource_6aeer"]
-script = ExtResource("1_1r3vh")
-scene_name = "ancient_root_tunnel_t3"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/ancient_root_tunnel.tscn"
-
-[sub_resource type="Resource" id="Resource_4b46q"]
-script = ExtResource("1_1r3vh")
-scene_name = "bamboo_wind_path_t3"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/bamboo_wind_path.tscn"
-
-[sub_resource type="Resource" id="Resource_q2id3"]
-script = ExtResource("1_1r3vh")
-scene_name = "honey_meadow_t3"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/honey_meadow.tscn"
-
-[sub_resource type="Resource" id="Resource_llpbm"]
-script = ExtResource("1_1r3vh")
-scene_name = "mossy_valley_t3"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/mossy_valley.tscn"
-
-[sub_resource type="Resource" id="Resource_hpcd3"]
-script = ExtResource("1_1r3vh")
-scene_name = "tree_shadow_path_t3"
-scene_dir = "res://scenes/map_scenes/map_env/wood/secondary/tree_shadow_path.tscn"
-
 [sub_resource type="Resource" id="Resource_81lh4"]
 script = ExtResource("1_1r3vh")
 scene_name = "gate_of_jade_abyss"
@@ -131,5 +81,5 @@ scene_dir = "res://scenes/map_scenes/map_env/wood/market/jade_abyss_exchange.tsc
 [resource]
 script = ExtResource("3_70bvo")
 biome_name = "wood"
-main_scenes = Array[ExtResource("1_1r3vh")]([SubResource("Resource_jpbvq"), SubResource("Resource_d3x5l"), SubResource("Resource_m5tcu"), SubResource("Resource_hw5gh"), SubResource("Resource_w8eam"), SubResource("Resource_janqp"), SubResource("Resource_6mvl2"), SubResource("Resource_bpktq"), SubResource("Resource_ctewb"), SubResource("Resource_6krit"), SubResource("Resource_e7ajo"), SubResource("Resource_duo8c"), SubResource("Resource_75gdn"), SubResource("Resource_raem5"), SubResource("Resource_tkj0f"), SubResource("Resource_6aeer"), SubResource("Resource_4b46q"), SubResource("Resource_q2id3"), SubResource("Resource_llpbm"), SubResource("Resource_hpcd3")])
+main_scenes = Array[ExtResource("1_1r3vh")]([SubResource("Resource_jpbvq"), SubResource("Resource_d3x5l"), SubResource("Resource_m5tcu"), SubResource("Resource_hw5gh"), SubResource("Resource_w8eam"), SubResource("Resource_janqp"), SubResource("Resource_6mvl2"), SubResource("Resource_bpktq"), SubResource("Resource_ctewb"), SubResource("Resource_6krit")])
 special_scenes = Array[ExtResource("1_1r3vh")]([SubResource("Resource_81lh4"), SubResource("Resource_tf8ja")])
