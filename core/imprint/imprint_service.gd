@@ -24,13 +24,6 @@ func draw(inventory: Node, element: int, specific: Resource, universal: Resource
 	var universal_count: int = cost - specific_count
 	if int(inventory.call("ItemCnt", universal)) < universal_count:
 		return {"cards": [], "message": "卡胚不足"}
-	# 技能卡每张占一格；提前保守检查空格，防止扣费后出现无法交付的结果。
-	var free_slots: int = 0
-	for stack in inventory.get("Slots"):
-		if bool(stack.get("IsEmpty")):
-			free_slots += 1
-	if free_slots < count:
-		return {"cards": [], "message": "背包空位不足"}
 	var selected: Array[Resource] = []
 	for index in count:
 		selected.append(_pick_card(pool))
@@ -41,8 +34,7 @@ func draw(inventory: Node, element: int, specific: Resource, universal: Resource
 		payment[universal] = universal_count
 	if not bool(inventory.call("TryRemoveItems", payment)):
 		return {"cards": [], "message": "卡胚不足"}
-	for card in selected:
-		inventory.call("AddItem", card, 1)
+	# 抽中的卡先交给界面暂存，只有玩家确认选择后才写入库存。
 	return {"cards": selected, "message": "刻印成功"}
 
 ## 先按星级权重抽取，再在该星级内等概率选择卡牌。

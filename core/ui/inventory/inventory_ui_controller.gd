@@ -102,6 +102,8 @@ func _ready() -> void:
 		imprint_button.position = _crafting_button.position - Vector2(155, 0)
 		imprint_button.size = _crafting_button.size
 		imprint_button.theme = _crafting_button.theme
+		# 合成按钮使用单独的字体覆盖，仅复制 Theme 不会继承该字体。
+		imprint_button.add_theme_font_override("font", _crafting_button.get_theme_font("font"))
 		imprint_button.add_theme_font_size_override("font_size", 28)
 		add_child(imprint_button)
 		imprint_button.pressed.connect(_on_imprint_button_pressed)
@@ -331,7 +333,16 @@ func _on_imprint_button_pressed() -> void:
 	if _player_inventory == null:
 		return
 	var panel: PanelContainer = load("res://core/ui/inventory/imprint_panel.gd").new()
-	get_parent().add_child(panel)
+	panel.name = "ImprintPanel"
+	# 背包位于 CenterContainer；全屏面板必须挂到容器外的 HUD 控件，
+	# 否则容器会覆盖锚点布局，使面板偏移并压缩背景。
+	var host: Node = get_parent()
+	if host is Container:
+		host = host.get_parent()
+	if host == null:
+		panel.queue_free()
+		return
+	host.add_child(panel)
 	panel.call("setup", _player_inventory, self)
 	Close()
 
