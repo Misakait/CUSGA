@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("1_skillcard")
+StarLevel = 3
 Skill = ExtResource("combat_skill")
 cost = 60
 CardTags = Array[String](["高额伤害"])

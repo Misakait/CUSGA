@@ -52,7 +52,6 @@ const REQUIRED_VBOX_ROWS: Array[String] = [
 	"LevelUpButton",
 	"ResetHoldSpeedButton",
 	"GoldRow",
-	"CloseButton",
 ]
 
 ## 「获得金币」按钮必须与数量输入框同处一行：按钮的声明行里必须出现指向 GoldRow 的父路径。
@@ -756,6 +755,12 @@ func test_production_scene_layout_places_each_feature_on_its_own_row() -> void:
 			declaration.contains(REQUIRED_ROW_PARENT),
 			"%s 必须直接挂在主纵向容器下，以保证每个功能独占一行。" % node_name
 		)
+
+	# 关闭入口与标题同处顶栏，标题扩展后将按钮推到右侧。
+	var close_declaration: String = _find_node_declaration(scene_text, "CloseButton")
+	assert_true(close_declaration.contains("VBoxContainer/TitleBar\""), "关闭按钮必须位于标题栏右侧。")
+	var title_declaration: String = _find_node_declaration(scene_text, "TitleLabel")
+	assert_true(title_declaration.contains("VBoxContainer/TitleBar\""), "标题和关闭按钮必须共用标题栏。")
 
 	# 旧的横向按钮分组必须消失，否则「一个功能一行」会被悄悄改回去。
 	assert_false(

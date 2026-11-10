@@ -112,6 +112,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_configure_hold_speed_spin_box()
 	_configure_gold_spin_box()
+	_create_embryo_controls()
 	_connect_buttons()
 
 	# 等级系统与钱包都是可选依赖：面板其余功能在它们缺失时都能正常工作，因此这里不报错、
@@ -331,6 +332,43 @@ func _on_gain_gold_button_pressed() -> void:
 
 	_player_wallet.call("Add", int(_gold_spin_box.value))
 
+
+## 在局内开发者面板添加卡胚发放控件，数量默认 10。
+func _create_embryo_controls() -> void:
+	if not ShowRunFeatures:
+		return
+	var row := HBoxContainer.new()
+	row.name = "EmbryoRow"
+	_gold_spin_box.get_parent().get_parent().add_child(row)
+	var label := Label.new()
+	label.text = "获得卡胚数量"
+	row.add_child(label)
+	var amount := SpinBox.new()
+	amount.min_value = 1
+	amount.max_value = MAX_GOLD_AMOUNT
+	amount.value = 10
+	row.add_child(amount)
+	var choice := OptionButton.new()
+	for label_text in ["木", "土", "水", "火", "金", "通用"]:
+		choice.add_item(label_text)
+	row.add_child(choice)
+	var button := Button.new()
+	button.text = "获得卡胚"
+	button.pressed.connect(_gain_embryos.bind(amount, choice))
+	row.add_child(button)
+
+## 给当前对局的玩家库存添加所选卡胚。
+## 参数 amount：数量输入框；choice：属性选择框；返回值：无。
+func _gain_embryos(amount: SpinBox, choice: OptionButton) -> void:
+	var scene: Node = get_tree().current_scene
+	var inventory: Node = scene.get_node_or_null("Player/Components/InventoryComponent") if scene != null else null
+	if inventory == null:
+		return
+	var names: Array[String] = ["wood", "earth", "water", "fire", "metal", "universal"]
+	var item: Resource = load("res://items/imprint/%s_embryo.tres" % names[choice.selected])
+	var remainder: int = int(inventory.call("AddItem", item, int(amount.value)))
+	if remainder > 0:
+		push_warning("背包空间不足，未放入 %d 个卡胚。" % remainder)
 
 ## 把长按速度倍率恢复为默认值。
 ##

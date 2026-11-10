@@ -8,6 +8,9 @@ extends "res://resources/item/item_data.gd"
 ## 实际战斗技能 Resource；迁移期继续接受 C# CombatSkillData。
 @export var Skill: Resource
 
+## 技能卡星级；填充卡默认为 1，正式卡可配置 3、4、5 或未来扩展的星级。
+@export_range(1, 99, 1) var StarLevel: int = 1
+
 ## 打出卡牌消耗的能量；默认值保持为 10。
 @export var cost: int = 10
 

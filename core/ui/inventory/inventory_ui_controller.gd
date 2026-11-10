@@ -94,6 +94,17 @@ func _ready() -> void:
 	_crafting_button = get_node_or_null("CraftingButton") as Button
 	if _crafting_button != null and not _crafting_button.pressed.is_connected(_on_crafting_button_pressed):
 		_crafting_button.pressed.connect(_on_crafting_button_pressed)
+	if _crafting_button != null:
+		# 与合成入口共用背包生命周期，刻印面板只接收库存协议。
+		var imprint_button := Button.new()
+		imprint_button.name = "ImprintButton"
+		imprint_button.text = "刻印"
+		imprint_button.position = _crafting_button.position - Vector2(155, 0)
+		imprint_button.size = _crafting_button.size
+		imprint_button.theme = _crafting_button.theme
+		imprint_button.add_theme_font_size_override("font_size", 28)
+		add_child(imprint_button)
+		imprint_button.pressed.connect(_on_imprint_button_pressed)
 	_connect_signal(_gameplay_port, &"InventoryToggleRequested", Callable(self, "_handle_inventory_toggle_request"))
 	_connect_signal(_gameplay_port, &"InventoryNodeToggleRequested", Callable(self, "_handle_inventory_toggle_request"))
 	for section in [_inventory_section, _equipment_section, _deck_section]:
@@ -314,6 +325,15 @@ func _clear_selection() -> void:
 	_suppressed_hover_slot = null
 	_hide_selected_tooltip()
 	_hide_hover_tooltip()
+
+## 打开刻印面板，并把当前背包的库存交给面板使用。
+func _on_imprint_button_pressed() -> void:
+	if _player_inventory == null:
+		return
+	var panel: PanelContainer = load("res://core/ui/inventory/imprint_panel.gd").new()
+	get_parent().add_child(panel)
+	panel.call("setup", _player_inventory, self)
+	Close()
 
 func _on_crafting_button_pressed() -> void:
 	Close()

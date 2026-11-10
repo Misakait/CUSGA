@@ -42,9 +42,19 @@ theme_override_constants/margin_bottom = 16
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="TitleLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1284937044]
+[node name="TitleBar" type="HBoxContainer" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/TitleBar" unique_id=1284937044]
+layout_mode = 2
+size_flags_horizontal = 3
 text = "开发者设置"
+
+[node name="CloseButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer/TitleBar" unique_id=1265758638]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_a1uw1")
+text = "关闭"
 
 [node name="DayLabel" type="Label" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=89496520]
 unique_name_in_owner = true
@@ -106,9 +116,3 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_c24di")
 text = "获得金币"
-
-[node name="CloseButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1265758638]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_styles/focus = SubResource("StyleBoxEmpty_a1uw1")
-text = "关闭"

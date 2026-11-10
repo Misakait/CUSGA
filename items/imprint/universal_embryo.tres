@@ -1,0 +1,10 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/item/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+CardId = &"imprint_universal"
+CardName = "通用卡胚"
+Description = "用于任意属性刻印的资源。"
+MaxStackSize = 999
