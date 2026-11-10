@@ -5,7 +5,6 @@
 [ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="2_gqard"]
 [ext_resource type="Script" uid="uid://ba4f811xp0el" path="res://entities/components/attribute_component.gd" id="2_twjs6"]
 [ext_resource type="Script" uid="uid://ber7n2jykqngx" path="res://entities/components/faction_component.gd" id="3_tgvxs"]
-[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="4_twqyq"]
 [ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
 [ext_resource type="Texture2D" uid="uid://bhp1kn0sgqewf" path="res://res/monstercard/卡牌模板2.png" id="8_bgonl"]
@@ -31,10 +30,6 @@
 script = ExtResource("2_gqard")
 BaseMaxHealth = 100.0
 
-[sub_resource type="Resource" id="Resource_bgonl"]
-script = ExtResource("4_twqyq")
-metadata/_custom_type_script = "uid://14ol6fqeh53g"
-
 [sub_resource type="PackedScene" id="PackedScene_1lcr1"]
 
 [sub_resource type="Resource" id="Resource_43qb6"]
@@ -43,7 +38,6 @@ MonsterName = "kirin"
 InitialAttributes = SubResource("Resource_4jp6m")
 ElementalProperty = 1
 ModelScene = SubResource("PackedScene_1lcr1")
-LootTable = SubResource("Resource_bgonl")
 metadata/_custom_type_script = "uid://buhigatdeqss6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]

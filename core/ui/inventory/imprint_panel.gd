@@ -30,10 +30,6 @@ const TABLE_TEXTURE: Texture2D = preload("res://res/UI/imprint/imprint_table.png
 const SLOT_SIZE: Vector2 = Vector2(202, 146)
 ## 卡面的显示缩放。
 const CARD_SCALE: float = 0.82
-## 卡牌选择提示占满卡槽宽度，选中时与卡面同步上移。
-const SELECTION_MARKER_SIZE: Vector2 = Vector2(SLOT_SIZE.x, 24)
-## 卡面未缩放高度为 150 像素；提示位于卡面下缘外 3 像素处。
-const SELECTION_MARKER_POSITION: Vector2 = Vector2(0, SLOT_SIZE.y * 0.5 + 75.0 * CARD_SCALE + 3.0)
 ## 每张卡收拢与展开各需的秒数。
 const FLIP_HALF_SECONDS: float = 0.16
 ## 连续揭晓之间的停顿秒数。
@@ -57,16 +53,12 @@ var _tab_buttons: Array[Button] = []
 var _draw_buttons: Array[Button] = []
 ## 确认获取按钮。
 var _confirm_button: Button
-## 关闭前的放弃确认框。
-var _discard_dialog: ConfirmationDialog
 ## 本批次结果，按抽出位置保存，允许相同资源出现多次。
 var _drawn_cards: Array[Resource] = []
 ## 已选择的卡槽下标；不以资源身份去重。
 var _selected_indices: Array[int] = []
 ## 当前结果卡槽。
 var _slots: Array[Button] = []
-## 卡面底部的选择提示。
-var _selection_labels: Array[Label] = []
 ## 揭晓动画运行期间阻止选择和重复结算。
 var _revealing: bool = false
 ## 当前揭晓序列；跳过时停止，避免后续回调再次改写已展示的卡面。
@@ -75,10 +67,16 @@ var _reveal_tween: Tween
 var _blank_cards: Array[Sprite2D] = []
 ## 与卡槽下标对应的揭晓闪光，用于跳过时消除残留。
 var _reveal_flashes: Array[ColorRect] = []
-## 第一张卡右上方的跳过入口，仅在揭晓期间存在。
+## 第一排最右侧卡牌上方的跳过入口，仅在揭晓期间存在。
 var _skip_button: Button
 ## 已交付卡牌的离场动画期间禁止关闭、重新选择和重复结算。
 var _settling: bool = false
+## HUD 共享提示面板；缺失时只关闭悬停提示，不影响刻印。
+var _tooltip_panel: Node
+## 当前鼠标悬停的卡槽下标，用于避免跨卡移动时旧的退出事件关闭新提示。
+var _hovered_index: int = -1
+## 是否由本面板发出了提示请求，避免清理时隐藏其他界面的提示。
+var _owns_tooltip: bool = false
 ## 与卡槽下标对应的技能卡视图，用于独立处理重复卡。
 var _card_views: Array[Node2D] = []
 ## 每个卡槽的上移动画；切换选择时先停止旧动画。
@@ -89,6 +87,8 @@ var _lift_tweens: Dictionary = {}
 func setup(inventory: Node, backpack: Control) -> void:
 	_inventory = inventory
 	_backpack = backpack
+	# 刻印面板与开局选卡同处 HUD 根节点，复用同一个鼠标跟随提示框。
+	_tooltip_panel = get_node_or_null("../TooltipPanel") if is_inside_tree() else null
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	# 统一从根主题继承字体，避免弹窗与运行时创建的控件退回系统字体。
@@ -136,14 +136,13 @@ func setup(inventory: Node, backpack: Control) -> void:
 	_card_grid.add_theme_constant_override("v_separation", 8)
 	center.add_child(_card_grid)
 	_build_actions(box)
-	_discard_dialog = ConfirmationDialog.new()
-	_discard_dialog.title = "放弃刻印结果？"
-	_discard_dialog.dialog_text = "本次刻印还有尚未获取的卡牌。关闭后将放弃这些卡牌，已消耗的卡胚不会返还。"
-	_discard_dialog.ok_button_text = "放弃并关闭"
-	_discard_dialog.cancel_button_text = "继续选择"
-	_discard_dialog.confirmed.connect(_close)
-	add_child(_discard_dialog)
 	_select(0)
+
+## 显示已有刻印面板并刷新材料数量，保留待领取结果。
+## 返回值：无。
+func Open() -> void:
+	show()
+	_refresh()
 
 func _build_header(box: VBoxContainer) -> void:
 	var header := HBoxContainer.new()
@@ -262,7 +261,6 @@ func _show_cards() -> void:
 	for child in _card_grid.get_children():
 		child.queue_free()
 	_slots.clear()
-	_selection_labels.clear()
 	_card_views.clear()
 	_blank_cards.clear()
 	_reveal_flashes.clear()
@@ -291,19 +289,6 @@ func _show_cards() -> void:
 		front.visible = false
 		front.call("init_card_data", _drawn_cards[index])
 		front.call("unlock")
-		var marker := Label.new()
-		marker.position = SELECTION_MARKER_POSITION
-		marker.size = SELECTION_MARKER_SIZE
-		marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		marker.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		marker.z_index = 3
-		marker.add_theme_font_size_override("font_size", 18)
-		marker.add_theme_color_override("font_color", Color("#fff2b1"))
-		marker.add_theme_color_override("font_outline_color", Color("#3b2419"))
-		marker.add_theme_constant_override("outline_size", 4)
-		marker.text = "点击选择"
-		marker.visible = false
-		slot.add_child(marker)
 		var flash := ColorRect.new()
 		flash.position = Vector2(15, 11)
 		flash.z_index = 4
@@ -313,10 +298,11 @@ func _show_cards() -> void:
 		flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot.add_child(flash)
 		_reveal_flashes.append(flash)
-		_selection_labels.append(marker)
 		slot.pressed.connect(_toggle_card.bind(index))
-		if index == 0:
-			# 将入口挂在第一个卡槽上方，使单抽和十连都与各自的左上角卡牌对齐。
+		slot.mouse_entered.connect(_on_card_slot_mouse_entered.bind(index))
+		slot.mouse_exited.connect(_on_card_slot_mouse_exited.bind(index))
+		if index == mini(_drawn_cards.size(), _card_grid.columns) - 1:
+			# 单抽与十连都将入口对齐第一排最右侧卡槽的右上方。
 			_skip_button = Button.new()
 			_skip_button.text = "跳过"
 			_skip_button.flat = true
@@ -330,17 +316,16 @@ func _show_cards() -> void:
 			slot.add_child(_skip_button)
 		# 每张卡先收拢空白卡，再展开真实卡面；独立下标可保留重复卡。
 		animation.tween_property(blank, "scale:x", 0.0, FLIP_HALF_SECONDS).set_trans(Tween.TRANS_SINE)
-		animation.tween_callback(_reveal_front.bind(blank, front, marker, flash))
+		animation.tween_callback(_reveal_front.bind(blank, front, flash))
 		animation.tween_property(front, "scale:x", CARD_SCALE, FLIP_HALF_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		animation.parallel().tween_property(flash, "modulate:a", 0.0, FLIP_HALF_SECONDS * 1.5)
 		animation.tween_interval(REVEAL_GAP_SECONDS)
 	animation.tween_callback(_on_reveal_finished)
 
-func _reveal_front(blank: Sprite2D, front: Node2D, marker: Label, flash: ColorRect) -> void:
+func _reveal_front(blank: Sprite2D, front: Node2D, flash: ColorRect) -> void:
 	blank.hide()
 	front.scale.x = 0.0
 	front.show()
-	marker.show()
 	flash.modulate.a = 0.7
 
 ## 立即完成当前揭晓，并保留每个卡槽对应的抽取结果。
@@ -355,7 +340,6 @@ func _skip_reveal() -> void:
 		_blank_cards[index].hide()
 		_card_views[index].scale = Vector2.ONE * CARD_SCALE
 		_card_views[index].show()
-		_selection_labels[index].show()
 		_reveal_flashes[index].modulate.a = 0.0
 	_on_reveal_finished()
 
@@ -367,8 +351,52 @@ func _on_reveal_finished() -> void:
 		_skip_button = null
 	for slot in _slots:
 		slot.disabled = false
-	_result.text = "点击卡牌选择要获取的卡，可选择任意张"
+	_result.text = "已选择%d/%d张" % [_selected_indices.size(), _drawn_cards.size()]
 	_refresh()
+	# 鼠标可能在揭晓结束前已经进入卡槽；此时不会再触发新的进入事件。
+	if _hovered_index >= 0 and _hovered_index < _slots.size():
+		if _slots[_hovered_index].get_global_rect().has_point(get_global_mouse_position()):
+			_show_card_tooltip(_hovered_index)
+
+## 鼠标进入卡槽时显示已揭晓技能卡的名称与描述。
+## 参数 index：卡槽下标；返回值：无。
+func _on_card_slot_mouse_entered(index: int) -> void:
+	_hovered_index = index
+	_show_card_tooltip(index)
+
+## 鼠标离开当前卡槽时取消对应提示。
+## 参数 index：卡槽下标；返回值：无。
+func _on_card_slot_mouse_exited(index: int) -> void:
+	if _hovered_index != index:
+		return
+	_hovered_index = -1
+	_hide_card_tooltip()
+
+## 按开局选卡使用的显示字段请求延迟悬停提示。
+## 参数 index：卡槽下标；返回值：无。
+func _show_card_tooltip(index: int) -> void:
+	if _revealing or _settling or not is_instance_valid(_tooltip_panel):
+		return
+	if index < 0 or index >= _drawn_cards.size() or _drawn_cards[index] == null:
+		return
+	if not _tooltip_panel.has_method("show_tooltip"):
+		return
+	var card: Resource = _drawn_cards[index]
+	var title: Variant = card.get("DisplayName")
+	var description: Variant = card.get("DisplayDescription")
+	if title == null or str(title).strip_edges().is_empty():
+		title = card.get("CardName")
+	if description == null or str(description).strip_edges().is_empty():
+		description = card.get("Description")
+	_tooltip_panel.call("show_tooltip", str(title) if title != null else "", str(description) if description != null else "")
+	_owns_tooltip = true
+
+## 清除本界面发出的提示，避免延迟显示残留在其他界面。
+## 返回值：无。
+func _hide_card_tooltip() -> void:
+	if _owns_tooltip and is_instance_valid(_tooltip_panel) and _tooltip_panel.has_method("hide_tooltip"):
+		_tooltip_panel.call("hide_tooltip")
+	_owns_tooltip = false
 
 func _toggle_card(index: int) -> void:
 	if _revealing or _settling or index < 0 or index >= _drawn_cards.size() or _drawn_cards[index] == null:
@@ -378,29 +406,25 @@ func _toggle_card(index: int) -> void:
 	else:
 		_selected_indices.append(index)
 	_animate_card_lift(index, _selected_indices.has(index))
-	_result.text = "已选择 %d / %d 张；可不选，点击确定结束" % [_selected_indices.size(), _drawn_cards.size()]
+	_result.text = "已选择%d/%d张" % [_selected_indices.size(), _drawn_cards.size()]
 
-## 按开局选卡的统一距离和时间移动卡面与选择提示。
+## 按开局选卡的统一距离和时间移动卡面。
 ## 参数 index：卡槽下标；lifted：是否上移；返回值：无。
 func _animate_card_lift(index: int, lifted: bool) -> void:
-	if index >= _card_views.size() or index >= _selection_labels.size():
+	if index >= _card_views.size():
 		return
 	var previous: Tween = _lift_tweens.get(index)
 	if previous != null and previous.is_valid():
 		previous.kill()
 	var offset: float = -CARD_VISUALS.CLICK_SELECTED_LIFT_DISTANCE if lifted else 0.0
 	var card: Node2D = _card_views[index]
-	var marker: Label = _selection_labels[index]
 	var target: Vector2 = SLOT_SIZE * 0.5 + Vector2(0, offset)
-	var marker_target: Vector2 = SELECTION_MARKER_POSITION + Vector2(0, offset)
 	if not is_inside_tree():
 		card.position = target
-		marker.position = marker_target
 		return
 	var tween := create_tween().set_parallel(true)
 	_lift_tweens[index] = tween
 	tween.tween_property(card, "position", target, CARD_VISUALS.CLICK_SELECTED_LIFT_DURATION)
-	tween.tween_property(marker, "position", marker_target, CARD_VISUALS.CLICK_SELECTED_LIFT_DURATION)
 
 func _confirm_selection() -> void:
 	if _revealing or _settling or _drawn_cards.is_empty() or not is_instance_valid(_inventory):
@@ -413,6 +437,8 @@ func _confirm_selection() -> void:
 		_result.text = "背包空位不足，需要 %d 格，当前 %d 格" % [_selected_indices.size(), free_slots]
 		return
 	# 先锁定本批次，避免同步库存信号或重复点击造成重复领取。
+	_hide_card_tooltip()
+	_hovered_index = -1
 	_settling = true
 	_refresh()
 	var claimed_indices: Array[int] = []
@@ -447,8 +473,6 @@ func _animate_claimed_cards(claimed_indices: Array[int]) -> void:
 			previous.kill()
 		_slots[index].disabled = true
 		var card: Node2D = _card_views[index]
-		var marker: Label = _selection_labels[index]
-		animation.tween_property(marker, "modulate:a", 0.0, CLAIM_ANIMATION_SECONDS * 0.45)
 		if claimed_indices.has(index):
 			card.z_index = 20
 			animation.tween_property(card, "global_position", destination, CLAIM_ANIMATION_SECONDS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
@@ -465,7 +489,6 @@ func _finish_claim_animation() -> void:
 	for child in _card_grid.get_children():
 		child.queue_free()
 	_slots.clear()
-	_selection_labels.clear()
 	_card_views.clear()
 	_blank_cards.clear()
 	_reveal_flashes.clear()
@@ -475,20 +498,22 @@ func _finish_claim_animation() -> void:
 	_refresh()
 
 func _request_close() -> void:
-	if _settling:
-		return
-	if not _drawn_cards.is_empty():
-		_discard_dialog.popup_centered(Vector2i(560, 180))
-		return
+	_hide_card_tooltip()
+	_hovered_index = -1
 	_close()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and is_visible_in_tree():
 		get_viewport().set_input_as_handled()
-		if not _discard_dialog.visible:
-			_request_close()
+		_request_close()
 
 func _close() -> void:
+	_hide_card_tooltip()
+	hide()
 	if is_instance_valid(_backpack):
 		_backpack.show()
-	queue_free()
+
+## 场景卸载时也取消悬停延迟，避免共享提示在其他界面中继续出现。
+## 返回值：无。
+func _exit_tree() -> void:
+	_hide_card_tooltip()

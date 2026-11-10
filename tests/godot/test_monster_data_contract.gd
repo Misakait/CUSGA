@@ -117,7 +117,11 @@ func test_gdscript_defaults_match_legacy_fields() -> void:
 	assert_eq(int(data.get("ElementalProperty")), 0, "五行属性默认值必须与旧 C# 一致。")
 	assert_eq(int(data.get("Faction")), 0, "阵营默认值必须与旧 C# 一致。")
 	assert_eq(data.get("ModelScene"), null, "外观预制体默认值必须为 null。")
-	assert_eq(data.get("LootTable"), null, "掉落表默认值必须为 null。")
+	var drop_pool: Resource = data.get("drop_pool")
+	assert_true(drop_pool != null, "怪物默认应具有独立空掉落池。")
+	if drop_pool != null:
+		assert_eq(drop_pool.get("draw_count"), 5, "默认抽取次数应为 5。")
+		assert_eq(drop_pool.get("entries").size(), 0, "默认掉落池应为空。")
 	assert_eq(data.get("SkillSet"), null, "技能集合默认值必须为 null。")
 	assert_eq(data.get("InitialAttributes"), null, "初始属性默认值为 null，由消费方回退旧默认值。")
 	assert_eq(
@@ -139,7 +143,7 @@ func test_serialized_monster_fields_preserved() -> void:
 	assert_eq(str(test_monster.get("MonsterName")), "测试怪物1", "测试怪物名称必须保持不变。")
 	assert_eq(int(test_monster.get("ElementalProperty")), 3, "测试怪物五行属性必须保持不变。")
 	assert_true(test_monster.get("InitialAttributes") != null, "测试怪物必须保留初始属性子资源。")
-	assert_true(test_monster.get("LootTable") != null, "测试怪物必须保留掉落表子资源。")
+	assert_true(test_monster.get("drop_pool") != null, "测试怪物必须具有独立掉落池。")
 	var skill_set: Resource = test_monster.get("SkillSet")
 	assert_true(skill_set != null, "测试怪物必须保留技能集合子资源。")
 	if skill_set != null:

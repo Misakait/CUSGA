@@ -2,14 +2,6 @@
 
 [ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="2_monster"]
 [ext_resource type="Script" path="res://resources/stats/starting_stats.gd" id="3_stats"]
-[ext_resource type="Resource" uid="uid://bwu05hfq7ylil" path="res://resources/skill_cards/water_magic_yanyusuoqianchuan.tres" id="4_skill_1"]
-[ext_resource type="Resource" uid="uid://qjyf4gthfgg0" path="res://resources/skill_cards/water_phys_canghaifufanchen.tres" id="5_skill_2"]
-[ext_resource type="Resource" uid="uid://dgtn8xvgflfdj" path="res://resources/skill_cards/water_phys_hanlangchong.tres" id="6_skill_3"]
-[ext_resource type="Resource" uid="uid://dmmhu7qhj6f8o" path="res://resources/skill_cards/water_phys_hongtaoxijuanlai.tres" id="7_skill_4"]
-[ext_resource type="Resource" uid="uid://b5jb56ukvkytf" path="res://resources/skill_cards/water_phys_langji.tres" id="8_skill_5"]
-[ext_resource type="Resource" uid="uid://blwmjy1nct70x" path="res://resources/skill_cards/water_phys_liubozhuang.tres" id="9_skill_6"]
-[ext_resource type="Script" uid="uid://dso04gkfdac6i" path="res://resources/loot/loot_drop.gd" id="loot_drop_script"]
-[ext_resource type="Script" uid="uid://14ol6fqeh53g" path="res://resources/loot/loot_table.gd" id="loot_table_script"]
 
 [ext_resource type="Resource" path="res://resources/combat_skills/water_magic_yanyusuoqianchuan.tres" id="csv_skill_1"]
 [ext_resource type="Resource" path="res://resources/combat_skills/water_phys_canghaifufanchen.tres" id="csv_skill_2"]
@@ -32,53 +24,6 @@ BaseMagResist = 300.0
 MagResistGrowth = 32.0
 BaseSpeed = 133.0
 SpeedGrowth = 5.5
-
-[sub_resource type="Resource" id="LootDrop_1"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("4_skill_1")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://dso04gkfdac6i"
-
-[sub_resource type="Resource" id="LootDrop_2"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("5_skill_2")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://dso04gkfdac6i"
-
-[sub_resource type="Resource" id="LootDrop_3"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("6_skill_3")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://dso04gkfdac6i"
-
-[sub_resource type="Resource" id="LootDrop_4"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("7_skill_4")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://dso04gkfdac6i"
-
-[sub_resource type="Resource" id="LootDrop_5"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("8_skill_5")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://dso04gkfdac6i"
-
-[sub_resource type="Resource" id="LootDrop_6"]
-script = ExtResource("loot_drop_script")
-Item = ExtResource("9_skill_6")
-DropChance = 15.0
-metadata/_custom_type_script = "uid://dso04gkfdac6i"
-
-[sub_resource type="Resource" id="Resource_loot"]
-script = ExtResource("loot_table_script")
-Drops = Array[ExtResource("loot_drop_script")]([SubResource("LootDrop_1"), SubResource("LootDrop_2"), SubResource("LootDrop_3"), SubResource("LootDrop_4"), SubResource("LootDrop_5"), SubResource("LootDrop_6")])
-metadata/_custom_type_script = "uid://14ol6fqeh53g"
-
-
-
-
-
-
 
 [sub_resource type="Resource" id="Resource_tg40x"]
 script = ExtResource("csv_entry_script")
@@ -533,7 +478,6 @@ script = ExtResource("2_monster")
 MonsterName = "凛风雪妖"
 InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 3
-LootTable = SubResource("Resource_loot")
 MaxHealth = 100
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://buhigatdeqss6"

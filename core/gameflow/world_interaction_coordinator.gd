@@ -28,6 +28,8 @@ const BOARD_CARD_SPAWNED_SIGNAL: StringName = &"CardSpawned"
 const TIME_SYSTEM_PATH: NodePath = ^"/root/TimeSystem"
 ## 战斗场景路径。
 const BATTLE_SCENE_PATH: String = "res://scenes/battle_scenes/battle.tscn"
+## 战斗期间暂存怪物掉落，胜利后交给世界棋盘。
+const BATTLE_LOOT_COLLECTOR: GDScript = preload("res://core/gameflow/battle_loot_collector.gd")
 ## 战斗场景的结束信号名。
 const BATTLE_ENDED_SIGNAL: StringName = &"battle_ended"
 ## 怪物数据的跨语言字段协议：C# MonsterData 为 [Export]，GDScript monster_data.gd 为 @export。
@@ -1284,6 +1286,10 @@ func _is_run_ending() -> bool:
 func _create_battle_instance(battle_deck: Array[Resource], monsters: Array[Resource]) -> Node:
 	var battle_scene: PackedScene = load(BATTLE_SCENE_PATH) as PackedScene
 	var battle_instance: Node = battle_scene.instantiate()
+	# 战斗坐标不能直接作为地图掉落坐标，由独立收集器在胜利时使用玩家世界位置投放。
+	var loot_collector: Node = BATTLE_LOOT_COLLECTOR.new()
+	loot_collector.call("Configure", _board_controller, _player_char)
+	battle_instance.add_child(loot_collector)
 	if battle_deck != null and battle_deck.size() > 0:
 		battle_instance.set("starting_deck_data", battle_deck)
 	if monsters != null and monsters.size() > 0:

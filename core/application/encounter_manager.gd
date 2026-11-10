@@ -377,7 +377,8 @@ func _scale_monster(
 	scaled.set("MonsterName", source.get("MonsterName"))
 	scaled.set("ElementalProperty", source.get("ElementalProperty"))
 	scaled.set("ModelScene", source.get("ModelScene"))
-	scaled.set("LootTable", source.get("LootTable"))
+	# 掉落配置不参与属性倍率计算，缩放后的怪物沿用源怪物的独立掉落池。
+	scaled.set("drop_pool", source.get("drop_pool"))
 	scaled.set("BehaviorTreeScene", source.get("BehaviorTreeScene"))
 	scaled.set("Faction", source.get("Faction"))
 	scaled.set("SkillSet", source.get("SkillSet"))

@@ -283,6 +283,9 @@ func Initialize(data: Resource) -> void:
 		initial_attributes = STARTING_STATS_SCRIPT.new() as Resource
 	Attributes.call("InitializeWithData", initial_attributes)
 	Faction.set("Faction", _read_faction(data))
+	# 死亡时由掉落组件读取当前怪物自己的掉落池，避免沿用场景模板或上一次初始化的配置。
+	if Loot != null:
+		Loot.set("DropTable", _read_resource_field(data, "drop_pool"))
 	var skill_set: Resource = _read_resource_field(data, "SkillSet")
 	if skill_set != null and SkillComponent != null:
 		SkillComponent.call("Initialize", skill_set)

@@ -1,10 +1,10 @@
+@tool
 extends Resource
 
 ## 保存怪物的初始属性、外观、掉落和战斗配置。
 ##
-## 迁移说明：GDScript 无法继承 C# 的 MonsterData，因此生产实现改用原生 Resource 基类，
-## 并保持与旧 C# 完全相同的字段名、默认值与序列化形式；旧 C# MonsterData.cs 继续作为兼容垫片保留，
-## 两侧字段统一由 MonsterDataProtocol 与同名属性读取，任何一侧改名都会破坏既有 .tres 反序列化。
+## 掉落池与技能集合分离；每个数据资源默认创建自己的空池，方便在检查器中独立配置。
+## 启用工具模式使默认池在编辑器中也能创建和保存，而不只是运行游戏时出现。
 
 ## 怪物在 UI 中显示的名称。
 @export var MonsterName: String = "未知怪物"
@@ -18,8 +18,8 @@ extends Resource
 ## 怪物的外观预制体。
 @export var ModelScene: PackedScene
 
-## 怪物使用的掉落表资源；随机掉落仍由资源自身的 RollLoot 协议负责。
-@export var LootTable: Resource
+## 怪物专属掉落池；默认独立空池，可在检查器设置抽取次数及物品权重。
+@export var drop_pool: MonsterDropPool = MonsterDropPool.new()
 
 ## 怪物行为树预制体。
 @export var BehaviorTreeScene: PackedScene

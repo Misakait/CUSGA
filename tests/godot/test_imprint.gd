@@ -14,6 +14,19 @@ class FixedPool extends "res://core/imprint/imprint_service.gd":
 			cards.append(card)
 		return cards
 
+## 悬停面板替身，记录显示内容和取消次数。
+class FakeTooltip extends Node:
+	var title: String = ""
+	var description: String = ""
+	var hide_count: int = 0
+
+	func show_tooltip(title_text: String, description_text: String) -> void:
+		title = title_text
+		description = description_text
+
+	func hide_tooltip() -> void:
+		hide_count += 1
+
 func suite_name() -> String:
 	return "imprint"
 
@@ -72,10 +85,8 @@ func test_confirm_claims_selected_duplicate_cards_only() -> void:
 	var indices: Array = panel.get("_selected_indices")
 	indices.append(1)
 	var slots: Array = panel.get("_slots")
-	var markers: Array = panel.get("_selection_labels")
 	for index in 2:
 		slots.append(track(Button.new()))
-		markers.append(track(Label.new()))
 	assert_eq(inventory.call("ItemCnt", card), 0, "确认之前不应获得卡牌")
 	panel.call("_confirm_selection")
 	assert_eq(inventory.call("ItemCnt", card), 1, "重复卡只交付被选择的那一张")
@@ -118,6 +129,18 @@ func test_backpack_opens_fullscreen_panel_above_hud() -> void:
 	assert_eq(panel.anchor_right, 1.0, "面板应铺满 HUD 宽度")
 	assert_eq(panel.anchor_bottom, 1.0, "面板应铺满 HUD 高度")
 	assert_true(panel.get_index() > other_hud.get_index(), "刻印面板应绘制在已有 HUD 之上")
+	var cards: Array = panel.get("_drawn_cards")
+	cards.append(CARD.new())
+	var selected: Array = panel.get("_selected_indices")
+	selected.append(0)
+	panel.call("_request_close")
+	assert_false(panel.visible, "关闭应隐藏刻印界面")
+	assert_true(backpack.visible, "关闭后应返回背包")
+	backpack.call("_on_imprint_button_pressed")
+	assert_eq(hud.get_node_or_null("ImprintPanel"), panel, "再次打开必须复用同一面板")
+	assert_true(panel.visible, "再次打开应显示刻印面板")
+	assert_eq(cards.size(), 1, "关闭后未领取卡牌应保留")
+	assert_eq(selected.size(), 1, "关闭后已选状态应保留")
 
 ## 禁用按钮和选中分页共用实际灰色底图，不依赖颜色叠乘。
 func test_button_disabled_and_selected_use_gray_texture() -> void:
@@ -144,16 +167,43 @@ func test_selection_lifts_card_without_tint() -> void:
 	var views: Array = panel.get("_card_views")
 	var view: Node2D = track(Node2D.new())
 	views.append(view)
-	var labels: Array = panel.get("_selection_labels")
-	var marker: Label = track(Label.new())
-	marker.text = "点击选择"
-	labels.append(marker)
 	var slots: Array = panel.get("_slots")
 	var slot: Button = track(Button.new())
 	slots.append(slot)
 	panel.call("_toggle_card", 0)
 	assert_eq(view.position, Vector2(101, 73 - CardVisualConfig.CLICK_SELECTED_LIFT_DISTANCE), "选择应按开局选卡的距离上移")
 	assert_eq(slot.modulate, Color.WHITE, "选择不能改变卡面渲染颜色")
-	assert_eq(marker.text, "点击选择", "卡槽提示不应显示星级")
+	var result: Label = panel.get("_result")
+	assert_eq(result.text, "已选择1/1张", "选择提示只展示已选数量")
 	panel.call("_toggle_card", 0)
 	assert_eq(view.position, Vector2(101, 73), "取消选择应使卡面回到原位")
+
+## 提示仅展示已揭晓卡牌，跨卡移动时旧退出事件不能清掉新卡的提示。
+func test_revealed_cards_show_and_clear_hover_tooltip() -> void:
+	var inventory: Node = track(INVENTORY.new())
+	var panel: Control = track(load("res://core/ui/inventory/imprint_panel.gd").new())
+	panel.call("setup", inventory, track(Control.new()))
+	var tooltip: Node = track(FakeTooltip.new())
+	panel.set("_tooltip_panel", tooltip)
+	var first: Resource = CARD.new()
+	first.set("CardName", "第一张")
+	first.set("Description", "第一张的技能描述")
+	var second: Resource = CARD.new()
+	second.set("CardName", "第二张")
+	second.set("Description", "第二张的技能描述")
+	var cards: Array = panel.get("_drawn_cards")
+	cards.append(first)
+	cards.append(second)
+	panel.set("_revealing", true)
+	panel.call("_on_card_slot_mouse_entered", 0)
+	assert_eq(tooltip.get("title"), "", "揭晓期间不展示真实卡牌信息")
+	panel.set("_revealing", false)
+	panel.call("_on_card_slot_mouse_entered", 0)
+	assert_eq(tooltip.get("title"), "第一张", "悬停应显示卡牌名称")
+	assert_eq(tooltip.get("description"), "第一张的技能描述", "悬停应显示技能描述")
+	panel.call("_on_card_slot_mouse_entered", 1)
+	panel.call("_on_card_slot_mouse_exited", 0)
+	assert_eq(tooltip.get("title"), "第二张", "跨卡移动应保留新卡提示")
+	assert_eq(tooltip.get("hide_count"), 0, "旧卡退出事件不能取消新提示")
+	panel.call("_on_card_slot_mouse_exited", 1)
+	assert_eq(tooltip.get("hide_count"), 1, "离开当前卡牌应取消提示")

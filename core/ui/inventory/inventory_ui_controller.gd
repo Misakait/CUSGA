@@ -332,18 +332,21 @@ func _clear_selection() -> void:
 func _on_imprint_button_pressed() -> void:
 	if _player_inventory == null:
 		return
-	var panel: PanelContainer = load("res://core/ui/inventory/imprint_panel.gd").new()
-	panel.name = "ImprintPanel"
 	# 背包位于 CenterContainer；全屏面板必须挂到容器外的 HUD 控件，
 	# 否则容器会覆盖锚点布局，使面板偏移并压缩背景。
 	var host: Node = get_parent()
 	if host is Container:
 		host = host.get_parent()
 	if host == null:
-		panel.queue_free()
 		return
-	host.add_child(panel)
-	panel.call("setup", _player_inventory, self)
+	# 关闭刻印只隐藏面板；重新打开必须复用实例，才能保留未领取的卡牌和选择。
+	var panel: PanelContainer = host.get_node_or_null("ImprintPanel") as PanelContainer
+	if panel == null:
+		panel = load("res://core/ui/inventory/imprint_panel.gd").new()
+		panel.name = "ImprintPanel"
+		host.add_child(panel)
+		panel.call("setup", _player_inventory, self)
+	panel.call("Open")
 	Close()
 
 func _on_crafting_button_pressed() -> void:

@@ -4,7 +4,7 @@ extends Node
 ##
 ## 组件只把掉落表结果广播到全局事件总线，不负责概率、背包写入或怪物死亡流程。
 
-## 生产 GDScript 或旧 C# 兼容 LootTable；组件只依赖稳定 RollLoot 方法。
+## 怪物掉落池；组件只依赖稳定 RollLoot 方法，不负责抽奖规则。
 @export var DropTable: Resource = null
 
 
@@ -15,7 +15,7 @@ extends Node
 func TriggerDrop(global_position: Vector2, yiled_growth: int) -> void:
 	if DropTable == null:
 		return
-	## LootTable 返回的新旧 ItemStack 数组。
+	## 掉落池返回的 ItemStack 数组。
 	var rolled_loots: Variant = DropTable.call("RollLoot", yiled_growth)
 	if not (rolled_loots is Array):
 		push_error("LootComponent.DropTable.RollLoot 必须返回 Array。")

@@ -938,27 +938,22 @@ func test_loot_drop_assets_use_gdscript() -> void:
 	assert_eq(drop.get("MaxAmount"), 1, "最大掉落数量默认应为 1。")
 
 	for asset_path: String in LOOT_DROP_ASSETS:
-		var monster: Resource = load(asset_path)
+		# 编辑器可能缓存过迁移前的怪物实例；重新加载才能检查当前资源定义。
+		var monster: Resource = ResourceLoader.load(asset_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		assert_true(monster != null, "%s 必须能够加载掉落表。" % asset_path)
 		if monster == null:
 			continue
-		var loot_table: Resource = monster.get("LootTable")
-		assert_true(loot_table != null, "%s 必须保留 LootTable。" % asset_path)
-		if loot_table == null:
+		var drop_pool: Resource = monster.get("drop_pool")
+		assert_true(drop_pool != null, "%s 必须拥有独立怪物掉落池。" % asset_path)
+		if drop_pool == null:
 			continue
 		assert_eq(
-			loot_table.get_script().resource_path,
-			"res://resources/loot/loot_table.gd",
-			"%s 的掉落表必须使用生产 GDScript Resource。" % asset_path
+			drop_pool.get_script().resource_path,
+			"res://resources/loot/monster_drop_pool.gd",
+			"%s 的掉落池必须使用怪物专用资源。" % asset_path
 		)
-		var drops: Array = loot_table.get("Drops")
-		assert_true(drops != null, "%s 的 LootTable 必须保留 Drops 数组。" % asset_path)
-		for entry: Resource in drops:
-			assert_eq(
-				entry.get_script().resource_path,
-				"res://resources/loot/loot_drop.gd",
-				"%s 的掉落条目必须使用 GDScript Resource。" % asset_path
-			)
+		assert_true(int(drop_pool.get("draw_count")) >= 0, "%s 的抽取次数不得为负。" % asset_path)
+		assert_true(drop_pool.get("entries") is Array, "%s 的掉落条目必须可配置。" % asset_path)
 
 
 ## 验证生产掉落表的默认值、GDScript 物品堆边界、产量修正和无效输入过滤。

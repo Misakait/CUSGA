@@ -158,7 +158,7 @@ const PROTOCOL_ROWS: Array = [
 					"@export var ElementalProperty: int",
 					"@export var Faction: int",
 					"@export var SkillSet: Resource",
-					"@export var LootTable: Resource",
+					"@export var drop_pool: MonsterDropPool",
 				],
 			],
 		],
