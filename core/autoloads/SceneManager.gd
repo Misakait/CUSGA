@@ -9,10 +9,15 @@ const SCENE_MAP: Dictionary = {
 	"warehouse": "res://scenes/Warehouse/WarehouseNew.tscn",
 	"shop": "res://scenes/Shop/ShopNew.tscn",
 }
+const UI_ENTER_METHOD: StringName = &"play_ui_enter"
+const UI_EXIT_METHOD: StringName = &"play_ui_exit"
 
 ## 缓存池：scene_id → 场景实例。实例化一次，永不销毁。
 var _cache: Dictionary = {}
 var _current_id: String = ""
+## 从旧页面退场到新页面入场完成期间，只接收一次导航请求。
+var _switching: bool = false
+var _switch_serial: int = 0
 
 var target_spawn_id: String = ""
 
@@ -29,7 +34,7 @@ func _ready() -> void:
 		initial_scene.init()
 
 func _on_scene_requested(scene_id: String) -> void:
-	if scene_id == _current_id:
+	if _switching or scene_id == _current_id:
 		return
 
 	var path: String = SCENE_MAP.get(scene_id, "")
@@ -40,6 +45,27 @@ func _on_scene_requested(scene_id: String) -> void:
 	_switch_to(scene_id, path)
 
 func _switch_to(target_id: String, target_path: String) -> void:
+	_switching = true
+	_switch_serial += 1
+	var serial: int = _switch_serial
+	# 先确认目标可用，再让当前页面退场；加载失败时仍保留可操作的原页面。
+	var cached_target: Variant = _cache.get(target_id)
+	if not is_instance_valid(cached_target):
+		_cache.erase(target_id)
+		cached_target = null
+	var target: Node = cached_target
+	if target == null:
+		var packed: PackedScene = load(target_path) as PackedScene
+		if not packed:
+			_switching = false
+			push_error("SceneManager: failed to load '%s'" % target_path)
+			var visible_scene: Node = get_tree().current_scene
+			if visible_scene != null and visible_scene.has_method(UI_ENTER_METHOD):
+				visible_scene.call(UI_ENTER_METHOD)
+			return
+		target = packed.instantiate()
+		_cache[target_id] = target
+
 	# 1. 解析当前场景：先把「缓存实例是否还活着」判掉，再决定移除谁。
 	#
 	# 缓存里的实例可能已经被 Godot 释放：Main 由 main_menu.gd 用
@@ -57,11 +83,18 @@ func _switch_to(target_id: String, target_path: String) -> void:
 	if current == null:
 		current = get_tree().current_scene
 
-	if current and current.get_parent():
+	# 局外页面使用自己的退出/进入动效，不叠加战斗与换房使用的全屏黑幕。
+	var continue_switch: Callable = _finish_ui_switch.bind(current, target, target_id, serial)
+	if current != null and current.is_inside_tree() and current.has_method(UI_EXIT_METHOD):
+		current.call(UI_EXIT_METHOD, continue_switch)
+	else:
+		continue_switch.call()
 
-		ScreenTransitions.fade_out()
-		await ScreenTransitions.fade_complete
 
+func _finish_ui_switch(current: Node, target: Node, target_id: String, serial: int) -> void:
+	if serial != _switch_serial:
+		return
+	if is_instance_valid(current) and current.get_parent():
 		if current.has_method("exit"):
 			current.exit()
 		current.get_parent().remove_child(current)
@@ -74,20 +107,18 @@ func _switch_to(target_id: String, target_path: String) -> void:
 		if not _cache.values().has(current):
 			current.queue_free()
 
-	# 2. 获取或创建目标场景
-	var target: Node = _cache.get(target_id) as Node
-	if target == null:
-		var packed: PackedScene = load(target_path) as PackedScene
-		if not packed:
-			push_error("SceneManager: failed to load '%s'" % target_path)
-			return
-		target = packed.instantiate()
-		_cache[target_id] = target
-
 	# 3. 挂入场景树，设为 current_scene
-	ScreenTransitions.fade_in()
 	get_tree().root.add_child(target)
 	get_tree().current_scene = target
 	_current_id = target_id
 	if target.has_method("init"):
 		target.init()
+	if target.has_method(UI_ENTER_METHOD):
+		target.call(UI_ENTER_METHOD, _finish_ui_enter.bind(serial))
+	else:
+		_finish_ui_enter(serial)
+
+
+func _finish_ui_enter(serial: int) -> void:
+	if serial == _switch_serial:
+		_switching = false

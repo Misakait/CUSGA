@@ -1,0 +1,245 @@
+{
+"post_format": {
+  "scripts": {
+    "res://core/autoloads/SceneManager.gd": true,
+    "res://core/ui/crafting/crafting_ui_controller.gd": true,
+    "res://core/ui/hud/pause_menu.gd": true,
+    "res://core/ui/inventory/inventory_ui_controller.gd": true,
+    "res://core/ui/login_menu_controller.gd": true,
+    "res://core/ui/shop/shop_new_controller.gd": true,
+    "res://core/ui/ui_jelly_transition.gd": true,
+    "res://core/ui/warehouse/warehouse_new_controller.gd": true,
+    "res://scripts/map_scripts/UILargeMap.gd": true,
+    "res://tests/godot/ui_pause_motion_runtime_probe.gd": true
+  },
+  "motion": {
+    "checks": 13,
+    "failures": [],
+    "passed": true
+  },
+  "editor_ui": {
+    "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+    "duration_ms": 1,
+    "edited_scene": "res://scenes/Main.tscn",
+    "failed": 0,
+    "load_errors": [
+      "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+    ],
+    "passed": 1,
+    "skipped": 0,
+    "suite_count": 1,
+    "suites_run": [
+      "ui_jelly_transition"
+    ],
+    "total": 1
+  },
+  "editor_pause": {
+    "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+    "duration_ms": 30,
+    "edited_scene": "res://scenes/Main.tscn",
+    "failed": 0,
+    "load_errors": [
+      "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+    ],
+    "passed": 12,
+    "skipped": 0,
+    "suite_count": 1,
+    "suites_run": [
+      "pause_menu_contract"
+    ],
+    "total": 12
+  },
+  "lint": {
+    "remaining": 49,
+    "existing": 47,
+    "protocol_fixture_names": 2,
+    "new_helper_and_probe_passed": true
+  }
+},
+  "date": "2026-11-10",
+  "engine": "Godot 4.7.1-stable",
+  "session": "cusga@73bd834efbe0f886",
+  "runtime": {
+    "helper_and_crafting": {
+      "crafting": {
+        "checks": 32,
+        "failures": [],
+        "passed": true
+      },
+      "motion": {
+        "checks": 13,
+        "failures": [],
+        "passed": true
+      }
+    },
+    "pause_handoff": {
+      "checks": 169,
+      "failures": [],
+      "passed": true,
+      "source": "ui_pause_motion_runtime_probe.run_runtime_checks; async result retrieved from SceneTree metadata"
+    },
+    "inventory_crafting": {
+      "craft_opened_after_exit": true,
+      "craft_rapid_reopen": true,
+      "craft_still_waiting": true,
+      "craft_waits_for_bag_exit": true,
+      "final_closed": true,
+      "inventory_does_not_pause": true,
+      "rapid_reopen_visible": true
+    },
+    "pause_confirmation": {
+      "back_to_pause_menu": true,
+      "confirmation_during_motion_keeps_health": true,
+      "death_button_not_stuck_disabled": true,
+      "final_unpaused": true,
+      "options_finished_while_paused": true,
+      "rapid_reopen_keeps_menu": true,
+      "world_paused_during_exit": true
+    },
+    "map_mouse": {
+      "map_closed_unpaused": true,
+      "map_reopen_visible_paused": true,
+      "map_reopen_zoom_preserved": true,
+      "mouse_drag": true,
+      "mouse_zoom": true
+    },
+    "building": {
+      "bag_closed": true,
+      "changed_source_refused": true,
+      "menu_opened": true,
+      "placement_after_exit": true,
+      "placement_waits_for_exit": true
+    },
+    "login_settings": {
+      "focus_restored": true,
+      "main_scene_login": true,
+      "settings_entered": true,
+      "settings_returned": true,
+      "warehouse_entered": true
+    },
+    "shop_mouse_navigation": {
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "scene": "res://scenes/Shop/ShopNew.tscn",
+      "switching": false
+    },
+    "shop_guards": {
+      "motion_blocks_purchase": true,
+      "frame_scale_restored": true
+    },
+    "shop_trade": {
+      "drop_accepted": true,
+      "drop_does_not_sell": true,
+      "mouse_purchase_once": true,
+      "quantity_change_no_sale": true,
+      "sale_once": true,
+      "zero_sale_no_changes": true
+    },
+    "cached_navigation": {
+      "menu_focus_restored": true,
+      "navigation_unlocked": true,
+      "returned_login": true,
+      "warehouse_cache_reused": true,
+      "warehouse_unlocked": true
+    },
+    "black_fade_and_start": {
+      "checks": {
+        "fade_in_clears": true,
+        "fade_out_black": true,
+        "fade_out_timing": true,
+        "main_loaded_after_exit": true,
+        "menu_waits_before_start": true,
+        "old_duration_unchanged": true
+      },
+      "fade_out_msec": 298
+    }
+  },
+  "editor_suites": {
+    "ui_jelly_transition": {
+      "passed": 1,
+      "failed": 0
+    },
+    "crafting_ui_contract": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 4,
+      "edited_scene": "res://scenes/Main.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 1,
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "crafting_ui_contract"
+      ],
+      "total": 1
+    },
+    "pause_menu_contract": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 23,
+      "edited_scene": "res://scenes/Main.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 12,
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "pause_menu_contract"
+      ],
+      "total": 12
+    },
+    "shop_new_contract": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 16,
+      "edited_scene": "res://scenes/Main.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 8,
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "shop_new_contract"
+      ],
+      "total": 8
+    },
+    "warehouse_new_transfer": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 7,
+      "edited_scene": "res://scenes/Main.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 5,
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "warehouse_new_transfer"
+      ],
+      "total": 5
+    }
+  },
+  "notes": [
+    "真实游戏重启加载源文件，用运行期验证补充编辑器test_run的preload缓存限制。",
+    "game_eval单次预算8秒；23秒暂停探针改为deferred后台运行并读取结果，169项通过。",
+    "中间帧临时eval最初过早读取Tween，造成临时eval空引用；停止游戏重启，增加等待和空检查后实际截图确认拉伸。",
+    "第一轮合成商品选择和购买同帧的临时探针读取未刷新的SpinBox文字；等待UI刷新并改用实际鼠标购买后成功，非生产代码修改。",
+    "最终Main独立运行无生产脚本错误；登录开始Main有既有Main.tscn:15背包UID回退文本路径警告，Main与背包场景均未修改。",
+    "test_item_room_content.gd为历史测试发现加载问题；聚焦套件通过，不宣称项目全套通过。",
+    "测试结束仅停止CUSGA游戏，Godot编辑器保持打开，未影响另一个GunShot编辑器。",
+    "3个用户数据文件停止后SHA256与本轮user-before备份一致，无需覆盖恢复。",
+    "最终机械格式整理完成，9个生产脚本与暂停探针加载成功。测试峰值采样重置Tween时钟排除帧率漂移，13项重跑通过；编辑器动效1项和暂停12项复验通过。新增helper与两份检查脚本gdlint通过；49条剩余提示中47条为历史问题，2条为匹配玩家协议的测试字段名称。存档备份由research/.gitignore排除版本控制。"
+  ],
+  "user_data": {
+    "settings.cfg": "C5171B2B14D4395CA7E040608C93194EDF0D11E52EB34B20A77E002FE1370B5D",
+    "save/game_save.json": "1F66B3EA61820589486F38659CCAB4F8B8E4E7C56364E3F0B03D19A8551B14D2",
+    "save/game_save.json.bak": "1F66B3EA61820589486F38659CCAB4F8B8E4E7C56364E3F0B03D19A8551B14D2"
+  }
+}

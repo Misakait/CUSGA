@@ -14,6 +14,9 @@ extends Control
 
 ## 暂停开关的输入动作名，在 project.godot 中注册并绑定 ESC。
 const PAUSE_ACTION: StringName = &"pause_game"
+const JELLY_MOTION: GDScript = preload("res://core/ui/transitions/ui_transition.gd")
+const PAUSE_OWNERS_GROUP: StringName = &"ui_pause_owners"
+const PAUSE_HANDOFF_METHOD: StringName = &"take_pause_release_ownership"
 
 ## 退出游戏时切回的主菜单场景路径。
 ##
@@ -24,6 +27,25 @@ const PAUSE_ACTION: StringName = &"pause_game"
 ## 将毫无反应。这条路径与 `login_menu_controller.gd` 进入游戏时使用的
 ## `change_scene_to_file(MAIN_SCENE_PATH)` 保持对称，进出使用同一套场景语义。
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/login_menu.tscn"
+
+## 菜单是否处于展开状态。
+##
+## 用它而不是直接读 `SceneTree.paused` 作为开关判据：天赋选择界面
+## （resources/talents/talent_manager.gd）也会把全局暂停置为 true，两者共用同一个
+## 全局开关，必须有本地标志才能区分「菜单开着」与「别的系统正在暂停游戏」。
+var _is_menu_open: bool = false
+
+## 本次打开菜单之前，全局是否已经处于暂停状态。
+##
+## 若从地图接手了恢复责任，此值改为 false；关闭时再归还或交给其它仍打开的界面。
+## 原本来自天赋选择等其它系统的暂停仍保留，避免让本该停住的界面重新开始运行。
+var _was_paused_before_open: bool = false
+## 暂停占有期覆盖退出动画，避免快速重开时把自身暂停误记成外部暂停。
+var _owns_pause_state: bool = false
+var _page_transition_pending: bool = false
+var _menu_motion: JELLY_MOTION = null
+var _option_motion: JELLY_MOTION = null
+var _dimmer_tween: Tween = null
 
 ## 右上角常驻的暂停键。
 @onready var _pause_button: Button = %PauseButton
@@ -42,19 +64,7 @@ const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu_scenes/login_menu.t
 @onready var _main_menu_page: Control = %MainMenuPage
 ## 参数设置页面实例。
 @onready var _option_panel: Control = %OptionPanel
-
-## 菜单是否处于展开状态。
-##
-## 用它而不是直接读 `SceneTree.paused` 作为开关判据：天赋选择界面
-## （resources/talents/talent_manager.gd）也会把全局暂停置为 true，两者共用同一个
-## 全局开关，必须有本地标志才能区分「菜单开着」与「别的系统正在暂停游戏」。
-var _is_menu_open: bool = false
-
-## 本次打开菜单之前，全局是否已经处于暂停状态。
-##
-## 关闭菜单时只有「暂停由本次打开造成」才由本组件解除，避免把天赋选择等其它系统的
-## 暂停一起关掉，让本该停住的界面重新开始运行。
-var _was_paused_before_open: bool = false
+@onready var _dimmer: ColorRect = $PauseOverlay/Dimmer
 
 
 ## 初始化子控件引用，并把暂停键与菜单按钮接入各自流程。
@@ -63,6 +73,15 @@ func _ready() -> void:
 	# 暂停期间本节点必须继续处理输入与按钮事件，否则菜单弹出后再也关不掉自己。
 	# 与天赋选择界面（talent_manager.gd）保持同一约定。
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group(PAUSE_OWNERS_GROUP)
+	_menu_motion = JELLY_MOTION.new()
+	_menu_motion.name = "PauseJellyTransition"
+	add_child(_menu_motion)
+	_menu_motion.setup([_main_menu_page], 0.0, 0.18, 0.0, JELLY_MOTION.MotionStyle.FADE)
+	_option_motion = JELLY_MOTION.new()
+	_option_motion.name = "OptionsJellyTransition"
+	add_child(_option_motion)
+	_option_motion.setup([_option_panel], 0.015, 0.20, 0.0, JELLY_MOTION.MotionStyle.SOFT_SCALE)
 	_pause_overlay.visible = false
 	_show_main_menu_page()
 	_pause_button.pressed.connect(_on_pause_button_pressed)
@@ -82,11 +101,21 @@ func _ready() -> void:
 ## `paused = true` 启动，表现为整屏无响应且没有可见原因。
 ## 返回值：无。
 func _exit_tree() -> void:
-	var tree := get_tree()
-	if tree == null:
+	_reset_transitions()
+	_restore_pause_if_owned()
+
+
+func _input(event: InputEvent) -> void:
+	if not _owns_pause_state:
 		return
-	if _is_menu_open and not _was_paused_before_open:
-		tree.paused = false
+	if not _page_transition_pending and not _active_page_motion().is_animating():
+		return
+	if event.is_action(PAUSE_ACTION) or event.is_action(&"open_map"):
+		return
+	# 子面板会在发出死亡意图前禁用按钮，因此必须在原生焦点确认之前拦住动效中的输入。
+	# 暂停和地图快捷键仍可反向切换；其它按键等当前页面稳定后再交给控件。
+	if event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		get_viewport().set_input_as_handled()
 
 
 ## 在未处理输入阶段响应暂停开关。
@@ -96,6 +125,8 @@ func _exit_tree() -> void:
 ## 参数 event：尚未被其它节点消费的输入事件。
 ## 返回值：无。
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and (event as InputEventKey).echo:
+		return
 	if event.is_action_pressed(PAUSE_ACTION):
 		toggle_pause_menu()
 		get_viewport().set_input_as_handled()
@@ -126,13 +157,21 @@ func open_pause_menu() -> void:
 
 	_is_menu_open = true
 	# 先记录原状态再接管暂停，关闭时才能只归还自己造成的改变。
-	_was_paused_before_open = get_tree().paused
+	var reopening: bool = _owns_pause_state
+	if not _owns_pause_state:
+		_was_paused_before_open = get_tree().paused
+		_owns_pause_state = true
 	get_tree().paused = true
 	_pause_overlay.visible = true
-	_show_main_menu_page()
+	_page_transition_pending = false
+	if not reopening:
+		_show_main_menu_page()
+		_dimmer.modulate.a = 0.0
+	_animate_dimmer(1.0, 0.16)
+	_active_page_motion().play_open()
 
 
-## 收起菜单并恢复游戏。
+## 收起菜单，退出动画完成后再恢复游戏。
 ##
 ## 重复调用是幂等的：未展开时直接返回。
 ## 返回值：无。
@@ -141,11 +180,44 @@ func close_pause_menu() -> void:
 		return
 
 	_is_menu_open = false
+	_page_transition_pending = false
+	_animate_dimmer(0.0, JELLY_MOTION.CLOSE_DURATION)
+	_active_page_motion().play_close(_finish_menu_close)
+
+
+func _finish_menu_close() -> void:
 	_pause_overlay.visible = false
+	_reset_transitions()
 	_show_main_menu_page()
-	var settlement: Node = get_node_or_null("/root/SettlementManager")
-	if not _was_paused_before_open and not (settlement != null and bool(settlement.call("is_run_ending"))):
-		get_tree().paused = false
+	_restore_pause_if_owned()
+
+
+## 接过最后一个界面关闭时恢复游戏的责任，保留其它暂停界面的展开状态。
+## 参数无；仅本菜单仍占有暂停时返回 true，否则返回 false。
+func take_pause_release_ownership() -> bool:
+	if not _owns_pause_state:
+		return false
+	_was_paused_before_open = false
+	return true
+
+
+func _restore_pause_if_owned() -> void:
+	if not _owns_pause_state:
+		return
+	_owns_pause_state = false
+	var tree := get_tree()
+	if tree != null and not _was_paused_before_open:
+		var settlement: Node = get_node_or_null("/root/SettlementManager")
+		if settlement != null and bool(settlement.call("is_run_ending")):
+			return
+		# 关闭动画结束时，另一张界面可能刚取得暂停；交接责任才能等最后一张退场。
+		for value: Variant in tree.get_nodes_in_group(PAUSE_OWNERS_GROUP):
+			if not is_instance_valid(value) or value == self:
+				continue
+			var pause_owner: Node = value as Node
+			if pause_owner.has_method(PAUSE_HANDOFF_METHOD) and bool(pause_owner.call(PAUSE_HANDOFF_METHOD)):
+				return
+		tree.paused = false
 
 
 ## 把暂停键的一次点击转发为切换请求。
@@ -168,16 +240,36 @@ func _on_continue_button_pressed() -> void:
 ## 页面切换只改变浮层内容，不解除暂停。
 ## 返回值：无。
 func _on_options_button_pressed() -> void:
+	if not _is_menu_open or _page_transition_pending or _option_panel.visible:
+		return
+	_page_transition_pending = true
+	_menu_motion.play_close(_finish_open_options)
+
+
+func _finish_open_options() -> void:
 	_main_menu_page.visible = false
 	_option_panel.visible = true
 	if _option_panel.has_method(&"refresh_from_settings"):
 		_option_panel.call(&"refresh_from_settings")
+	_option_motion.play_open(_finish_page_transition)
 
 
 ## 从参数设置页返回暂停主菜单。
 ## 返回值：无。
 func _on_option_panel_back_requested() -> void:
+	if not _is_menu_open or _page_transition_pending or not _option_panel.visible:
+		return
+	_page_transition_pending = true
+	_option_motion.play_close(_finish_return_to_menu)
+
+
+func _finish_return_to_menu() -> void:
 	_show_main_menu_page()
+	_menu_motion.play_open(_finish_page_transition)
+
+
+func _finish_page_transition() -> void:
+	_page_transition_pending = false
 
 
 ## 通过玩家生命组件的正常伤害协议制造死亡，复用原有死亡信号与结算去重。
@@ -185,7 +277,12 @@ func _on_option_panel_back_requested() -> void:
 ## 参数无；仅在当前局仍可进行时处理，重复点击由参数面板禁用按钮并由结算阶段门禁拦截。
 ## 返回值：无。
 func _on_death_requested() -> void:
-	if not _is_menu_open or not _option_panel.visible:
+	if (
+		not _is_menu_open
+		or _page_transition_pending
+		or not _option_panel.visible
+		or _option_motion.is_animating()
+	):
 		return
 	var settlement: Node = get_node_or_null("/root/SettlementManager")
 	if settlement != null and not bool(settlement.call("is_run_active")):
@@ -200,6 +297,8 @@ func _on_death_requested() -> void:
 	if current_value > 0:
 		# 先收起本地浮层，但不归还暂停；生命归零后由结算接管，避免世界推进一帧。
 		_is_menu_open = false
+		_owns_pause_state = false
+		_reset_transitions()
 		_pause_overlay.visible = false
 		_show_main_menu_page()
 		health.call("TakeDamage", current_value, 0)
@@ -208,8 +307,17 @@ func _on_death_requested() -> void:
 ## 主动结束本局并展示结算，不赠送死亡测试奖励。
 ## 返回值：无。
 func _on_exit_button_pressed() -> void:
+	if (
+		not _is_menu_open
+		or _page_transition_pending
+		or not _main_menu_page.visible
+		or _menu_motion.is_animating()
+	):
+		return
 	# 先把菜单状态收起，避免 Main 释放后残留「开着的菜单」这一本地状态被复用。
 	_is_menu_open = false
+	_owns_pause_state = false
+	_reset_transitions()
 	_pause_overlay.visible = false
 	var settlement: Node = get_node_or_null("/root/SettlementManager")
 	if settlement != null:
@@ -224,3 +332,30 @@ func _show_main_menu_page() -> void:
 		_main_menu_page.visible = true
 	if _option_panel != null:
 		_option_panel.visible = false
+
+
+func _active_page_motion() -> JELLY_MOTION:
+	return _option_motion if _option_panel.visible else _menu_motion
+
+
+func _animate_dimmer(alpha: float, duration: float) -> void:
+	if _dimmer_tween != null and _dimmer_tween.is_valid():
+		_dimmer_tween.kill()
+	_dimmer_tween = create_tween()
+	_dimmer_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_dimmer_tween.set_ignore_time_scale(true)
+	_dimmer_tween.tween_property(_dimmer, "modulate:a", alpha, duration)
+
+
+func _reset_transitions() -> void:
+	# 结算与移出场景必须取消所有延迟回调，不能在新场景里重新显示旧面板。
+	_page_transition_pending = false
+	if _dimmer_tween != null and _dimmer_tween.is_valid():
+		_dimmer_tween.kill()
+	_dimmer_tween = null
+	if is_instance_valid(_menu_motion):
+		_menu_motion.reset()
+	if is_instance_valid(_option_motion):
+		_option_motion.reset()
+	if is_instance_valid(_dimmer):
+		_dimmer.modulate.a = 1.0

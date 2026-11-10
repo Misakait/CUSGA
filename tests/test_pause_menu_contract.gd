@@ -244,7 +244,7 @@ func test_script_keeps_wiring_and_public_entries() -> void:
 	)
 
 
-## 验证暂停映射的两条分支：打开才暂停，且只归还自己造成的暂停。
+## 验证打开取得暂停，退出动画完成后才归还自己造成的暂停。
 ##
 ## 天赋选择界面（talent_manager.gd）也用同一个全局暂停开关。菜单必须记录打开前的
 ## 状态，否则关闭菜单会把本该停住的界面放回运行。
@@ -258,14 +258,76 @@ func test_pause_mapping_records_and_restores_previous_state() -> void:
 
 	var close_body: String = _method_body(source, "func close_pause_menu")
 	assert_true(close_body.contains("_is_menu_open = false"), "关闭必须先清除展开状态。")
-	assert_true(close_body.contains("not _was_paused_before_open"), "关闭时只能归还本次打开造成的暂停。")
-	assert_true(close_body.contains("is_run_ending"), "结算已经接管时，关闭暂停菜单不能解除结算暂停。")
-	assert_true(close_body.contains("get_tree().paused = false"), "关闭菜单必须解除本次暂停。")
+	assert_true(close_body.contains("play_close(_finish_menu_close)"), "关闭入口必须把暂停归还交给退场完成回调。")
+	assert_false(close_body.contains("get_tree().paused = false"), "退出动画仍在显示时不得提前恢复游戏。")
+	assert_false(close_body.contains("_pause_overlay.visible = false"), "退出动画完成之前必须保留暂停浮层。")
+	var finish_body: String = _method_body(source, "func _finish_menu_close")
+	assert_true(finish_body.contains("_restore_pause_if_owned()"), "退出完成回调必须归还本次暂停。")
+	assert_true(
+		finish_body.find("_pause_overlay.visible = false")
+		< finish_body.find("_restore_pause_if_owned()"),
+		"必须先收起浮层，再让游戏恢复运行。"
+	)
+	var restore_body: String = _method_body(source, "func _restore_pause_if_owned")
+	assert_true(restore_body.contains("not _was_paused_before_open"), "退出完成后只能归还本次打开造成的暂停。")
+	assert_true(restore_body.contains("is_run_ending"), "结算已经接管时，完成回调不能解除结算暂停。")
+	assert_true(restore_body.contains("tree.paused = false"), "没有其它暂停界面接手时必须解除本次暂停。")
 
 	# 「继续游戏」必须复用同一条关闭路径，否则暂停的归还判据会出现第二份实现。
 	var continue_body: String = _method_body(source, "func _on_continue_button_pressed")
 	assert_true(continue_body.contains("close_pause_menu()"), "「继续游戏」必须复用关闭菜单的路径。")
 	assert_false(continue_body.contains("paused ="), "「继续游戏」不得自行改写全局暂停。")
+
+
+## 验证地图与暂停菜单使用相同交接协议，并在最后一个占有者离场后才恢复游戏。
+## 真实双向关闭与动画交叠由 Main 游戏进程验证；此处锁住接线与责任移交顺序。
+## 参数无；返回无。
+func test_pause_release_handoff_is_shared_with_large_map() -> void:
+	for script_path: String in [
+		PAUSE_MENU_SCRIPT.resource_path, "res://scripts/map_scripts/UILargeMap.gd"
+	]:
+		var source: String = FileAccess.get_file_as_string(script_path)
+		assert_true(
+			source.contains('const PAUSE_OWNERS_GROUP: StringName = &"ui_pause_owners"'),
+			"两个界面必须加入同一暂停交接组。"
+		)
+		assert_true(
+			source.contains('const PAUSE_HANDOFF_METHOD: StringName = &"take_pause_release_ownership"'),
+			"两个界面必须遵循同一交接方法。"
+		)
+		assert_true(
+			_method_body(source, "func _ready").contains("add_to_group(PAUSE_OWNERS_GROUP)"),
+			"界面进入时必须登记暂停交接能力。"
+		)
+		var own_flag: String = (
+			"_owns_pause_state"
+			if script_path == PAUSE_MENU_SCRIPT.resource_path
+			else "_owns_open_state"
+		)
+		var take_body: String = _method_body(source, "func take_pause_release_ownership")
+		assert_true(take_body.contains("if not %s:" % own_flag), "只有仍持有暂停的界面才能接手恢复责任。")
+		assert_true(take_body.contains("_was_paused_before_open = false"), "接手者必须在自己关闭时继续归还暂停。")
+		assert_true(
+			take_body.contains("return false") and take_body.contains("return true"),
+			"交接方法必须报告是否接手成功。"
+		)
+		var restore_body: String = _method_body(source, "func _restore_pause_if_owned")
+		var release_index: int = restore_body.find("%s = false" % own_flag)
+		var handoff_index: int = restore_body.find("tree.get_nodes_in_group(PAUSE_OWNERS_GROUP)")
+		assert_gt(release_index, -1, "释放前必须清除自己的占有状态。")
+		assert_gt(handoff_index, release_index, "必须先清除自己，再寻找其它仍持有暂停的界面。")
+		assert_true(
+			restore_body.contains("pause_owner.has_method(PAUSE_HANDOFF_METHOD)"),
+			"动态交接前必须确认接收者协议。"
+		)
+		assert_true(restore_body.contains("pause_owner.call(PAUSE_HANDOFF_METHOD)"), "必须向仍持有暂停的界面移交恢复责任。")
+		assert_gt(restore_body.find("tree.paused = false"), handoff_index, "无人接手之后才允许恢复游戏。")
+		assert_true(restore_body.contains("not _was_paused_before_open"), "原本已有外部暂停时不能擅自恢复。")
+		assert_true(restore_body.contains("is_run_ending"), "结算接管后不能移交或归还暂停。")
+		assert_true(
+			_method_body(source, "func _exit_tree").contains("_restore_pause_if_owned()"),
+			"释放场景必须复用同一暂停交接路径。"
+		)
 
 
 ## 验证生产退出先请求主动结束结算，缺少经理的独立场景才使用主菜单兼容路径。
@@ -296,7 +358,7 @@ func test_exit_requests_settlement_before_fallback_scene_switch() -> void:
 	# 非正常释放（外部换场景、编辑器停跑）时也必须归还暂停，否则下一个场景会带着
 	# paused = true 启动；_exit_tree 是这条路径的唯一兜底。
 	var exit_tree_body: String = _method_body(source, "func _exit_tree")
-	assert_true(exit_tree_body.contains("tree.paused = false"), "场景释放时必须兜底归还全局暂停。")
+	assert_true(exit_tree_body.contains("_restore_pause_if_owned()"), "场景释放时必须复用交接路径兜底归还全局暂停。")
 
 
 ## 验证立即死亡入口仅在局内实例启用，避免共享设置页把死亡操作暴露给主菜单。

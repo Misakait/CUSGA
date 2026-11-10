@@ -1,12 +1,13 @@
 extends RefCounted
 
 ## 四界面真实鼠标验证的运行期夹具；不发送输入，不代替真实点击验收。
-## 调用方先保护存档并暂停磁盘写入，再在游戏进程调用 prepare。
+## 调用方先保护存档并暂停磁盘写入，再在游戏进程 await prepare。
 
 const INVENTORY: GDScript = preload("res://entities/components/inventory_component.gd")
 const EQUIPMENT: GDScript = preload("res://entities/components/equipment_component.gd")
 const DECK: GDScript = preload("res://entities/components/battle_deck_component.gd")
 const CRAFTING: GDScript = preload("res://entities/components/crafting_component.gd")
+const GAMEPLAY_PORT: GDScript = preload("res://core/application/gameplay_port.gd")
 const ITEM: GDScript = preload("res://resources/item/item_data.gd")
 const EQUIPMENT_ITEM: GDScript = preload("res://resources/item/equipment/equipment_data.gd")
 const STACK: GDScript = preload("res://resources/item/item_stack.gd")
@@ -14,9 +15,18 @@ const INGREDIENT: GDScript = preload("res://resources/recipe/crafting_ingredient
 const RECIPE: GDScript = preload("res://resources/recipe/crafting_recipe.gd")
 const BOOK: GDScript = preload("res://resources/recipe/recipe_book_data.gd")
 const HOST_PATH: NodePath = ^"/root/SlotDeselectFixture/UIHost"
+const UI_NAMES: Array[String] = ["Backpack", "Crafting", "Warehouse", "Shop"]
+
+## 提供背包公开 Open 所需的玩家引用；组件仍使用生产实现，属性摘要允许空值。
+class ProbePlayer extends Node:
+	## 本夹具不验证战斗属性，空值由生产摘要显示为占位文本。
+	var Attributes: Node = null
+	## 指向独立的生产装备组件。
+	var Equipment: Node = null
 
 ## 创建独立组件和四个生产界面。参数 tree 为真实游戏 SceneTree；返回创建结果。
 ## 局外两界面仍读取 autoload；本方法不改金币和现有仓库/行囊内容。
+## 调用方必须 await，成功返回时背包入场已结束，可以发送真实鼠标输入。
 static func prepare(tree: SceneTree) -> Dictionary:
 	if tree == null or Engine.is_editor_hint():
 		return {"error": "必须在游戏进程调用"}
@@ -79,19 +89,29 @@ static func prepare(tree: SceneTree) -> Dictionary:
 	crafting.name = "CraftingComponent"
 	crafting.set("RecipeBook", book)
 	components.add_child(crafting)
+	var player := ProbePlayer.new()
+	player.name = "Player"
+	player.Equipment = equipment
+	host.add_child(player)
+	var gameplay_port: Node = GAMEPLAY_PORT.new()
+	gameplay_port.name = "GameplayPort"
+	gameplay_port.set("PlayerPath", ^"../Player")
+	# 保留原快照使用的 Components 路径，让真实端口通过导出路径解析同一批组件。
+	gameplay_port.set("PlayerInventoryPath", ^"../Components/InventoryComponent")
+	gameplay_port.set("PlayerBattleDeckPath", ^"../Components/BattleDeckComponent")
+	gameplay_port.set("PlayerCraftingPath", ^"../Components/CraftingComponent")
+	host.add_child(gameplay_port)
 	var tooltip: Node = (load("res://scenes/ui_scenes/TooltipPanel.tscn") as PackedScene).instantiate()
 	tooltip.name = "TooltipPanel"
 	host.add_child(tooltip)
 	var backpack: Control = (load("res://scenes/inventory/OpenBackpack.tscn") as PackedScene).instantiate() as Control
 	backpack.name = "Backpack"
+	backpack.set("GameplayPortPath", ^"../GameplayPort")
 	backpack.set("TooltipPanelPath", ^"../TooltipPanel")
 	host.add_child(backpack)
-	backpack.call("_bind_player_inventory", inventory)
-	backpack.call("_bind_equipment", equipment)
-	backpack.call("_bind_battle_deck", deck)
-	backpack.call("_bind_sections")
 	var crafting_ui: Control = (load("res://scenes/crafting/CraftingUI.tscn") as PackedScene).instantiate() as Control
 	crafting_ui.name = "Crafting"
+	crafting_ui.set("GameplayPortPath", ^"../GameplayPort")
 	crafting_ui.set("TooltipPanelPath", ^"../TooltipPanel")
 	host.add_child(crafting_ui)
 	crafting_ui.call("Open", crafting)
@@ -101,18 +121,59 @@ static func prepare(tree: SceneTree) -> Dictionary:
 		var ui: Node = (load(pair[1]) as PackedScene).instantiate()
 		ui.name = pair[0]
 		host.add_child(ui)
-	show_ui(tree, "Backpack")
+		# 显式使用公开入场，避免 ready 排队的首次入场在夹具切换后重新打开隐藏面板。
+		ui.call("play_ui_enter")
+	var opened: bool = await show_ui(tree, "Backpack")
+	if not opened:
+		layer.free()
+		return {"error": "生产界面未在两秒内完成切换"}
 	return {"ready": true, "host": String(host.get_path()), "material": material.get_instance_id()}
 
-## 显示单个生产界面。参数 tree 为场景树、ui_name 为四界面之一；返回是否找到界面。
+## 显示单个生产界面。参数 tree 为场景树、ui_name 为四界面之一。
+## 返回是否完成真实关闭与打开；调用方必须 await，动画超时或目标不存在时返回 false。
 static func show_ui(tree: SceneTree, ui_name: String) -> bool:
-	var host: Node = tree.root.get_node_or_null(HOST_PATH)
-	if host == null:
+	if tree == null or not UI_NAMES.has(ui_name):
 		return false
-	for name: String in ["Backpack", "Crafting", "Warehouse", "Shop"]:
+	var host: Node = tree.root.get_node_or_null(HOST_PATH)
+	if host == null or not host.has_node(ui_name):
+		return false
+	for name: String in UI_NAMES:
 		var ui: CanvasItem = host.get_node(name) as CanvasItem
-		ui.visible = name == ui_name
-	return host.has_node(ui_name)
+		if name == ui_name or not ui.visible:
+			continue
+		if name == "Backpack" or name == "Crafting":
+			ui.call("Close")
+		else:
+			ui.call("play_ui_exit", Callable(ui, "hide"))
+		var closed: bool = await _wait_for_ui_state(tree, ui, false)
+		if not closed:
+			return false
+		# 局外场景原本由 SceneManager 移走；夹具保留它们读快照，隐藏后需停止根节点接收输入。
+		ui.set_process_input(false)
+	var target: CanvasItem = host.get_node(ui_name) as CanvasItem
+	target.set_process_input(true)
+	if ui_name == "Backpack":
+		target.call("Open", host.get_node("Components/InventoryComponent"))
+	elif ui_name == "Crafting":
+		target.call("Open", host.get_node("Components/CraftingComponent"))
+	else:
+		target.show()
+		target.call("play_ui_enter")
+	return await _wait_for_ui_state(tree, target, true)
+
+
+static func _wait_for_ui_state(tree: SceneTree, ui: CanvasItem, opened: bool) -> bool:
+	var deadline: int = Time.get_ticks_msec() + 2000
+	while is_instance_valid(ui):
+		var motion: Node = ui.get("_motion") as Node
+		if motion != null and ui.visible == opened \
+				and bool(motion.call("is_open_requested")) == opened \
+				and not bool(motion.call("is_animating")):
+			return true
+		if Time.get_ticks_msec() >= deadline:
+			return false
+		await tree.process_frame
+	return false
 
 ## 读取真实格子与业务状态。参数 tree 为场景树；返回点击坐标、选中状态和库存快照。
 ## 调用方在真实左键、右键前后比较本结果；本方法不触发按钮或改选择。

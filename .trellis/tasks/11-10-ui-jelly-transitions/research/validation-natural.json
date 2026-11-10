@@ -1,0 +1,396 @@
+{
+  "date": "2026-11-10",
+  "engine": "Godot 4.7.1",
+  "session": "cusga@73bd834efbe0f886",
+  "scope": "将现有9处UI过渡改为低幅、单调的四种自然样式。",
+  "results": {
+    "natural_main_launch": {
+      "result": {
+        "busy": false,
+        "center_scale": {
+          "x": 1,
+          "y": 1
+        },
+        "duration": 0.24,
+        "scene": "res://scenes/main_menu_scenes/login_menu.tscn",
+        "settings_style": 0,
+        "style": 1
+      },
+      "source": "game"
+    },
+    "natural_login_settings": {
+      "result": {
+        "checks": [
+          {
+            "name": "登录设置轻缩放完成",
+            "ok": true
+          },
+          {
+            "name": "返回主菜单恢复焦点",
+            "ok": true
+          },
+          {
+            "name": "仓库上浮完成",
+            "ok": true
+          }
+        ],
+        "scene": "res://scenes/Warehouse/WarehouseNew.tscn",
+        "stagger": 0.015,
+        "style": 1,
+        "switching": false
+      },
+      "source": "game"
+    },
+    "natural_shop_mid": {
+      "result": {
+        "frame_scale": {
+          "x": 3,
+          "y": 3
+        },
+        "samples": [
+          {
+            "alpha": 0.578125,
+            "factor": {
+              "x": 1,
+              "y": 1
+            },
+            "offset": {
+              "x": 6.75,
+              "y": 0
+            },
+            "target": "NinePatchRect"
+          },
+          {
+            "alpha": 0.578125,
+            "factor": {
+              "x": 1,
+              "y": 1
+            },
+            "offset": {
+              "x": 6.75,
+              "y": 0
+            },
+            "target": "ItemSection"
+          },
+          {
+            "alpha": 0.578125,
+            "factor": {
+              "x": 1,
+              "y": 1
+            },
+            "offset": {
+              "x": 6.75,
+              "y": 0
+            },
+            "target": "Shop"
+          }
+        ],
+        "scene": "res://scenes/Shop/ShopNew.tscn",
+        "style": 2
+      },
+      "source": "game"
+    },
+    "natural_navigation": {
+      "result": {
+        "checks": [
+          {
+            "name": "商店完成恢复",
+            "ok": true
+          },
+          {
+            "name": "仓库缓存复用",
+            "ok": true
+          },
+          {
+            "name": "主菜单返回解锁",
+            "ok": true
+          }
+        ],
+        "scene": "res://scenes/main_menu_scenes/login_menu.tscn"
+      },
+      "source": "game"
+    },
+    "natural_main_game": {
+      "result": {
+        "maps": [
+          "/root/Main/UI/HUDLayer/HUDRoot/PauseMenu",
+          "/root/Main/MapSystem/LargeMap"
+        ],
+        "panels": [
+          {
+            "class": "Control",
+            "path": "UI/HUDLayer/HUDRoot/CenterOverlay/InventoryUI"
+          },
+          {
+            "class": "Control",
+            "path": "UI/HUDLayer/HUDRoot/CenterOverlay/CraftingUI"
+          },
+          {
+            "class": "Control",
+            "path": "UI/HUDLayer/HUDRoot/PauseMenu"
+          }
+        ],
+        "paused": false,
+        "player_children": [
+          "Components"
+        ],
+        "scene": "res://scenes/Main.tscn"
+      },
+      "source": "game",
+      "new_warnings_since_last_call": 1,
+      "new_warnings_hint": "1 new GDScript warning since your last call. If you are mid-way through a planned multi-file scaffold, finish the related writes and run filesystem_manage(op=\"scan\") before debugging; otherwise inspect with logs_read(source='editor'|'game', include_details=true)."
+    },
+    "natural_editor_suite": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 2,
+      "edited_scene": "res://scenes/Main.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 2,
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "ui_jelly_transition"
+      ],
+      "total": 2
+    },
+    "natural_pause_editor": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 41,
+      "edited_scene": "res://scenes/Main.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 12,
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "pause_menu_contract"
+      ],
+      "total": 12
+    },
+    "natural_runtime_suite_final": {
+      "result": {
+        "checks": 28,
+        "failures": [],
+        "passed": true
+      },
+      "source": "game"
+    },
+    "natural_pause_runtime": {
+      "result": {
+        "checks": 169,
+        "failures": [],
+        "passed": true
+      },
+      "source": "game"
+    },
+    "natural_crafting_runtime": {
+      "result": {
+        "checks": 32,
+        "failures": [],
+        "passed": true
+      },
+      "source": "game"
+    },
+    "natural_inventory_crafting": {
+      "result": {
+        "checks": [
+          {
+            "name": "背包轻缩放中间态",
+            "ok": true
+          },
+          {
+            "name": "背包反转无尺寸跳变",
+            "ok": true
+          },
+          {
+            "name": "背包重开解锁",
+            "ok": true
+          },
+          {
+            "name": "合成等待背包退场",
+            "ok": true
+          },
+          {
+            "name": "合成上浮入场完成",
+            "ok": true
+          },
+          {
+            "name": "合成关闭后可继续游戏",
+            "ok": true
+          }
+        ],
+        "inventory_mid_scale": {
+          "x": 0.997500002384186,
+          "y": 0.997500002384186
+        }
+      },
+      "source": "game"
+    },
+    "natural_map_mid_final": {
+      "result": {
+        "canvas_scale": {
+          "x": 1.5,
+          "y": 1.5
+        },
+        "checks": [
+          {
+            "name": "FrameBackground淡入不变形",
+            "ok": true
+          },
+          {
+            "name": "ViewportControl淡入不变形",
+            "ok": true
+          },
+          {
+            "name": "LegendUI淡入不变形",
+            "ok": true
+          }
+        ],
+        "paused": true
+      },
+      "source": "game"
+    },
+    "natural_map_pause_controls": {
+      "result": {
+        "checks": [
+          {
+            "name": "地图滚轮仍有效",
+            "ok": true
+          },
+          {
+            "name": "地图退场保持暂停",
+            "ok": true
+          },
+          {
+            "name": "地图反转保留倍率",
+            "ok": true
+          },
+          {
+            "name": "地图退场恢复游戏",
+            "ok": true
+          },
+          {
+            "name": "暂停纯淡入完成",
+            "ok": true
+          },
+          {
+            "name": "暂停设置入场",
+            "ok": true
+          },
+          {
+            "name": "暂停设置返回",
+            "ok": true
+          },
+          {
+            "name": "暂停退出中重开",
+            "ok": true
+          },
+          {
+            "name": "暂停最后退出恢复",
+            "ok": true
+          }
+        ],
+        "map_zoom": {
+          "x": 1.75,
+          "y": 1.75
+        }
+      },
+      "source": "game"
+    }
+  },
+  "final_game_logs": {
+    "source": "game",
+    "lines": [
+      {
+        "level": "info",
+        "run_id": "r7099550-11",
+        "source": "game",
+        "text": "[godot_ai game_helper] registered mcp capture (debugger active=true, logger=true)\n"
+      },
+      {
+        "level": "info",
+        "run_id": "r7099550-11",
+        "source": "game",
+        "text": "InitializeWithData(res://scenes/player_scenes/player.tscn::Resource_whhsb):<Resource#-9223371959964793056>\n"
+      },
+      {
+        "level": "info",
+        "run_id": "r7099550-11",
+        "source": "game",
+        "text": "[RoomBoardPresenter] Enter room (1, 1), scene=SeaOfFlowers\n"
+      },
+      {
+        "level": "info",
+        "run_id": "r7099550-11",
+        "source": "game",
+        "text": "[RoomBoardPresenter] Enter room (2, 1), scene=DeepForest\n"
+      },
+      {
+        "level": "info",
+        "run_id": "r7099550-11",
+        "source": "game",
+        "text": "[RoomBoardPresenter] Enter room (2, 2), scene=AncientTree\n"
+      }
+    ],
+    "total_count": 5,
+    "returned_count": 5,
+    "offset": 0,
+    "limit": 40,
+    "has_more": false,
+    "run_id": "r7099550-11",
+    "is_running": true,
+    "dropped_count": 0,
+    "stale_run_id": false,
+    "current_run_id": "r7099550-11",
+    "helper_live": true,
+    "session_active": true,
+    "game_status": {
+      "active": true,
+      "editor_log_cursor": 0,
+      "elapsed_msec": 271456,
+      "elapsed_s": 271.456,
+      "helper_expected": true,
+      "helper_live": true,
+      "input_sample_age_s": 0.968,
+      "last_input_age_s": 269.263,
+      "ready": true,
+      "ready_wait_msec": 20000,
+      "run_started_msec": 7099549,
+      "run_token": 11,
+      "session_active": true,
+      "started_at": 1794321839.631,
+      "started_by": "mcp",
+      "status": "live"
+    }
+  },
+  "final_editor_errors": {
+    "source": "editor",
+    "lines": [],
+    "total_count": 34,
+    "returned_count": 34,
+    "offset": 0,
+    "limit": 100,
+    "has_more": false,
+    "run_id": "",
+    "is_running": false,
+    "dropped_count": 0,
+    "stale_run_id": false,
+    "next_cursor": 0,
+    "appended_total": 0
+  },
+  "notes": [
+    "真实游戏进程28项助手、32项合成、169项暂停交接全部通过。",
+    "编辑器套件2项动效/12项暂停通过；缓存警告表示编辑器测试不能单独替代真实游戏验证。",
+    "既有tests/godot/test_item_room_content.gd发现器加载问题仍在。",
+    "旧版runtime测试的custom_step(0)不会重放轨道，采样改为正的小步进；28项从全新游戏进程通过。",
+    "一次临时地图eval在Tween尚未建立时调用stop触发调试断点；改为等待Tween实际建立并检查null后重开游戏复验，生产代码未因此更改。",
+    "最终运行游戏日志无错误，编辑器错误筛选为空；已停止游戏，保留编辑器。",
+    "无生态场景、图集、项目配置或存档改动。settings.cfg及game_save.json与.bak的SHA256与本轮开始一致。",
+    "未提交、推送或归档。"
+  ]
+}

@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://core/ui/transitions/ui_transition.tscn" id="1_transition"]
+
+[node name="TransitionComponentFixture" type="Node"]
+
+[node name="Panel" type="Control" parent="."]
+offset_left = 80.0
+offset_top = 60.0
+offset_right = 400.0
+offset_bottom = 260.0
+
+[node name="Accent" type="Node2D" parent="."]
+position = Vector2(500, 180)
+scale = Vector2(3, 3)
+
+[node name="UITransition" parent="." instance=ExtResource("1_transition")]
+target_paths = Array[NodePath]([NodePath("../Panel"), NodePath("../Accent")])
+motion_style = 3
+open_duration = 0.27

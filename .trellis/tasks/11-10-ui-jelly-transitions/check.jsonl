@@ -1,0 +1,2 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Godot 运行、真实节点和资源检查"}
+{"file":".trellis/spec/backend/testing-guidelines.md","reason":"Godot MCP 测试与运行时断言约定"}

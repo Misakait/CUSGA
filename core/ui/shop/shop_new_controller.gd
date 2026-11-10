@@ -6,6 +6,7 @@ const BUY: GDScript = preload("res://core/ui/shop/shop_buy_controller.gd")
 const SELL: GDScript = preload("res://core/ui/shop/shop_sell_controller.gd")
 const SOURCE: GDScript = preload("res://core/ui/shop/shop_source_slot.gd")
 const PRESENTER: GDScript = preload("res://core/ui/item_tooltip_presenter.gd")
+const MOTION = preload("res://core/ui/transitions/ui_transition.gd")
 const BUILD_STOCK: StringName = &"BuildStockList"
 const BUY_PRICE: StringName = &"GetBuyPrice"
 const SELL_PRICE: StringName = &"GetSellPrice"
@@ -30,10 +31,14 @@ var _session: int = 0
 var _presenter: RefCounted
 var _tooltip_slot: Button
 var _tooltip_item: Resource
+var _motion: MOTION
+var _ui_entered: bool = false
+var _ui_transitioning: bool = false
 
 func _ready() -> void:
 	_setup_view()
 	init()
+	_play_initial_ui_enter.call_deferred()
 
 ## 场景进入入口；返回无，允许早于 ready 和缓存重入，重复 init 不重置正在使用的界面。
 func init() -> void:
@@ -64,6 +69,10 @@ func init() -> void:
 ## 场景离开入口；返回无，清除短期选择并解除全部外部订阅。
 func exit() -> void:
 	_active = false
+	_ui_entered = false
+	_ui_transitioning = false
+	if is_instance_valid(_motion):
+		_motion.reset()
 	_session += 1
 	_subscribe(false)
 	clear_selection()
@@ -73,6 +82,56 @@ func _exit_tree() -> void:
 	exit()
 	_warehouse_list.call("disconnect_selection_input")
 	_goods_list.call("disconnect_selection_input")
+
+
+## 播放商店区域入场。参数 completed 为入场完成回调；返回无。
+func play_ui_enter(completed: Callable = Callable()) -> void:
+	_setup_motion()
+	_ui_entered = true
+	_ui_transitioning = true
+	_motion.play_open(_finish_ui_enter.bind(completed))
+
+
+## 播放商店退场。参数 completed 为退场完成回调；返回无，不提交购买或出售。
+func play_ui_exit(completed: Callable = Callable()) -> void:
+	_setup_motion()
+	_ui_transitioning = true
+	get_viewport().gui_release_focus()
+	clear_selection()
+	_sell.call("clear")
+	_motion.play_close(completed)
+
+
+func _setup_motion() -> void:
+	if is_instance_valid(_motion):
+		return
+	_motion = MOTION.new()
+	add_child(_motion)
+	# 外框与内容同步侧滑，避免框线分离，同时保留外框原始三倍缩放。
+	_motion.setup([
+		get_node("NinePatchRect") as CanvasItem,
+		get_node("ItemSection") as CanvasItem,
+		get_node("Shop") as CanvasItem,
+	], 0.0, 0.24, 0.0, MOTION.MotionStyle.SLIDE)
+
+
+func _play_initial_ui_enter() -> void:
+	if is_inside_tree() and not _ui_entered:
+		play_ui_enter()
+
+
+func _finish_ui_enter(completed: Callable) -> void:
+	if not is_inside_tree():
+		return
+	_ui_transitioning = false
+	if completed.is_valid():
+		completed.call()
+
+
+func _input(event: InputEvent) -> void:
+	# 鼠标遮罩不负责原生键盘确认，因此面板运动时同时阻止键盘提交交易。
+	if _ui_transitioning and event is InputEventKey:
+		get_viewport().set_input_as_handled()
 
 func _setup_view() -> void:
 	if _initialized:
@@ -165,13 +224,13 @@ func _clear_slot_selection() -> void:
 	_goods_list.call("select", -1)
 
 func _on_slot_selection_cancelled(slot: Button) -> void:
-	if not _active or _trading or not bool(slot.call("is_selected")):
+	if not _active or _ui_transitioning or _trading or not bool(slot.call("is_selected")):
 		return
 	# 浏览状态不拥有购买商品、数量和待售来源，右键取消不能清空交易区。
 	_clear_slot_selection()
 
 func _on_slot_clicked(slot: Button) -> void:
-	if not _active or _trading:
+	if not _active or _ui_transitioning or _trading:
 		return
 	var side: StringName = slot.get("side")
 	var index: int = int(slot.get("slot_index"))
@@ -187,7 +246,8 @@ func _on_slot_clicked(slot: Button) -> void:
 		_warehouse_list.call("select", index)
 
 func _on_slot_mouse_entered(slot: Button) -> void:
-	if not _active or _trading or slot.disabled or get_viewport().gui_is_dragging():
+	if not _active or _ui_transitioning or _trading or slot.disabled \
+		or get_viewport().gui_is_dragging():
 		return
 	var side: StringName = slot.get("side")
 	var index: int = int(slot.get("slot_index"))
@@ -226,7 +286,7 @@ func _hide_tooltip() -> void:
 
 ## 构造拖放载荷。参数 side 为 warehouse、index 为来源；返回带当前进入身份的快照，非法来源为空。
 func create_drag_data(side: StringName, index: int) -> Dictionary:
-	if not _active or _trading or side != &"warehouse":
+	if not _active or _ui_transitioning or _trading or side != &"warehouse":
 		return {}
 	var data: Dictionary = SOURCE.call("snapshot", _warehouse, index)
 	if data.get("item") == null or int(data.get("amount", 0)) <= 0:
@@ -236,7 +296,9 @@ func create_drag_data(side: StringName, index: int) -> Dictionary:
 
 ## 校验出售区拖放。参数 data 为来源；返回本界面本次进入的有效可售物品是否仍在原槽。
 func can_drop_item(data: Dictionary) -> bool:
-	return _active and not _trading and bool(SOURCE.call("valid_payload", _warehouse, data, get_instance_id(), _session)) and get_sell_price(data.get("item") as Resource) > 0
+	return _active and not _ui_transitioning and not _trading \
+		and bool(SOURCE.call("valid_payload", _warehouse, data, get_instance_id(), _session)) \
+		and get_sell_price(data.get("item") as Resource) > 0
 
 ## 更新待售图标。参数 data 为来源快照；返回接收成功与否，不执行交易。
 func drop_item(data: Dictionary) -> bool:
@@ -247,7 +309,7 @@ func get_sell_price(item: Resource) -> int:
 	return int(_bridge.call(SELL_PRICE, item)) if is_instance_valid(_bridge) and _bridge.has_method(SELL_PRICE) else 0
 
 func _on_purchase_requested(item: Resource, quantity: int) -> void:
-	if not _active or _trading:
+	if not _active or _ui_transitioning or _trading:
 		return
 	if quantity <= 0:
 		_sell.call("show_notice", "请选择数量", true)
@@ -262,7 +324,7 @@ func _on_purchase_requested(item: Resource, quantity: int) -> void:
 	_show_result(reason, "购买", quantity, int(_bridge.call(BUY_PRICE, item)))
 
 func _on_sale_requested(source: Dictionary, quantity: int) -> void:
-	if not _active or _trading:
+	if not _active or _ui_transitioning or _trading:
 		return
 	if quantity <= 0:
 		_sell.call("show_notice", "请选择数量", true)
@@ -300,7 +362,7 @@ func _show_result(reason: int, action: String, quantity: int, price: int) -> voi
 
 ## 按原规则整理仓库；返回无，整理前使所有旧拖放和待售状态失效。
 func sort_items() -> void:
-	if not _active or _trading:
+	if not _active or _ui_transitioning or _trading:
 		return
 	_session += 1
 	clear_selection()
@@ -310,11 +372,11 @@ func sort_items() -> void:
 
 ## 按原规则扣费扩容仓库；返回是否成功。
 func upgrade_warehouse() -> bool:
-	return _active and not _trading and bool(_progression.call(UPGRADE))
+	return _active and not _ui_transitioning and not _trading and bool(_progression.call(UPGRADE))
 
 ## 请求返回仓库；返回无，导航前清除临时状态。
 func go_back() -> void:
-	if not _active or _trading:
+	if not _active or _ui_transitioning or _trading:
 		return
 	clear_selection()
 	_sell.call("clear")

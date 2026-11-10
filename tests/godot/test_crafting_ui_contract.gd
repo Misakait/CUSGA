@@ -3,7 +3,7 @@ extends McpTestSuite
 
 ## 新美术合成界面的场景绑定契约和运行期回归入口。
 ## 编辑器中的非工具生产脚本为占位实例，套件只核对结构；真实按钮和库存行为
-## 必须在游戏运行后通过 run_runtime_checks 执行，不能把结构检查当作合成通过。
+## 必须在游戏运行后 await run_runtime_checks，不能把结构检查当作合成通过。
 
 const UI_SCENE: PackedScene = preload("res://scenes/crafting/CraftingUI.tscn")
 const UI_SCRIPT: GDScript = preload("res://core/ui/crafting/crafting_ui_controller.gd")
@@ -57,9 +57,9 @@ func _read_path_constant(constant_name: String) -> NodePath:
 	return NodePath()
 
 
-## 在真实游戏场景树中执行生产场景、库存和制作组件的同步回归。
+## 在真实游戏场景树中执行生产场景、库存和制作组件的回归，并等待界面入场。
 ## @param tree 当前游戏的 SceneTree，必须由 Engine.get_main_loop 取得。
-## @return 包含检查次数、失败说明和通过标记的字典；夹具离树后立即释放。
+## @return 包含检查次数、失败说明和通过标记的字典；调用方必须 await，夹具离树后立即释放。
 static func run_runtime_checks(tree: SceneTree) -> Dictionary:
 	var result: Dictionary = {"checks": 0, "failures": [], "passed": false}
 	if Engine.is_editor_hint() or tree == null:
@@ -124,6 +124,20 @@ static func run_runtime_checks(tree: SceneTree) -> Dictionary:
 		"真实数量框必须连接材料预览。",
 	)
 	_expect(result, not button.disabled, "材料充足时合成按钮应可用。")
+	# 按钮的业务可用状态与入场输入锁独立，过渡期间外部发信号也不能提前扣料。
+	button.pressed.emit()
+	_expect(
+		result,
+		int(inventory.call("ItemCnt", material)) == 6
+			and int(inventory.call("ItemCnt", output)) == 0
+			and int(events["completed"]) == 0 and int(events["failed"]) == 0,
+		"入场动画尚未完成时不得执行合成或改变库存。",
+	)
+	var entered: bool = await _wait_for_open_transition(tree, ui)
+	_expect(result, entered, "合成界面应在两秒内完成入场并保持打开请求。")
+	if not entered:
+		host.free()
+		return result
 	button.pressed.emit()
 	_expect(result, int(inventory.call("ItemCnt", material)) == 4, "默认按钮合成应扣除两份材料。")
 	_expect(result, int(inventory.call("ItemCnt", output)) == 2, "默认按钮合成应加入两份产物。")
@@ -166,6 +180,11 @@ static func run_runtime_checks(tree: SceneTree) -> Dictionary:
 	)
 	crafting.set("RecipeBook", BOOK_SCRIPT.new())
 	ui.call("Open", crafting)
+	entered = await _wait_for_open_transition(tree, ui)
+	_expect(result, entered, "重新绑定配方后应仍完成入场并允许检查业务禁用状态。")
+	if not entered:
+		host.free()
+		return result
 	_expect(result, button.disabled and not quantity.editable, "重新绑定空配方书必须撤销旧可合成状态。")
 	_expect(
 		result,
@@ -183,6 +202,21 @@ static func run_runtime_checks(tree: SceneTree) -> Dictionary:
 	host.free()
 	result["passed"] = (result["failures"] as Array).is_empty()
 	return result
+
+
+static func _wait_for_open_transition(tree: SceneTree, ui: Control) -> bool:
+	var deadline: int = Time.get_ticks_msec() + 2000
+	while is_instance_valid(ui):
+		var motion: Node = ui.get_node_or_null("PanelTransition")
+		if motion != null and ui.is_visible_in_tree() \
+				and bool(motion.call("is_open_requested")) \
+				and not bool(motion.call("is_animating")):
+			return true
+		if Time.get_ticks_msec() >= deadline:
+			return false
+		# 首次入场需要等布局后才创建 Tween，不能同步推进尚未存在的 Tween。
+		await tree.process_frame
+	return false
 
 
 static func _new_item(identifier: StringName, display_name: String) -> Resource:

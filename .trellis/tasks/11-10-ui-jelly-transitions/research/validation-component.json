@@ -1,0 +1,303 @@
+{
+  "date": "2026-11-10",
+  "scope": "UITransition 独立组件抽离",
+  "results": {
+    "motion": {
+      "result": {
+        "checks": 42,
+        "failures": [],
+        "passed": true
+      },
+      "source": "game",
+      "new_warnings_since_last_call": 3,
+      "new_warnings_hint": "3 new GDScript warnings since your last call. If you are mid-way through a planned multi-file scaffold, finish the related writes and run filesystem_manage(op=\"scan\") before debugging; otherwise inspect with logs_read(source='editor'|'game', include_details=true)."
+    },
+    "navigation": {
+      "result": {
+        "checks": [
+          {
+            "name": "主菜单调用独立组件",
+            "ok": true
+          },
+          {
+            "name": "登录设置进入",
+            "ok": true
+          },
+          {
+            "name": "登录设置返回",
+            "ok": true
+          },
+          {
+            "name": "仓库上浮及导航解锁",
+            "ok": true
+          },
+          {
+            "name": "商店侧滑及外框原比例",
+            "ok": true
+          },
+          {
+            "name": "仓库缓存重入",
+            "ok": true
+          },
+          {
+            "name": "主菜单缓存重入",
+            "ok": true
+          }
+        ]
+      },
+      "source": "game"
+    },
+    "crafting": {
+      "result": {
+        "checks": 32,
+        "failures": [],
+        "passed": true
+      },
+      "source": "game"
+    },
+    "pause": {
+      "result": {
+        "checks": 166,
+        "failures": [],
+        "passed": true
+      },
+      "source": "game"
+    },
+    "mainInventory": {
+      "result": {
+        "checks": [
+          {
+            "name": "背包公开请求入场",
+            "ok": true
+          },
+          {
+            "name": "背包关闭中反向重开",
+            "ok": true
+          },
+          {
+            "name": "转合成先等待背包退场",
+            "ok": true
+          },
+          {
+            "name": "合成退场后展开",
+            "ok": true
+          },
+          {
+            "name": "合成关闭完成",
+            "ok": true
+          }
+        ]
+      },
+      "source": "game"
+    },
+    "mainMapPause": {
+      "result": {
+        "checks": [
+          {
+            "name": "Main大地图淡入",
+            "ok": true
+          },
+          {
+            "name": "大地图关闭中重开",
+            "ok": true
+          },
+          {
+            "name": "地图关闭后暂停菜单仍占有暂停",
+            "ok": true
+          },
+          {
+            "name": "暂停设置轻缩放入场",
+            "ok": true
+          },
+          {
+            "name": "暂停设置返回",
+            "ok": true
+          },
+          {
+            "name": "关闭恢复原先外部暂停",
+            "ok": true
+          }
+        ]
+      },
+      "source": "game"
+    },
+    "logs": {
+      "source": "game",
+      "lines": [
+        {
+          "level": "info",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "[godot_ai game_helper] registered mcp capture (debugger active=true, logger=true)\n"
+        },
+        {
+          "details": {
+            "code": "res://scenes/Main.tscn:15 - ext_resource, invalid UID: uid://dsd1o2wuaxalx - using text path instead: res://scenes/inventory/OpenBackpack.tscn",
+            "error_type": 1,
+            "error_type_name": "warning",
+            "frames": [
+              {
+                "function": "_commit_start_game",
+                "line": 208,
+                "path": "res://core/ui/login_menu_controller.gd"
+              },
+              {
+                "function": "_finish",
+                "line": 313,
+                "path": "res://core/ui/transitions/ui_transition.gd"
+              }
+            ],
+            "message": "res://scenes/Main.tscn:15 - ext_resource, invalid UID: uid://dsd1o2wuaxalx - using text path instead: res://scenes/inventory/OpenBackpack.tscn",
+            "rationale": "",
+            "resolved": {
+              "function": "_commit_start_game",
+              "line": 208,
+              "path": "res://core/ui/login_menu_controller.gd"
+            },
+            "source": {
+              "function": "load",
+              "line": 501,
+              "path": "scene/resources/resource_format_text.cpp"
+            }
+          },
+          "level": "warn",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "res://scenes/Main.tscn:15 - ext_resource, invalid UID: uid://dsd1o2wuaxalx - using text path instead: res://scenes/inventory/OpenBackpack.tscn (res://core/ui/login_menu_controller.gd:208 @ _commit_start_game)"
+        },
+        {
+          "level": "info",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "InitializeWithData(res://scenes/player_scenes/player.tscn::Resource_whhsb):<Resource#-9223371742347521606>\n"
+        },
+        {
+          "level": "info",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "[RoomBoardPresenter] Enter room (2, 1), scene=SpiritBambooPath\n"
+        },
+        {
+          "level": "info",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "[RoomBoardPresenter] Enter room (2, 2), scene=DeepForest\n"
+        },
+        {
+          "level": "info",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "成功合成了 2 个 回归产物！\n"
+        },
+        {
+          "level": "info",
+          "run_id": "r9034105-14",
+          "source": "game",
+          "text": "成功合成了 4 个 回归产物！\n"
+        }
+      ],
+      "total_count": 7,
+      "returned_count": 7,
+      "offset": 0,
+      "limit": 100,
+      "has_more": false,
+      "run_id": "r9034105-14",
+      "is_running": true,
+      "dropped_count": 0,
+      "stale_run_id": false,
+      "current_run_id": "r9034105-14",
+      "helper_live": true,
+      "session_active": true,
+      "game_status": {
+        "active": true,
+        "editor_log_cursor": 21,
+        "elapsed_msec": 210188,
+        "elapsed_s": 210.188,
+        "helper_expected": true,
+        "helper_live": true,
+        "input_sample_age_s": 0.823,
+        "last_input_age_s": 208.919,
+        "ready": true,
+        "ready_wait_msec": 20000,
+        "run_started_msec": 9034104,
+        "run_token": 14,
+        "session_active": true,
+        "started_at": 1794323774.187,
+        "started_by": "mcp",
+        "status": "live"
+      }
+    },
+    "editorTests": {
+      "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+      "duration_ms": 1,
+      "edited_scene": "res://scenes/map_scenes/map_control.tscn",
+      "failed": 0,
+      "load_errors": [
+        "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+      ],
+      "passed": 3,
+      "results": [
+        {
+          "assertion_count": 5,
+          "duration_ms": 0,
+          "message": "",
+          "passed": true,
+          "suite": "ui_jelly_transition",
+          "test": "test_defaults_and_legacy_setup_keep_scaling_small"
+        },
+        {
+          "assertion_count": 176,
+          "duration_ms": 0,
+          "message": "",
+          "passed": true,
+          "suite": "ui_jelly_transition",
+          "test": "test_four_styles_stay_monotonic_and_settle"
+        },
+        {
+          "assertion_count": 10,
+          "duration_ms": 0,
+          "message": "",
+          "passed": true,
+          "suite": "ui_jelly_transition",
+          "test": "test_legacy_path_inherits_the_component"
+        }
+      ],
+      "skipped": 0,
+      "suite_count": 1,
+      "suites_run": [
+        "ui_jelly_transition"
+      ],
+      "total": 3
+    }
+  },
+  "userFilesBefore": {
+    "settings.cfg": "c5171b2b14d4395ca7e040608c93194edf0d11e52eb34b20a77e002fe1370b5d",
+    "save/game_save.json": "1f66b3ea61820589486f38659ccab4f8b8e4e7c56364e3f0b03d19a8551b14d2",
+    "save/game_save.json.bak": "1f66b3ea61820589486f38659ccab4f8b8e4e7c56364e3f0b03d19a8551b14d2"
+  },
+  "userFilesAfter": {
+    "settings.cfg": "c5171b2b14d4395ca7e040608c93194edf0d11e52eb34b20a77e002fe1370b5d",
+    "save/game_save.json": "1f66b3ea61820589486f38659ccab4f8b8e4e7c56364e3f0b03d19a8551b14d2",
+    "save/game_save.json.bak": "1f66b3ea61820589486f38659ccab4f8b8e4e7c56364e3f0b03d19a8551b14d2"
+  },
+  "userFilesUnchanged": true,
+  "engine": "Godot 4.7.1",
+  "session": "cusga@73bd834efbe0f886",
+  "knownLimitations": [
+    "编辑器 test_run 发现器仍有既有 test_item_room_content.gd 加载问题；指定套件3项通过，不代表全项目通过。",
+    "编辑器预加载缓存提示，以全新游戏进程的真实运行验证补充。",
+    "既有 Main.tscn→OpenBackpack.tscn UID 回退警告；两场景均未修改。"
+  ],
+  "validationCorrections": [
+    "临时 eval 误读主菜单 _motion 字段，核对为 _menu_motion 并重启游戏后完成回归。",
+    "完整暂停探针超过MCP单次8秒限制，改为逐组执行原12组检查，共166项，不含入口3项前置断言。"
+  ],
+  "staticChecks": {
+    "gdlint": "passed: core/ui/transitions/ui_transition.gd core/ui/ui_jelly_transition.gd tests/godot/test_ui_jelly_transition.gd",
+    "diffCheck": "passed"
+  },
+  "finished": {
+    "gameStopped": true,
+    "editorKeptOpen": true
+  }
+}

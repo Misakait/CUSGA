@@ -1,0 +1,2 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"UI 生命周期、输入与业务边界"}
+{"file":".trellis/spec/frontend/state-management.md","reason":"暂停所有权、缓存及信号生命周期"}

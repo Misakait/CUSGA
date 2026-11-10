@@ -6,6 +6,7 @@ extends Control
 const ITEM_TOOLTIP_PRESENTER_SCRIPT: GDScript = preload("res://core/ui/item_tooltip_presenter.gd")
 const TOOLTIP_PANEL_SCENE: PackedScene = preload("res://scenes/ui_scenes/TooltipPanel.tscn")
 const EQUIPMENT_TYPES: GDScript = preload("res://core/constants/equipment_types.gd")
+const UI_MOTION = preload("res://core/ui/transitions/ui_transition.gd")
 
 ## Shift 单击快捷类型；数值保持旧协议。
 const SHORTCUT_SHIFT_CLICK: int = 0
@@ -55,9 +56,14 @@ var _deck_slot_views: Array = []
 var _item_action_menu: PopupMenu = null
 var _menu_item: Resource = null
 var _menu_slot_index: int = -1
+var _motion: UI_MOTION = null
 
 ## 解析新场景节点，连接请求并保持初始隐藏。
 func _ready() -> void:
+	_motion = UI_MOTION.new()
+	_motion.name = "PanelTransition"
+	add_child(_motion)
+	_motion.setup([self], 0.02, 0.22, 0.0, UI_MOTION.MotionStyle.SOFT_SCALE)
 	_slot_grid = get_node_or_null("Item/ScrollContainer/SlotGrid") as GridContainer
 	_equipment_slot_grid = get_node_or_null("PlayerShow/ScrollContainer/EquipmentSlotGrid") as GridContainer
 	_deck_slot_grid = get_node_or_null("Deck/ScrollContainer/DeckSlotGrid") as GridContainer
@@ -119,13 +125,15 @@ func _handle_inventory_toggle_request(inventory: Node) -> void:
 	if inventory == null:
 		push_error("InventoryUIController 收到空 InventoryComponent。")
 		return
-	if visible:
+	# 退场结束前面板仍可见，切换必须读目标状态，才能在连按时反向展开。
+	if _motion.is_open_requested() or (visible and not _motion.is_animating()):
 		Close()
 	else:
 		Open(inventory)
 
-## 绑定 Model、刷新三个区域并显示背包。
+## 绑定 Model、刷新三个区域并弹出背包。
 ## @param inventory 玩家库存组件。
+## @return 无。
 func Open(inventory: Node) -> void:
 	if inventory == null:
 		push_error("InventoryUIController.Open 收到空 InventoryComponent。")
@@ -147,11 +155,33 @@ func Open(inventory: Node) -> void:
 		return
 	_bind_sections()
 	show()
+	_motion.play_open(Callable(self, "_refresh_tooltip"))
 
-## 隐藏背包并关闭物品菜单。
+## 收起背包，立即关闭物品菜单和提示，动画完成后隐藏。
+## @return 无。
 func Close() -> void:
+	_close_then(Callable())
+
+func _close_then(completed: Callable) -> void:
+	if _motion.is_animating() and not _motion.is_open_requested():
+		return
 	_clear_item_menu()
+	_clear_selection()
+	if not visible:
+		_motion.reset()
+		if completed.is_valid():
+			completed.call()
+		return
+	_motion.play_close(Callable(self, "_finish_close").bind(completed))
+
+func _finish_close(completed: Callable) -> void:
 	hide()
+	if completed.is_valid():
+		completed.call()
+
+func _can_interact() -> bool:
+	return is_visible_in_tree() and _motion != null \
+		and _motion.is_open_requested() and not _motion.is_animating()
 
 func _bind_sections() -> void:
 	if _inventory_section != null and _inventory_section.has_method("Bind"):
@@ -271,7 +301,7 @@ func _on_setting_changed(section: String, key: String, value: Variant) -> void:
 	_refresh_tooltip()
 
 func _refresh_tooltip() -> void:
-	if not is_visible_in_tree() or (_item_action_menu != null and _item_action_menu.visible):
+	if not _can_interact() or (_item_action_menu != null and _item_action_menu.visible):
 		_hide_selected_tooltip()
 		_hide_hover_tooltip()
 		return
@@ -350,7 +380,12 @@ func _on_imprint_button_pressed() -> void:
 	Close()
 
 func _on_crafting_button_pressed() -> void:
-	Close()
+	if not _can_interact():
+		return
+	# 两个面板使用同一覆盖区；先完成背包退场，避免同时变形并重叠。
+	_close_then(Callable(self, "_request_open_crafting"))
+
+func _request_open_crafting() -> void:
 	if _gameplay_port != null and _gameplay_port.has_method("RequestOpenCrafting"):
 		_gameplay_port.call("RequestOpenCrafting")
 
@@ -358,6 +393,8 @@ func _on_crafting_button_pressed() -> void:
 ## @param slot_ui 被点击的格子。
 ## @param shortcut_kind 0 为 Shift，1 为 Alt。
 func _handle_slot_shortcut(slot_ui: Variant, shortcut_kind: int) -> void:
+	if not _can_interact():
+		return
 	if not (slot_ui is Object) or _player_inventory == null or _battle_deck == null or _equipment == null:
 		return
 	var source_inventory: Node = (slot_ui as Object).get("Inventory") as Node
@@ -399,6 +436,8 @@ func _is_skill_card(item: Resource) -> bool:
 ## @param slot_ui 当前库存格子。
 ## @return bool 是否成功打开菜单。
 func _handle_slot_use(slot_ui: Object) -> bool:
+	if not _can_interact():
+		return false
 	if _item_action_menu == null:
 		return false
 	if not is_visible_in_tree() or not is_instance_valid(_player_inventory) or slot_ui.get("Inventory") != _player_inventory:
@@ -430,14 +469,23 @@ func _on_item_action_selected(action_id: int) -> void:
 	var item: Resource = _menu_item
 	var slot_index: int = _menu_slot_index
 	_clear_item_menu()
-	if action_id != ACTION_PLACE_BUILDING or not is_visible_in_tree() or not is_instance_valid(_player_inventory) or item == null or slot_index < 0:
+	if action_id != ACTION_PLACE_BUILDING or not _can_interact() \
+		or not is_instance_valid(_player_inventory) or item == null or slot_index < 0:
 		return
 	var stack: Variant = _player_inventory.call("GetStackAt", slot_index)
 	if _stack_is_empty(stack) or _stack_item(stack) != item:
 		return
 	if not item.has_method("IsBuildingCard") or not bool(item.call("IsBuildingCard")):
 		return
-	Close()
+	_close_then(Callable(self, "_request_place_building").bind(item, slot_index))
+
+func _request_place_building(item: Resource, slot_index: int) -> void:
+	# 退场期间世界仍沿用原有运行规则，物品可能变化，提交前重新核对来源。
+	if not is_instance_valid(_player_inventory) or item == null or slot_index < 0:
+		return
+	var stack: Variant = _player_inventory.call("GetStackAt", slot_index)
+	if _stack_is_empty(stack) or _stack_item(stack) != item:
+		return
 	if _gameplay_port != null and _gameplay_port.has_method("RequestPlaceBuilding"):
 		_gameplay_port.call("RequestPlaceBuilding", item)
 
@@ -448,6 +496,9 @@ func _clear_item_menu() -> void:
 		_item_action_menu.hide()
 
 func _on_panel_visibility_changed() -> void:
+	# 外部直接隐藏时也取消过渡；仅祖先暂时隐藏时保留面板的打开意图。
+	if not visible and _motion != null:
+		_motion.reset()
 	# 菜单是独立弹窗，父级隐藏时也必须清除旧操作快照。
 	if not is_visible_in_tree():
 		_clear_item_menu()
@@ -468,6 +519,8 @@ func _disconnect_signal(source: Node, signal_name: StringName, callback: Callabl
 		source.disconnect(signal_name, callback)
 
 func _exit_tree() -> void:
+	if _motion != null:
+		_motion.reset()
 	_clear_item_menu()
 	_hide_selected_tooltip()
 	_hide_hover_tooltip()

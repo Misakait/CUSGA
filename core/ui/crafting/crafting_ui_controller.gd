@@ -10,6 +10,7 @@ const INGREDIENT_CONTROLLER_SCRIPT: GDScript = preload(
 	"res://core/ui/crafting/ingredient_section_controller.gd"
 )
 const ITEM_COMPAT: GDScript = preload("res://resources/item/item_data_compat.gd")
+const UI_MOTION = preload("res://core/ui/transitions/ui_transition.gd")
 const QUANTITY_PATH: NodePath = ^"DetailSection/OutPutCount/SpinBox"
 const CRAFT_BUTTON_PATH: NodePath = ^"%CraftButton"
 const MAX_CRAFTABLE_METHOD: StringName = &"MaxCraftableQuantity"
@@ -35,9 +36,14 @@ var _quantity: SpinBox = null
 var _craft_button: Button = null
 var _status: Label = null
 var _needs_inventory_refresh: bool = false
+var _motion: UI_MOTION = null
 
 ## 初始化新场景节点、控制器和 GameplayPort 请求，并保持初始隐藏。
 func _ready() -> void:
+	_motion = UI_MOTION.new()
+	_motion.name = "PanelTransition"
+	add_child(_motion)
+	_motion.setup([self], 0.0, 0.22, 0.0, UI_MOTION.MotionStyle.RISE)
 	_output_icon = get_node_or_null("DetailSection/OutPut/OutputIcon") as TextureRect
 	_output_name = get_node_or_null("DetailSection/OutPut/OutPutLabel") as Label
 	_output_name_compat = get_node_or_null("%OutputNameLabel") as Label
@@ -95,7 +101,8 @@ func _ready() -> void:
 ## 响应 GameplayPort 的切换请求。
 ## @param crafting 请求绑定的合成组件。
 func _handle_toggle(crafting: Node) -> void:
-	if visible:
+	# 退场期间仍保持可见以播放动画，连按要依据目标状态决定是否重新打开。
+	if _motion.is_open_requested() or (visible and not _motion.is_animating()):
 		Close()
 	else:
 		Open(crafting)
@@ -105,8 +112,9 @@ func _handle_toggle(crafting: Node) -> void:
 func _handle_open(crafting: Node) -> void:
 	Open(crafting)
 
-## 绑定合成组件并显示新美术界面。
+## 绑定合成组件并弹出新美术界面。
 ## @param crafting 请求绑定的合成组件。
+## @return 无。
 func Open(crafting: Node) -> void:
 	if crafting == null:
 		return
@@ -128,11 +136,25 @@ func Open(crafting: Node) -> void:
 	_refresh_details()
 	_needs_inventory_refresh = false
 	show()
+	_motion.play_open()
 
-## 隐藏界面并关闭合成提示。
+## 立即关闭合成提示，退场动画结束后隐藏界面。
+## @return 无。
 func Close() -> void:
+	if _motion.is_animating() and not _motion.is_open_requested():
+		return
 	_hide_tooltip(null)
+	if not visible:
+		_motion.reset()
+		return
+	_motion.play_close(Callable(self, "_finish_close"))
+
+func _finish_close() -> void:
 	hide()
+
+func _can_interact() -> bool:
+	return is_visible_in_tree() and _motion != null \
+		and _motion.is_open_requested() and not _motion.is_animating()
 
 func _select_recipe(recipe: Variant, _slot: BaseButton = null) -> void:
 	_selected_recipe = recipe
@@ -175,6 +197,9 @@ func _on_quantity_changed(_value: float) -> void:
 		_ingredient_controller.refresh(_selected_recipe, int(_quantity.value))
 
 func _craft_selected() -> void:
+	# 鼠标遮罩之外还要拦截焦点按钮的键盘确认，防止变形中的面板提交合成。
+	if not _can_interact():
+		return
 	if _crafting == null or _selected_recipe == null or _quantity == null:
 		return
 	if _craft_button == null or _craft_button.disabled or not _crafting.has_method(TRY_CRAFT_METHOD):
@@ -198,12 +223,18 @@ func _on_inventory_changed() -> void:
 	_needs_inventory_refresh = false
 
 func _on_visibility_changed() -> void:
+	if not visible:
+		if _motion != null:
+			_motion.reset()
+		_hide_tooltip(null)
 	if visible and _needs_inventory_refresh:
 		_recipe_controller.refresh()
 		_refresh_details()
 		_needs_inventory_refresh = false
 
 func _show_item_tooltip(item: Resource, _slot: BaseButton = null) -> void:
+	if not _can_interact():
+		return
 	if item == null or _tooltip_panel == null:
 		return
 	_tooltip_panel.call(
@@ -241,6 +272,8 @@ func _disconnect_signal(source: Node, signal_name: StringName, callback: Callabl
 		source.disconnect(signal_name, callback)
 
 func _exit_tree() -> void:
+	if _motion != null:
+		_motion.reset()
 	# 区域是 RefCounted，不接收节点退出通知，必须由拥有它们的根节点解除输入订阅。
 	_recipe_controller.disconnect_input()
 	_ingredient_controller.disconnect_input()

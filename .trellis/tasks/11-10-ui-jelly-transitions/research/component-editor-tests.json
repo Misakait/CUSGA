@@ -1,0 +1,16 @@
+{
+  "cache_warning": "Preloaded GDScript dependencies may be stale after source edits. Restart the editor before treating this run as validation of dependency changes. ResourceLoader cache modes do not invalidate GDScript's preload cache.",
+  "duration_ms": 2,
+  "edited_scene": "res://scenes/map_scenes/map_control.tscn",
+  "failed": 0,
+  "load_errors": [
+    "test_item_room_content.gd (cannot instantiate — abstract or broken; reload=Parse error, base=none, valid=false)"
+  ],
+  "passed": 3,
+  "skipped": 0,
+  "suite_count": 1,
+  "suites_run": [
+    "ui_jelly_transition"
+  ],
+  "total": 3
+}

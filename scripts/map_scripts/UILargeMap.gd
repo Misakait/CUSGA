@@ -6,13 +6,18 @@ extends CanvasLayer
 ## ViewportControl，标记选项交给 LegendUI，标记事实仍由 MapWorldModel 管理。
 
 const CURRENT_ROOM_CHANGED_SIGNAL: StringName = &"current_room_changed"
+const JELLY_MOTION: GDScript = preload("res://core/ui/transitions/ui_transition.gd")
+const PAUSE_OWNERS_GROUP: StringName = &"ui_pause_owners"
+const PAUSE_HANDOFF_METHOD: StringName = &"take_pause_release_ownership"
 
 ## 右键删除玩家标记时允许命中的逻辑地图半径。
 @export_range(0.01, 2.0, 0.01) var marker_delete_radius: float = 0.35
 
 var _map_model: Node = null
+## 打开前的暂停状态；从其它界面接手恢复责任时改为 false。
 var _was_paused_before_open: bool = false
 var _owns_open_state: bool = false
+var _motion: JELLY_MOTION = null
 
 @onready var viewport_control: Control = $ViewportControl
 @onready var map_canvas: Control = $ViewportControl/WorldMapCanvas
@@ -21,7 +26,14 @@ var _owns_open_state: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group(PAUSE_OWNERS_GROUP)
 	visible = false
+	_motion = JELLY_MOTION.new()
+	_motion.name = "MapJellyTransition"
+	add_child(_motion)
+	# 大地图只淡入，避免外层缩放带动整张地图，影响阅读和拖拽定位。
+	var motion_targets: Array[CanvasItem] = [$FrameBackground, viewport_control, legend_ui]
+	_motion.setup(motion_targets, 0.0, 0.20, 0.0, JELLY_MOTION.MotionStyle.FADE)
 	var resized_callable := Callable(self, "focus_current_room")
 	if not viewport_control.is_connected(&"resized", resized_callable):
 		viewport_control.connect(&"resized", resized_callable)
@@ -32,6 +44,8 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if is_instance_valid(_motion):
+		_motion.reset()
 	_restore_pause_if_owned()
 	_disconnect_model()
 
@@ -76,26 +90,33 @@ func bind_model(model: Node) -> bool:
 	return true
 
 
-## 显示大地图、取得暂停所有权并聚焦当前房间。
+## 显示大地图、取得暂停所有权并淡入，同时聚焦当前房间。
 ##
 ## @return 无返回值。
 func show_map() -> void:
-	if visible:
+	if _motion.is_open_requested():
 		return
 	var tree := get_tree()
-	_was_paused_before_open = tree.paused
-	_owns_open_state = true
+	# 收起尚未完成时重新打开，继续沿用这一轮暂停记录，不能把自己的暂停记成外部暂停。
+	if not _owns_open_state:
+		_was_paused_before_open = tree.paused
+		_owns_open_state = true
 	tree.paused = true
 	visible = true
 	call_deferred("focus_current_room")
+	_motion.play_open()
 
 
-## 隐藏大地图，并只归还本次打开造成的暂停。
+## 开始收起大地图；动画完成后才隐藏并归还本次打开造成的暂停。
 ##
 ## @return 无返回值。
 func hide_map() -> void:
-	if not visible and not _owns_open_state:
+	if not _owns_open_state or not _motion.is_open_requested():
 		return
+	_motion.play_close(_finish_map_close)
+
+
+func _finish_map_close() -> void:
 	visible = false
 	_restore_pause_if_owned()
 
@@ -104,7 +125,8 @@ func hide_map() -> void:
 ##
 ## @return 无返回值。
 func toggle_map() -> void:
-	if visible:
+	# 退场期间仍可见，因此快捷键要依据目标状态，才能反向接续当前动画。
+	if _motion.is_open_requested():
 		hide_map()
 	else:
 		show_map()
@@ -125,6 +147,8 @@ func focus_current_room() -> void:
 
 
 func _on_canvas_left_clicked(canvas_position: Vector2) -> void:
+	if not _motion.is_open_requested() or _motion.is_animating():
+		return
 	if _map_model == null or not map_canvas.has_method(&"canvas_position_to_logical"):
 		return
 	var selected_config: Resource = null
@@ -137,6 +161,8 @@ func _on_canvas_left_clicked(canvas_position: Vector2) -> void:
 
 
 func _on_canvas_right_clicked(canvas_position: Vector2) -> void:
+	if not _motion.is_open_requested() or _motion.is_animating():
+		return
 	if _map_model == null or not map_canvas.has_method(&"canvas_position_to_logical"):
 		return
 	var logical_position: Vector2 = map_canvas.call(&"canvas_position_to_logical", canvas_position)
@@ -148,12 +174,32 @@ func _on_current_room_changed(_position: Vector2i) -> void:
 		focus_current_room()
 
 
+## 接过最后一个界面关闭时恢复游戏的责任，保留其它暂停界面的展开状态。
+## 参数无；仅本地图仍占有暂停时返回 true，否则返回 false。
+func take_pause_release_ownership() -> bool:
+	if not _owns_open_state:
+		return false
+	_was_paused_before_open = false
+	return true
+
+
 func _restore_pause_if_owned() -> void:
 	if not _owns_open_state:
 		return
 	_owns_open_state = false
 	var tree := get_tree()
 	if tree != null and not _was_paused_before_open:
+		var settlement: Node = get_node_or_null("/root/SettlementManager")
+		if settlement != null and bool(settlement.call("is_run_ending")):
+			return
+		# 先退出占有状态，再把恢复责任交给仍开着或仍在退场的暂停界面。
+		# 否则两个界面的关闭动画交叠时，会提前恢复游戏或永久留下暂停。
+		for value: Variant in tree.get_nodes_in_group(PAUSE_OWNERS_GROUP):
+			if not is_instance_valid(value) or value == self:
+				continue
+			var pause_owner: Node = value as Node
+			if pause_owner.has_method(PAUSE_HANDOFF_METHOD) and bool(pause_owner.call(PAUSE_HANDOFF_METHOD)):
+				return
 		tree.paused = false
 
 

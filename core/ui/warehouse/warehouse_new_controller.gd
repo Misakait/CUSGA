@@ -5,6 +5,7 @@ const SECTION: GDScript = preload("res://core/ui/warehouse/warehouse_section_con
 const TRANSFER: GDScript = preload("res://core/ui/warehouse/warehouse_transfer.gd")
 const DRAG: GDScript = preload("res://core/ui/warehouse/warehouse_drag_controller.gd")
 const PRESENTER: GDScript = preload("res://core/ui/item_tooltip_presenter.gd")
+const MOTION = preload("res://core/ui/transitions/ui_transition.gd")
 
 ## 拖动期间右键连续放置的初始速率（个/秒）。
 @export var drag_place_initial_rate: float = 4.0
@@ -30,10 +31,14 @@ var _selected_item: Resource
 var _initialized: bool = false
 var _moving: bool = false
 var _active: bool = false
+var _motion: MOTION
+var _ui_entered: bool = false
+var _ui_transitioning: bool = false
 
 func _ready() -> void:
 	_setup_view()
 	init()
+	_play_initial_ui_enter.call_deferred()
 
 ## SceneManager 的进入入口，允许早于 _ready 调用；返回无。
 func init() -> void:
@@ -63,6 +68,10 @@ func init() -> void:
 ## SceneManager 的离开入口；返回无，解除所有权威订阅、结束拖动会话并清除提示。
 func exit() -> void:
 	_active = false
+	_ui_entered = false
+	_ui_transitioning = false
+	if is_instance_valid(_motion):
+		_motion.reset()
 	_subscribe(false)
 	clear_selection()
 	# 会话未成交时物品本就在来源，直接丢弃会话即可，不需要归还。
@@ -70,6 +79,51 @@ func exit() -> void:
 
 func _exit_tree() -> void:
 	exit()
+
+
+## 播放仓库各区域入场。参数 completed 为入场完成回调；返回无。
+func play_ui_enter(completed: Callable = Callable()) -> void:
+	_setup_motion()
+	_ui_entered = true
+	_ui_transitioning = true
+	_motion.play_open(_finish_ui_enter.bind(completed))
+
+
+## 播放仓库退场。参数 completed 为退场完成回调；返回无，提前取消未成交拖动。
+func play_ui_exit(completed: Callable = Callable()) -> void:
+	_setup_motion()
+	_ui_transitioning = true
+	get_viewport().gui_release_focus()
+	clear_selection()
+	_drag.call("cancel")
+	_motion.play_close(completed)
+
+
+func _setup_motion() -> void:
+	if is_instance_valid(_motion):
+		return
+	_motion = MOTION.new()
+	add_child(_motion)
+	# 只驱动可见内容；背景与独立 TooltipLayer 保持原来的位置和绘制层级。
+	_motion.setup([
+		get_node("ItemSection") as CanvasItem,
+		get_node("PackbackSection") as CanvasItem,
+		get_node("GoToShop") as CanvasItem,
+		get_node("TurnBackButton") as CanvasItem,
+	], 0.0, 0.24, 0.015, MOTION.MotionStyle.RISE)
+
+
+func _play_initial_ui_enter() -> void:
+	if is_inside_tree() and not _ui_entered:
+		play_ui_enter()
+
+
+func _finish_ui_enter(completed: Callable) -> void:
+	if not is_inside_tree():
+		return
+	_ui_transitioning = false
+	if completed.is_valid():
+		completed.call()
 
 func _setup_view() -> void:
 	if _initialized:
@@ -159,6 +213,8 @@ func clear_selection() -> void:
 			tooltip.hide()
 
 func _on_slot_clicked(slot: Button) -> void:
+	if not _active or _ui_transitioning:
+		return
 	var side: StringName = slot.get("side")
 	var index: int = int(slot.get("slot_index"))
 	var cancel: bool = _selected_side == side and _selected_index == index
@@ -181,7 +237,7 @@ func _on_slot_clicked(slot: Button) -> void:
 ## 构造拖动载荷。参数 side/index 为来源位置、selected 为按下前的持续选中态；
 ## 返回带本界面身份与令牌的会话载荷，不能拖动（空槽或拆半结果为 0）时返回空字典。
 func create_drag_data(side: StringName, index: int, selected: bool) -> Dictionary:
-	if not _active:
+	if not _active or _ui_transitioning:
 		return {}
 	var data: Dictionary = _drag.call("begin", side, index, selected)
 	return data
@@ -192,7 +248,8 @@ func create_drag_preview(item: Resource) -> Control:
 
 ## 预检拖放。参数 data 为载荷、side/index 为目标；返回是否允许当前拖放。
 func can_drop_item(data: Dictionary, side: StringName, index: int) -> bool:
-	return _active and not _moving and bool(_drag.call("can_drop", data, side, index))
+	return _active and not _ui_transitioning \
+		and not _moving and bool(_drag.call("can_drop", data, side, index))
 
 ## 提交拖放。参数 data 为载荷、side/index 为目标；返回是否发生移动。
 func drop_item(data: Dictionary, side: StringName, index: int) -> bool:
@@ -257,6 +314,11 @@ func _notification(what: int) -> void:
 		_drag.call("cancel")
 
 func _input(event: InputEvent) -> void:
+	if _ui_transitioning:
+		# 鼠标由动画遮罩接住，键盘确认也不能在面板运动时提交操作。
+		if event is InputEventKey:
+			get_viewport().set_input_as_handled()
+		return
 	if not _active or not bool(_drag.call("is_active")):
 		return
 	if not (event is InputEventMouseButton):
@@ -298,17 +360,19 @@ func _section_slots(side: StringName) -> Array:
 
 ## 按原库存名称规则整理仓库；返回无。
 func sort_items() -> void:
+	if _ui_transitioning:
+		return
 	clear_selection()
 	if _active:
 		_warehouse.call("SortByCardName")
 
 ## 尝试扣费升级仓库；返回是否成功，费用与容量规则由 PlayerProgression 执行。
 func upgrade_warehouse() -> bool:
-	return _active and bool(_progression.call("TryUpgradeWarehouse"))
+	return _active and not _ui_transitioning and bool(_progression.call("TryUpgradeWarehouse"))
 
 ## 尝试扣费升级行囊；返回是否成功，费用与容量规则由 PlayerProgression 执行。
 func upgrade_carry() -> bool:
-	return _active and bool(_progression.call("TryUpgradeCarrySlots"))
+	return _active and not _ui_transitioning and bool(_progression.call("TryUpgradeCarrySlots"))
 
 ## 请求去商店；返回无。
 func go_to_shop() -> void:
@@ -319,6 +383,8 @@ func go_to_main_menu() -> void:
 	_request_scene("main_menu")
 
 func _request_scene(scene_id: String) -> void:
+	if not _active or _ui_transitioning:
+		return
 	clear_selection()
 	var bus: Node = get_node_or_null(^"/root/GlobalEventBus")
 	if bus != null and bus.has_signal("scene_requested"):
