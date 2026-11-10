@@ -118,3 +118,42 @@ func test_backpack_opens_fullscreen_panel_above_hud() -> void:
 	assert_eq(panel.anchor_right, 1.0, "面板应铺满 HUD 宽度")
 	assert_eq(panel.anchor_bottom, 1.0, "面板应铺满 HUD 高度")
 	assert_true(panel.get_index() > other_hud.get_index(), "刻印面板应绘制在已有 HUD 之上")
+
+## 禁用按钮和选中分页共用实际灰色底图，不依赖颜色叠乘。
+func test_button_disabled_and_selected_use_gray_texture() -> void:
+	var inventory: Node = track(INVENTORY.new())
+	var panel: Control = track(load("res://core/ui/inventory/imprint_panel.gd").new())
+	panel.call("setup", inventory, track(Control.new()))
+	var confirm: Button = panel.get("_confirm_button")
+	var tabs: Array = panel.get("_tab_buttons")
+	var disabled_style: StyleBoxTexture = confirm.get_theme_stylebox("disabled") as StyleBoxTexture
+	var pressed_style: StyleBoxTexture = tabs[0].get_theme_stylebox("pressed") as StyleBoxTexture
+	var normal_style: StyleBoxTexture = confirm.get_theme_stylebox("normal") as StyleBoxTexture
+	assert_true(confirm.disabled, "未抽卡时确认按钮必须禁用")
+	assert_true(disabled_style.texture != normal_style.texture, "禁用按钮必须更换贴图")
+	assert_eq(pressed_style.texture, disabled_style.texture, "选中分页与禁用状态应使用相同贴图")
+	assert_true(tabs[0].button_pressed, "当前分页应使用按下状态")
+
+## 卡槽选择只改变卡面位置，重复卡仍按下标独立选择。
+func test_selection_lifts_card_without_tint() -> void:
+	var inventory: Node = track(INVENTORY.new())
+	var panel: Control = track(load("res://core/ui/inventory/imprint_panel.gd").new())
+	panel.call("setup", inventory, track(Control.new()))
+	var cards: Array = panel.get("_drawn_cards")
+	cards.append(CARD.new())
+	var views: Array = panel.get("_card_views")
+	var view: Node2D = track(Node2D.new())
+	views.append(view)
+	var labels: Array = panel.get("_selection_labels")
+	var marker: Label = track(Label.new())
+	marker.text = "点击选择"
+	labels.append(marker)
+	var slots: Array = panel.get("_slots")
+	var slot: Button = track(Button.new())
+	slots.append(slot)
+	panel.call("_toggle_card", 0)
+	assert_eq(view.position, Vector2(101, 73 - CardVisualConfig.CLICK_SELECTED_LIFT_DISTANCE), "选择应按开局选卡的距离上移")
+	assert_eq(slot.modulate, Color.WHITE, "选择不能改变卡面渲染颜色")
+	assert_eq(marker.text, "点击选择", "卡槽提示不应显示星级")
+	panel.call("_toggle_card", 0)
+	assert_eq(view.position, Vector2(101, 73), "取消选择应使卡面回到原位")

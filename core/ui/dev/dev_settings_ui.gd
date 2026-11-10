@@ -45,6 +45,12 @@ const PLAYER_WALLET_PATH: NodePath = ^"/root/PlayerWallet"
 ## 金币输入框的默认值。
 const DEFAULT_GOLD_AMOUNT: int = 1000
 
+## 卡胚发放数量的默认值，便于快速测试多次十连。
+const DEFAULT_EMBRYO_AMOUNT: int = 100
+
+## 卡胚类型列表中通用卡胚的下标。
+const DEFAULT_EMBRYO_TYPE_INDEX: int = 5
+
 ## 金币输入框的合法上界。
 ##
 ## 刻意不等于钱包的 `MaxGold`（int 上限）：这是开发者调试入口而不是玩家输入，
@@ -333,7 +339,7 @@ func _on_gain_gold_button_pressed() -> void:
 	_player_wallet.call("Add", int(_gold_spin_box.value))
 
 
-## 在局内开发者面板添加卡胚发放控件，数量默认 10。
+## 在局内开发者面板添加卡胚发放控件，默认发放 100 个通用卡胚。
 func _create_embryo_controls() -> void:
 	if not ShowRunFeatures:
 		return
@@ -346,11 +352,12 @@ func _create_embryo_controls() -> void:
 	var amount := SpinBox.new()
 	amount.min_value = 1
 	amount.max_value = MAX_GOLD_AMOUNT
-	amount.value = 10
+	amount.value = DEFAULT_EMBRYO_AMOUNT
 	row.add_child(amount)
 	var choice := OptionButton.new()
 	for label_text in ["木", "土", "水", "火", "金", "通用"]:
 		choice.add_item(label_text)
+	choice.select(DEFAULT_EMBRYO_TYPE_INDEX)
 	row.add_child(choice)
 	var button := Button.new()
 	button.text = "获得卡胚"
