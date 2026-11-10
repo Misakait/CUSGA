@@ -183,8 +183,7 @@ func _move_to(target_position: Vector2i) -> void:
 	screen_transitions.fade_out()
 	await screen_transitions.fade_complete
 
-	_pass_map_move_time()
-	# 注意：load_scene_at 会改变当前 posx 与 posy；先结算耗时，保证目标房间按最新昼夜状态初始化。
+	# 成功换房后的行动值统一由 UIMapWorldController 结算，按钮入口不重复扣除。
 	map_instantiator.load_scene_at(target_position)
 
 func _apply_passage_button_state(direction: int) -> void:
@@ -259,10 +258,3 @@ func _format_monster_names(monsters: Array) -> String:
 			names.append(monster_name)
 
 	return "\n".join(names)
-
-func _pass_map_move_time() -> void:
-	if time_system == null:
-		push_error("MapButton 未找到 TimeSystem，无法结算地图移动耗时。")
-		return
-
-	time_system.PassMapMoveTime()

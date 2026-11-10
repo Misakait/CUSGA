@@ -39,9 +39,6 @@ const MAP_BUTTON_PATH: NodePath = ^"../MapButton"
 ## 场景过渡 Autoload 的固定挂载路径。
 const SCREEN_TRANSITIONS_PATH: NodePath = ^"/root/ScreenTransitions"
 
-## 时间 Autoload 的固定挂载路径。
-const TIME_SYSTEM_PATH: NodePath = ^"/root/TimeSystem"
-
 ## 地图系统进入房间信号名，与 map_control.gd / map_instantiator.gd 的声明逐字一致。
 const ON_ENTERED_ROOM_SIGNAL: StringName = &"on_entered_room"
 
@@ -68,9 +65,6 @@ var _map_little: Node = null
 
 ## 房间切换用的淡入淡出 Autoload。
 var _screen_transitions: Node = null
-
-## 行动值消耗用的时间 Autoload；按方法协议调用，与 map_button.gd 一致。
-var _time_system: Node = null
 
 
 func _ready() -> void:
@@ -171,7 +165,6 @@ func _bind_map_system() -> void:
 	_map_instantiator = get_node_or_null(MAP_INSTANTIATOR_PATH)
 	_map_little = get_node_or_null(MAP_LITTLE_PATH)
 	_screen_transitions = get_node_or_null(SCREEN_TRANSITIONS_PATH)
-	_time_system = get_node_or_null(TIME_SYSTEM_PATH)
 
 	var map_button: Node = get_node_or_null(MAP_BUTTON_PATH)
 	if map_button is CanvasItem:
@@ -265,11 +258,6 @@ func _request_room_change(
 	_screen_transitions.fade_out()
 	await _screen_transitions.fade_complete
 
-	if _time_system != null and _time_system.has_method(&"PassMapMoveTime"):
-		_time_system.call(&"PassMapMoveTime")
-	else:
-		push_warning("DoorController 未找到 TimeSystem，本次移动不消耗行动值。")
-
 	# 出发门立即进入冷却，这是防「反复横跳」的关键：Door.gd 的冷却只在 _ready 初始化一次，
 	# 不主动重置就只能拦住门创建后的头 1 秒，挡不住玩家在传送点上反复触发。
 	_reset_door_cool_down(door)
@@ -278,6 +266,7 @@ func _request_room_change(
 	if spawn_door != null:
 		_place_player_at_door(spawn_door)
 
+	# 成功换房后的行动值统一由 UIMapWorldController 结算，门入口不重复扣除。
 	_map_instantiator.load_scene_at(target_position)
 
 

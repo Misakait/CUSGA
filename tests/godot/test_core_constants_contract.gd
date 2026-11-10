@@ -73,7 +73,7 @@ const TAG_ROWS: Array = [
 
 ## 时间消耗逐条对照：[旧 C# 成员名, 取值, 生产消费方片段（空串表示当前无消费方）]。
 const TIME_ROWS: Array = [
-	["MapMove", 10, "@export var MapMoveTimeCost: int = 10"],
+	["MapMove", 10, "@export var MapMoveTimeCost: int = ROOM_TRANSITION_CONFIG.action_cost"],
 	["EnterScene", 5, ""],
 	["ChopTree", 20, ""],
 	["PlantSeed", 10, ""],

@@ -11,10 +11,13 @@ var _map_control: Node = null
 var _map_world_model: Node = null
 var _map_world_view: Node = null
 var _player: Node2D = null
+var _time_system: Node = null
+var _is_transition_in_progress: bool = false
 var _last_valid_position: Vector2i = Vector2i(-999999, -999999)
 var _last_observed_position: Vector2i = Vector2i(-999999, -999999)
 
 func _ready() -> void:
+	_time_system = get_node_or_null("/root/TimeSystem")
 	_map_control = get_parent()
 	_map_world_model = get_node_or_null("../MapWorldModel")
 	_map_world_view = get_node_or_null("../MapInstantiator")
@@ -50,13 +53,23 @@ func _process(_delta: float) -> void:
 ## 将一个进入房间意图交给 Model；View 通过 Model 信号更新显示。
 ##
 ## @param position 目标地图坐标。
-## @return Model 接受目标坐标时返回 true。
+## @return Model 接受目标坐标时返回 true；真实换房成功后只结算一次行动值。
 func request_room_transition(position: Vector2i) -> bool:
-	if _map_world_model == null:
+	if _map_world_model == null or _is_transition_in_progress:
 		return false
+	var previous_position: Vector2i = _map_world_model.get(&"current_position")
+	# Model 信号会同步更新窗口与内容；阻止这些回调重入并产生重复收费。
+	_is_transition_in_progress = true
 	var accepted := bool(_map_world_model.call(&"try_enter_room", position))
 	if accepted:
 		_last_valid_position = position
+		_last_observed_position = position
+		if previous_position != position:
+			if _time_system != null and _time_system.has_method(&"PassMapMoveTime"):
+				_time_system.call(&"PassMapMoveTime")
+			else:
+				push_warning("跨房成功但未找到 TimeSystem，无法推进本次行动时间。")
+	_is_transition_in_progress = false
 	return accepted
 
 func _resolve_player() -> void:
@@ -85,7 +98,7 @@ func can_enter_room_with_boundaries(
 	return true
 
 ## 未来接口：接入通道驻守战斗。
-## 当前阶段跨房间只更新世界状态，不触发战斗或行动值扣除。
+## 当前跨房间会结算行动值，但不通过这个预留接口触发战斗。
 ##
 ## @param _from_position 离开的地图坐标。
 ## @param _to_position 进入的地图坐标。

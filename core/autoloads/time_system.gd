@@ -8,8 +8,11 @@ extends Node
 ## 每个昼夜阶段包含的时间点数。
 const PhaseLength: int = 100
 
-## 地图移动默认消耗的时间点数，与 TimeCosts.MapMove 保持一致。
-@export var MapMoveTimeCost: int = 10
+## 房间切换共享配置；行动值的默认值在资源检查器调整。
+const ROOM_TRANSITION_CONFIG = preload("res://resources/map/room_transition_config.tres")
+
+## 地图移动耗时从配置读取；运行中调用 SetMapMoveTimeCost 可临时覆盖。
+@export var MapMoveTimeCost: int = ROOM_TRANSITION_CONFIG.action_cost
 
 ## 昼夜阶段切换信号。
 signal DayNightToggled(is_night: bool)
@@ -55,9 +58,10 @@ func PassTime(amount: int) -> void:
 	_emit_time_changed()
 
 ## 设置地图移动耗时。
-## @param amount 新的正数耗时；非正数不会覆盖当前值。
+## @param amount 新的非负耗时；0 表示免费，负数不会覆盖当前值。
+## @return 无返回值。
 func SetMapMoveTimeCost(amount: int) -> void:
-	if amount > 0:
+	if amount >= 0:
 		MapMoveTimeCost = amount
 
 ## 使用当前地图移动耗时推进时间。

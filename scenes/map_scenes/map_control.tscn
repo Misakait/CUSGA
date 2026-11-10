@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://cfq56eupau1gn" path="res://scripts/map_scripts/UIMapWorldController.gd" id="32_world_controller"]
 [ext_resource type="PackedScene" uid="uid://cdpnmp4syanoa" path="res://scenes/map_scenes/map_view/MiniMap.tscn" id="33_minimap"]
 [ext_resource type="PackedScene" uid="uid://bj57s3cu8kobp" path="res://scenes/map_scenes/map_view/LargeMap.tscn" id="34_largemap"]
+[ext_resource type="PackedScene" path="res://scenes/ui_scenes/room_arrival_banner.tscn" id="35_arrival"]
 
 [node name="MapControl" type="Node2D" unique_id=223958387 node_paths=PackedStringArray("canvas_layer")]
 script = ExtResource("1_map_control")
@@ -47,3 +48,5 @@ script = ExtResource("7_map_little")
 [node name="MiniMap" parent="CanvasLayer" unique_id=1552620818 instance=ExtResource("33_minimap")]
 
 [node name="LargeMap" parent="." unique_id=633752329 instance=ExtResource("34_largemap")]
+
+[node name="RoomArrivalBanner" parent="." unique_id=488676086 instance=ExtResource("35_arrival")]

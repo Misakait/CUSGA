@@ -1,0 +1,123 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://core/ui/hud/room_arrival_banner.gd" id="1_banner"]
+[ext_resource type="Resource" path="res://resources/map/room_transition_config.tres" id="2_config"]
+
+[sub_resource type="Gradient" id="Gradient_backdrop"]
+offsets = PackedFloat32Array(0, 0.25, 0.75, 1)
+colors = PackedColorArray(0.04, 0.06, 0.08, 0, 0.04, 0.06, 0.08, 1, 0.04, 0.06, 0.08, 1, 0.04, 0.06, 0.08, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_backdrop"]
+gradient = SubResource("Gradient_backdrop")
+width = 256
+height = 8
+
+[node name="RoomArrivalBanner" type="CanvasLayer"]
+layer = 1
+script = ExtResource("1_banner")
+config = ExtResource("2_config")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Banner" type="Control" parent="Root"]
+visible = false
+layout_mode = 0
+offset_right = 620.0
+offset_bottom = 80.0
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="Root/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_backdrop")
+expand_mode = 1
+
+[node name="Title" type="Label" parent="Root/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.02, 0.03, 0.04, 0.8)
+theme_override_colors/font_outline_color = Color(0.04, 0.05, 0.06, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+horizontal_alignment = 1
+vertical_alignment = 1
+text_overrun_behavior = 3
+
+[node name="Accent" type="ColorRect" parent="Root/Banner"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 65.0
+offset_right = 100.0
+offset_bottom = 67.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="BiomeBanner" type="Control" parent="Root"]
+visible = false
+layout_mode = 0
+offset_right = 760.0
+offset_bottom = 96.0
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="Root/BiomeBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_backdrop")
+expand_mode = 1
+
+[node name="Title" type="Label" parent="Root/BiomeBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.02, 0.03, 0.04, 0.8)
+theme_override_colors/font_outline_color = Color(0.04, 0.05, 0.06, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+horizontal_alignment = 1
+vertical_alignment = 1
+text_overrun_behavior = 3
+
+[node name="Accent" type="ColorRect" parent="Root/BiomeBanner"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -140.0
+offset_top = 82.0
+offset_right = 140.0
+offset_bottom = 85.0
+grow_horizontal = 2
+mouse_filter = 2
