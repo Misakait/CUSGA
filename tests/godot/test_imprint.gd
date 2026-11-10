@@ -142,19 +142,19 @@ func test_backpack_opens_fullscreen_panel_above_hud() -> void:
 	assert_eq(cards.size(), 1, "关闭后未领取卡牌应保留")
 	assert_eq(selected.size(), 1, "关闭后已选状态应保留")
 
-## 禁用按钮和选中分页共用实际灰色底图，不依赖颜色叠乘。
-func test_button_disabled_and_selected_use_gray_texture() -> void:
+## 元素分页与禁用状态有明确视觉区分，重做样式不改变交互锁定。
+func test_button_disabled_and_selected_remain_distinct() -> void:
 	var inventory: Node = track(INVENTORY.new())
 	var panel: Control = track(load("res://core/ui/inventory/imprint_panel.gd").new())
 	panel.call("setup", inventory, track(Control.new()))
 	var confirm: Button = panel.get("_confirm_button")
 	var tabs: Array = panel.get("_tab_buttons")
-	var disabled_style: StyleBoxTexture = confirm.get_theme_stylebox("disabled") as StyleBoxTexture
-	var pressed_style: StyleBoxTexture = tabs[0].get_theme_stylebox("pressed") as StyleBoxTexture
-	var normal_style: StyleBoxTexture = confirm.get_theme_stylebox("normal") as StyleBoxTexture
+	var disabled_style: StyleBoxFlat = confirm.get_theme_stylebox("disabled") as StyleBoxFlat
+	var pressed_style: StyleBoxFlat = tabs[0].get_theme_stylebox("pressed") as StyleBoxFlat
+	var normal_style: StyleBoxFlat = confirm.get_theme_stylebox("normal") as StyleBoxFlat
 	assert_true(confirm.disabled, "未抽卡时确认按钮必须禁用")
-	assert_true(disabled_style.texture != normal_style.texture, "禁用按钮必须更换贴图")
-	assert_eq(pressed_style.texture, disabled_style.texture, "选中分页与禁用状态应使用相同贴图")
+	assert_true(disabled_style.bg_color != normal_style.bg_color, "禁用按钮应有独立低饱和底板")
+	assert_true(pressed_style.border_color != disabled_style.border_color, "选中属性应保持五行色描边")
 	assert_true(tabs[0].button_pressed, "当前分页应使用按下状态")
 
 ## 卡槽选择只改变卡面位置，重复卡仍按下标独立选择。
