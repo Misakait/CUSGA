@@ -43,8 +43,8 @@ const RARE_PAUSES: Dictionary = {4: 0.10, 5: 0.18}
 const POP_SECONDS: float = 0.11
 ## 回弹收敛时长。
 const SETTLE_SECONDS: float = 0.18
-## 元素诗句仅作美术说明，不代表额外玩法加成。
-const ELEMENT_VERSES: Array[String] = ["来点生机！", "稳稳出招！", "灵感冒泡！", "热力全开！", "闪亮登场！"]
+## 资源计数块尺寸，预留五位数量宽度，避免数字变化推动标题或返回按钮。
+const BALANCE_SIZE: Vector2 = Vector2(196, 42)
 
 ## 当前玩家库存。
 var _inventory: Node
@@ -52,8 +52,14 @@ var _inventory: Node
 var _backpack: Control
 ## 当前选中的属性索引。
 var _selected: int = 0
-## 材料数量显示。
+## 当前属性卡胚数量；名称与数字分开排版，刷新数量不改变计数块宽度。
 var _balance: Label
+## 通用卡胚数量。
+var _universal_balance: Label
+## 当前属性卡胚名称，随五行分页切换。
+var _balance_title: Label
+## 当前属性卡胚图标，只改变计数区图标色，不影响技能卡。
+var _balance_icon: TextureRect
 ## 抽取状态显示。
 var _result: Label
 ## 卡槽容器。
@@ -97,12 +103,6 @@ var _design: Control
 var _presentation: Control
 ## 合成音效组件。
 var _audio: Node
-## 空闲时的主题文案组。
-var _idle_copy: Control
-## 当前五行主题标题。
-var _element_title: Label
-## 当前五行意象文案。
-var _element_verse: Label
 ## 揭晓进度或收取反馈。
 var _stage_label: Label
 ## 轻动效选项，仅影响展示，不改变抽取结果。
@@ -153,8 +153,8 @@ func setup(inventory: Node, backpack: Control) -> void:
 	add_child(_audio)
 	_build_header()
 	_build_tabs()
-	_stage_label = _label("准备好了吗？", Vector2(84, 188), Vector2(800, 24), 18, STYLE.INK)
-	_result = _label("选个属性，开始刻印！", Vector2(244, 581), Vector2(792, 32), 22, STYLE.INK)
+	_stage_label = _label("", Vector2(84, 188), Vector2(800, 24), 18, STYLE.INK)
+	_result = _label("", Vector2(244, 581), Vector2(792, 32), 22, STYLE.INK)
 	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	## 中心容器只管理卡槽排版，动效始终施加在卡槽子节点上。
 	var center := CenterContainer.new()
@@ -167,7 +167,6 @@ func setup(inventory: Node, backpack: Control) -> void:
 	_card_grid.add_theme_constant_override("h_separation", 16)
 	_card_grid.add_theme_constant_override("v_separation", 22)
 	center.add_child(_card_grid)
-	_build_idle_copy()
 	_build_actions()
 	_skip_button = _make_button("跳过  >>")
 	_skip_button.position = Vector2(1060, 181)
@@ -203,19 +202,74 @@ func _layout_presentation() -> void:
 	_design.position = (size - STYLE.DESIGN_SIZE * factor) * 0.5
 
 func _build_header() -> void:
-	## 标题沿用背包的大像素字，以白色描边增强明亮底色上的辨识度。
-	var title: Label = _label("五行刻印", Vector2(64, 32), Vector2(320, 58), 44, Color("#fff5bd"))
+	## 标题向框内缩进，字形和描边都留在安全区，避免贴住顶部装饰。
+	var title: Label = _label("五行刻印", Vector2(80, 58), Vector2(320, 52), 40, Color("#fff5bd"))
 	title.add_theme_color_override("font_outline_color", Color("#974620"))
-	title.add_theme_constant_override("outline_size", 8)
-	_label("卡胚一弹，好牌登场！", Vector2(67, 91), Vector2(410, 26), 20, STYLE.INK)
-	_balance = _label("", Vector2(615, 61), Vector2(450, 36), 22, STYLE.INK)
-	_balance.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.add_theme_constant_override("outline_size", 6)
+	_balance = _build_balance_counter("木卡胚", Vector2(654, 66), ELEMENT_COLORS[0], true)
+	_universal_balance = _build_balance_counter("通用卡胚", Vector2(862, 66), Color("#fff5d8"))
 	## 返回按钮在蓄力和收取期间始终可用。
 	var close := _make_button("返回")
-	close.position = Vector2(1102, 54)
+	close.position = Vector2(1102, 62)
 	close.size = Vector2(108, 48)
 	close.pressed.connect(_request_close)
 	_design.add_child(close)
+
+func _build_balance_counter(caption: String, at: Vector2, color: Color, specific: bool = false) -> Label:
+	## 计数块采用低对比暖色底板，与可点击按钮区分，避免资源数字悬浮在背景上。
+	var counter := PanelContainer.new()
+	counter.position = at
+	counter.size = BALANCE_SIZE
+	counter.mouse_filter = Control.MOUSE_FILTER_PASS
+	counter.tooltip_text = "优先使用对应属性卡胚" if specific else "属性卡胚不足时使用通用卡胚"
+	## 固定边距使标签、图标和数字形成稳定的一行。
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = Color("#ffe2a0")
+	plate.border_color = Color("#da8d31")
+	plate.set_border_width_all(2)
+	plate.set_corner_radius_all(6)
+	plate.content_margin_left = 10
+	plate.content_margin_right = 10
+	plate.content_margin_top = 6
+	plate.content_margin_bottom = 6
+	counter.add_theme_stylebox_override("panel", plate)
+	_design.add_child(counter)
+	## 数字独立右对齐，切换属性或增减材料时不会挤动旁边的计数块。
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	counter.add_child(row)
+	## 使用现有卡胚背面作小图标，不引入新的资源语义。
+	var icon := TextureRect.new()
+	icon.texture = BLANK_CARD
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = Vector2(22, 24)
+	icon.modulate = color
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(icon)
+	## 名称采用较小字号，数量成为计数块的主要信息。
+	var label := Label.new()
+	label.text = caption
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", STYLE.MUTED)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(label)
+	## 数量保留原始整数，不用省略或缩写隐藏库存信息。
+	var amount := Label.new()
+	amount.text = "0"
+	amount.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	amount.add_theme_font_size_override("font_size", 22)
+	amount.add_theme_color_override("font_color", STYLE.INK)
+	amount.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(amount)
+	if specific:
+		_balance_title = label
+		_balance_icon = icon
+	return amount
 
 func _build_tabs() -> void:
 	for index in NAMES.size():
@@ -230,17 +284,6 @@ func _build_tabs() -> void:
 		_design.add_child(button)
 		_tab_buttons.append(button)
 
-func _build_idle_copy() -> void:
-	_idle_copy = Control.new()
-	_idle_copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_design.add_child(_idle_copy)
-	_element_title = _label("", Vector2(390, 508), Vector2(500, 32), 28, STYLE.INK)
-	_element_verse = _label("", Vector2(390, 534), Vector2(500, 23), 18, STYLE.MUTED)
-	for label in [_element_title, _element_verse]:
-		_design.remove_child(label)
-		_idle_copy.add_child(label)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-
 func _build_actions() -> void:
 	for index in 2:
 		## 卡胚消耗与原规则一致，按钮把单次与十连清晰分开。
@@ -249,6 +292,7 @@ func _build_actions() -> void:
 		var button := _make_button("单次刻印 · 1" if count == 1 else "十连刻印 · 10", count == 10)
 		button.position = Vector2(228 if index == 0 else 508, 631)
 		button.size = Vector2(248 if index == 0 else 304, 56)
+		button.tooltip_text = "消耗 %d 个卡胚，优先使用对应属性卡胚" % count
 		button.pressed.connect(_perform_draw.bind(count))
 		_design.add_child(button)
 		_draw_buttons.append(button)
@@ -266,7 +310,6 @@ func _build_actions() -> void:
 	motion.add_theme_color_override("font_color", STYLE.INK)
 	motion.toggled.connect(_set_reduced_motion)
 	_design.add_child(motion)
-	_label("属性卡胚优先，不足使用通用卡胚", Vector2(430, 695), Vector2(700, 20), 14, STYLE.INK)
 
 func _label(value: String, at: Vector2, bounds: Vector2, font_size: int, color: Color) -> Label:
 	## 静态文案不接收鼠标事件，保证舞台和按钮的输入路径单一。
@@ -332,16 +375,17 @@ func _select(index: int) -> void:
 	if not _drawn_cards.is_empty():
 		return
 	_selected = index
-	_result.text = "选个属性，开始刻印！"
-	_element_title.text = "%s · %s" % [NAMES[index], ELEMENT_VERSES[index]]
-	_element_verse.text = "单抽试试手气，十连快乐加倍"
+	_result.text = ""
 	_presentation.call("set_element", ELEMENT_COLORS[index], NAMES[index])
 	_refresh()
 
 func _refresh() -> void:
 	if not is_instance_valid(_inventory):
 		return
-	_balance.text = "%s卡胚  %d     通用卡胚  %d" % [NAMES[_selected], int(_inventory.call("ItemCnt", _resource(_selected))), int(_inventory.call("ItemCnt", _universal()))]
+	_balance_title.text = "%s卡胚" % NAMES[_selected]
+	_balance_icon.modulate = ELEMENT_COLORS[_selected]
+	_balance.text = str(int(_inventory.call("ItemCnt", _resource(_selected))))
+	_universal_balance.text = str(int(_inventory.call("ItemCnt", _universal())))
 	var pending: bool = not _drawn_cards.is_empty()
 	for index in _tab_buttons.size():
 		_tab_buttons[index].set_pressed_no_signal(index == _selected)
@@ -349,7 +393,6 @@ func _refresh() -> void:
 	for button in _draw_buttons:
 		button.disabled = pending or _settling
 	_confirm_button.disabled = not pending or _revealing or _settling
-	_idle_copy.visible = not pending and not _settling
 	_presentation.set("result_mode", pending and not _revealing)
 	_skip_button.visible = _revealing
 	_confirm_button.text = "确定获取" if _selected_indices.is_empty() else "确定获取  /  %d" % _selected_indices.size()
@@ -366,8 +409,8 @@ func _perform_draw(count: int) -> void:
 	_drawn_cards.assign(outcome.cards)
 	_selected_indices.clear()
 	_revealing = true
-	_result.text = "蓄力中... 好牌马上弹出来！"
-	_stage_label.text = "卡胚就位，准备弹射！"
+	_result.text = ""
+	_stage_label.text = "刻印中..."
 	_audio.call("play_cue", "charge")
 	_show_cards()
 	_refresh()
@@ -446,10 +489,10 @@ func _release_seal() -> void:
 	_presentation.set("result_mode", true)
 	_presentation.set("energy", 0.0)
 	_presentation.call("burst", PRESENTATION.CENTER, ELEMENT_COLORS[_selected], 5)
-	_stage_label.text = "啪！惊喜弹出来啦"
+	_stage_label.text = "刻印中..."
 
 func _focus_reveal(index: int) -> void:
-	_stage_label.text = "惊喜揭晓  %d / %d" % [index + 1, _drawn_cards.size()]
+	_stage_label.text = "揭晓  %d / %d" % [index + 1, _drawn_cards.size()]
 
 func _reveal_front(index: int) -> void:
 	_blank_cards[index].hide()
@@ -489,7 +532,7 @@ func _on_reveal_finished() -> void:
 	_presentation.set("energy", 0.0)
 	for slot in _slots:
 		slot.disabled = false
-	_stage_label.text = "好牌到手！挑选想带走的技能卡"
+	_stage_label.text = ""
 	_result.text = "已选择%d/%d张" % [_selected_indices.size(), _drawn_cards.size()]
 	_refresh()
 	# 鼠标可能在揭晓结束前已经进入卡槽；此时不会再触发新的进入事件。
@@ -621,7 +664,7 @@ func _animate_claimed_cards(claimed_indices: Array[int]) -> void:
 		destination = target.get_global_rect().get_center()
 	var animation := create_tween().set_parallel(true)
 	_claim_tween = animation
-	_stage_label.text = "装进口袋，下次再来！"
+	_stage_label.text = ""
 	_result.text = "正在收取 %d 张刻印" % claimed_indices.size()
 	if not claimed_indices.is_empty():
 		_audio.call("play_cue", "claim")
@@ -656,8 +699,8 @@ func _finish_claim_animation() -> void:
 	_claim_tween = null
 	_presentation.call("settle")
 	_presentation.set("result_mode", false)
-	_stage_label.text = "准备好了吗？"
-	_result.text = "已完成选择，可继续刻印"
+	_stage_label.text = ""
+	_result.text = ""
 	_refresh()
 
 func _request_close() -> void:

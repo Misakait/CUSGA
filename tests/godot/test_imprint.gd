@@ -70,8 +70,11 @@ func test_panel_builds_and_reports_empty_balance() -> void:
 	var backpack: Control = track(Control.new())
 	panel.call("setup", inventory, backpack)
 	var balance: Label = panel.get("_balance")
-	assert_true(balance.text.contains("木卡胚  0"), "面板应展示当前属性资源")
-	assert_true(balance.text.contains("通用卡胚  0"), "面板应展示通用资源")
+	var balance_title: Label = panel.get("_balance_title")
+	var universal_balance: Label = panel.get("_universal_balance")
+	assert_eq(balance_title.text, "木卡胚", "计数块应标明当前属性资源")
+	assert_eq(balance.text, "0", "属性卡胚数量应独立显示")
+	assert_eq(universal_balance.text, "0", "通用卡胚数量应独立显示")
 
 ## 验证重复资源按卡槽选择，且只有确认时才交付所选数量。
 func test_confirm_claims_selected_duplicate_cards_only() -> void:
