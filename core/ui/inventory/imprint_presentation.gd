@@ -7,8 +7,8 @@ extends Control
 const BAG: Texture2D = preload("res://res/Nine-grid-template/背包UI.png")
 ## 合成界面既有缝线布面。
 const CLOTH: Texture2D = preload("res://res/Nine-grid-template/面板1.png")
-## 现有空白卡胚，保持像素比例。
-const CARD_BACK: Texture2D = preload("res://res/skillcard/技能卡模板2.png")
+## 五行素材共用目录，保持卡背与揭晓动画的像素比例一致。
+const CARD_ART: GDScript = preload("res://core/skill_card_art.gd")
 ## 既有像素印章小图。
 const STAMP: Texture2D = preload("res://res/UI/图标ui/other/印章.png")
 ## 本界面主题常量。
@@ -31,7 +31,7 @@ var result_mode: bool = false
 var reduced_motion: bool = false
 ## 当前五行色。
 var accent: Color = Color("#7fdb55")
-## 当前五行字。
+## 当前五行字，同时用于选择对应卡背。
 var glyph: String = "木"
 ## 只在面板可见时推进的局部时钟。
 var _time: float = 0.0
@@ -127,13 +127,12 @@ func _draw_card_embryo() -> void:
 		draw_circle(point, 23, BUBBLE_COLORS[index])
 		draw_circle(point + Vector2(-7, -8), 5, Color(1, 1, 1, 0.7))
 		draw_string(STYLE.PIXEL_FONT, point + Vector2(-13, 10), ["木", "土", "水", "火", "金"][index], HORIZONTAL_ALIGNMENT_CENTER, 26, 22, STYLE.INK)
-	## 扇开的三张空白卡全部来自原素材，不重画技能卡。
+	## 只展示当前五行的背面，正面内容仍交给真实卡牌场景绑定。
 	for index in 3:
 		## 两张底卡错开角度，中央卡胚正对玩家。
 		var tilt: float = [-0.15, 0.13, -0.035][index]
 		draw_set_transform(center + Vector2((index - 1) * 8, (2 - index) * 8), tilt, squash)
-		draw_texture_rect(CARD_BACK, Rect2(-126, -90, 252, 180), false)
-	draw_string(STYLE.PIXEL_FONT, Vector2(-28, 26), "?", HORIZONTAL_ALIGNMENT_CENTER, 56, 66, Color.WHITE)
+		draw_texture_rect(CARD_ART.back_for(glyph), Rect2(-126, -90, 252, 180), false)
 	draw_texture_rect(STAMP, Rect2(73, -109, 64, 64), false)
 	draw_set_transform(Vector2.ZERO)
 	## 夸张闪星随蓄力增大，释放时会换成纸屑爆发。

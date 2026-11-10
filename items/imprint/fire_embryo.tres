@@ -1,9 +1,11 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/item/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://res/skillcard/elemental/fire_embryo.svg" id="2_icon"]
 
 [resource]
 script = ExtResource("1")
+CardIcon = ExtResource("2_icon")
 CardId = &"imprint_fire"
 CardName = "火卡胚"
 Description = "用于对应属性刻印的资源。"

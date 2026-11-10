@@ -1,15 +1,15 @@
 @tool
 extends McpTestSuite
 
-## 技能卡类别标签与分类贴图的契约套件。
+## 技能卡类别标签与五行贴图的契约套件。
 ##
 ## 锁定四件事：
 ## 1）类别常量与默认值（未分类 0 / 攻击 1 / 防御 2 / 状态 3）；
 ## 2）生产技能卡都带**显式**类别行——证明回填确实落盘，而不是被默认值悄然吞掉；
-## 3）卡面脚本的类别→贴图映射指向正确的模板，并保留未分类兜底；
+## 3）五行贴图目录包含全部正反面素材，并保留无属性兜底；
 ## 4）卡面的类别镜像常量与数据脚本的类别常量数值一致，防止两处各自演化；
 ## 5）卡面「能耗 + 类别」标签：类别文字与数据脚本 @export_enum 标签逐字一致，
-##    且文字与底板颜色共用同一份类别判定（否则会出现「红底写未分类」的卡面）。
+##    且文字与费用区颜色共用同一份类别判定，五行卡框另取实际技能属性。
 ##
 ## 环境限制：真实卡面 `SkillCard` 是非 `@tool` 的 Node2D 脚本，编辑器测试里
 ## `PackedScene.instantiate()` 只能得到占位实例、方法不可调用（与
@@ -20,6 +20,8 @@ extends McpTestSuite
 const SKILL_CARD_DATA_GD: String = "res://resources/item/card/skill_card_data.gd"
 const SKILL_CARD_GD: String = "res://scripts/card_scripts/skill_card.gd"
 const SKILL_CARD_DIR: String = "res://resources/skill_cards"
+## 五行素材目录脚本，与共享卡面和刻印卡背共同使用。
+const CARD_ART_GD: String = "res://core/skill_card_art.gd"
 
 ## 类别常量名 → 约定数值；顺序即取值约定，改动这里等于改动资产兼容协议。
 const CATEGORY_ROWS: Array = [
@@ -29,12 +31,10 @@ const CATEGORY_ROWS: Array = [
 	["CARD_CATEGORY_STATUS", 3],
 ]
 
-## 卡面贴图常量名 → 模板资源路径。四张贴图都必须同时「被脚本引用」且「资源真实存在」。
+## 五行枚举 → 素材文件前缀；无属性也必须具备完整正反面。
 const FRAME_ROWS: Array = [
-	["CARD_FRAME_ATTACK", "res://res/Card/skillcardboard/技能卡模板-红.png"],
-	["CARD_FRAME_DEFENSE", "res://res/Card/skillcardboard/技能卡模板-绿.png"],
-	["CARD_FRAME_STATUS", "res://res/Card/skillcardboard/技能卡模板-蓝.png"],
-	["CARD_FRAME_UNCLASSIFIED", "res://res/skillcard/技能卡模板2.png"],
+	[0, "universal"], [1, "wood"], [2, "metal"],
+	[3, "water"], [4, "earth"], [5, "fire"],
 ]
 
 ## 卡面镜像常量 → 数据脚本常量；两侧数值必须一致。
@@ -153,25 +153,25 @@ func test_production_cards_carry_explicit_category() -> void:
 	assert_eq(missing.size(), 0, "以下技能卡缺少显式 CardCategory = 1 行：%s" % ", ".join(missing))
 
 
-## 卡面脚本必须声明四张贴图常量，且四张模板资源真实存在。
+## 卡面正反面必须能按五行加载，尺寸一致才能在翻面时共用缩放和碰撞范围。
 func test_card_frame_mapping_targets_exist() -> void:
 	var source: String = _read(SKILL_CARD_GD)
 	assert_gt(source.length(), 0, "卡面脚本必须可读。")
-
+	## 目录不持有场景状态，可以在编辑器验证实际资源选择而非匹配实现文本。
+	var art: GDScript = load(CARD_ART_GD)
 	for row: Array in FRAME_ROWS:
-		var constant_name: String = row[0]
-		var path: String = row[1]
-		assert_true(
-			source.contains("const %s: Texture2D = preload(" % constant_name),
-			"卡面脚本必须声明贴图常量 %s。" % constant_name
-		)
-		assert_true(source.contains(path), "贴图常量 %s 必须引用 %s。" % [constant_name, path])
-		assert_true(ResourceLoader.exists(path), "贴图资源必须存在：%s" % path)
+		for side: String in ["front", "back"]:
+			## 每种素材按正式目录函数获取，防止颜色和实际技能五行错配。
+			var texture: Texture2D = art.call("%s_for" % side, row[0]) as Texture2D
+			assert_true(texture != null, "%s %s 素材必须可加载。" % [row[1], side])
+			if texture != null:
+				assert_eq(texture.resource_path, "res://res/skillcard/elemental/%s_%s.svg" % [row[1], side], "五行应映射到正确素材。")
+				assert_eq(texture.get_size(), Vector2(140, 100), "正反面必须保持 140×100。")
 
 	# 换色必须发生在卡面唯一的绑定入口里，否则三个复用界面会各自演化出不同判断。
 	assert_true(
 		source.contains("func _resolve_card_frame(card_data) -> Texture2D:"),
-		"卡面脚本必须提供类别→贴图的解析函数。"
+		"卡面脚本必须提供五行→贴图的解析函数。"
 	)
 	assert_true(
 		source.contains("$Sprite2D.texture = _resolve_card_frame(card_data)"),
@@ -205,7 +205,7 @@ func test_representative_cards_expose_category() -> void:
 		assert_eq(card.get("CardCategory"), 1, "%s 的类别应为攻击牌（1）。" % path)
 
 
-## CardCost 必须写成「能耗 + 类别」两行，且类别文字与底板配色共用同一份判定。
+## CardCost 必须写成「能耗 + 类别」两行，且类别文字与费用区配色共用同一份判定。
 ##
 ## 真实卡面是非 `@tool` 脚本，编辑器测试无法实例化出可调用的行为（见文件头环境限制），
 ## 因此这里锁定源码形状；「运行时确实渲染出两行文字」由冒烟阶段的 `game_eval` 断言。
@@ -229,7 +229,7 @@ func test_cost_label_carries_energy_and_category() -> void:
 	)
 	assert_true(
 		source.contains("match _resolve_card_category(card_data):"),
-		"类别→贴图的解析必须复用同一份类别判定。"
+		"费用区颜色必须复用同一份类别判定。"
 	)
 
 

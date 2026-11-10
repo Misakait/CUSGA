@@ -13,10 +13,10 @@ const ELEMENT_COLORS: Array[Color] = [Color("#8ee05c"), Color("#ffb850"), Color(
 const SERVICE: GDScript = preload("res://core/imprint/imprint_service.gd")
 ## 刻印专用展示组件；业务服务保持独立，不依赖视觉实现。
 const STYLE: GDScript = preload("res://core/ui/inventory/imprint_style.gd")
-## 直接复用游戏内技能卡场景；不改卡面主题、文字、纹理或资源。
+## 直接复用游戏内技能卡场景，五行外观与星级由共享卡面统一负责。
 const CARD_SCENE: PackedScene = preload("res://scenes/skill_card_scenes/SkillCard.tscn")
-## 原有空白卡胚素材，仅用于揭晓前的背面。
-const BLANK_CARD: Texture2D = preload("res://res/skillcard/技能卡模板2.png")
+## 五行素材目录，揭晓前按池属性选择卡背，不提前暴露实际抽取结果。
+const CARD_ART: GDScript = preload("res://core/skill_card_art.gd")
 ## 像素工坊背景负责卡胚弹跳与彩色纸屑。
 const PRESENTATION: GDScript = preload("res://core/ui/inventory/imprint_presentation.gd")
 ## 音效组件通过展示事件触发。
@@ -58,7 +58,7 @@ var _balance: Label
 var _universal_balance: Label
 ## 当前属性卡胚名称，随五行分页切换。
 var _balance_title: Label
-## 当前属性卡胚图标，只改变计数区图标色，不影响技能卡。
+## 当前属性卡胚图标，分页切换时读取对应物品资源中的贴图。
 var _balance_icon: TextureRect
 ## 抽取状态显示。
 var _result: Label
@@ -206,8 +206,8 @@ func _build_header() -> void:
 	var title: Label = _label("五行刻印", Vector2(80, 58), Vector2(320, 52), 40, Color("#fff5bd"))
 	title.add_theme_color_override("font_outline_color", Color("#974620"))
 	title.add_theme_constant_override("outline_size", 6)
-	_balance = _build_balance_counter("木卡胚", Vector2(654, 66), ELEMENT_COLORS[0], true)
-	_universal_balance = _build_balance_counter("通用卡胚", Vector2(862, 66), Color("#fff5d8"))
+	_balance = _build_balance_counter("木卡胚", Vector2(654, 66), true)
+	_universal_balance = _build_balance_counter("通用卡胚", Vector2(862, 66))
 	## 返回按钮在蓄力和收取期间始终可用。
 	var close := _make_button("返回")
 	close.position = Vector2(1102, 62)
@@ -215,7 +215,7 @@ func _build_header() -> void:
 	close.pressed.connect(_request_close)
 	_design.add_child(close)
 
-func _build_balance_counter(caption: String, at: Vector2, color: Color, specific: bool = false) -> Label:
+func _build_balance_counter(caption: String, at: Vector2, specific: bool = false) -> Label:
 	## 计数块采用低对比暖色底板，与可点击按钮区分，避免资源数字悬浮在背景上。
 	var counter := PanelContainer.new()
 	counter.position = at
@@ -239,13 +239,12 @@ func _build_balance_counter(caption: String, at: Vector2, color: Color, specific
 	row.add_theme_constant_override("separation", 8)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	counter.add_child(row)
-	## 使用现有卡胚背面作小图标，不引入新的资源语义。
+	## 计数区与背包读取同一个卡胚物品图标，防止两处素材出现分歧。
 	var icon := TextureRect.new()
-	icon.texture = BLANK_CARD
+	icon.texture = (_resource(_selected) if specific else _universal()).get("CardIcon") as Texture2D
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.custom_minimum_size = Vector2(22, 24)
-	icon.modulate = color
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(icon)
 	## 名称采用较小字号，数量成为计数块的主要信息。
@@ -383,7 +382,7 @@ func _refresh() -> void:
 	if not is_instance_valid(_inventory):
 		return
 	_balance_title.text = "%s卡胚" % NAMES[_selected]
-	_balance_icon.modulate = ELEMENT_COLORS[_selected]
+	_balance_icon.texture = _resource(_selected).get("CardIcon") as Texture2D
 	_balance.text = str(int(_inventory.call("ItemCnt", _resource(_selected))))
 	_universal_balance.text = str(int(_inventory.call("ItemCnt", _universal())))
 	var pending: bool = not _drawn_cards.is_empty()
@@ -441,15 +440,15 @@ func _show_cards() -> void:
 			slot.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 		_card_grid.add_child(slot)
 		_slots.append(slot)
-		## 空白卡胚只做入场形变，背面仍使用既有游戏素材。
+		## 卡背只透露玩家已经选定的五行，名称与星级仍在翻面后揭晓。
 		var blank := Sprite2D.new()
-		blank.texture = BLANK_CARD
+		blank.texture = CARD_ART.back_for(ELEMENTS[_selected])
 		blank.position = SLOT_SIZE * 0.5 + Vector2(0, 75)
 		blank.scale = Vector2.ONE * (1.5 * CARD_SCALE * 0.18)
 		blank.modulate.a = 0.0
 		slot.add_child(blank)
 		_blank_cards.append(blank)
-		## 真实技能卡直接实例化生产场景，绑定同一个 Resource，不重画卡面。
+		## 真实技能卡直接实例化生产场景，绑定同一个 Resource，不单独复制卡面规则。
 		var front: Node2D = CARD_SCENE.instantiate()
 		slot.add_child(front)
 		_card_views.append(front)

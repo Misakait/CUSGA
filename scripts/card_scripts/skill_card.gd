@@ -9,20 +9,8 @@ var data: Resource
 var is_lock:bool = false
 const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/skill_execution_context.gd"
 
-## 卡面底板贴图：攻击牌（红）。
-const CARD_FRAME_ATTACK: Texture2D = preload("res://res/Card/skillcardboard/技能卡模板-红.png")
-
-## 卡面底板贴图：防御牌（绿）。
-const CARD_FRAME_DEFENSE: Texture2D = preload("res://res/Card/skillcardboard/技能卡模板-绿.png")
-
-## 卡面底板贴图：状态牌（蓝）。
-const CARD_FRAME_STATUS: Texture2D = preload("res://res/Card/skillcardboard/技能卡模板-蓝.png")
-
-## 未分类或类别缺失时的兜底底板。
-##
-## 沿用改动前一直在用的通用模板：类别是手工配置项，缺配置时保持中性外观，
-## 好过让它看起来像攻击 / 防御 / 状态牌中的某一类。
-const CARD_FRAME_UNCLASSIFIED: Texture2D = preload("res://res/skillcard/技能卡模板2.png")
+## 五行素材共用目录，保证手牌、开局选卡和刻印结果使用同一套正面。
+const CARD_ART: GDScript = preload("res://core/skill_card_art.gd")
 
 ## 卡面用的类别取值镜像。
 ##
@@ -102,6 +90,7 @@ func use(target: Node = null):
 
 			data.ApplyEffect(context)
 
+## 绑定卡面显示；card_data 为技能卡资源，保留原对象身份，返回值无。
 func init_card_data(card_data: Resource) -> void:
 	data = card_data
 	# 通过稳定显示属性获取名称，使 C# 与 GDScript SkillCardData 共用同一界面路径。
@@ -121,6 +110,12 @@ func init_card_data(card_data: Resource) -> void:
 	# 底板贴图与上面这些文本同源：文字说的是哪张卡，颜色就必须说同一件事，
 	# 因此换色放在唯一的绑定入口里，而不是让各复用界面自己判断。
 	$Sprite2D.texture = _resolve_card_frame(card_data)
+	_update_category_plate(card_data)
+	## 星级只读取真实资源，旧资源缺少该字段时使用默认 1 星。
+	var stars: Variant = card_data.get("StarLevel")
+	$CardStars.set_level(int(stars) if stars is int else 1)
+	_fit_label($CardName, 18, 12)
+	_fit_label($CardTag, 17, 12)
 
 ## 解析卡牌类别取值。
 ##
@@ -139,8 +134,7 @@ func _resolve_card_category(card_data) -> int:
 
 ## 解析卡面「类别」行文本。
 ##
-## 与 _resolve_card_frame 共用 _resolve_card_category：文字和底板颜色必须说同一件事，
-## 各写一份判定迟早会出现「红底写着未分类」这类自相矛盾的卡面。
+## 与费用区色块共用 _resolve_card_category；五行卡框与技能类别分别编码，避免相互覆盖。
 ##
 ## 参数 card_data：技能卡资源；允许为空，也允许是缺少 CardCategory 字段的旧资源。
 ## 返回值：类别显示名，永不为空字符串。
@@ -149,27 +143,49 @@ func _resolve_card_category_text(card_data) -> String:
 	if CATEGORY_DISPLAY_NAMES.has(category):
 		return CATEGORY_DISPLAY_NAMES[category]
 
-	# 未知取值与未分类同处理，与 _resolve_card_frame 的兜底分支保持一致。
+	# 未知取值与未分类同处理，与费用区色块的兜底分支保持一致。
 	return CATEGORY_DISPLAY_NAMES[CATEGORY_UNCLASSIFIED]
 
-## 按卡牌类别选择卡面底板贴图。
-##
-## 未分类与未知取值一律回退到通用模板：类别是手工配置项，缺配置时保持中性外观，
-## 好过让它看起来像攻击 / 防御 / 状态牌中的某一类。
-##
-## 参数 card_data：技能卡资源；允许为空，也允许是缺少 CardCategory 字段的旧资源。
+## 按实际战斗技能的五行选择卡框；没有技能或未知五行使用通用底板。
+## 参数 card_data：技能卡资源，允许为空。
 ## 返回值：应显示的底板贴图，永不为 null。
 func _resolve_card_frame(card_data) -> Texture2D:
-	# 类别判定只有 _resolve_card_category 一份实现，这里只负责把取值映射到贴图。
+	return CARD_ART.front_for(_get_combat_skill_element_display_text(card_data))
+
+## 刷新费用区类别色块；card_data 为技能卡资源，返回值无。
+func _update_category_plate(card_data: Resource) -> void:
+	## 未分类使用紫灰色，攻击、防御、状态延续红、绿、蓝的既有语义。
+	var colors: Array[Color] = [Color("#eee2fa"), Color("#beaad3"), Color("#725d84")]
 	match _resolve_card_category(card_data):
 		CATEGORY_ATTACK:
-			return CARD_FRAME_ATTACK
+			colors = [Color("#ffe0ce"), Color("#e69b80"), Color("#8e422e")]
 		CATEGORY_DEFENSE:
-			return CARD_FRAME_DEFENSE
+			colors = [Color("#ddf0b9"), Color("#99bd70"), Color("#4b6b35")]
 		CATEGORY_STATUS:
-			return CARD_FRAME_STATUS
-		_:
-			return CARD_FRAME_UNCLASSIFIED
+			colors = [Color("#d2eef7"), Color("#86bed8"), Color("#356781")]
+	## 样式仅绑定当前卡面，不改写共享 Battle 主题。
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = colors[0]
+	plate.border_color = colors[1]
+	plate.set_border_width_all(1)
+	plate.set_corner_radius_all(3)
+	$CategoryPlate.add_theme_stylebox_override("panel", plate)
+	$CardCost.add_theme_color_override("font_color", colors[2])
+
+func _fit_label(label: Label, preferred_size: int, minimum_size: int) -> void:
+	## 长名称与长标签只缩小自己的字号，避免超出卡框或改变其他卡牌的主题。
+	var font: Font = label.get_theme_font("font")
+	## 保留每行内容，不通过截断丢失技能名称或标签。
+	var fitted_size: int = preferred_size
+	while fitted_size > minimum_size:
+		## 以最长一行决定字号，换行标签不互相挤压。
+		var widest: float = 0.0
+		for line in label.text.split("\n"):
+			widest = maxf(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, fitted_size).x)
+		if widest <= label.size.x:
+			break
+		fitted_size -= 1
+	label.add_theme_font_size_override("font_size", fitted_size)
 
 func _get_combat_skill_element_display_text(card_data) -> String:
 	# 技能卡本身只是玩家卡牌包装，元素来源必须取自关联的 CombatSkillData.Skill，确保 UI 显示和实际战斗技能一致。

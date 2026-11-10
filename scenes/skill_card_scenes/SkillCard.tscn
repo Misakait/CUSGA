@@ -1,13 +1,15 @@
 [gd_scene format=3 uid="uid://ca8m4rlwkbbvq"]
 
 [ext_resource type="Script" uid="uid://q5yvwkhwobb5" path="res://scripts/card_scripts/skill_card.gd" id="1_wvnnh"]
-[ext_resource type="Texture2D" uid="uid://8frcsmvgisa5" path="res://res/Card/skillcardboard/技能卡模板-红.png" id="2_78v1l"]
+[ext_resource type="Texture2D" path="res://res/skillcard/elemental/universal_front.svg" id="2_78v1l"]
 [ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="3_78v1l"]
+[ext_resource type="Script" path="res://scripts/card_scripts/skill_card_stars.gd" id="4_stars"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2kac4"]
 size = Vector2(140, 100)
 
 [node name="SkillCard" type="Node2D" unique_id=401739906]
+texture_filter = 1
 z_index = 1
 script = ExtResource("1_wvnnh")
 
@@ -27,14 +29,19 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -46.0
-offset_top = -54.5
-offset_right = 88.0
-offset_bottom = -21.0
+offset_left = -54.0
+offset_top = -61.0
+offset_right = 92.0
+offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_78v1l")
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.31, 0.27, 0.23, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 18
 text = "技能卡名"
+clip_text = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -44,13 +51,17 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -88.0
-offset_top = -54.5
-offset_right = -42.0
-offset_bottom = -21.0
+offset_left = -91.0
+offset_top = -61.0
+offset_right = -60.0
+offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_78v1l")
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.31, 0.27, 0.23, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 18
 text = "属"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -61,15 +72,20 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -72.0
-offset_top = -11.0
-offset_right = -11.0
-offset_bottom = 59.0
+offset_left = -84.0
+offset_top = -15.0
+offset_right = 25.0
+offset_bottom = 39.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_78v1l")
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.31, 0.27, 0.23, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 17
 text = "标签
 标签"
+clip_text = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -88,16 +104,37 @@ grow_horizontal = 2
 grow_vertical = 2
 autowrap_mode = 3
 
-[node name="CardCost" type="Label" parent="." unique_id=822735793]
-offset_left = 32.0
+[node name="CategoryPlate" type="Panel" parent="."]
+offset_left = 34.0
 offset_top = -16.0
-offset_right = 72.0
-offset_bottom = 65.0
+offset_right = 91.0
+offset_bottom = 40.0
+mouse_filter = 2
+
+[node name="CardCost" type="Label" parent="." unique_id=822735793]
+offset_left = 35.0
+offset_top = -17.0
+offset_right = 90.0
+offset_bottom = 40.0
 theme = ExtResource("3_78v1l")
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.31, 0.27, 0.23, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 17
 text = "10
 攻击"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CardStars" type="HBoxContainer" parent="."]
+offset_left = -84.0
+offset_top = 47.0
+offset_right = 62.0
+offset_bottom = 62.0
+mouse_filter = 2
+theme = ExtResource("3_78v1l")
+theme_override_constants/separation = 3
+script = ExtResource("4_stars")
 
 [node name="LockColor" type="ColorRect" parent="." unique_id=1963227409]
 offset_left = -105.0
