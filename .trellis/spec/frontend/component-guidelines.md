@@ -128,7 +128,7 @@
 - 覆盖层的强度由**离散事件**驱动时（时间按行动值跳变、血量按回合变化），参数跨度要按**最小触发步长**校验，而不是按一整轮的总跨度设计。本项目一次移动只推进昼夜阶段的十分之一（`10 / 100`），端点色差过小会让玩家以为覆盖层根本没生效、只有跨阶段那一瞬才看得出来。为「单步可见性」写契约测试（断言相邻两步的差值不低于阈值），不要只靠肉眼看一次。
 - 原因：`Control` 的 anchors 以父级 `CanvasItem` 的 `anchorable_rect` 为参考，而 `Node2D` 的该矩形是空的，全屏 anchors 会算出 `0×0`。此时节点照常进树、`visible` 仍是 `true`、`color` 也能正常读写，但**什么都不画，且不产生任何报错**——只能靠像素级验证发现。
 - 兜底写法：在 `_ready` 里检测退化尺寸并自愈，例如 `set_anchors_preset(Control.PRESET_TOP_LEFT)` 后显式 `size = get_viewport_rect().size`。参考 `core/ui/filters/day_night_filter.gd` 的 `_fit_to_viewport()`。
-- 层级判断：默认 canvas 内按 `z_index` 排序，而 `CanvasLayer` 的内容**永远**画在默认 canvas 之上（与 `layer` 数值是否为 `0` 无关，已实测 `map_control.tscn` 的 `layer = 0` 仍在滤镜之上）。因此「压住世界但保留 UI」的覆盖层应放在默认 canvas，并取一个高于世界内容 `z_index` 的值；若某场景的 HUD 不在 `CanvasLayer` 上（战斗场景即是），必须把 HUD 根节点的 `z_index` 提到覆盖层之上。
+- 层级判断：默认 canvas 内按 `z_index` 排序，而 `CanvasLayer` 的内容**永远**画在默认 canvas 之上（与 `layer` 数值是否为 `0` 无关，已实测 `map_control.tscn` 的 `layer = 0` 仍在滤镜之上）。因此覆盖层必须按「要染哪些内容」选层级：只染背景时，取高于背景、低于全部玩法内容的值；需要压住世界但保留 UI 时，取高于世界内容的值，并把不在 `CanvasLayer` 上的 HUD 根节点 `z_index` 提到覆盖层之上。战斗场景当前是前者：静态背景 `-1000`、运行时 `MapBackground` `-2`、昼夜滤镜 `-1`、卡牌常态 `1` / 悬停 `2`、`UI` 与 `Button` `2000`。不要再用 `1500` 把滤镜压在卡牌和怪物卡上；夜晚整屏压暗会直接降低手牌可读性。
 - 覆盖层必须设 `mouse_filter = MOUSE_FILTER_IGNORE`（枚举值 `2`），否则会吞掉其下方所有输入。
 - 乘法混合的 `CanvasItemMaterial` 用 `blend_mode = BLEND_MODE_MUL`，枚举值是 **`3`** 而不是 `1`（`1` 是 `BLEND_MODE_ADD`）；写错不会报错，只会得到发白的画面。
 - 全屏覆盖层的入场应直接吸附到当前应有的状态（而非播放入场动画），否则场景切换时会看到一次多余的渐变或闪烁。

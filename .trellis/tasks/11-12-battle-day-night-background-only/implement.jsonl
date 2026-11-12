@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "全屏覆盖层、战斗场景 z_index 分层与 CanvasLayer 约束的权威说明"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Godot 场景与运行期验证要求"}

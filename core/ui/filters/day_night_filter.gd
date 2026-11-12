@@ -11,7 +11,8 @@ extends ColorRect
 ##
 ## 挂载方式：本节点本身就是全屏 ColorRect（配套场景 day_night_filter.tscn 的根），
 ## 由宿主决定放在哪一层 —— 探索场景把它放进 CanvasLayer（相机跟随玩家，放在默认 canvas
-## 的覆盖层会随相机一起移出画面），战斗场景让它留在默认 canvas 并用 z_index 压住世界。
+## 的覆盖层会随相机一起移出画面），战斗场景让它留在默认 canvas，并用 z_index 夹在背景
+## 与卡牌、怪物卡、玩家等玩法内容之间。
 ## 注意：不要把它直接挂在 Node2D 下。Control 的 anchors 以父级 CanvasItem 的
 ## anchorable rect 为参考，而 Node2D 的该矩形是空的，全屏尺寸会退化成 0×0 并静默失效；
 ## _fit_to_viewport() 虽然会兜底自愈，但仍应避免这种挂法。

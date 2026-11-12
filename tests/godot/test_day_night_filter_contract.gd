@@ -14,6 +14,12 @@ extends McpTestSuite
 ## 待验证的滤镜脚本。
 const DAY_NIGHT_FILTER_SCRIPT: GDScript = preload("res://core/ui/filters/day_night_filter.gd")
 
+## 卡牌视觉层级常量的唯一来源。
+const CARD_VISUALS: GDScript = preload("res://core/card_visual_config.gd")
+
+## 战斗背景复制器，读取其背景层级常量。
+const BACKGROUND_RESOLVER_SCRIPT: GDScript = preload("res://core/gameflow/UICurrentMapBackgroundResolver.gd")
+
 ## 中性色：乘法混合下等价于「完全不改变画面」。
 const NEUTRAL_COLOR := Color(1.0, 1.0, 1.0, 1.0)
 
@@ -196,6 +202,101 @@ func test_exploration_scene_hosts_filter_under_canvas_layer() -> void:
 		text.contains("name=\"DayNightFilter\" parent=\".\""),
 		"滤镜不得回到场景根（默认 canvas），否则会随相机移出画面。"
 	)
+
+
+## 验证战斗场景滤镜位于背景之上、全部游戏内容之下。
+## 战斗 HUD 已经在滤镜之上；修正的关键是让卡牌/怪物卡/玩家也高于滤镜，
+## 否则夜晚会整屏压暗手牌，玩家看不清卡面信息。
+## 返回值：无。
+func test_battle_filter_layers_between_background_and_gameplay() -> void:
+	var battle_text := _read_scene_text("res://scenes/battle_scenes/battle.tscn")
+	var filter_block := _read_node_block(battle_text, 'name="DayNightFilter" parent="."')
+	var filter_z: int = _read_node_z_index(battle_text, 'name="DayNightFilter" parent="."')
+	var background_z: int = _read_node_z_index(battle_text, 'name="测试背景"')
+	var ui_z: int = _read_node_z_index(battle_text, 'name="UI" type="Marker2D" parent="."')
+	var constants := BACKGROUND_RESOLVER_SCRIPT.get_script_constant_map()
+	assert_true(
+		filter_block.contains("z_index = -1"),
+		"战斗场景必须显式覆盖滤镜层级；实例场景默认 1500，省略覆盖会重新盖住卡牌。"
+	)
+	assert_true(constants.has("MAP_BACKGROUND_Z_INDEX"), "战斗背景层级必须由复制器集中声明，不能散落在场景里。")
+	var map_background_z: int = int(constants.get("MAP_BACKGROUND_Z_INDEX", 0))
+	assert_true(filter_z > background_z, "滤镜必须高于静态背景，否则背景不会被昼夜染色。")
+	assert_true(filter_z > map_background_z, "滤镜必须高于运行时复制的 MapBackground，否则房间背景不会被染色。")
+	assert_true(
+		filter_z < CARD_VISUALS.CARD_Z_INDEX_NORMAL,
+		"滤镜必须低于卡牌常态层级，否则夜晚会压暗手牌；当前滤镜 %d、卡牌 %d。" % [
+			filter_z, CARD_VISUALS.CARD_Z_INDEX_NORMAL
+		]
+	)
+	assert_true(ui_z > filter_z, "战斗 HUD 必须继续位于滤镜之上。")
+
+
+## 验证战斗背景复制器真的把复制出的背景放到滤镜之下。
+## 只看常量声明不够：若赋值处又写回 -1，滤镜与背景同层，运行时加入顺序会让背景盖住滤镜。
+## 返回值：无。
+func test_battle_background_copy_sits_below_filter() -> void:
+	var constants := BACKGROUND_RESOLVER_SCRIPT.get_script_constant_map()
+	var expected_z: int = int(constants.get("MAP_BACKGROUND_Z_INDEX", 0))
+	var map_system := Node.new()
+	map_system.name = "MapSystemProbe"
+	var instantiator := Node.new()
+	instantiator.name = "MapInstantiator"
+	map_system.add_child(instantiator)
+	var room := Node2D.new()
+	room.name = "RoomProbe"
+	var background := Sprite2D.new()
+	background.name = "Background"
+	room.add_child(background)
+	instantiator.add_child(room)
+
+	var resolver: RefCounted = BACKGROUND_RESOLVER_SCRIPT.new()
+	var duplicated_value: Variant = resolver.call("DuplicateCurrentBackground", map_system)
+	var duplicated: Sprite2D = duplicated_value as Sprite2D
+	assert_true(duplicated != null, "背景复制器必须能从当前房间复制 Background。")
+	if duplicated == null:
+		map_system.free()
+		return
+	assert_eq(duplicated.name, "MapBackground", "复制出的背景必须使用稳定名称。")
+	assert_eq(duplicated.z_index, expected_z, "复制背景必须落在滤镜之下的声明层级。")
+	assert_false(duplicated.z_as_relative, "复制背景不得继承父节点层级，否则场景根抬升会失效。")
+
+	duplicated.free()
+	map_system.free()
+
+
+## 读取场景文本中某个节点块的 z_index。
+## 参数 text：场景全文。
+## 参数 header_fragment：节点头部的稳定片段，例如 name="UI" type="Marker2D" parent="."。
+## 返回值：该节点的 z_index；节点不存在或未声明时返回 0。
+func _read_node_z_index(text: String, header_fragment: String) -> int:
+	var block := _read_node_block(text, header_fragment)
+	var marker := "z_index = "
+	var index := block.find(marker)
+	if index < 0:
+		return 0
+	var value_start := index + marker.length()
+	var value_end := block.find("\n", value_start)
+	if value_end < 0:
+		value_end = block.length()
+	return int(block.substr(value_start, value_end - value_start).strip_edges())
+
+
+## 截取从指定节点头到下一个节点头之前的文本。
+## 参数 text：场景全文。
+## 参数 header_fragment：节点头部的稳定片段。
+## 返回值：节点块文本；找不到头部时返回空字符串。
+func _read_node_block(text: String, header_fragment: String) -> String:
+	var start := text.find(header_fragment)
+	if start < 0:
+		return ""
+	var line_end := text.find("\n", start)
+	if line_end < 0:
+		return text.substr(start)
+	var next_node := text.find("\n[node ", line_end)
+	if next_node < 0:
+		return text.substr(start)
+	return text.substr(start, next_node - start)
 
 
 ## 创建并挂载一个滤镜节点，并关闭引擎驱动以便测试手动控制帧推进。

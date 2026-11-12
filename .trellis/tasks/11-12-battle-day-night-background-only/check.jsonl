@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "检查覆盖层是否位于背景之上、战斗内容之下"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "检查 Godot 编辑器测试与运行期验证证据"}

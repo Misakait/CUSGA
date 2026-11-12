@@ -485,6 +485,7 @@ position = Vector2(640, 360)
 texture = ExtResource("37_3juot")
 
 [node name="DayNightFilter" parent="." unique_id=1523666417 instance=ExtResource("43_lbcxr")]
+z_index = -1
 
 [connection signal="pressed" from="Button/TurnEnd" to="." method="_on_turn_end_pressed"]
 [connection signal="pressed" from="Button/DrawCard" to="." method="_on_draw_card_pressed"]
