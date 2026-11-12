@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/gameplay-system-patterns.md", "reason": "检查实现是否把换算留在战斗侧、时间权威仍由 TimeSystem 持有。"}
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "检查契约测试是否覆盖真实行为而非只读源码。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查缺少 TimeSystem 时的降级、注入点与信号副作用。"}

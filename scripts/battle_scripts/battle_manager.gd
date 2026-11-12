@@ -27,6 +27,12 @@ signal battle_ended(is_victory: bool)
 @export_group("游戏参数")
 @export var turn_draw_count:int = 5 ##每回合摸牌数
 @export var action_total:float = 10000.0 ##行动值总值
+
+@export_group("局外时间联动")
+## 每 1 点战斗行动值折算成多少点局外时间。
+## 默认 0.05：一次完整战斗回合（全体各行动一次，约 100 点行动值）推进 5 点局外时间，
+## 约 20 个完整回合推进一个昼夜阶段。设为 0 可关闭联动；负数按 0 处理。
+@export_range(0.0, 1.0, 0.001, "or_greater") var battle_action_value_to_time_multiplier: float = 0.05
 #endregion
 
 #region 其他参数
@@ -34,6 +40,17 @@ const CONTEXT_SCRIPT_PATH : String = "res://core/combat/skills/skill_execution_c
 const DAMAGE_PAYLOAD_SCRIPT_PATH : String = "res://core/combat/damage_payload.gd"
 const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingType.gd")
 const SKILL_CARD_DIR_PATH : String = "res://resources/skill_cards" ## 技能卡资源目录，用于反查怪物技能的显示名
+const TIME_SYSTEM_PATH: NodePath = ^"/root/TimeSystem"
+const BATTLE_TIME_BRIDGE_SCRIPT: GDScript = preload("res://core/combat/battle_time_bridge.gd")
+
+## 局外时间节点；默认解析 /root/TimeSystem，测试或特殊场景可在进入场景树前注入。
+var TimeSystemNode: Node = null
+
+## 换算桥只保存当前战斗内的小数余量，不持有局外时间权威。
+var _battle_time_bridge: RefCounted = BATTLE_TIME_BRIDGE_SCRIPT.new()
+
+## 缺少时间节点只告警一次，避免每个 ATB 回合都刷屏。
+var _time_system_warning_emitted: bool = false
 
 ## 战斗状态机的状态定义
 enum BattleState {
@@ -373,6 +390,9 @@ func _handle_calculate_turn():
 		var current_av = monster.get_meta("action_value", 100.0)
 		monster.set_meta("action_value", current_av - min_av)
 
+	# ATB 的这次等待同样是局外时间：按导出倍率折算后推进 TimeSystem。
+	_advance_world_time_for_battle_action(min_av)
+
 	# 记录当前获得回合的实体并进入对应回合
 	active_entity = min_av_entity
 	if action_timeline:
@@ -384,6 +404,49 @@ func _handle_calculate_turn():
 		change_state(BattleState.PLAYER_TURN)
 	else:
 		change_state(BattleState.ENEMY_TURN)
+
+
+## 把本次 ATB 结算消耗的战斗行动值折算成局外时间并交给 TimeSystem。
+##
+## 为什么放在 `_handle_calculate_turn`：只有这里同时知道全体实体本次被扣除的最小
+## 行动值 `min_av`，它代表两个回合之间实际流逝的战斗时间；卡牌结算内部不改变 ATB，
+## 因此不应在每张卡牌上重复扣时间。
+##
+## 参数 battle_action_value：本次 ATB 结算扣除的行动值。
+## 返回值：无；缺少 TimeSystem 时只告警一次并跳过本次推进。
+func _advance_world_time_for_battle_action(battle_action_value: float) -> void:
+	if battle_action_value <= 0.0 or battle_action_value_to_time_multiplier <= 0.0:
+		return
+
+	var time_system: Node = _resolve_time_system()
+	if time_system == null or not time_system.has_method("PassTime"):
+		if not _time_system_warning_emitted:
+			push_warning("BattleManager 未找到可用的 TimeSystem.PassTime，战斗行动值不会推进局外时间。")
+			_time_system_warning_emitted = true
+		return
+
+	var points: int = int(_battle_time_bridge.call(
+		"Accumulate",
+		battle_action_value,
+		battle_action_value_to_time_multiplier
+	))
+	if points > 0:
+		time_system.call("PassTime", points)
+
+
+## 解析局外时间节点，优先使用显式注入的测试/特殊场景节点。
+##
+## 返回值：可用的时间节点；不在场景树且没有注入时返回 null。
+func _resolve_time_system() -> Node:
+	if TimeSystemNode != null and is_instance_valid(TimeSystemNode):
+		return TimeSystemNode
+
+	TimeSystemNode = null
+	# 独立实例（例如契约测试直接 new 出来）没有场景树，绝对路径解析会失败。
+	if not is_inside_tree():
+		return null
+	TimeSystemNode = get_node_or_null(TIME_SYSTEM_PATH)
+	return TimeSystemNode
 
 #专门用于分发回合开始/结束信号的函数
 func _notify_turn_status(method_name: String):

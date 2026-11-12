@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/gameplay-system-patterns.md", "reason": "战斗与局外时间联动的系统边界、单一职责与信号协议约束。"}
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "新增契约测试必须遵循项目的测试发现与断言约定。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "BattleManager → TimeSystem 的跨层调用需要校验依赖方向、失败降级和可测试注入点。"}

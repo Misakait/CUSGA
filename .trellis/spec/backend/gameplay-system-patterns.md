@@ -232,6 +232,9 @@
 - 怪物、技能、状态效果和伤害配置使用 Resource；战斗 Controller 负责目标选择、顺序和状态机。
 - 伤害、状态、闪避和暴击等结果由结算 Model 产生，表现层只能监听结果信号，不能从血条差值反推结果。
 - 状态钩子按固定阶段顺序执行；同一阶段移除的状态不能在当前遍历中再次执行。
+- **战斗行动值 → 局外时间必须走战斗侧的单一换算入口**：`BattleManager._handle_calculate_turn()` 已经拿到本次全体共同扣除的 `min_av`，由它按导出倍率 `battle_action_value_to_time_multiplier` 换算后调用 `TimeSystem.PassTime()`。不要在每张卡牌的结算里重复扣时间，也不要在 UI 或 `TimeSystem` 内部反推战斗回合；时间权威始终留在 `TimeSystem`。
+- **小数余量要在战斗内保留**：小倍率下单次 `min_av` 可能不足 1 点；换算桥 `core/combat/battle_time_bridge.gd` 用 `[0,1)` 余量累积后再转交整数点。直接对每回合 `round` 会让战斗永远凑不出 1 点。
+- 时间节点通过 `TimeSystemNode` 暴露注入点（默认懒解析 `/root/TimeSystem`）；缺少节点时降级为一次告警并继续战斗，不能阻塞 ATB 状态机或重复刷屏。
 
 ## 测试
 
