@@ -713,3 +713,25 @@ Resolved each RandomEnemy player card target once before presentation so card fl
 
 - 既有的 building_system_tests.gd:181 越界错误（campfire_recipe 的 Inputs 只剩 1 项）会让整个建筑回归场景一项断言都不执行，需单独修。
 - 本地领先 origin/main，尚未 push。
+
+
+## Session 25: 战斗行动值联动局外时间
+<!-- trellis-session: v=2 fp=078117fdb8ac5e5c -->
+
+**Date**: 2026-11-12
+**Task**: 战斗行动值联动局外时间
+**Branch**: `main`
+
+### Summary
+
+新增导出倍率、ATB 时间换算桥、7 条契约测试与文档；真实战斗观测到 TotalTimePassed 随回合增长。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fc37389` | feat(battle): 战斗行动值联动局外时间 |
+
+### Status
+
+[OK] **Completed**
