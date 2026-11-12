@@ -46,6 +46,11 @@ const SKILL_TARGETING_TYPE := preload("res://scripts/generated/SkillTargetingTyp
 const SKILL_CARD_DIR_PATH : String = "res://resources/skill_cards" ## 技能卡资源目录，用于反查怪物技能的显示名
 const TIME_SYSTEM_PATH: NodePath = ^"/root/TimeSystem"
 const BATTLE_TIME_BRIDGE_SCRIPT: GDScript = preload("res://core/combat/battle_time_bridge.gd")
+## 行为预告组件独立负责选牌缓存与分类展示，战斗管理器只通知回合边界。
+const BATTLE_INTENT_CONTROLLER_SCRIPT: GDScript = preload("res://scripts/battle_scripts/battle_intent_controller.gd")
+
+## 每场战斗拥有独立的预告计划，避免不同战斗共享怪物或技能选择。
+var _battle_intents: RefCounted = BATTLE_INTENT_CONTROLLER_SCRIPT.new()
 
 ## 局外时间节点；默认解析 /root/TimeSystem，测试或特殊场景可在进入场景树前注入。
 var TimeSystemNode: Node = null
@@ -316,6 +321,7 @@ func _on_combatant_attribute_changed(event: RefCounted, combatant: Variant):
 
 ## 处理怪物死亡，立即刷新时间轴
 func _on_monster_defeated(monster):
+	_battle_intents.Forget(monster)
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 
@@ -336,6 +342,7 @@ func _on_monsters_spawned():
 		_connect_combatant_attribute_signals(monster)
 		_connect_monster_detail_request(monster)
 
+	_refresh_battle_intents()
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
 
@@ -391,6 +398,7 @@ func _hide_shared_tooltip() -> void:
 ## 统一的状态切换入口，负责状态流转的分发
 func change_state(new_state: BattleState):
 	current_state = new_state
+	_refresh_battle_intents()
 	match current_state:
 		BattleState.COMBAT_START:
 			_handle_combat_start()
@@ -406,6 +414,17 @@ func change_state(new_state: BattleState):
 			_handle_turn_end()
 		BattleState.COMBAT_END:
 			_handle_combat_end()
+
+## 玩家出牌动画仍属于该玩家回合；仅真正结束回合或战斗后隐藏预告。
+## 返回值：无。
+func _refresh_battle_intents() -> void:
+	if monster_manager == null:
+		return
+	# EXECUTE_ACTIONS 同时供敌我使用，必须连同行动者判断，避免敌人行动时泄露后续计划。
+	var show_intents: bool = current_state == BattleState.PLAYER_TURN or (
+		current_state == BattleState.EXECUTE_ACTIONS and active_entity == player_manager
+	)
+	_battle_intents.Refresh(monster_manager.active_monsters, show_intents)
 
 ## 处理战斗初始化：为所有场上实体分配初始的 action_value（行动值）。
 ## action_value = action_total / 速度，值越小说明越快到达行动点。
@@ -555,9 +574,8 @@ func _handle_enemy_turn():
 	_tween_monster_visual_scale(active_entity, monster_turn_scale)
 
 	# 怪物回合只读取 CombatSkillData；玩家 SkillCardData 在玩家出牌路径处理。
-	var combat_skill = null
-	if active_entity and active_entity.has_method("GetRandomCombatSkill"):
-		combat_skill = active_entity.GetRandomCombatSkill()
+	# 消费玩家已经看见的那份计划，不能在敌人回合重新随机而改变预告。
+	var combat_skill: Resource = _battle_intents.Consume(active_entity)
 
 	if combat_skill:
 		var action = Action.new(active_entity, [], combat_skill, "skill", "SKILL")
@@ -601,6 +619,7 @@ func _handle_execute_actions():
 		if active_entity == player_manager:
 			# 玩家出牌动画演示完毕，返还控制权让玩家继续出牌
 			current_state = BattleState.PLAYER_TURN
+			_refresh_battle_intents()
 			control_lock.unlock()
 		else:
 			# 敌方动作播完，直接进入回合结束判定
@@ -849,6 +868,7 @@ func _handle_turn_end():
 ## 战斗结束结算（可扩展弹出结算界面或回到大地图）
 func _handle_combat_end():
 	print("--- 战斗结束 ---")
+	_battle_intents.Clear(monster_manager.active_monsters)
 	# 战斗结束时先关闭详情面板，避免遮罩残留或继续引用已经退出战斗的怪物。
 	monster_detail_panel.ClosePanel()
 	control_lock.lock()

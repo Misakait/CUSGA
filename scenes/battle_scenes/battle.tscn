@@ -29,7 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="32_jxr1f"]
 [ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="37_3juot"]
 [ext_resource type="PackedScene" uid="uid://kc58owl7vjuq" path="res://scenes/ui_scenes/day_night_filter.tscn" id="43_lbcxr"]
-[ext_resource type="PackedScene" path="res://scenes/battle_scenes/monster_detail_panel.tscn" id="44_s3yaj"]
+[ext_resource type="PackedScene" uid="uid://6xlbxgjxyana" path="res://scenes/battle_scenes/monster_detail_panel.tscn" id="44_s3yaj"]
 [ext_resource type="Script" uid="uid://cfcj8kansah88" path="res://scripts/battle_scripts/battle_settings_panel.gd" id="battle_settings_panel_script"]
 [ext_resource type="Script" uid="uid://c4gauakj31i5k" path="res://scripts/battle_scripts/click_mode_action_bar.gd" id="click_mode_action_bar_script"]
 [ext_resource type="Script" uid="uid://be77luvd8k25j" path="res://scripts/battle_scripts/combat_feedback_director.gd" id="combat_feedback_director_script"]
@@ -491,7 +491,6 @@ z_index = -1
 [node name="MonsterDetailLayer" type="CanvasLayer" parent="." unique_id=1190009643]
 
 [node name="MonsterDetailPanel" parent="MonsterDetailLayer" unique_id=1164127340 instance=ExtResource("44_s3yaj")]
-layout_mode = 3
 
 [connection signal="pressed" from="Button/TurnEnd" to="." method="_on_turn_end_pressed"]
 [connection signal="pressed" from="Button/DrawCard" to="." method="_on_draw_card_pressed"]
