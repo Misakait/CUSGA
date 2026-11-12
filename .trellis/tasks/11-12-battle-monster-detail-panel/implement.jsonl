@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "全屏覆盖层不得挂在 Node2D 下；CanvasLayer 层级与输入模态契约"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "新增场景与脚本的放置位置、命名与依赖方向"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "战斗 UI 宿主与暂停所有权边界"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "中文注释、公共接口文档注释、禁止占位实现"}

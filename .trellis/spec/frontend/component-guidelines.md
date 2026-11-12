@@ -133,6 +133,19 @@
 - 乘法混合的 `CanvasItemMaterial` 用 `blend_mode = BLEND_MODE_MUL`，枚举值是 **`3`** 而不是 `1`（`1` 是 `BLEND_MODE_ADD`）；写错不会报错，只会得到发白的画面。
 - 全屏覆盖层的入场应直接吸附到当前应有的状态（而非播放入场动画），否则场景切换时会看到一次多余的渐变或闪烁。
 
+## 战斗内只读模态面板
+
+战斗场景需要「查看但不操作」的浮层时（例如右键查看怪物详情），按以下契约挂载。它同时涉及层级、输入消费与目标生命周期，任一处漏掉都不会报错，只会在真实输入下才暴露。
+
+- **宿主层级**：面板放在战斗场景内的 `CanvasLayer`，`layer = 1`。战斗 UI 在默认 canvas（`z_index` 2000 也只是同一画布），主场景 HUD 暂停菜单在 `layer = 2`；`layer = 1` 保证面板压住战斗内容、又被 HUD 压住。默认 `CanvasLayer.layer` 就是 1，编辑器序列化常省略该属性，测试需按默认值断言。
+- **模态与输入**：根 `Control` 用全屏锚点、`mouse_filter = STOP`，全屏 `ColorRect` 遮罩同样 `STOP`，内部 `PanelContainer` 也保持 `STOP`。这样遮罩覆盖区的左键、右键、滚轮都被消费，不会穿透到怪物 `Area2D`、手牌或确认/结束回合按钮。
+- **Esc 归属**：只在面板打开时于 `_input` 中把 `pause_game` 动作或 `Esc`（非 echo）当作关闭意图并 `set_input_as_handled()`；关闭后立即停止消费。面板不得调用 `get_tree().paused = true`，战斗保持推进；也不能解除其他界面设置的暂停。验证时断言面板打开期间 `SceneTree.paused == false` 且 `process_frames` 继续增长。
+- **单实例**：由战斗 UI 持有并管理唯一实例；`ShowMonster(monster)` 负责换目标并重建内容，不叠加生成。遮罩挡住其余怪物时采用「先关闭再查看」，不要为绕过遮罩而放宽鼠标过滤。
+- **数据与实时刷新**：只读快照由 `BuildSnapshot` 生成，技能顺序与可见性完全复用 `MonsterSkillComponent.GetSkillPreviews()`；生命与属性通过 `ValueChanged` / `AttributeChanged` 绑定刷新。Callable 收集到成员变量，关闭时精确断开；切换目标先断开旧绑定。面板不调用技能执行、不写怪物资源或数值。
+- **生命周期**：怪物死亡释放、战斗结束、退出场景都要关闭面板；`_exit_tree` 只做清理，不发会惊动已释放目标的信号。目标在打开期间被释放时，用 `_process` 的 `is_instance_valid` / `is_queued_for_deletion` 兜底关闭，再清引用。
+- **编辑器内可实例化**：需要被 `test_run` 直接实例化的 UI 脚本必须 `@tool`，否则编辑器里得到占位实例，报 `Attempt to call a method on a placeholder instance`。读取 `.tscn` 状态用 `ResourceLoader.CACHE_MODE_IGNORE` 避开旧 PackedScene 缓存；`SceneState.get_node_path()` 带 `./` 前缀，比较前先 `trim_prefix("./")`。
+- 验证口径：契约测试断言层级、单实例、空技能池、隐藏技能、描述覆盖与实时刷新；真实运行必须用右键/左键/Esc 检查打开、遮罩不穿透、关闭按钮、切换目标不残留，并在面板打开时确认场景树未暂停、帧计数继续推进。
+
 ## 飘字提示（FloatingText）
 
 离散结果的即时反馈（距离不足、放置/拆除失败）走全局飘字服务，不要挤进底部状态标签。底部标签保留**每帧实时状态**（当前交互提示、落点是否合法、进行中进度）。

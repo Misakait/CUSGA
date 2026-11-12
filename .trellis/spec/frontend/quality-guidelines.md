@@ -28,6 +28,6 @@
 
 ## Godot 验证
 
-编辑器必须保持打开并加载 CUSGA。使用 `filesystem_manage(op="scan")`、`test_run`、`project_run`、`logs_read(source="game")`、`game_eval` 和 `editor_screenshot` 完成验证；结束时用 `project_manage(op="stop")` 停止游戏，但不关闭编辑器。
+编辑器必须保持打开并加载 CUSGA。使用 `filesystem_manage(op="scan")`、`test_run`、`project_run`、`logs_read(source="game")` 和 `editor_screenshot` 完成验证；运行时交互优先用 `game_manage(op="input_mouse"/"input_key")`，当前 4.1.0 插件没有 `game_eval`。`input_mouse` 的坐标是窗口像素而非视口像素：本机 `2512×1413` 窗口对应 `1280×720` 视口，按 `1.9625` 换算；直接用视口坐标点不中目标。结束时用 `project_manage(op="stop")` 停止游戏，但不关闭编辑器。
 
 不得使用 GitNexus、CodeGraph、.NET 构建或旧版命令行 Godot 作为本项目的验证步骤。

@@ -1,0 +1,187 @@
+[gd_scene format=3 uid="uid://6xlbxgjxyana"]
+
+[ext_resource type="Script" uid="uid://djoslswtyrhqt" path="res://scripts/battle_scripts/monster_detail_panel.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="2_theme"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail"]
+bg_color = Color(0.0705882, 0.0784314, 0.109804, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.552941, 0.462745, 0.286275, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_info"]
+bg_color = Color(0.117647, 0.129412, 0.172549, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.352941, 0.313726, 0.211765, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="MonsterDetailPanel" type="Control" unique_id=1604705190]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Dimmer" type="ColorRect" parent="." unique_id=1530950114]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="." unique_id=567388785]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DetailPanel" type="PanelContainer" parent="Center" unique_id=1636634276]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(920, 560)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_detail")
+
+[node name="Margin" type="MarginContainer" parent="Center/DetailPanel" unique_id=1890548714]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 22
+
+[node name="Columns" type="HBoxContainer" parent="Center/DetailPanel/Margin" unique_id=1428898926]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="InfoPanel" type="PanelContainer" parent="Center/DetailPanel/Margin/Columns" unique_id=677101959]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_info")
+
+[node name="InfoMargin" type="MarginContainer" parent="Center/DetailPanel/Margin/Columns/InfoPanel" unique_id=745449940]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="InfoBox" type="VBoxContainer" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin" unique_id=525346624]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=712886465]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.972549, 0.94902, 0.882353, 1)
+theme_override_font_sizes/font_size = 26
+text = "未知怪物"
+autowrap_mode = 2
+
+[node name="ElementLabel" type="Label" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=1346682383]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.858824, 0.729412, 0.427451, 1)
+theme_override_font_sizes/font_size = 19
+text = "五行: 无"
+
+[node name="InfoSeparator" type="HSeparator" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=626471052]
+layout_mode = 2
+
+[node name="HpTitle" type="Label" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=141707480]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.764706, 0.784314, 0.831373, 1)
+theme_override_font_sizes/font_size = 18
+text = "生命"
+
+[node name="HpBar" type="ProgressBar" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=1892723047]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+show_percentage = false
+
+[node name="HpValueLabel" type="Label" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=1198126125]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.941176, 0.584314, 0.529412, 1)
+theme_override_font_sizes/font_size = 20
+text = "-- / --"
+horizontal_alignment = 1
+
+[node name="AttrTitle" type="Label" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=919413748]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.764706, 0.784314, 0.831373, 1)
+theme_override_font_sizes/font_size = 18
+text = "战斗属性"
+
+[node name="AttributeList" type="VBoxContainer" parent="Center/DetailPanel/Margin/Columns/InfoPanel/InfoMargin/InfoBox" unique_id=918912295]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="SkillColumn" type="VBoxContainer" parent="Center/DetailPanel/Margin/Columns" unique_id=1185206148]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Center/DetailPanel/Margin/Columns/SkillColumn" unique_id=1932844974]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="SkillTitle" type="Label" parent="Center/DetailPanel/Margin/Columns/SkillColumn/Header" unique_id=357136883]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.972549, 0.94902, 0.882353, 1)
+theme_override_font_sizes/font_size = 24
+text = "技能池"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Center/DetailPanel/Margin/Columns/SkillColumn/Header" unique_id=1445241462]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 44)
+layout_mode = 2
+text = "关闭"
+
+[node name="HeaderSeparator" type="HSeparator" parent="Center/DetailPanel/Margin/Columns/SkillColumn" unique_id=623142975]
+layout_mode = 2
+
+[node name="SkillScroll" type="ScrollContainer" parent="Center/DetailPanel/Margin/Columns/SkillColumn" unique_id=548365683]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SkillList" type="VBoxContainer" parent="Center/DetailPanel/Margin/Columns/SkillColumn/SkillScroll" unique_id=2073772111]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12

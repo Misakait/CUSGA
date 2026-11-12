@@ -10,6 +10,13 @@ extends Node2D
 ## 当怪物已经在玩法层死亡、但仍可播放一次视觉收尾时发出。
 signal DeathPresentationRequested
 
+## 玩家用鼠标右键请求查看该怪物详情时发出。
+##
+## 怪物只负责广播“查看哪一只怪物”，面板构建、数据读取与生命周期管理
+## 都由战斗界面持有，避免把 UI 逻辑堆进怪物脚本。
+## @param monster 被请求查看的怪物实例，即当前节点自身。
+signal MonsterDetailRequested(monster: Node2D)
+
 ## 获取或设置怪物的配置数据。
 ##
 ## 迁移期同时接受旧 C# MonsterData 与 GDScript monster_data.gd 资源，
@@ -141,6 +148,8 @@ func _ready() -> void:
 	if _area_2d != null:
 		_area_2d.mouse_entered.connect(_on_mouse_entered)
 		_area_2d.mouse_exited.connect(_on_mouse_exited)
+		# 右键详情与悬停共用同一个拾取区域：悬停走 mouse_entered/exited，右键走 input_event。
+		_area_2d.input_event.connect(_on_area_2d_input_event)
 
 	_tooltip_panel = _find_tooltip_panel()
 
@@ -175,6 +184,31 @@ func _on_mouse_exited() -> void:
 
 	if _tooltip_panel != null and is_instance_valid(_tooltip_panel):
 		_tooltip_panel.call("hide_tooltip")
+
+
+## Area2D 拾取到鼠标按键时只识别右键按下，并广播查看详情请求。
+##
+## 左键选目标、拖拽出牌、悬停提示与死亡后的拾取关闭全部沿用既有流程；
+## 这里不读取技能池、不构建界面，只把“查看哪一只怪物”交给战斗界面。
+##
+## @param viewport 分发本次事件的视口。
+## @param event 触发拾取的输入事件。
+## @param shape_index 命中的碰撞形状索引，本流程不需要。
+## @return 无返回值。
+func _on_area_2d_input_event(viewport: Viewport, event: InputEvent, _shape_index: int) -> void:
+	# 逻辑死亡后即使拾取开关尚未同步，也不再接受新的查看请求。
+	if _is_combat_defeated:
+		return
+
+	var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+	if mouse_event == null or not mouse_event.pressed:
+		return
+	if mouse_event.button_index != MOUSE_BUTTON_RIGHT:
+		return
+
+	MonsterDetailRequested.emit(self)
+	# 消费本次右键，避免同一次点击继续被其它世界交互当作普通点击处理。
+	viewport.set_input_as_handled()
 
 
 ## 在本节点所在分支里查找提示面板，保持旧 C# 的“就近祖先优先、否则取第一个”规则。
@@ -270,6 +304,8 @@ func _exit_tree() -> void:
 			_area_2d.mouse_entered.disconnect(_on_mouse_entered)
 		if _area_2d.mouse_exited.is_connected(_on_mouse_exited):
 			_area_2d.mouse_exited.disconnect(_on_mouse_exited)
+		if _area_2d.input_event.is_connected(_on_area_2d_input_event):
+			_area_2d.input_event.disconnect(_on_area_2d_input_event)
 
 
 ## 使用跨语言怪物数据初始化卡面、属性与技能组件。
@@ -322,11 +358,13 @@ func _update_card_ui(data: Resource) -> void:
 		)
 
 
-## 把五行枚举值映射为卡面展示文本，映射关系与旧 C# 完全一致。
+## 把五行枚举值映射为展示文本，映射关系与旧 C# 完全一致。
+##
+## 卡面、悬停提示与详情面板共用这一份映射，避免新增五行时两处判断静默分叉。
 ##
 ## @param element 与 ElementType 一致的整数值。
 ## @return 木/金/水/土/火；其余取值返回“无”。
-func _get_element_display_name(element: int) -> String:
+func GetElementDisplayName(element: int) -> String:
 	match element:
 		ELEMENT_WOOD:
 			return "木"
@@ -340,6 +378,14 @@ func _get_element_display_name(element: int) -> String:
 			return "火"
 		_:
 			return "无"
+
+
+## 保留旧私有入口，内部转交给公开的五行映射。
+##
+## @param element 与 ElementType 一致的整数值。
+## @return 与 GetElementDisplayName 相同的结果。
+func _get_element_display_name(element: int) -> String:
+	return GetElementDisplayName(element)
 
 
 ## 缓存参与卡面缩放的节点初始缩放、位置与调制颜色。

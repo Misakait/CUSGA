@@ -6,7 +6,8 @@
 - `entities/`：玩家、怪物与 `entities/components/` 下的节点组件。
 - `resources/`：GDScript `Resource` 定义和 `.tres` 数据资产。
 - `addons/`：Godot 编辑器插件。
-- `tests/godot/`：由 Godot 编辑器 MCP 发现并运行的 `test_*.gd` 测试。
+- `tests/godot/`：`test_*.gd` 测试真身与测试内嵌的 fake 类。
+- `tests/` 顶层：`test_run` 的套件发现只扫描这一层，**不递归** `tests/godot/`。每个新增套件必须在 `tests/` 顶层放一个 shim：`@tool extends "res://tests/godot/test_xxx.gd"`，否则 `test_run` 会报 `No suite named ...`。shim 不复制实现，只做继承转发。
 - `scripts/generated/`：生成的 GDScript 文件，只通过对应生成器更新。
 
 ## Autoload

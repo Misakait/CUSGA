@@ -725,6 +725,12 @@ func _handle_drag_mode_input(event: InputEvent) -> void:
 		return
 
 	if event.pressed:
+		# 鼠标下有按钮或全屏遮罩等 GUI 控件时不再向世界射线取牌，避免界面遮挡区域仍抓到下面的手牌。
+		# 手牌是 Node2D：正常拖拽时悬停控件为空，这条守卫不改变既有手感；松开分支也不受影响，已开始的拖拽仍会正常结束。
+		var hovered_control: Control = get_viewport().gui_get_hovered_control()
+		if hovered_control and not _is_monster_card_presentation_control(hovered_control):
+			return
+
 		var card = raycast_check_for_card()
 		if card:
 			start_drag(card)

@@ -9,6 +9,10 @@ signal battle_ended(is_victory: bool)
 @onready var player_manager = $PlayerManager
 @onready var monster_manager = $MonsterManager
 @onready var action_timeline = $UI/ActionTimeline
+## 战斗卡牌输入入口；详情面板显示期间必须停掉它的世界射线输入，避免点击穿透。
+@onready var card_manager = $CardManager
+## 怪物详情面板；整场战斗只有这一个实例，由本节点统一更新与关闭。
+@onready var monster_detail_panel = $MonsterDetailLayer/MonsterDetailPanel
 ## 战斗反馈导演只负责播放行动与结算表现，不参与行动队列或伤害规则。
 @onready var combat_feedback_director: CombatFeedbackDirector = $CombatFeedbackDirector
 #endregion
@@ -251,6 +255,9 @@ func _ready():
 	# 先连接信号，确保初次生成怪物时不会漏掉回调
 	monster_manager.monsters_spawned.connect(_on_monsters_spawned)
 	monster_manager.monster_defeated.connect(_on_monster_defeated)
+	# 详情面板只接管输入与展示，不参与行动队列或战斗状态机。
+	monster_detail_panel.PanelOpened.connect(_on_monster_detail_panel_opened)
+	monster_detail_panel.PanelClosed.connect(_on_monster_detail_panel_closed)
 	#初始化怪物
 	monster_manager.initialize_monsters(starting_monster_data)
 
@@ -258,6 +265,7 @@ func _ready():
 	_connect_combatant_attribute_signals(player_manager)
 	for monster in monster_manager.active_monsters:
 		_connect_combatant_attribute_signals(monster)
+		_connect_monster_detail_request(monster)
 
 	change_state(BattleState.COMBAT_START)
 
@@ -326,9 +334,59 @@ func _on_monsters_spawned():
 
 		#未测试
 		_connect_combatant_attribute_signals(monster)
+		_connect_monster_detail_request(monster)
 
 	if action_timeline:
 		action_timeline.update_timeline(get_all_combatants(), active_entity, action_total)
+
+## 为怪物连接右键查看详情请求；重复生成回调不会产生重复连接。
+##
+## @param monster 场上怪物实例。
+## @return 无返回值。
+func _connect_monster_detail_request(monster: Node) -> void:
+	if monster == null or not monster.has_signal("MonsterDetailRequested"):
+		return
+
+	var callback: Callable = Callable(self, "_on_monster_detail_requested")
+	if not monster.is_connected("MonsterDetailRequested", callback):
+		monster.connect("MonsterDetailRequested", callback)
+
+
+## 怪物右键请求到来时把目标交给详情面板；面板内部负责切换与去重。
+##
+## @param monster 被请求查看的怪物实例。
+## @return 无返回值。
+func _on_monster_detail_requested(monster: Node) -> void:
+	monster_detail_panel.ShowMonster(monster)
+
+
+## 详情面板打开时暂停卡牌世界输入并清理残留表现；战斗本身继续推进。
+##
+## @return 无返回值。
+func _on_monster_detail_panel_opened() -> void:
+	# 面板是全屏遮罩：停掉 CardManager 的 _input 才能彻底阻断“点遮罩抓到下面手牌”的穿透路径。
+	card_manager.set_process_input(false)
+	card_manager.clear_click_selection()
+	if card_manager.has_method("_cancel_active_drag"):
+		card_manager.call("_cancel_active_drag")
+	_hide_shared_tooltip()
+
+
+## 详情面板关闭后恢复卡牌世界输入。
+##
+## @return 无返回值。
+func _on_monster_detail_panel_closed() -> void:
+	card_manager.set_process_input(true)
+
+
+## 隐藏共享悬停提示，避免旧气泡压在详情遮罩之上。
+##
+## @return 无返回值。
+func _hide_shared_tooltip() -> void:
+	var tooltip_panels: Array[Node] = get_tree().get_nodes_in_group("tooltip_panel")
+	for panel: Node in tooltip_panels:
+		if panel.has_method("hide_tooltip"):
+			panel.call("hide_tooltip")
 
 ## 统一的状态切换入口，负责状态流转的分发
 func change_state(new_state: BattleState):
@@ -791,6 +849,8 @@ func _handle_turn_end():
 ## 战斗结束结算（可扩展弹出结算界面或回到大地图）
 func _handle_combat_end():
 	print("--- 战斗结束 ---")
+	# 战斗结束时先关闭详情面板，避免遮罩残留或继续引用已经退出战斗的怪物。
+	monster_detail_panel.ClosePanel()
 	control_lock.lock()
 
 	var is_victory = monster_manager.active_monsters.is_empty() and monster_manager.upcoming_monsters.is_empty()
