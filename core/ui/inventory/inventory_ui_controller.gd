@@ -179,6 +179,18 @@ func _finish_close(completed: Callable) -> void:
 	if completed.is_valid():
 		completed.call()
 
+## 全屏覆盖面板（如刻印）关闭后，恢复背包显示与交互状态。
+## 覆盖期间背包已执行 Close()，过渡层记录为“已关闭”；仅 show() 会让
+## _can_interact() 继续拦截合成、槽位与提示，因此这里一并接管打开状态。
+## 返回值：无。
+func ResumeFromOverlay() -> void:
+	if not is_instance_valid(_player_inventory):
+		return
+	show()
+	if _motion != null:
+		_motion.resume_open()
+	_refresh_tooltip()
+
 func _can_interact() -> bool:
 	return is_visible_in_tree() and _motion != null \
 		and _motion.is_open_requested() and not _motion.is_animating()

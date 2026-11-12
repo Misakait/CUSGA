@@ -721,7 +721,12 @@ func _close() -> void:
 	_hide_card_tooltip()
 	hide()
 	if is_instance_valid(_backpack):
-		_backpack.show()
+		# 关闭刻印必须恢复背包的打开与交互状态；仅 show() 会让过渡层继续停在
+		# “已关闭”，导致合成按钮和槽位操作被背包的 _can_interact() 拦截。
+		if _backpack.has_method("ResumeFromOverlay"):
+			_backpack.call("ResumeFromOverlay")
+		else:
+			_backpack.show()
 
 ## 场景卸载时也取消悬停延迟，避免共享提示在其他界面中继续出现。
 ## 返回值：无。

@@ -138,6 +138,14 @@ func play_close(completed: Callable = Callable()) -> void:
 	_start_animation(false, _generation)
 
 
+## 外部视图直接恢复显示后，接管为“已打开且空闲”的基准状态。
+## 用于覆盖面板关闭时复用缓存界面：取消未完成的退场，不重复播放入场。
+## 参数无；返回无。
+func resume_open() -> void:
+	reset()
+	_open_requested = true
+
+
 ## 取消动效与旧回调，恢复基准属性；缓存离场和销毁时调用。
 ## 参数无；返回无。
 func reset() -> void:

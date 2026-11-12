@@ -145,6 +145,34 @@ func test_backpack_opens_fullscreen_panel_above_hud() -> void:
 	assert_eq(cards.size(), 1, "关闭后未领取卡牌应保留")
 	assert_eq(selected.size(), 1, "关闭后已选状态应保留")
 
+## 刻印面板关闭后必须恢复背包的交互状态；否则合成按钮会被 _can_interact 永久拦截。
+func test_backpack_restores_interaction_after_imprint_returns() -> void:
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	var hud: Control = track(Control.new())
+	hud.size = Vector2(1280, 720)
+	tree.root.add_child(hud)
+	var center := CenterContainer.new()
+	hud.add_child(center)
+	var backpack: Control = load("res://core/ui/inventory/inventory_ui_controller.gd").new()
+	center.add_child(backpack)
+	var inventory: Node = track(INVENTORY.new())
+	hud.add_child(inventory)
+	backpack.set("_player_inventory", inventory)
+	# 模拟背包已完成入场：主面板可见、过渡处于“已打开且空闲”。
+	backpack.show()
+	var motion: Node = backpack.get("_motion") as Node
+	motion.set("_open_requested", true)
+	motion.set("_busy", false)
+	# 打开刻印会让背包立即退场；退场尚未播完时关闭刻印，必须一并恢复背包。
+	backpack.call("_on_imprint_button_pressed")
+	var panel: Control = hud.get_node_or_null("ImprintPanel") as Control
+	assert_true(panel != null, "刻印面板必须已创建")
+	if panel == null:
+		return
+	panel.call("_request_close")
+	assert_true(bool(backpack.call("_can_interact")), "关闭刻印后背包必须恢复交互，合成按钮不能被拦截")
+	assert_true(bool(motion.call("is_open_requested")), "关闭刻印后过渡必须记录为已打开")
+
 ## 元素分页与禁用状态有明确视觉区分，重做样式不改变交互锁定。
 func test_button_disabled_and_selected_remain_distinct() -> void:
 	var inventory: Node = track(INVENTORY.new())
