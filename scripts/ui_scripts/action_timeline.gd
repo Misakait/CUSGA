@@ -13,7 +13,7 @@ class_name ActionTimeline
 ## 轴内各个角色方块之间的间隔间距
 @export var slot_spacing: int = 1
 ## 每个实体名称块的基础宽高尺寸
-@export var ui_item_size: Vector2 = Vector2(100, 30)
+@export var ui_item_size: Vector2 = Vector2(120, 30)
 
 @export_group("缩放设置")
 ## 普通实体的行动块缩放比例
@@ -48,6 +48,8 @@ var active_labels: Array[Label] = []
 var _current_active_entity: Variant = null
 ## 内部记录当前模拟出来的实体顺序（支持同一实体出现多次）
 var _predicted_sequence: Array = []
+## 与 _predicted_sequence 一一对应的行动值距离，表示该槽位距离行动还差多少
+var _predicted_action_values: Array[float] = []
 ## 行动值总量，来自 BattleManager，用于保持时间轴预测一致
 var _action_total: float = 10000.0
 
@@ -72,6 +74,7 @@ func update_timeline(combatants: Array, current_active: Variant, action_total: f
 ## 核心算法：模拟并预测战斗行动轴顺序
 func _predict_turns(combatants: Array, current_active: Variant) -> Array:
 	var sim_state: Array = []
+	_predicted_action_values = []
 
 	# 步骤 1：搜集有效存活实体的当前行动值（AV）与速度状态
 	for entity in combatants:
@@ -97,6 +100,8 @@ func _predict_turns(combatants: Array, current_active: Variant) -> Array:
 	# 步骤 2：处理当前正在行动的实体（它一定处于时间轴的顶端，索引为0）
 	if current_active and is_instance_valid(current_active) and not current_active.is_queued_for_deletion():
 		sequence.append(current_active)
+		# 当前行动者已经在行动，距离固定为 0；当前槽位不显示数字，后续重复出现时再使用自己的距离。
+		_predicted_action_values.append(0.0)
 
 		# 因为当前行动者可能刚好在 0 点还未重新计算下一个回合的 AV，所以我们在模拟器里需要强行将其 AV 重置，否则会无限连动
 		for state in sim_state:
@@ -118,8 +123,9 @@ func _predict_turns(combatants: Array, current_active: Variant) -> Array:
 
 		var min_av = min_state["av"]
 
-		# 将其存入预测队列
+		# 将其存入预测队列；min_av 就是该槽位距离当前时刻还差的行动值
 		sequence.append(min_state["entity"])
+		_predicted_action_values.append(min_av)
 
 		# 时间推进：所有人的行动值均减去经历的这部分时间
 		for state in sim_state:
@@ -163,6 +169,22 @@ func _get_name(entity: Variant) -> String:
 	elif "player" in entity.name.to_lower():
 		return "玩家"
 	return "未知"
+
+
+## 生成行动槽显示文字：当前行动者只显示名字，其余槽位在名字后追加行动值距离。
+##
+## 参数 entity：该槽位对应的战斗实体。
+## 参数 action_value：该槽位距离当前时刻还差的行动值，来自行动轴推演。
+## 参数 is_current_slot：该槽位是否就是当前正在行动的角色。
+## 返回值：写入标签的显示文字。
+func _format_slot_text(entity: Variant, action_value: float, is_current_slot: bool) -> String:
+	var entity_name: String = _get_name(entity)
+	if is_current_slot:
+		return entity_name
+
+	var rounded_action_value: int = roundi(maxf(0.0, action_value))
+	return "%s  %d" % [entity_name, rounded_action_value]
+
 
 ## 根据预测出的序列全量刷新 UI，实现基于实体的平滑移动与复用
 func _refresh_ui() -> void:
@@ -208,9 +230,11 @@ func _refresh_ui() -> void:
 
 			add_child(matched_label)
 
-		# 绑定实体引用与更新名字
+		# 绑定实体引用与更新名字、行动值距离
 		matched_label.set_meta("entity", entity)
-		matched_label.text = _get_name(entity)
+		var slot_action_value: float = _predicted_action_values[i] if i < _predicted_action_values.size() else 0.0
+		var is_current_slot: bool = i == 0 and entity == _current_active_entity
+		matched_label.text = _format_slot_text(entity, slot_action_value, is_current_slot)
 
 		# 根据实体类型设置颜色
 		var base_color = color_player if "player" in entity.name.to_lower() else color_enemy
