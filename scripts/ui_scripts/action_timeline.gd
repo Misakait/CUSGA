@@ -96,6 +96,8 @@ func _predict_turns(combatants: Array, current_active: Variant) -> Array:
 		})
 
 	var sequence: Array = []
+	# 从当前时刻开始累计；行动条上的数字是「还要等多久」，不是相邻两次行动之间的间隔。
+	var elapsed_action_value: float = 0.0
 
 	# 步骤 2：处理当前正在行动的实体（它一定处于时间轴的顶端，索引为0）
 	if current_active and is_instance_valid(current_active) and not current_active.is_queued_for_deletion():
@@ -123,9 +125,11 @@ func _predict_turns(combatants: Array, current_active: Variant) -> Array:
 
 		var min_av = min_state["av"]
 
-		# 将其存入预测队列；min_av 就是该槽位距离当前时刻还差的行动值
+		# 本次行动发生在当前时刻之后 elapsed_action_value + min_av；显示累计距离，
+		# 否则同一角色第二次出现时会退回到「只剩下一小段间隔」，误导玩家。
+		elapsed_action_value += min_av
 		sequence.append(min_state["entity"])
-		_predicted_action_values.append(min_av)
+		_predicted_action_values.append(elapsed_action_value)
 
 		# 时间推进：所有人的行动值均减去经历的这部分时间
 		for state in sim_state:

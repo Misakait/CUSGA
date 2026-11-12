@@ -53,9 +53,9 @@ func test_current_actor_hides_action_value_and_future_slots_show_distance() -> v
 
 	assert_eq(timeline.active_labels.size(), 4, "四个预测槽位都必须生成标签。")
 	assert_eq(_label_text(timeline, 0), "玩家", "当前行动角色不能显示行动值。")
-	assert_eq(_label_text(timeline, 1), "怪物  5", "第二个槽位必须显示怪物距离本次行动还差 5 点行动值。")
-	assert_eq(_label_text(timeline, 2), "玩家  95", "同一个玩家在后续回合必须显示该次行动的距离，而不是当前行动值。")
-	assert_eq(_label_text(timeline, 3), "怪物  5", "同一怪物再次出现时必须使用该槽位自己的距离。")
+	assert_eq(_label_text(timeline, 1), "怪物  5", "第二个槽位必须显示怪物距离当前时刻还差 5 点行动值。")
+	assert_eq(_label_text(timeline, 2), "玩家  100", "第三个槽位必须显示从当前时刻累计到该次行动的 5 + 95 = 100 点距离。")
+	assert_eq(_label_text(timeline, 3), "怪物  105", "第四个槽位必须继续累计，显示 5 + 95 + 5 = 105 点距离。")
 
 	timeline.queue_free()
 	player.queue_free()
@@ -74,7 +74,8 @@ func test_current_actor_stays_hidden_even_when_its_action_value_is_nonzero() -> 
 	timeline.call("update_timeline", [player, monster], player, 10000.0)
 
 	assert_eq(_label_text(timeline, 0), "玩家", "当前行动角色即使行动值非零也不能显示数字。")
-	assert_eq(_label_text(timeline, 1), "怪物  5", "后续槽位仍要显示真实距离。")
+	assert_eq(_label_text(timeline, 1), "怪物  5", "后续槽位仍要显示从当前时刻到该次行动的累计距离。")
+	assert_eq(_label_text(timeline, 2), "玩家  50", "第二次行动的累计距离必须继续累加，而不是只显示单段间隔。")
 
 	timeline.queue_free()
 	player.queue_free()
