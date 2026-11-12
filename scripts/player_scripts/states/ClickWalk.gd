@@ -105,7 +105,18 @@ func physics_update(delta: float) -> void:
 		return
 
 	var player_data: PlayerData = player.get("player_data") as PlayerData
-	if player_data == null or player_data.walk_speed <= 0.0:
+	if player_data == null:
+		_has_target = false
+		_following_mouse = false
+		_stop_movement()
+		transition_to("Idle")
+		return
+
+	# 鼠标移动与键盘行走必须共用玩家节点的有效速度；交互减速期间目标速度与加速量一起下降。
+	var walk_speed: float = player_data.walk_speed
+	if player.has_method("get_effective_walk_speed"):
+		walk_speed = float(player.call("get_effective_walk_speed"))
+	if walk_speed <= 0.0:
 		_has_target = false
 		_following_mouse = false
 		_stop_movement()
@@ -113,10 +124,10 @@ func physics_update(delta: float) -> void:
 		return
 
 	var direction: Vector2 = offset / distance
-	var target_velocity: Vector2 = direction * player_data.walk_speed
+	var target_velocity: Vector2 = direction * walk_speed
 	var next_velocity: Vector2 = player.velocity.move_toward(
 		target_velocity,
-		player_data.walk_speed * 12.0 * delta
+		walk_speed * 12.0 * delta
 	)
 	if next_velocity.length() * delta >= distance:
 		next_velocity = direction * distance / delta

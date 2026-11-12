@@ -437,6 +437,22 @@ func _set_player_mouse_movement_blocked(blocked: bool) -> void:
 		_player_click_walk_state.call(method_name)
 
 
+## 通知玩家进入或退出世界物品交互减速。
+##
+## 与鼠标屏蔽分开：键盘行走仍可用，只把有效移动速度降到玩家配置的比例。
+## 玩家没有该协议时静默跳过，保持旧场景与测试夹具兼容。
+##
+## @param slowed true 表示开始物品交互，false 表示结束并恢复全速。
+## @return 无返回值。
+func _set_player_item_interaction_slowed(slowed: bool) -> void:
+	if _player_char == null or not is_instance_valid(_player_char):
+		return
+
+	var method_name: StringName = &"BeginItemInteraction" if slowed else &"EndItemInteraction"
+	if _player_char.has_method(method_name):
+		_player_char.call(method_name)
+
+
 ## 清除当前地形长按记录并解除鼠标移动屏蔽。
 ## @return 无返回值。
 func _clear_active_terrain_hold() -> void:
@@ -448,6 +464,7 @@ func _clear_active_terrain_hold() -> void:
 	_active_terrain_hold_card = null
 	if is_instance_valid(released_card) and released_card.has_method("SetDestroying"):
 		released_card.call("SetDestroying", false)
+	_set_player_item_interaction_slowed(false)
 	_set_player_mouse_movement_blocked(false)
 
 
@@ -736,6 +753,7 @@ func _on_board_card_pressed(card: Node2D) -> void:
 	if card.has_method("SetDestroying"):
 		card.call("SetDestroying", true)
 	_set_player_mouse_movement_blocked(true)
+	_set_player_item_interaction_slowed(true)
 
 	# 圆环锚定在地形图标上；图标缺失时退回卡片自身，保持旧 C# 的兜底目标。
 	var icon: Node = card.call("GetProgressAnchor") as Node if card.has_method("GetProgressAnchor") else card.get_node_or_null("Icon") as Node

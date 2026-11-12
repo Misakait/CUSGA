@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/testing-guidelines.md", "reason": "验证证据与测试分层要求"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "跨层调用与交互状态一致性检查"}
