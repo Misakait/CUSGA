@@ -51,7 +51,7 @@ var _predicted_sequence: Array = []
 ## 与 _predicted_sequence 一一对应的行动值距离，表示该槽位距离行动还差多少
 var _predicted_action_values: Array[float] = []
 ## 行动值总量，来自 BattleManager，用于保持时间轴预测一致
-var _action_total: float = 10000.0
+var _action_total: float = 500.0
 
 func _ready() -> void:
 	# 初始化时清空所有占位的子节点
@@ -61,10 +61,10 @@ func _ready() -> void:
 ## 更新行动轴的对外接口，完全与 BattleManager 解耦
 ## @param combatants: 当前所有存活实体的数组
 ## @param current_active: 当前正在执行回合的实体（可为 null）
-func update_timeline(combatants: Array, current_active: Variant, action_total: float = 10000.0) -> void:
+func update_timeline(combatants: Array, current_active: Variant, action_total: float = 500.0) -> void:
 	_current_active_entity = current_active
 	# 统一行动值基准，避免时间轴与战斗实际顺序出现偏差
-	_action_total = action_total if action_total > 0 else 10000.0
+	_action_total = action_total if action_total > 0 else 500.0
 
 	# 根据当前战斗状态模拟未来几个回合的行动序列（会自动剔除死亡怪物，并在速度差异大时重复出现同一角色）
 	_predicted_sequence = _predict_turns(combatants, current_active)

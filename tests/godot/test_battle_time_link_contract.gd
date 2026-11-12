@@ -6,9 +6,11 @@ extends McpTestSuite
 ## 关键事实：
 ## 1. 战斗 ATB 每次结算都会从全体实体扣除同一段 `min_av`，这段值就是本次战斗时间消耗；
 ## 2. 局外时间的唯一权威仍是 `TimeSystem.PassTime`，战斗侧只负责换算和转交；
-## 3. 换算倍率必须可导出调参，并且不足 1 点的时间余量不能丢。
+## 3. 统一后 1 点战斗行动值等于 1 点局外时间，换算倍率保留用于调试，且不足 1 点的时间余量不能丢。
 
 const BATTLE_MANAGER_SCRIPT: GDScript = preload("res://scripts/battle_scripts/battle_manager.gd")
+const PLAYER_MANAGER_SCRIPT: GDScript = preload("res://scripts/battle_scripts/player_manager.gd")
+const ACTION_TIMELINE_SCRIPT: GDScript = preload("res://scripts/ui_scripts/action_timeline.gd")
 const BRIDGE_PATH: String = "res://core/combat/battle_time_bridge.gd"
 
 
@@ -29,15 +31,27 @@ func suite_name() -> String:
 	return "battle_time_link_contract"
 
 
-## 验证 BattleManager 暴露了可调倍率，且默认值能让战斗产生可感知的时间推进。
+## 验证 BattleManager 暴露了统一后的行动值参数：1 行动值 = 1 局外时间点。
 func test_battle_manager_exposes_time_multiplier() -> void:
 	var manager: Node = BATTLE_MANAGER_SCRIPT.new()
 	var multiplier: Variant = manager.get("battle_action_value_to_time_multiplier")
 	assert_true(multiplier != null, "BattleManager 必须导出 battle_action_value_to_time_multiplier。")
 	if multiplier != null:
-		assert_true(float(multiplier) > 0.0, "默认倍率必须大于 0，否则战斗永远不会推进时间。")
-		assert_eq(float(multiplier), 0.05, "默认倍率应为 0.05：100 点战斗行动值折算 5 点局外时间。")
+		assert_eq(float(manager.get("action_total")), 500.0, "统一后的战斗行动值总量应为 500。")
+		assert_eq(float(multiplier), 1.0, "统一后 1 点战斗行动值必须等于 1 点局外时间。")
 	manager.free()
+
+
+## 验证行动值总量在三个持有者上使用同一默认值，避免 UI 与战斗计算脱节。
+func test_player_and_timeline_defaults_match_unified_total() -> void:
+	var player: Node2D = PLAYER_MANAGER_SCRIPT.new()
+	var timeline: Control = ACTION_TIMELINE_SCRIPT.new()
+	assert_eq(float(player.get("default_action_total")), 500.0, "PlayerManager 兜底行动值总量必须与战斗统一。")
+	assert_eq(float(timeline.get("_action_total")), 500.0, "ActionTimeline 兜底行动值总量必须与战斗统一。")
+	player.call("reset_action_value")
+	assert_eq(float(player.get("action_value")), 5.0, "速度 100 的玩家必须以 500 / 100 = 5 点行动值进入行动轴。")
+	player.free()
+	timeline.free()
 
 
 ## 验证 ATB 结算入口确实把本次最小行动值交给时间联动。
@@ -106,14 +120,14 @@ func test_battle_manager_passes_integer_points_to_time_system() -> void:
 		manager.free()
 		return
 
-	manager.set("battle_action_value_to_time_multiplier", 0.05)
+	manager.set("battle_action_value_to_time_multiplier", 1.0)
 	var fake: Node = FakeTimeSystem.new()
 	manager.set("TimeSystemNode", fake)
-	manager.call("_advance_world_time_for_battle_action", 100.0)
-	assert_eq(fake.get("passed_total"), 5, "一次 100 点战斗回合必须推进 5 点局外时间。")
+	manager.call("_advance_world_time_for_battle_action", 5.0)
+	assert_eq(fake.get("passed_total"), 5, "统一后 5 点战斗行动值必须推进 5 点局外时间。")
 	assert_eq(fake.get("call_count"), 1, "一次推进必须只调用一次 PassTime。")
 
-	manager.call("_advance_world_time_for_battle_action", 100.0)
+	manager.call("_advance_world_time_for_battle_action", 5.0)
 	assert_eq(fake.get("passed_total"), 10, "连续战斗回合必须继续推进时间。")
 
 	manager.free()
@@ -169,13 +183,13 @@ func test_battle_manager_degrades_without_time_system() -> void:
 		assert_true(false, "BattleManager 必须导出倍率参数。")
 		manager.free()
 		return
-	manager.set("battle_action_value_to_time_multiplier", 0.05)
+	manager.set("battle_action_value_to_time_multiplier", 1.0)
 	manager.set("TimeSystemNode", null)
-	manager.call("_advance_world_time_for_battle_action", 100.0)
+	manager.call("_advance_world_time_for_battle_action", 5.0)
 
 	var fake: Node = FakeTimeSystem.new()
 	manager.set("TimeSystemNode", fake)
-	manager.call("_advance_world_time_for_battle_action", 100.0)
+	manager.call("_advance_world_time_for_battle_action", 5.0)
 	assert_eq(fake.get("passed_total"), 5, "时间节点恢复后，本次行动值必须仍然可以完整折算。")
 
 	manager.free()

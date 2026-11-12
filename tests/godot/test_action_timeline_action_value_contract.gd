@@ -46,16 +46,16 @@ func test_current_actor_hides_action_value_and_future_slots_show_distance() -> v
 	_scene_tree().root.add_child(timeline)
 
 	var player: Node = FakeCombatant.new("Player", 0.0)
-	var monster: Node = FakeCombatant.new("Monster", 5.2631578947)
+	var monster: Node = FakeCombatant.new("Monster", 7.0, 50.0)
 	monster.set_meta("MonsterName", "怪物")
 
-	timeline.call("update_timeline", [player, monster], player, 10000.0)
+	timeline.call("update_timeline", [player, monster], player, 500.0)
 
 	assert_eq(timeline.active_labels.size(), 4, "四个预测槽位都必须生成标签。")
 	assert_eq(_label_text(timeline, 0), "玩家", "当前行动角色不能显示行动值。")
-	assert_eq(_label_text(timeline, 1), "怪物  5", "第二个槽位必须显示怪物距离当前时刻还差 5 点行动值。")
-	assert_eq(_label_text(timeline, 2), "玩家  100", "第三个槽位必须显示从当前时刻累计到该次行动的 5 + 95 = 100 点距离。")
-	assert_eq(_label_text(timeline, 3), "怪物  105", "第四个槽位必须继续累计，显示 5 + 95 + 5 = 105 点距离。")
+	assert_eq(_label_text(timeline, 1), "玩家  5", "统一为 1 行动值 = 1 时间点后，首个后续槽位应显示 5 点距离。")
+	assert_eq(_label_text(timeline, 2), "怪物  7", "第三个槽位必须显示从当前时刻累计的 5 + 2 = 7 点距离。")
+	assert_eq(_label_text(timeline, 3), "玩家  10", "第四个槽位必须继续累计到 5 + 2 + 3 = 10 点距离。")
 
 	timeline.queue_free()
 	player.queue_free()
@@ -67,15 +67,15 @@ func test_current_actor_stays_hidden_even_when_its_action_value_is_nonzero() -> 
 	timeline.max_timeline_slots = 3
 	_scene_tree().root.add_child(timeline)
 
-	var player: Node = FakeCombatant.new("Player", 50.0)
+	var player: Node = FakeCombatant.new("Player", 4.0)
 	var monster: Node = FakeCombatant.new("Monster", 5.0)
 	monster.set_meta("MonsterName", "怪物")
 
-	timeline.call("update_timeline", [player, monster], player, 10000.0)
+	timeline.call("update_timeline", [player, monster], player, 500.0)
 
 	assert_eq(_label_text(timeline, 0), "玩家", "当前行动角色即使行动值非零也不能显示数字。")
-	assert_eq(_label_text(timeline, 1), "怪物  5", "后续槽位仍要显示从当前时刻到该次行动的累计距离。")
-	assert_eq(_label_text(timeline, 2), "玩家  50", "第二次行动的累计距离必须继续累加，而不是只显示单段间隔。")
+	assert_eq(_label_text(timeline, 1), "玩家  4", "当前角色下一次行动必须先显示自己的 4 点距离。")
+	assert_eq(_label_text(timeline, 2), "怪物  5", "怪物的槽位必须显示累计到 4 + 1 = 5 点距离。")
 
 	timeline.queue_free()
 	player.queue_free()
@@ -84,17 +84,17 @@ func test_current_actor_stays_hidden_even_when_its_action_value_is_nonzero() -> 
 
 func test_action_value_is_rounded_to_whole_number() -> void:
 	var timeline: ActionTimeline = TIMELINE_SCRIPT.new()
-	timeline.max_timeline_slots = 2
+	timeline.max_timeline_slots = 4
 	_scene_tree().root.add_child(timeline)
 
 	var player: Node = FakeCombatant.new("Player", 0.0)
 	var monster: Node = FakeCombatant.new("Monster", 12.6)
 	monster.set_meta("MonsterName", "怪物")
 
-	timeline.call("update_timeline", [player, monster], player, 10000.0)
+	timeline.call("update_timeline", [player, monster], player, 500.0)
 
 	assert_eq(_label_text(timeline, 0), "玩家", "当前行动角色不能显示行动值。")
-	assert_eq(_label_text(timeline, 1), "怪物  13", "行动值必须四舍五入到整数显示。")
+	assert_eq(_label_text(timeline, 3), "怪物  13", "行动值必须四舍五入到整数显示。")
 
 	timeline.queue_free()
 	player.queue_free()

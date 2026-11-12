@@ -26,13 +26,13 @@ signal battle_ended(is_victory: bool)
 
 @export_group("游戏参数")
 @export var turn_draw_count:int = 5 ##每回合摸牌数
-@export var action_total:float = 10000.0 ##行动值总值
+@export var action_total:float = 500.0 ##行动值总值；与局外时间统一为 1 行动值 = 1 时间点
 
 @export_group("局外时间联动")
 ## 每 1 点战斗行动值折算成多少点局外时间。
-## 默认 0.05：一次完整战斗回合（全体各行动一次，约 100 点行动值）推进 5 点局外时间，
-## 约 20 个完整回合推进一个昼夜阶段。设为 0 可关闭联动；负数按 0 处理。
-@export_range(0.0, 1.0, 0.001, "or_greater") var battle_action_value_to_time_multiplier: float = 0.05
+## 统一后固定为 1.0：1 点战斗行动值就是 1 点局外时间。保留导出参数用于调试或兼容
+## 旧配置；设为 0 可关闭联动，负数按 0 处理。
+@export_range(0.0, 1.0, 0.001, "or_greater") var battle_action_value_to_time_multiplier: float = 1.0
 #endregion
 
 #region 其他参数

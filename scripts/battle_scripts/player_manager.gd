@@ -55,7 +55,7 @@ var speed: float:
 ## BattleManager 每次会在 CALCULATE_TURN 中将全体人员的 action_value 逐步扣除，谁先归零谁先行动。
 var action_value: float = 0.0
 
-@export var default_action_total: float = 10000.0 ## 未进入战斗管理器时的行动值总量兜底
+@export var default_action_total: float = 500.0 ## 未进入战斗管理器时的行动值总量兜底；与局外时间统一为 1 行动值 = 1 时间点
 
 # 兜底变量，当没有找到全局玩家或临时玩家时使用
 var _fallback_hp: int = 1000
