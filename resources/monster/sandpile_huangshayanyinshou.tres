@@ -1,6 +1,8 @@
 [gd_resource type="Resource" format=3 uid="uid://b57sfyhlvplgf"]
 
 [ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="2_monster"]
+[ext_resource type="Script" uid="uid://dt6hmo3h7ofhd" path="res://resources/loot/monster_drop_entry.gd" id="5_ijnxr"]
+[ext_resource type="Script" uid="uid://bw14ai6i3tpgq" path="res://resources/loot/monster_drop_pool.gd" id="6_ktjpw"]
 [ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="csv_entry_script"]
 [ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="csv_set_script"]
 [ext_resource type="Resource" uid="uid://cygjacjot10mm" path="res://resources/combat_skills/test_card_2.tres" id="csv_skill_1"]
@@ -22,10 +24,14 @@ Skill = ExtResource("csv_skill_1")
 script = ExtResource("csv_set_script")
 Skills = Array[Resource]([SubResource("CSV_MonsterSkillEntry_1")])
 
+[sub_resource type="Resource" id="Resource_ijnxr"]
+script = ExtResource("6_ktjpw")
+
 [resource]
 script = ExtResource("2_monster")
 MonsterName = "黄沙岩隐兽"
 InitialAttributes = SubResource("CSV_StartingStats")
 ElementalProperty = 4
+drop_pool = SubResource("Resource_ijnxr")
 SkillSet = SubResource("CSV_MonsterSkillSet")
 metadata/_custom_type_script = "uid://buhigatdeqss6"
