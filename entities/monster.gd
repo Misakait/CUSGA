@@ -347,6 +347,10 @@ func Initialize(data: Resource) -> void:
 ## @param data 旧 C# MonsterData 或 GDScript monster_data.gd 资源，允许为空。
 ## @return 无返回值。
 func _update_card_ui(data: Resource) -> void:
+	# 卡面组件只接收五行，确保重新初始化怪物时美术与文字使用同一份数据。
+	var card_visual: Node = get_node_or_null(SPRITE_PATH)
+	if card_visual != null and card_visual.has_method("ApplyElement"):
+		card_visual.call("ApplyElement", _read_elemental_property(data) if data != null else ELEMENT_NONE)
 	if _card_name_label != null:
 		_card_name_label.text = (
 			_read_monster_name(data) if data != null else ""

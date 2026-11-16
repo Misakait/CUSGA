@@ -7,17 +7,17 @@
 [ext_resource type="Script" uid="uid://ber7n2jykqngx" path="res://entities/components/faction_component.gd" id="3_tgvxs"]
 [ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
-[ext_resource type="Texture2D" uid="uid://bhp1kn0sgqewf" path="res://res/monstercard/卡牌模板2.png" id="8_bgonl"]
-[ext_resource type="Texture2D" uid="uid://dh2hqbgi3mpdv" path="res://res/monstercard/PhyPowerIcon.png" id="9_3855q"]
+[ext_resource type="Texture2D" path="res://res/monstercard/monster_frame.svg" id="8_bgonl"]
+[ext_resource type="Texture2D" path="res://res/monstercard/physical_stat.svg" id="9_3855q"]
 [ext_resource type="Theme" uid="uid://cltloypjdpw1h" path="res://res/theme/MonsterCard.tres" id="9_gxwrs"]
 [ext_resource type="Script" uid="uid://sgouf3hurg2x" path="res://scripts/card_scripts/monster_attribute.gd" id="10_nmmph"]
 [ext_resource type="Script" uid="uid://teq3xtey3ker" path="res://entities/components/status_component.gd" id="11_f5jq7"]
-[ext_resource type="Texture2D" uid="uid://c8ryvx8t0btr3" path="res://res/monstercard/MagPowerIcon.png" id="11_ia034"]
+[ext_resource type="Texture2D" path="res://res/monstercard/magic_stat.svg" id="11_ia034"]
 [ext_resource type="Script" uid="uid://dwdggwaghdncs" path="res://entities/components/damage_receiver_component.gd" id="12_twqyq"]
-[ext_resource type="Texture2D" uid="uid://coexdqa0rbbyi" path="res://res/monstercard/PhyDefIcon.png" id="12_ve02a"]
-[ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="13_8mndn"]
+[ext_resource type="Texture2D" path="res://res/monstercard/armor_stat.svg" id="12_ve02a"]
+[ext_resource type="Texture2D" path="res://res/monstercard/ward_stat.svg" id="13_8mndn"]
 [ext_resource type="Script" uid="uid://cxcyp1avu7xtb" path="res://entities/components/loot_component.gd" id="13_kt6in"]
-[ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="14_svjq7"]
+[ext_resource type="Texture2D" path="res://res/monstercard/speed_stat.svg" id="14_svjq7"]
 [ext_resource type="Script" uid="uid://1kvwpmm6xleh" path="res://entities/components/monster_skill_component.gd" id="16_1lcr1"]
 [ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="17_3855q"]
 [ext_resource type="Script" uid="uid://bu272src84v8y" path="res://core/combat/effects/card_effect.gd" id="18_gxwrs"]
@@ -25,6 +25,20 @@
 [ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="20_ve02a"]
 [ext_resource type="Script" uid="uid://ck6vnjbp88ek7" path="res://scripts/ui_scripts/status_effect_bar.gd" id="status_bar_script"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
+
+[ext_resource type="Script" path="res://scripts/card_scripts/monster_card_visual.gd" id="monster_visual"]
+
+[sub_resource type="StyleBoxFlat" id="IntentBadge"]
+bg_color = Color(0.12, 0.16, 0.2, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.66, 0.61, 0.49, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_left = 3
+corner_radius_bottom_right = 3
 
 [sub_resource type="Resource" id="Resource_4jp6m"]
 script = ExtResource("2_gqard")
@@ -44,14 +58,14 @@ metadata/_custom_type_script = "uid://buhigatdeqss6"
 size = Vector2(150, 210)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.15, 0.15, 0.15, 0.8)
+bg_color = Color(0.14, 0.17, 0.2, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
-bg_color = Color(0.8, 0.2, 0.2, 1)
+bg_color = Color(0.82, 0.31, 0.29, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -82,6 +96,8 @@ BaseData = SubResource("Resource_43qb6")
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1606835649]
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("8_bgonl")
+script = ExtResource("monster_visual")
+texture_filter = 1
 
 [node name="TargetSelectionOutline" type="Line2D" parent="." unique_id=1073654958]
 visible = false
@@ -104,10 +120,10 @@ shape = SubResource("RectangleShape2D_ooags")
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -75.0
-offset_top = -144.0
-offset_right = 75.0
-offset_bottom = -119.0
+offset_left = -65.0
+offset_top = -132.0
+offset_right = 65.0
+offset_bottom = -114.0
 grow_horizontal = 2
 size_flags_horizontal = 4
 mouse_filter = 2
@@ -127,6 +143,9 @@ grow_vertical = 2
 text = "100/100"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme = ExtResource("9_gxwrs")
+theme_override_font_sizes/font_size = 13
+mouse_filter = 2
 
 [node name="CardName" type="Label" parent="." unique_id=1548866894]
 anchors_preset = 8
@@ -134,124 +153,268 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -65.0
-offset_top = -74.0
-offset_right = 66.0
-offset_bottom = 8.0
+offset_left = -64.0
+offset_top = -95.0
+offset_right = 64.0
+offset_bottom = -68.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 16
 text = "怪物名"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
+mouse_filter = 2
 
+[node name="ElementCaption" type="Label" parent="Sprite2D"]
+show_behind_parent = false
+offset_left = -39.0
+offset_top = -41.0
+offset_right = 7.0
+offset_bottom = -28.0
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.35, 0.31, 0.29, 1)
+theme_override_colors/font_outline_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 10
+text = "五行"
+vertical_alignment = 1
 [node name="Element" type="Label" parent="." unique_id=765138840]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -65.0
-offset_top = -88.0
-offset_right = 66.0
-offset_bottom = -44.0
+offset_left = 35.0
+offset_top = -61.0
+offset_right = 61.0
+offset_bottom = -42.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("9_gxwrs")
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(0.16, 0.2, 0.24, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.87, 1)
 theme_override_constants/outline_size = 1
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 14
 text = "属"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
+mouse_filter = 2
 
 [node name="MonsterAttribute" type="VBoxContainer" parent="." unique_id=1050689439]
-offset_left = -65.0
-offset_top = 2.0
-offset_right = 65.0
-offset_bottom = 93.0
+offset_left = -59.0
+offset_top = -34.0
+offset_right = 59.0
+offset_bottom = 82.0
 theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
 script = ExtResource("10_nmmph")
+theme_override_constants/separation = 4
+mouse_filter = 2
 
-[node name="power" type="HBoxContainer" parent="MonsterAttribute" unique_id=1710520375]
+[node name="power" type="GridContainer" parent="MonsterAttribute" unique_id=1710520375]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 alignment = 1
+theme_override_constants/separation = 3
+custom_minimum_size = Vector2(0, 18)
+mouse_filter = 2
+theme_override_constants/v_separation = 4
+columns = 3
+theme_override_constants/h_separation = 7
 
 [node name="PhyTexture" type="TextureRect" parent="MonsterAttribute/power" unique_id=652186400]
 layout_mode = 2
 texture = ExtResource("9_3855q")
-expand_mode = 2
+expand_mode = 1
+custom_minimum_size = Vector2(14, 14)
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="PhysicalCaption" type="Label" parent="MonsterAttribute/power"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.35, 0.31, 0.29, 1)
+theme_override_colors/font_outline_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
+text = "物攻"
 
 [node name="PhyLabel" type="Label" parent="MonsterAttribute/power" unique_id=1682421191]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
-theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 16
 text = "100"
+custom_minimum_size = Vector2(32, 20)
+vertical_alignment = 1
+mouse_filter = 2
+horizontal_alignment = 2
 
 [node name="split" type="Label" parent="MonsterAttribute/power" unique_id=1931687392]
 layout_mode = 2
-text = "  "
+text = ""
+custom_minimum_size = Vector2(10, 0)
+mouse_filter = 2
+visible = false
 
 [node name="MagTexture" type="TextureRect" parent="MonsterAttribute/power" unique_id=1996645392]
 layout_mode = 2
 texture = ExtResource("11_ia034")
-expand_mode = 2
+expand_mode = 1
+custom_minimum_size = Vector2(14, 14)
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="MagicCaption" type="Label" parent="MonsterAttribute/power"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.35, 0.31, 0.29, 1)
+theme_override_colors/font_outline_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
+text = "法强"
 
 [node name="MagLabel" type="Label" parent="MonsterAttribute/power" unique_id=1517144689]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
-theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 16
 text = "100"
+custom_minimum_size = Vector2(32, 20)
+vertical_alignment = 1
+mouse_filter = 2
+horizontal_alignment = 2
 
-[node name="def" type="HBoxContainer" parent="MonsterAttribute" unique_id=2137366164]
+[node name="def" type="GridContainer" parent="MonsterAttribute" unique_id=2137366164]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 alignment = 1
+theme_override_constants/separation = 3
+custom_minimum_size = Vector2(0, 18)
+mouse_filter = 2
+theme_override_constants/v_separation = 4
+columns = 3
+theme_override_constants/h_separation = 7
 
 [node name="PhyTexture" type="TextureRect" parent="MonsterAttribute/def" unique_id=1466205426]
 layout_mode = 2
 texture = ExtResource("12_ve02a")
-expand_mode = 2
+expand_mode = 1
+custom_minimum_size = Vector2(14, 14)
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="ArmorCaption" type="Label" parent="MonsterAttribute/def"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.35, 0.31, 0.29, 1)
+theme_override_colors/font_outline_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
+text = "物抗"
 
 [node name="PhyLabel" type="Label" parent="MonsterAttribute/def" unique_id=2090486056]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
-theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 16
 text = "100"
+custom_minimum_size = Vector2(32, 20)
+vertical_alignment = 1
+mouse_filter = 2
+horizontal_alignment = 2
 
 [node name="split" type="Label" parent="MonsterAttribute/def" unique_id=1913533421]
 layout_mode = 2
-text = "  "
+text = ""
+custom_minimum_size = Vector2(10, 0)
+mouse_filter = 2
+visible = false
 
 [node name="MagTexture" type="TextureRect" parent="MonsterAttribute/def" unique_id=1780260873]
 layout_mode = 2
 texture = ExtResource("13_8mndn")
-expand_mode = 2
+expand_mode = 1
+custom_minimum_size = Vector2(14, 14)
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="WardCaption" type="Label" parent="MonsterAttribute/def"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.35, 0.31, 0.29, 1)
+theme_override_colors/font_outline_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
+text = "法抗"
 
 [node name="MagLabel" type="Label" parent="MonsterAttribute/def" unique_id=999046299]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
-theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 16
 text = "100"
+custom_minimum_size = Vector2(32, 20)
+vertical_alignment = 1
+mouse_filter = 2
+horizontal_alignment = 2
 
 [node name="speed" type="HBoxContainer" parent="MonsterAttribute" unique_id=1868972931]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
 alignment = 1
+theme_override_constants/separation = 7
+custom_minimum_size = Vector2(0, 18)
+mouse_filter = 2
 
 [node name="Texture" type="TextureRect" parent="MonsterAttribute/speed" unique_id=1998929715]
 layout_mode = 2
 texture = ExtResource("14_svjq7")
-expand_mode = 2
+expand_mode = 1
+custom_minimum_size = Vector2(14, 14)
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="SpeedCaption" type="Label" parent="MonsterAttribute/speed"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_colors/font_color = Color(0.35, 0.31, 0.29, 1)
+theme_override_colors/font_outline_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
+text = "速度"
 
 [node name="Label" type="Label" parent="MonsterAttribute/speed" unique_id=881537671]
 layout_mode = 2
 theme = ExtResource("9_gxwrs")
-theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.25, 0.17, 0.22, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 16
 text = "100"
+custom_minimum_size = Vector2(32, 20)
+vertical_alignment = 1
+mouse_filter = 2
+horizontal_alignment = 2
 
 [node name="StatusEffectBar" type="HBoxContainer" parent="." unique_id=1708846443]
 offset_left = -65.0
@@ -264,18 +427,21 @@ alignment = 1
 script = ExtResource("status_bar_script")
 
 [node name="IntentLabel" type="Label" parent="."]
-visible = false
-offset_left = -75.0
-offset_top = 140.0
-offset_right = 75.0
-offset_bottom = 174.0
-mouse_filter = 2
+offset_left = -42.0
+offset_top = 134.0
+offset_right = 42.0
+offset_bottom = 158.0
+scale = Vector2(1, 1)
 theme_override_colors/font_color = Color(1, 0.93, 0.72, 1)
 theme_override_colors/font_outline_color = Color(0.1, 0.08, 0.12, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 vertical_alignment = 1
+visible = false
+mouse_filter = 2
+theme = ExtResource("9_gxwrs")
+theme_override_styles/normal = SubResource("IntentBadge")
 
 [node name="Components" type="Node" parent="." unique_id=1744515292]
 
