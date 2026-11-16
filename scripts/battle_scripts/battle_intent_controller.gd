@@ -9,6 +9,13 @@ const SKILL_CARD_DIRECTORY: String = "res://resources/skill_cards/"
 const SKILL_CARD_VIEW: GDScript = preload("res://scripts/card_scripts/skill_card.gd")
 ## 标签位于怪物根节点下，不参与卡面缩放或目标选择动画。
 const INTENT_LABEL_PATH: NodePath = ^"IntentLabel"
+## 与技能卡分类一致的提示色，颜色只帮助辨认，不改变技能分类或抽取规则。
+const CATEGORY_COLORS: Dictionary = {
+	"攻击": Color("eda695"),
+	"防御": Color("b9d99d"),
+	"状态": Color("a9d8ec"),
+	"未分类": Color("cbb9df"),
+}
 
 ## 角色到待执行技能的映射；null 也是已锁定结果，表示原有的普通攻击兜底。
 var _planned_skills: Dictionary = {}
@@ -32,6 +39,7 @@ func Refresh(actors: Array, show_intents: bool) -> void:
 		label.visible = show_intents
 		if show_intents:
 			label.text = GetCategoryText(_get_or_plan(actor))
+			label.add_theme_color_override("font_color", CATEGORY_COLORS.get(label.text, CATEGORY_COLORS["未分类"]))
 
 
 ## 取走角色已经预告的技能；未经过玩家回合的快速角色会在此首次选定。

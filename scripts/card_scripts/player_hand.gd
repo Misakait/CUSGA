@@ -10,6 +10,12 @@ const HAND_Y_POSITION = 620 #第一行卡牌的高度位置
 const MAX_CARDS_PER_ROW = 6 # 每行最大卡牌数量
 const ROW_SPACING_Y = -80   # 两行之间的Y轴垂直间距 (正数往下排，负数往上排)
 
+@export_group("手牌布局")
+## 开启后所有手牌在同一行自适应压缩，避免第二行遮挡状态栏；可切回原有多行布局。
+@export var compact_single_row: bool = true
+## 单行布局左右预留空间，包含卡牌半宽；默认 128 可让完整卡面留在视口内。
+@export_range(105.0, 200.0, 1.0) var single_row_side_margin: float = 128.0
+
 @export_group("手牌释放判定参数")
 @export var hand_release_area_padding: Vector2 = Vector2(120.0, 80.0) ## 为了避免玩家拖回手牌区时被误判为施放，这里给判定范围留出缓冲
 
@@ -54,6 +60,8 @@ func is_release_in_hand_area(release_position: Vector2) -> bool:
 	var card_count = player_hand_card.size()
 	var row_count = int(ceil(float(card_count) / float(MAX_CARDS_PER_ROW)))
 	row_count = max(row_count, 1)
+	if compact_single_row:
+		row_count = 1
 
 	var first_row_y = HAND_Y_POSITION
 	var last_row_y = HAND_Y_POSITION + (row_count - 1) * ROW_SPACING_Y
@@ -138,6 +146,12 @@ func update_hand_positions() -> void:
 
 # 返回 Vector2，同时计算 X 和 Y
 func calculate_card_position(index) -> Vector2:
+	if compact_single_row:
+		# 手牌越多仅压缩横向间距，悬停仍按原有逻辑抬升，保证状态区始终可见。
+		var card_count: int = player_hand_card.size()
+		var available_width: float = maxf(0.0, get_viewport_rect().size.x - single_row_side_margin * 2.0)
+		var spacing: float = minf(float(CARD_WIDTH), available_width / maxf(1.0, float(card_count - 1)))
+		return Vector2(center_screen_x + (index - (card_count - 1) / 2.0) * spacing, HAND_Y_POSITION)
 	# 计算当前卡牌属于第几行 (0为第一行，1为第二行)
 	var row = index / MAX_CARDS_PER_ROW
 	# 计算当前卡牌在当前行是第几个 (0 到 MAX_CARDS_PER_ROW-1)

@@ -108,6 +108,35 @@ func test_cleanup_entry_removes_freed_reference_directly() -> void:
 
 
 ## 建立隔离的手牌测试环境：占位依存节点 + 正式 PlayerHand 脚本。
+## 满手牌保持单行，不能遮挡状态栏，也不能越过视口左右边界。
+## 返回值：无。
+func test_full_hand_stays_inside_single_row() -> void:
+	# 使用正式布局脚本与卡牌字段，覆盖实际容量上限下的布局结果。
+	var player_hand: Node2D = _build_hand_harness()
+	# 测试用卡牌挂在同级卡牌管理器下，与运行时节点关系一致。
+	var card_manager: Node = player_hand.get_parent().get_node("CardManager")
+	# 直接填入容量上限，随后由正式入口完成失效清理与布局。
+	var hand_cards: Array = player_hand.get("player_hand_card")
+	for index: int in range(12):
+		hand_cards.append(_new_card(card_manager))
+	player_hand.call("update_hand_positions")
+	# 布局边界由当前视口计算，因此编辑器窗口尺寸不会影响断言口径。
+	var viewport_width: float = player_hand.get_viewport_rect().size.x
+	# 所有卡牌共享同一个纵坐标，保证第二排不会覆盖战斗状态栏。
+	var first: Vector2 = player_hand.call("calculate_card_position", 0)
+	var last: Vector2 = player_hand.call("calculate_card_position", 11)
+	assert_true(first.x >= 105.0, "第一张卡牌必须完整留在视口内。")
+	assert_true(last.x <= viewport_width - 105.0, "最后一张卡牌必须完整留在视口内。")
+	assert_true(is_equal_approx(first.x + last.x, viewport_width), "手牌整体必须围绕视口中心对称。")
+	for index: int in range(12):
+		# 每张牌的位置都必须位于底部的同一条手牌基线上。
+		var position: Vector2 = player_hand.call("calculate_card_position", index)
+		assert_eq(position.y, first.y, "满手牌也不能增加遮挡状态栏的第二行。")
+	assert_false(player_hand.call("is_release_in_hand_area", Vector2(viewport_width / 2.0, 480.0)), "状态面板不能误判为手牌回收区。")
+	assert_true(player_hand.call("is_release_in_hand_area", Vector2(viewport_width / 2.0, first.y)), "手牌位置必须仍可安全回收卡牌。")
+
+
+## 建立隔离的手牌测试环境：占位依存节点 + 正式 PlayerHand 脚本。
 ## @return Node2D 已进入场景树的 PlayerHand 实例。
 func _build_hand_harness() -> Node2D:
 	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree

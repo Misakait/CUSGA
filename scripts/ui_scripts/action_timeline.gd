@@ -219,6 +219,9 @@ func _refresh_ui() -> void:
 			matched_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			matched_label.pivot_offset = Vector2(ui_item_size.x / 2.0, ui_item_size.y / 2.0)
 			matched_label.custom_minimum_size = ui_item_size
+			matched_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			matched_label.clip_text = true
+			matched_label.add_theme_font_size_override("font_size", 14)
 
 			var style = StyleBoxFlat.new()
 			style.bg_color = color_bg
@@ -229,7 +232,7 @@ func _refresh_ui() -> void:
 			matched_label.add_theme_stylebox_override("normal", style)
 
 			# 新节点从下方滑入
-			matched_label.position = Vector2(0, (i + 2) * (ui_item_size.y + slot_spacing))
+			matched_label.position = _slot_position(i + 2)
 			matched_label.modulate.a = 0.0 # 初始透明
 
 			add_child(matched_label)
@@ -242,15 +245,21 @@ func _refresh_ui() -> void:
 
 		# 根据实体类型设置颜色
 		var base_color = color_player if "player" in entity.name.to_lower() else color_enemy
+		# 文字与底板分开着色，保持行动槽对比度，不把整个面板染成红蓝色块。
+		var slot_style: StyleBoxFlat = matched_label.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
+		slot_style.bg_color = color_bg
+		slot_style.set_border_width_all(1)
+		slot_style.border_color = Color("c6a76e") if is_current_slot else Color("40505b")
+		matched_label.add_theme_stylebox_override("normal", slot_style)
 
 		# 计算该实体本次所在的目标位置
-		var target_pos = Vector2(0, i * (ui_item_size.y + slot_spacing))
+		var target_pos = _slot_position(i)
 
 		# 并行执行位置和颜色的过渡动画
 		var t_pos = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		t_pos.set_parallel(true)
 		t_pos.tween_property(matched_label, "position", target_pos, anim_tween_duration)
-		t_pos.tween_property(matched_label, "modulate", base_color, anim_tween_duration)
+		t_pos.tween_property(matched_label, "modulate", Color.WHITE, anim_tween_duration)
 
 		# 第一个索引（顶端）通常为当前行动实体，采用最大号缩放且文字高亮（实现回合更替时的平滑放大效果）
 		if i == 0 and entity == _current_active_entity:
@@ -258,7 +267,7 @@ func _refresh_ui() -> void:
 			matched_label.add_theme_color_override("font_color", color_active_font)
 		else:
 			_tween_scale(matched_label, scale_normal)
-			matched_label.remove_theme_color_override("font_color")
+			matched_label.add_theme_color_override("font_color", base_color)
 
 		new_labels.append(matched_label)
 
@@ -269,11 +278,18 @@ func _refresh_ui() -> void:
 	for old_label in old_labels:
 		var t_fade = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		t_fade.set_parallel(true)
-		t_fade.tween_property(old_label, "position:y", old_label.position.y - (ui_item_size.y + slot_spacing), anim_tween_duration)
+		t_fade.tween_property(old_label, "position", old_label.position - _slot_position(1), anim_tween_duration)
 		t_fade.tween_property(old_label, "modulate:a", 0.0, anim_tween_duration)
 		t_fade.chain().tween_callback(old_label.queue_free)
 
 	active_labels = new_labels
+
+
+## 计算纵向行动槽的局部位置，让进入、重排与退出动画共用同一间距。
+## 参数 index：行动槽索引，允许用于入场动画的尾部索引。
+## 返回值：从当前行动槽起算的局部位置。
+func _slot_position(index: int) -> Vector2:
+	return Vector2(0.0, index * (ui_item_size.y + slot_spacing))
 
 ## 外部接口：供卡牌管理器(CardManager)在选卡拖拽到怪物身上时，实现行动轴中相关怪物方块联动高亮放大
 func highlight_entity(target_entity: Variant, is_highlight: bool) -> void:

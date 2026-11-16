@@ -39,8 +39,15 @@ func _setup_catchup_bar() -> void:
 		catchup_fill.corner_radius_top_right = fill_style.corner_radius_top_right
 		catchup_fill.corner_radius_bottom_right = fill_style.corner_radius_bottom_right
 		catchup_fill.corner_radius_bottom_left = fill_style.corner_radius_bottom_left
+	# 贴图式血条必须保留九宫格切角；继续使用纯色矩形会在扣血缓冲区露出方形边缘。
+	if fill_style is StyleBoxTexture:
+		# 副本只影响当前血条的缓冲层，不能调制共享资源，否则前置填充也会变透明。
+		var textured_catchup: StyleBoxTexture = fill_style.duplicate() as StyleBoxTexture
+		textured_catchup.modulate_color = Color(1.0, 1.0, 1.0, 0.45)
+		catchup_bar.add_theme_stylebox_override("fill", textured_catchup)
+	else:
+		catchup_bar.add_theme_stylebox_override("fill", catchup_fill)
 
-	catchup_bar.add_theme_stylebox_override("fill", catchup_fill)
 	catchup_bar.add_theme_stylebox_override("background", bg_style)
 
 	# 把自己的背景设为透明，这样就能透出缓冲条的白色和背景
@@ -49,6 +56,9 @@ func _setup_catchup_bar() -> void:
 
 	add_child(catchup_bar)
 
+## 刷新实际数值与扣血缓冲层，支持纯色和贴图式血条。
+## 参数 current_val：当前值；max_val：上限；instant：是否跳过过渡动画。
+## 返回值：无。
 func update_stat(current_val: float, max_val: float, instant: bool = false) -> void:
 	self.max_value = max_val
 	catchup_bar.max_value = max_val

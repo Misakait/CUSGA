@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://6xlbxgjxyana"]
 
 [ext_resource type="Script" uid="uid://djoslswtyrhqt" path="res://scripts/battle_scripts/monster_detail_panel.gd" id="1_script"]
-[ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="2_theme"]
+[ext_resource type="Theme" path="res://res/theme/battle_ui.tres" id="2_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail"]
 bg_color = Color(0.0705882, 0.0784314, 0.109804, 0.96)

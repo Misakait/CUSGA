@@ -19,22 +19,25 @@
 [ext_resource type="Resource" uid="uid://bw071g6epimlf" path="res://resources/monster/anvil_cuihuotiewei.tres" id="16_lbcxr"]
 [ext_resource type="Resource" uid="uid://b57sfyhlvplgf" path="res://resources/monster/sandpile_huangshayanyinshou.tres" id="18_eboiy"]
 [ext_resource type="PackedScene" uid="uid://disdd0mnwhfht" path="res://scenes/player_scenes/player.tscn" id="18_sep7c"]
-[ext_resource type="Theme" uid="uid://c2h5a54fkrrvi" path="res://res/theme/Battle.tres" id="24_317fs"]
+[ext_resource type="Theme" uid="uid://chyea0l5g7bqh" path="res://res/theme/battle_ui.tres" id="24_317fs"]
 [ext_resource type="Theme" uid="uid://cltloypjdpw1h" path="res://res/theme/MonsterCard.tres" id="27_7g460"]
-[ext_resource type="Texture2D" uid="uid://dh2hqbgi3mpdv" path="res://res/monstercard/PhyPowerIcon.png" id="28_317fs"]
-[ext_resource type="Texture2D" uid="uid://c8ryvx8t0btr3" path="res://res/monstercard/MagPowerIcon.png" id="29_3juot"]
+[ext_resource type="Texture2D" uid="uid://dkttsm542xehu" path="res://res/monstercard/physical_stat.svg" id="28_317fs"]
+[ext_resource type="Texture2D" uid="uid://cfur3g2pnojca" path="res://res/monstercard/magic_stat.svg" id="29_3juot"]
 [ext_resource type="Script" uid="uid://bfyne3eaxlybm" path="res://scripts/battle_scripts/player_attribute.gd" id="29_f7hr6"]
-[ext_resource type="Texture2D" uid="uid://coexdqa0rbbyi" path="res://res/monstercard/PhyDefIcon.png" id="30_f7hr6"]
-[ext_resource type="Texture2D" uid="uid://be05pavvds5nd" path="res://res/monstercard/MagDefIcon.png" id="31_2op3e"]
-[ext_resource type="Texture2D" uid="uid://bsnxkvo2ki4fu" path="res://res/monstercard/SpeedIcon.png" id="32_jxr1f"]
-[ext_resource type="Texture2D" uid="uid://bxygnpxga81hf" path="res://res/background/沙漠-b1e0(1).png" id="37_3juot"]
+[ext_resource type="Texture2D" uid="uid://xcxb4k1qdkir" path="res://res/monstercard/armor_stat.svg" id="30_f7hr6"]
+[ext_resource type="Texture2D" uid="uid://cqbv5jmoorjpe" path="res://res/monstercard/ward_stat.svg" id="31_2op3e"]
+[ext_resource type="Texture2D" uid="uid://bgwke3niqg3ao" path="res://res/monstercard/speed_stat.svg" id="32_jxr1f"]
 [ext_resource type="PackedScene" uid="uid://kc58owl7vjuq" path="res://scenes/ui_scenes/day_night_filter.tscn" id="43_lbcxr"]
 [ext_resource type="PackedScene" uid="uid://6xlbxgjxyana" path="res://scenes/battle_scenes/monster_detail_panel.tscn" id="44_s3yaj"]
+[ext_resource type="Texture2D" uid="uid://crd075mclyyx7" path="res://res/background/battle/wood.png" id="45_ascsg"]
+[ext_resource type="Script" uid="uid://do6hlgl8k0r4l" path="res://scripts/battle_scripts/battle_background.gd" id="46_03qup"]
 [ext_resource type="Script" uid="uid://cfcj8kansah88" path="res://scripts/battle_scripts/battle_settings_panel.gd" id="battle_settings_panel_script"]
 [ext_resource type="Script" uid="uid://c4gauakj31i5k" path="res://scripts/battle_scripts/click_mode_action_bar.gd" id="click_mode_action_bar_script"]
 [ext_resource type="Script" uid="uid://be77luvd8k25j" path="res://scripts/battle_scripts/combat_feedback_director.gd" id="combat_feedback_director_script"]
 [ext_resource type="Script" uid="uid://cxpw1p66e2c33" path="res://scripts/battle_scripts/combat_feedback_profile.gd" id="combat_feedback_profile_script"]
 [ext_resource type="Script" uid="uid://dangbh5lxhwnu" path="res://scripts/battle_scripts/combat_screen_impulse.gd" id="combat_screen_impulse_script"]
+[ext_resource type="StyleBox" path="res://res/battle_ui/energy_fill.tres" id="energy_fill"]
+[ext_resource type="StyleBox" path="res://res/battle_ui/health_fill.tres" id="health_fill"]
 [ext_resource type="Script" uid="uid://ck6vnjbp88ek7" path="res://scripts/ui_scripts/status_effect_bar.gd" id="status_bar_script"]
 [ext_resource type="Script" uid="uid://4ki20geucq56" path="res://scripts/ui_scripts/stat_bar.gd" id="stat_bar_script"]
 [ext_resource type="Resource" uid="uid://16qrp6486xaj" path="res://resources/skill_cards/test_card_3.tres" id="test_card_3"]
@@ -44,6 +47,7 @@
 [ext_resource type="Resource" uid="uid://bb2usyhro8ls2" path="res://resources/skill_cards/test_card_7.tres" id="test_card_7"]
 [ext_resource type="Script" uid="uid://b74g378xtw11y" path="res://scripts/ui_scripts/action_timeline.gd" id="timeline_script"]
 [ext_resource type="PackedScene" uid="uid://uo42yx65gvg6" path="res://scenes/ui_scenes/TooltipPanel.tscn" id="tooltip_panel_scene"]
+[ext_resource type="StyleBox" path="res://res/battle_ui/vital_track.tres" id="vital_track"]
 
 [sub_resource type="Resource" id="Resource_lbcxr"]
 script = ExtResource("12_bjehq")
@@ -91,34 +95,6 @@ metadata/__load_path__ = "res://scenes/skill_card_scenes/Card.tscn"
 [sub_resource type="Resource" id="CombatFeedbackProfile_default"]
 script = ExtResource("combat_feedback_profile_script")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
-bg_color = Color(0.15, 0.15, 0.15, 0.8)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
-bg_color = Color(0.8, 0.2, 0.2, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_bg"]
-bg_color = Color(0.15, 0.15, 0.15, 0.8)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_fill"]
-bg_color = Color(0.2, 0.6, 0.8, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eboiy"]
 bg_color = Color(0.6, 0.6, 0.6, 0.8235294)
 border_width_left = 1
@@ -150,6 +126,8 @@ script = ExtResource("8_ptgcx")
 
 [node name="MonsterManager" type="Node2D" parent="." unique_id=538886183]
 script = ExtResource("8_xseyc")
+monster_height = 160.0
+monster_spacing = 194.0
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1114505953]
 script = ExtResource("10_navvr")
@@ -185,11 +163,13 @@ screen_impulse_path = NodePath("../CombatScreenImpulse")
 z_index = 2000
 
 [node name="TurnEnd" type="Button" parent="Button" unique_id=438840299]
-offset_left = 1112.0
-offset_top = 401.0
-offset_right = 1229.0
-offset_bottom = 456.0
+offset_left = 1040.0
+offset_top = 464.0
+offset_right = 1192.0
+offset_bottom = 508.0
+tooltip_text = "结束本回合并弃置剩余手牌"
 theme = ExtResource("24_317fs")
+theme_override_font_sizes/font_size = 18
 text = "结束回合"
 
 [node name="DrawCard" type="Button" parent="Button" unique_id=871572952]
@@ -205,13 +185,15 @@ text = "摸牌"
 z_index = 2000
 
 [node name="HpBar" type="ProgressBar" parent="UI" unique_id=1277872820]
-offset_left = 340.0
-offset_top = 400.0
-offset_right = 540.0
-offset_bottom = 430.0
+texture_filter = 1
+offset_left = 296.0
+offset_top = 448.0
+offset_right = 600.0
+offset_bottom = 462.0
+mouse_filter = 2
 theme = ExtResource("24_317fs")
-theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
+theme_override_styles/background = ExtResource("vital_track")
+theme_override_styles/fill = ExtResource("health_fill")
 value = 100.0
 show_percentage = false
 script = ExtResource("stat_bar_script")
@@ -219,38 +201,41 @@ metadata/_edit_use_anchors_ = true
 
 [node name="HpText" type="Label" parent="UI/HpBar" unique_id=1277872821]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = -23.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100/100"
-horizontal_alignment = 1
+horizontal_alignment = 2
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
 [node name="HpTitle" type="Label" parent="UI/HpBar" unique_id=327797566]
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = -60.0
-offset_top = -13.0
-offset_right = -5.0
-offset_bottom = 13.0
+offset_top = -23.0
+offset_right = 60.0
+offset_bottom = -3.0
 grow_vertical = 2
-text = "血量"
-horizontal_alignment = 2
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
+text = "生命"
 vertical_alignment = 1
 
 [node name="EnergyBar" type="ProgressBar" parent="UI" unique_id=1840398388]
-offset_left = 340.0
-offset_top = 448.0
-offset_right = 540.0
-offset_bottom = 478.0
+texture_filter = 1
+offset_left = 296.0
+offset_top = 494.0
+offset_right = 600.0
+offset_bottom = 508.0
+mouse_filter = 2
 theme = ExtResource("24_317fs")
-theme_override_styles/background = SubResource("StyleBoxFlat_energy_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_energy_fill")
+theme_override_styles/background = ExtResource("vital_track")
+theme_override_styles/fill = ExtResource("energy_fill")
 value = 100.0
 show_percentage = false
 script = ExtResource("stat_bar_script")
@@ -258,161 +243,210 @@ metadata/_edit_use_anchors_ = true
 
 [node name="EnergyText" type="Label" parent="UI/EnergyBar" unique_id=1840398389]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = -23.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100/100"
-horizontal_alignment = 1
+horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="EnergyTitle" type="Label" parent="UI/EnergyBar" unique_id=1840398390]
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = -60.0
-offset_top = -13.0
-offset_right = -5.0
-offset_bottom = 13.0
+offset_top = -23.0
+offset_right = 60.0
+offset_bottom = -3.0
 grow_vertical = 2
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
 text = "能量"
-horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="PlayerAttributePanel" type="Panel" parent="UI" unique_id=1078631529]
+visible = false
 offset_left = 689.0
 offset_top = 427.0
 offset_right = 1003.0
 offset_bottom = 451.0
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_eboiy")
 
 [node name="PlayerAttribute" type="VBoxContainer" parent="UI" unique_id=369425618]
-offset_left = 689.0
-offset_top = 406.0
-offset_right = 1003.0
-offset_bottom = 499.0
+offset_left = 668.0
+offset_top = 434.0
+offset_right = 912.0
+offset_bottom = 520.0
+mouse_filter = 2
 theme = ExtResource("27_7g460")
-alignment = 1
+theme_override_constants/separation = 6
 script = ExtResource("29_f7hr6")
 
-[node name="attribute" type="HBoxContainer" parent="UI/PlayerAttribute" unique_id=1881192759]
+[node name="attribute" type="GridContainer" parent="UI/PlayerAttribute" unique_id=1881192759]
 layout_mode = 2
+mouse_filter = 2
 theme = ExtResource("27_7g460")
-alignment = 1
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 8
+columns = 6
 
 [node name="PhyPowerTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=2071213327]
+custom_minimum_size = Vector2(14, 14)
 layout_mode = 2
+tooltip_text = "物理攻击"
 texture = ExtResource("28_317fs")
-expand_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="PhyPowerLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=823819621]
+custom_minimum_size = Vector2(30, 20)
 layout_mode = 2
 theme = ExtResource("27_7g460")
-theme_override_font_sizes/font_size = 15
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100"
+vertical_alignment = 1
 
 [node name="split" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=270001395]
+visible = false
 layout_mode = 2
 text = "  "
 
 [node name="MagPowerTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=1363800386]
+custom_minimum_size = Vector2(14, 14)
 layout_mode = 2
+tooltip_text = "法术强度"
 texture = ExtResource("29_3juot")
-expand_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MagPowerLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=1123990083]
+custom_minimum_size = Vector2(30, 20)
 layout_mode = 2
 theme = ExtResource("27_7g460")
-theme_override_font_sizes/font_size = 15
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100"
+vertical_alignment = 1
 
 [node name="split2" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=631891463]
+visible = false
 layout_mode = 2
 text = "  "
 
 [node name="PhyDefTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=104565757]
+custom_minimum_size = Vector2(14, 14)
 layout_mode = 2
+tooltip_text = "物理抗性"
 texture = ExtResource("30_f7hr6")
-expand_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="PhyDefLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=484516209]
+custom_minimum_size = Vector2(30, 20)
 layout_mode = 2
 theme = ExtResource("27_7g460")
-theme_override_font_sizes/font_size = 15
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100"
+vertical_alignment = 1
 
 [node name="split3" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=115414777]
+visible = false
 layout_mode = 2
 text = "  "
 
 [node name="MagDefTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=775857420]
+custom_minimum_size = Vector2(14, 14)
 layout_mode = 2
+tooltip_text = "法术抗性"
 texture = ExtResource("31_2op3e")
-expand_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MagDefLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=315003797]
+custom_minimum_size = Vector2(30, 20)
 layout_mode = 2
 theme = ExtResource("27_7g460")
-theme_override_font_sizes/font_size = 15
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100"
+vertical_alignment = 1
 
 [node name="split4" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=1154825550]
+visible = false
 layout_mode = 2
 text = "  "
 
 [node name="SpeedTexture" type="TextureRect" parent="UI/PlayerAttribute/attribute" unique_id=1344090833]
+custom_minimum_size = Vector2(14, 14)
 layout_mode = 2
+tooltip_text = "速度"
 texture = ExtResource("32_jxr1f")
-expand_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="SpeedLabel" type="Label" parent="UI/PlayerAttribute/attribute" unique_id=1592340171]
+custom_minimum_size = Vector2(30, 20)
 layout_mode = 2
 theme = ExtResource("27_7g460")
-theme_override_font_sizes/font_size = 15
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
 text = "100"
+vertical_alignment = 1
 
 [node name="StatusEffectBar" type="HBoxContainer" parent="UI/PlayerAttribute" unique_id=923155428]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 3
-alignment = 1
 script = ExtResource("status_bar_script")
 auto_find_player_entity = true
-empty_bar_visible = true
 stack_font = null
 
 [node name="PlayerFeedbackAnchor" type="Marker2D" parent="UI" unique_id=1590203619]
-position = Vector2(600, 415)
+position = Vector2(448, 422)
 
 [node name="ActionTimeline" type="Control" parent="UI" unique_id=987654321]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 140.0
-offset_bottom = 400.0
+offset_left = 22.0
+offset_top = 24.0
+offset_right = 150.0
+offset_bottom = 310.0
 theme = ExtResource("24_317fs")
 script = ExtResource("timeline_script")
+slot_spacing = 4
+ui_item_size = Vector2(128, 30)
+scale_normal = Vector2(1, 1)
+scale_highlight = Vector2(1.04, 1.04)
+scale_current = Vector2(1.04, 1.04)
+color_player = Color(0.7, 0.86, 0.94, 1)
+color_enemy = Color(0.94, 0.85, 0.72, 1)
+color_active_font = Color(1, 0.9, 0.65, 1)
+color_bg = Color(0.12, 0.16, 0.2, 0.75)
 
 [node name="BattleSettingsPanel" type="Control" parent="UI" unique_id=2135076076]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 880.0
-offset_top = 16.0
-offset_right = 1130.0
-offset_bottom = 190.0
+offset_left = 926.0
+offset_top = 20.0
+offset_right = 1176.0
+offset_bottom = 258.0
 mouse_filter = 2
 script = ExtResource("battle_settings_panel_script")
 
 [node name="SettingsButton" type="Button" parent="UI/BattleSettingsPanel" unique_id=1436150878]
 layout_mode = 0
-offset_left = 140.0
-offset_right = 250.0
-offset_bottom = 40.0
+offset_left = 222.0
+offset_right = 322.0
+offset_bottom = 34.0
 theme = ExtResource("24_317fs")
+theme_override_font_sizes/font_size = 16
 text = "设置"
 
 [node name="SettingsPopup" type="PanelContainer" parent="UI/BattleSettingsPanel" unique_id=575447447]
@@ -452,25 +486,27 @@ layout_mode = 2
 
 [node name="ClickModeActionBar" type="HBoxContainer" parent="UI" unique_id=1487539034]
 visible = false
-offset_left = 530.0
-offset_top = 476.0
-offset_right = 750.0
-offset_bottom = 522.0
+offset_left = 930.0
+offset_top = 412.0
+offset_right = 1162.0
+offset_bottom = 448.0
 mouse_filter = 0
 theme_override_constants/separation = 18
 alignment = 1
 script = ExtResource("click_mode_action_bar_script")
 
 [node name="ConfirmButton" type="Button" parent="UI/ClickModeActionBar" unique_id=2030669841]
-custom_minimum_size = Vector2(100, 46)
+custom_minimum_size = Vector2(110, 36)
 layout_mode = 2
 theme = ExtResource("24_317fs")
+theme_override_font_sizes/font_size = 16
 text = "确定"
 
 [node name="CancelButton" type="Button" parent="UI/ClickModeActionBar" unique_id=1830700891]
-custom_minimum_size = Vector2(100, 46)
+custom_minimum_size = Vector2(110, 36)
 layout_mode = 2
 theme = ExtResource("24_317fs")
+theme_override_font_sizes/font_size = 16
 text = "取消"
 
 [node name="TooltipPanel" parent="UI" unique_id=1474670946 instance=ExtResource("tooltip_panel_scene")]
@@ -482,8 +518,11 @@ script = ExtResource("11_to08p")
 
 [node name="测试背景" type="Sprite2D" parent="." unique_id=1458998012]
 z_index = -1000
+texture_filter = 1
 position = Vector2(640, 360)
-texture = ExtResource("37_3juot")
+scale = Vector2(0.76555026, 0.76514345)
+texture = ExtResource("45_ascsg")
+script = ExtResource("46_03qup")
 
 [node name="DayNightFilter" parent="." unique_id=1523666417 instance=ExtResource("43_lbcxr")]
 z_index = -1

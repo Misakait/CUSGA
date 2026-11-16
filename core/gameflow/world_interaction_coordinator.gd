@@ -118,6 +118,10 @@ var ScreenTransitionsPath: NodePath = ^"/root/ScreenTransitions"
 @export var WorldRootPath: NodePath = NodePath("../..")
 ## 地图系统节点路径。
 @export var MapSystemPath: NodePath = NodePath("../../MapSystem")
+## 当前房间数据的权威来源；读取 Model，避免把缓存中的相邻房间当作遭遇所在地图。
+@export var MapWorldModelPath: NodePath = ^"../../MapSystem/MapWorldModel"
+## 战斗实例内部的背景组件路径；节点只接收地图路径，不依赖探索场景树。
+@export var BattleBackgroundPath: NodePath = ^"测试背景"
 ## 地图 CanvasLayer 路径。
 @export var MapCanvasLayerPath: NodePath = NodePath("../../MapSystem/CanvasLayer")
 ## HUD CanvasLayer 路径。
@@ -1198,6 +1202,8 @@ func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> b
 		return false
 
 	_is_transitioning = true
+	# 在过场前锁定遭遇所在房间，避免淡出期间的移动或换房改变本场战斗的背景。
+	var map_scene_path: String = _get_current_map_scene_path()
 	_cancel_active_hold()
 	print("[WorldCombatScenePresenter] Entering Combat!")
 	await _fade_out()
@@ -1205,7 +1211,9 @@ func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> b
 		return false
 
 	# 背景由战斗场景自身配置，避免探索房间的外观覆盖战斗画面。
+	# 只传递地图资源标识，由背景组件选择统一的五行素材，不复制地图瓦片或房间背景。
 	var battle_instance: Node = _create_battle_instance(battle_deck, monsters)
+	_configure_battle_background(battle_instance, map_scene_path)
 
 	battle_instance.connect(BATTLE_ENDED_SIGNAL, Callable(self, "_on_battle_ended").bind(battle_instance))
 	_world_camera = get_viewport().get_camera_2d()
@@ -1218,6 +1226,33 @@ func _enter_combat(battle_deck: Array[Resource], monsters: Array[Resource]) -> b
 		return false
 	_is_transitioning = false
 	return true
+
+
+## 读取当前房间资源路径，不访问相邻房间的显示缓存。
+## @return 当前地图的 res:// 场景路径；独立运行或地图数据不可用时返回空串。
+func _get_current_map_scene_path() -> String:
+	# Model 保存当前坐标和资源，即使 View 的实例窗口调整，也不影响背景选择。
+	var model: Node = get_node_or_null(MapWorldModelPath)
+	if model == null or not model.has_method("get_scene_resource"):
+		return ""
+	# 复用地图已有资源查询协议，不维护第二份房间状态。
+	var room_resource: Resource = model.call("get_scene_resource", model.get("current_position")) as Resource
+	if room_resource == null:
+		return ""
+	# 只将字符串交给战斗表现组件，不传递可被修改的地图资源或节点。
+	var scene_path: Variant = room_resource.get("scene_path")
+	return String(scene_path) if scene_path is String else ""
+
+
+## 在战斗节点入树前配置背景，保证第一帧就显示正确的群系。
+## @param battle_instance 尚未加入世界根节点的战斗实例。
+## @param map_scene_path 过场开始前捕获的当前地图场景路径。
+## @return 无返回值；没有背景组件的自定义战斗场景仍可正常运行。
+func _configure_battle_background(battle_instance: Node, map_scene_path: String) -> void:
+	# 背景节点路径可配置，避免表现节点重排时影响遭遇或战斗规则。
+	var background: Node = battle_instance.get_node_or_null(BattleBackgroundPath)
+	if background != null and background.has_method("configure_for_map"):
+		background.call("configure_for_map", map_scene_path)
 
 
 ## 进入战斗并等待战斗结果，等价旧 C# EnterCombatAndWaitForResultAsync。

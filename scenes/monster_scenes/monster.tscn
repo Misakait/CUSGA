@@ -28,6 +28,8 @@
 
 [ext_resource type="Script" path="res://scripts/card_scripts/monster_card_visual.gd" id="monster_visual"]
 
+[ext_resource type="StyleBox" path="res://res/battle_ui/vital_track.tres" id="vital_track"]
+[ext_resource type="StyleBox" path="res://res/battle_ui/health_fill.tres" id="health_fill"]
 [sub_resource type="StyleBoxFlat" id="IntentBadge"]
 bg_color = Color(0.12, 0.16, 0.2, 0.95)
 border_width_left = 1
@@ -56,20 +58,6 @@ metadata/_custom_type_script = "uid://buhigatdeqss6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]
 size = Vector2(150, 210)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.14, 0.17, 0.2, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
-bg_color = Color(0.82, 0.31, 0.29, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
 
 [sub_resource type="Resource" id="Resource_1lcr1"]
 script = ExtResource("2_gqard")
@@ -120,24 +108,26 @@ shape = SubResource("RectangleShape2D_ooags")
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -65.0
-offset_top = -132.0
-offset_right = 65.0
-offset_bottom = -114.0
+offset_left = -69.0
+offset_top = 120.0
+offset_right = 69.0
+offset_bottom = 132.0
 grow_horizontal = 2
 size_flags_horizontal = 4
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+theme_override_styles/background = ExtResource("vital_track")
+theme_override_styles/fill = ExtResource("health_fill")
 value = 100.0
 show_percentage = false
 script = ExtResource("stat_bar_script")
+z_index = 2
+texture_filter = 1
 
 [node name="HealthText" type="Label" parent="HealthBar" unique_id=786684127]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "100/100"
@@ -146,6 +136,13 @@ vertical_alignment = 1
 theme = ExtResource("9_gxwrs")
 theme_override_font_sizes/font_size = 13
 mouse_filter = 2
+anchor_top = 0.0
+theme_override_constants/outline_size = 2
+anchor_left = 0.0
+offset_right = 0.0
+offset_top = 14.0
+offset_bottom = 28.0
+offset_left = 0.0
 
 [node name="CardName" type="Label" parent="." unique_id=1548866894]
 anchors_preset = 8
@@ -418,23 +415,23 @@ horizontal_alignment = 2
 
 [node name="StatusEffectBar" type="HBoxContainer" parent="." unique_id=1708846443]
 offset_left = -65.0
-offset_top = 101.0
+offset_top = 152.0
 offset_right = 65.0
-offset_bottom = 127.0
+offset_bottom = 178.0
 mouse_filter = 2
 theme_override_constants/separation = 3
 alignment = 1
 script = ExtResource("status_bar_script")
 
 [node name="IntentLabel" type="Label" parent="."]
-offset_left = -42.0
-offset_top = 134.0
-offset_right = 42.0
-offset_bottom = 158.0
+offset_left = -38.0
+offset_top = -139.0
+offset_right = 38.0
+offset_bottom = -117.0
 scale = Vector2(1, 1)
 theme_override_colors/font_color = Color(1, 0.93, 0.72, 1)
 theme_override_colors/font_outline_color = Color(0.1, 0.08, 0.12, 1)
-theme_override_constants/outline_size = 2
+theme_override_constants/outline_size = 0
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -442,6 +439,8 @@ visible = false
 mouse_filter = 2
 theme = ExtResource("9_gxwrs")
 theme_override_styles/normal = SubResource("IntentBadge")
+z_index = 2
+tooltip_text = "下一次行动的技能分类"
 
 [node name="Components" type="Node" parent="." unique_id=1744515292]
 

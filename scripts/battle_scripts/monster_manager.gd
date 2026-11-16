@@ -23,6 +23,9 @@ func _ready() -> void:
 func initialize_monsters(starting_monsters_data: Array):
 	upcoming_monsters = starting_monsters_data.duplicate()
 	spawn_monsters()
+	# 战斗可能由高速怪物先手，必须在行动动画读取位置前完成初始排布。
+	# 只在开场直接定位，死亡和补位后的队列调整仍保留平滑过渡。
+	update_monsters_position(true)
 
 # 生成怪物
 func spawn_monsters():
@@ -57,7 +60,10 @@ func _spawn_monster_instance(monster_data):
 	update_monsters_position()
 
 # 自动排布场上的怪物
-func update_monsters_position():
+## 按视口宽度居中排列怪物，并终止尚未完成的旧排布动画。
+## 参数 immediate：开场为 true，立即定位以免与先手攻击动画竞争位置。
+## 返回值：无。
+func update_monsters_position(immediate: bool = false):
 	var count = active_monsters.size()
 	if count == 0:
 		return
@@ -71,9 +77,22 @@ func update_monsters_position():
 		# 自动居中对称计算公式：(当前索引 - (总数 - 1) / 2) * 间距
 		var offset_x = (i - (count - 1.0) / 2.0) * monster_spacing
 		var target_pos = Vector2(center_x + offset_x, monster_height)
+		# 连续生成多只怪物时会多次重排；只保留最后一个 Tween，避免旧动画覆盖新布局。
+		var previous_layout: Tween = null
+		# Godot 对不存在的键使用 null 默认值时仍会报告错误，首次排布必须先检查键。
+		if monster.has_meta("layout_position_tween"):
+			previous_layout = monster.get_meta("layout_position_tween") as Tween
+		if previous_layout != null and previous_layout.is_valid():
+			previous_layout.kill()
+		if immediate:
+			monster.position = target_pos
+			if monster.has_meta("layout_position_tween"):
+				monster.remove_meta("layout_position_tween")
+			continue
 
 		# 加入Tween动画平滑移动
 		var tween = create_tween()
+		monster.set_meta("layout_position_tween", tween)
 		tween.tween_property(monster, "position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
 # 怪物死亡
