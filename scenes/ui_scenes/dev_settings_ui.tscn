@@ -116,3 +116,9 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_c24di")
 text = "获得金币"
+
+[node name="ImmediateEncounterButton" type="Button" parent="CenterOverlay/Panel/MarginContainer/VBoxContainer" unique_id=1408303561]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "在当前场景立即遭遇一组怪物；暂停、战斗或过场中不可用"
+text = "立即遭遇怪物"

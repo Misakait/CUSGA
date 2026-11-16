@@ -341,6 +341,41 @@ func _on_encounter_requested(
 	await _enter_combat(cards, encounter_monsters)
 
 
+## 判断开发者立即遭遇是否可用，供面板禁用不适用的操作。
+## @return 处于未暂停的探索状态、依赖已装配且没有战斗或过场时返回 true。
+func CanRequestImmediateEncounter() -> bool:
+	return (
+		is_inside_tree()
+		and not get_tree().paused
+		and not _is_run_ending()
+		and not _is_transitioning
+		and not is_instance_valid(_active_battle)
+		and is_instance_valid(_world_root)
+		and is_instance_valid(_gameplay_port)
+		and _gameplay_port.has_method("RequestEncounter")
+		and is_instance_valid(_encounter_manager)
+		and _encounter_manager.has_method("ResolveImmediateEncounter")
+		and not _get_current_map_scene_path().is_empty()
+	)
+
+
+## 从开发者面板发起当前地图内的即时遭遇，复用卡组、怪物倍率与战斗过场流程。
+## @return 已开始进入战斗时返回 true；状态不允许、配置为空或战前冻结失败时返回 false。
+func RequestImmediateEncounter() -> bool:
+	if not CanRequestImmediateEncounter():
+		return false
+	# 只跳过采集等待与概率，不扣采集行动值，不改写世界角色位置或通道驻守状态。
+	var encounter: RefCounted = _encounter_manager.call("ResolveImmediateEncounter") as RefCounted
+	if encounter == null or not bool(encounter.get("Triggered")):
+		return false
+	# 正常遭遇入口会同步开始淡出并置入过场状态，随后异步完成战斗装配。
+	# 不能直接实例化战斗，否则会漏掉当前地图背景、玩家卡组和战前快照。
+	_gameplay_port.call(
+		"RequestEncounter", null, encounter.get("MonsterToSpawn"), String(encounter.get("SpawnMessage"))
+	)
+	return _is_transitioning or is_instance_valid(_active_battle)
+
+
 ## 为地图通道驻守怪物发起战斗，并在战斗结束后发出结果信号。
 ##
 ## @param monsters 通道驻守 encounter 配置出的怪物数组。

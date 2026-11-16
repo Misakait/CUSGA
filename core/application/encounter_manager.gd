@@ -5,6 +5,7 @@ extends Node
 ## 该节点保留原实现的导出字段名、概率公式、缩放公式、字段默认值和方法名，
 ## 跨语言调用方只依赖 ResolveGatheringEncounter / ScaleEncounterMonsters
 ## 两个稳定方法协议，因此 C# 与 GDScript 消费者都不需要编译期具体类型。
+## 开发者即时遭遇使用 ResolveImmediateEncounter 选择已有怪物配置，随后仍走相同的倍率与战斗入口。
 ## 旧 EncounterManager.cs、EncounterMonsterScaler.cs 与 GatheringEncounterResult.cs
 ## 继续作为兼容垫片保留，直到全量迁移完成。
 
@@ -106,6 +107,24 @@ func ResolveGatheringEncounter(
 			return _create_result(monsters, _read_string(rule, "SpawnMessage", ""))
 
 	return _none_result()
+
+
+## 为开发者调试立即选择一组已有遭遇怪物，不进行概率、标签或昼夜判定。
+## @return 从非空规则中等概率选择的遭遇结果；没有有效怪物配置时返回未触发结果。
+func ResolveImmediateEncounter() -> RefCounted:
+	# 先排除空配置，保证存在可用怪物时每次点击都能得到完整的一组遭遇。
+	var candidates: Array[Resource] = []
+	for rule: Resource in GatheringRules:
+		if rule != null and not _read_monster_array(rule, "MonsterToSpawn").is_empty():
+			candidates.append(rule)
+	if candidates.is_empty():
+		return _none_result()
+	# 保留规则里的组队配置；不修改共享规则、概率或怪物资源，倍率仍由正常入口处理。
+	var selected_rule: Resource = candidates.pick_random()
+	return _create_result(
+		_read_monster_array(selected_rule, "MonsterToSpawn"),
+		_read_string(selected_rule, "SpawnMessage", "")
+	)
 
 
 ## 按地形浮动倍率与每日成长率缩放遭遇怪物。

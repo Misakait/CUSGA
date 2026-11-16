@@ -4,7 +4,9 @@
 [ext_resource type="Script" uid="uid://tdur6n7ypt1o" path="res://entities/components/health_component.gd" id="1_i8hiw"]
 [ext_resource type="Script" uid="uid://xdlxtfwyjhfn" path="res://resources/stats/starting_stats.gd" id="2_gqard"]
 [ext_resource type="Script" uid="uid://ba4f811xp0el" path="res://entities/components/attribute_component.gd" id="2_twjs6"]
+[ext_resource type="Script" uid="uid://dt6hmo3h7ofhd" path="res://resources/loot/monster_drop_entry.gd" id="3_nmmph"]
 [ext_resource type="Script" uid="uid://ber7n2jykqngx" path="res://entities/components/faction_component.gd" id="3_tgvxs"]
+[ext_resource type="Script" uid="uid://bw14ai6i3tpgq" path="res://resources/loot/monster_drop_pool.gd" id="4_67yfu"]
 [ext_resource type="Script" uid="uid://buhigatdeqss6" path="res://resources/monster/monster_data.gd" id="5_kt6in"]
 [ext_resource type="PackedScene" uid="uid://cbruma8ubj7lv" path="res://scenes/skill_card_scenes/CardSlot.tscn" id="5_ok3rw"]
 [ext_resource type="Texture2D" path="res://res/monstercard/monster_frame.svg" id="8_bgonl"]
@@ -20,7 +22,6 @@
 [ext_resource type="Texture2D" path="res://res/monstercard/speed_stat.svg" id="14_svjq7"]
 [ext_resource type="Script" uid="uid://1kvwpmm6xleh" path="res://entities/components/monster_skill_component.gd" id="16_1lcr1"]
 [ext_resource type="Script" uid="uid://ds65hu03xxpb3" path="res://resources/monster/monster_skill_entry_data.gd" id="17_3855q"]
-[ext_resource type="Script" uid="uid://bu272src84v8y" path="res://core/combat/effects/card_effect.gd" id="18_gxwrs"]
 [ext_resource type="Script" uid="uid://sxc1b8jrnrys" path="res://core/combat/skills/combat_skill_data.gd" id="19_ia034"]
 [ext_resource type="Script" uid="uid://dxkkxes00k6jj" path="res://resources/monster/monster_skill_set_data.gd" id="20_ve02a"]
 [ext_resource type="Script" uid="uid://ck6vnjbp88ek7" path="res://scripts/ui_scripts/status_effect_bar.gd" id="status_bar_script"]
@@ -48,12 +49,16 @@ BaseMaxHealth = 100.0
 
 [sub_resource type="PackedScene" id="PackedScene_1lcr1"]
 
+[sub_resource type="Resource" id="Resource_p8nog"]
+script = ExtResource("4_67yfu")
+
 [sub_resource type="Resource" id="Resource_43qb6"]
 script = ExtResource("5_kt6in")
 MonsterName = "kirin"
 InitialAttributes = SubResource("Resource_4jp6m")
 ElementalProperty = 1
 ModelScene = SubResource("PackedScene_1lcr1")
+drop_pool = SubResource("Resource_p8nog")
 metadata/_custom_type_script = "uid://buhigatdeqss6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ooags"]
@@ -423,7 +428,7 @@ theme_override_constants/separation = 3
 alignment = 1
 script = ExtResource("status_bar_script")
 
-[node name="IntentLabel" type="Label" parent="."]
+[node name="IntentLabel" type="Label" parent="." unique_id=415239972]
 offset_left = -38.0
 offset_top = -139.0
 offset_right = 38.0

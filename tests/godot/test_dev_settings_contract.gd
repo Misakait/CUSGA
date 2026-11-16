@@ -50,6 +50,7 @@ const REQUIRED_VBOX_ROWS: Array[String] = [
 	"HoldSpeedRow",
 	"NextDayButton",
 	"LevelUpButton",
+	"ImmediateEncounterButton",
 	"ResetHoldSpeedButton",
 	"GoldRow",
 ]
@@ -66,6 +67,81 @@ const REQUIRED_ROW_PARENT: String = "parent=\"CenterOverlay/Panel/MarginContaine
 ## 返回值：开发者设置契约套件名。
 func suite_name() -> String:
 	return "dev_settings_contract"
+
+
+## 提供即时遭遇入口，模拟战斗受理后立刻进入过场状态。
+class FakeImmediateEncounterCoordinator extends Node:
+	## 开关由协调器持有，面板只能查询，不能自己推断战斗是否可用。
+	var allowed: bool = true
+	## 已受理次数，用于检查重复点击与局外入口不能发起战斗。
+	var accepted_count: int = 0
+
+
+	## 查询当前状态；返回值：是否允许即时遭遇。
+	func CanRequestImmediateEncounter() -> bool:
+		return allowed
+
+
+	## 受理一次遭遇；返回值：首次请求成功，其后模拟过场而拒绝。
+	func RequestImmediateEncounter() -> bool:
+		if not allowed:
+			return false
+		accepted_count += 1
+		allowed = false
+		return true
+
+
+## 立即遭遇按钮必须接通宿主入口，受理成功后关闭面板并阻止重复请求。
+## 返回值：无。
+func test_immediate_encounter_button_requests_and_closes_panel() -> void:
+	# 沿用现有面板夹具，检查新增按钮不会改变时间系统。
+	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree
+	var time_system: Node = _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+	# 路径由宿主配置，面板不依赖 Main 的固定层级。
+	var ui: Control = _new_dev_settings_ui(scene_tree)
+	var coordinator: FakeImmediateEncounterCoordinator = FakeImmediateEncounterCoordinator.new()
+	coordinator.name = "EncounterCoordinator"
+	ui.add_child(coordinator)
+	ui.set("ImmediateEncounterCoordinatorPath", ^"EncounterCoordinator")
+	ui.call("_open_panel")
+	# 通过真实 pressed 信号验证接线，而不是直接调用按钮回调。
+	var button: Button = ui.get_node("%ImmediateEncounterButton") as Button
+	assert_false(button.disabled, "探索状态必须能触发即时遭遇。")
+	button.pressed.emit()
+	assert_eq(coordinator.accepted_count, 1, "一次点击必须只受理一次。")
+	assert_false(ui.visible, "进入战斗后开发者面板必须关闭。")
+	ui.call("_open_panel")
+	assert_true(button.disabled, "战斗或过场中再次打开时必须禁用按钮。")
+	button.pressed.emit()
+	assert_eq(coordinator.accepted_count, 1, "重复信号不能产生第二场战斗。")
+	assert_true(ui.visible, "被拒绝的请求应保留面板。")
+	assert_eq(int(time_system.get("TotalTimePassed")), 0, "调试按钮不得扣除采集行动值。")
+	_dispose(scene_tree, ui, time_system)
+
+
+## 局外入口隐藏即时遭遇，并在回调层拒绝绕过可见性的请求。
+## 返回值：无。
+func test_immediate_encounter_is_hidden_outside_run() -> void:
+	# 与主菜单和仓库一致地关闭局内功能。
+	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree
+	var time_system: Node = _install_fake_time_system(scene_tree)
+	if time_system == null:
+		return
+	# 即使配置了有效入口，也必须尊重宿主的局内功能开关。
+	var ui: Control = _new_dev_settings_ui(scene_tree, false)
+	var coordinator: FakeImmediateEncounterCoordinator = FakeImmediateEncounterCoordinator.new()
+	coordinator.name = "EncounterCoordinator"
+	ui.add_child(coordinator)
+	ui.set("ImmediateEncounterCoordinatorPath", ^"EncounterCoordinator")
+	ui.call("_open_panel")
+	# 信号可由脚本直接发出，所以不能仅依赖隐藏按钮来保证局外无效。
+	var button: Button = ui.get_node("%ImmediateEncounterButton") as Button
+	assert_false(button.visible, "主菜单与仓库不得显示立即遭遇。")
+	button.pressed.emit()
+	assert_eq(coordinator.accepted_count, 0, "局外不能发起战斗。")
+	_dispose(scene_tree, ui, time_system)
 
 
 ## 提供面板所需的稳定协议，并刻意把阶段长度设为 120。
@@ -1020,6 +1096,7 @@ func _new_dev_settings_ui_in(parent: Node, show_run_features: bool = true) -> Co
 	_add_unique_child(ui, "CloseButton", Button.new())
 	_add_unique_child(ui, "GoldSpinBox", SpinBox.new())
 	_add_unique_child(ui, "GainGoldButton", Button.new())
+	_add_unique_child(ui, "ImmediateEncounterButton", Button.new())
 	parent.add_child(ui)
 	return ui
 

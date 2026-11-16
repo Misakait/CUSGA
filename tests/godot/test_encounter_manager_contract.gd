@@ -171,6 +171,45 @@ func test_gathering_encounter_probability_and_payload() -> void:
 	assert_false(bool(blocked.get("Triggered")), "额外概率倍率为 0 时不得触发遭遇。")
 
 
+## 即时遭遇跳过概率并过滤空规则，同时保留整组怪物与共享资源。
+## 返回值：无。
+func test_immediate_encounter_ignores_probability_and_keeps_group() -> void:
+	# 基础概率与额外倍率均为零，保证命中来自即时入口而非原有概率判定。
+	var manager: Node = track(ENCOUNTER_MANAGER_SCRIPT.new()) as Node
+	manager.set("BaseGatheringSpawnChance", 0.0)
+	# 两只怪物用于锁定整组选择，不应被错误地拆成随机单只。
+	var first: Resource = MONSTER_DATA_SCRIPT.new()
+	var second: Resource = MONSTER_DATA_SCRIPT.new()
+	# 规则不需要标签，只复用已有怪物配置。
+	var rule: Resource = GATHERING_RULE_SCRIPT.new()
+	rule.set("ExtraChanceMultiplier", 0.0)
+	rule.get("MonsterToSpawn").append(first)
+	rule.get("MonsterToSpawn").append(second)
+	# 空规则与空资源必须先被过滤，不能让随机选择产生空战斗。
+	var rules: Array[Resource] = [null, GATHERING_RULE_SCRIPT.new(), rule]
+	manager.set("GatheringRules", rules)
+	for attempt: int in range(5):
+		# 多次调用检查每次均能返回有效整组，而不是只在第一次碰巧命中。
+		var result: RefCounted = manager.call("ResolveImmediateEncounter") as RefCounted
+		assert_true(bool(result.get("Triggered")), "即时遭遇必须跳过零概率。")
+		assert_eq(result.get("MonsterToSpawn"), [first, second], "必须保留整组怪物与原始资源身份。")
+	assert_eq(float(manager.get("BaseGatheringSpawnChance")), 0.0, "即时遭遇不能修改正式概率。")
+	assert_eq(float(rule.get("ExtraChanceMultiplier")), 0.0, "不能改写共享规则。")
+
+
+## 没有可用怪物配置时必须返回未触发，不能让空列表启动默认测试战斗。
+## 返回值：无。
+func test_immediate_encounter_without_monsters_is_empty() -> void:
+	# 只装配空规则，复现策划配置尚未填写的情况。
+	var manager: Node = track(ENCOUNTER_MANAGER_SCRIPT.new()) as Node
+	var rules: Array[Resource] = [null, GATHERING_RULE_SCRIPT.new()]
+	manager.set("GatheringRules", rules)
+	# 结果仍复用正常遭遇协议，便于协调器安全提前返回。
+	var result: RefCounted = manager.call("ResolveImmediateEncounter") as RefCounted
+	assert_false(bool(result.get("Triggered")), "没有怪物时不得触发空战斗。")
+	assert_eq((result.get("MonsterToSpawn") as Array).size(), 0, "未触发结果不得携带怪物。")
+
+
 ## 验证结果对象与旧 C# GatheringEncounterResult 的字段协议一致。
 func test_result_protocol_matches_legacy_type() -> void:
 	var result: RefCounted = GATHERING_RESULT_SCRIPT.new()

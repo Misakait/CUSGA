@@ -68,6 +68,9 @@ const MAX_GOLD_AMOUNT: int = 999999
 ## 知道场景拓扑，而且这样能在测试里直接构造出两种模式。
 @export var ShowRunFeatures: bool = true
 
+## 局内遭遇协调器的相对路径；由宿主场景配置，局外保持空值，不耦合固定世界层级。
+@export var ImmediateEncounterCoordinatorPath: NodePath = NodePath("")
+
 ## 承载本面板各控件的稳定子节点。
 ## 用唯一名而不是固定层级路径访问：既与 TimePanelUI 的既有惯例一致，
 ## 也让面板可以在测试里用最小节点树构造，不必复刻整棵场景层级。
@@ -80,6 +83,8 @@ const MAX_GOLD_AMOUNT: int = 999999
 @onready var _level_up_button: Button = %LevelUpButton
 @onready var _gold_spin_box: SpinBox = %GoldSpinBox
 @onready var _gain_gold_button: Button = %GainGoldButton
+## 立即遭遇只作用于当前局，位置与其它调试操作一样由场景容器排布。
+@onready var _immediate_encounter_button: Button = %ImmediateEncounterButton
 
 ## 时间系统 Autoload 的动态引用；缺失时面板功能整体禁用。
 var _time_system: Node = null
@@ -282,6 +287,7 @@ func _extract_ascii_letter(text: String) -> String:
 func _open_panel() -> void:
 	_sync_from_time_system()
 	_sync_hold_speed_from_multiplier()
+	_refresh_immediate_encounter_button()
 	show()
 
 
@@ -337,6 +343,41 @@ func _on_gain_gold_button_pressed() -> void:
 		return
 
 	_player_wallet.call("Add", int(_gold_spin_box.value))
+
+
+## 请求当前地图内的即时战斗；仅受理成功时关闭面板，避免遮住战斗操作。
+## @return 无返回值；状态不允许或怪物配置为空时保留面板。
+func _on_immediate_encounter_button_pressed() -> void:
+	# 面板在暂停期间仍处理输入，局内开关与战斗状态必须由回调再次校验。
+	var coordinator: Node = _get_immediate_encounter_coordinator()
+	if not ShowRunFeatures or coordinator == null:
+		return
+	if bool(coordinator.call("RequestImmediateEncounter")):
+		_on_close_button_pressed()
+	else:
+		_refresh_immediate_encounter_button()
+
+
+## 解析宿主配置的遭遇入口；返回值：满足完整请求协议的节点，未配置时返回 null。
+func _get_immediate_encounter_coordinator() -> Node:
+	if ImmediateEncounterCoordinatorPath.is_empty():
+		return null
+	# 不缓存场景节点，避免宿主缓存、重挂或世界退出后残留失效引用。
+	var coordinator: Node = get_node_or_null(ImmediateEncounterCoordinatorPath)
+	if coordinator == null or not coordinator.has_method("CanRequestImmediateEncounter") or not coordinator.has_method("RequestImmediateEncounter"):
+		return null
+	return coordinator
+
+
+## 同步按钮可用状态；返回值：无，暂停、战斗、过场和局外时禁用操作。
+func _refresh_immediate_encounter_button() -> void:
+	# 可用性的权威仍是战斗协调器，面板不另存一份战斗状态。
+	var coordinator: Node = _get_immediate_encounter_coordinator()
+	_immediate_encounter_button.disabled = (
+		not ShowRunFeatures
+		or coordinator == null
+		or not bool(coordinator.call("CanRequestImmediateEncounter"))
+	)
 
 
 ## 在局内开发者面板添加卡胚发放控件，默认发放 100 个通用卡胚。
@@ -522,6 +563,7 @@ func _apply_feature_visibility() -> void:
 		_reset_hold_speed_button,
 		_next_day_button,
 		_level_up_button,
+		_immediate_encounter_button,
 	]
 	for row: CanvasItem in run_only_rows:
 		row.visible = ShowRunFeatures
@@ -535,6 +577,7 @@ func _connect_buttons() -> void:
 	_reset_hold_speed_button.pressed.connect(_on_reset_hold_speed_button_pressed)
 	_close_button.pressed.connect(_on_close_button_pressed)
 	_gain_gold_button.pressed.connect(_on_gain_gold_button_pressed)
+	_immediate_encounter_button.pressed.connect(_on_immediate_encounter_button_pressed)
 	_hold_speed_spin_box.value_changed.connect(_on_hold_speed_spin_box_value_changed)
 
 
